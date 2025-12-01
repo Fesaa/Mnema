@@ -8,7 +8,26 @@ public class MnemaDataContext(DbContextOptions options): DbContext(options)
 {
     
     public DbSet<MnemaUser> Users { get; set; }
+    public DbSet<UserPreferences> UserPreferences { get; set; }
     
     public DbSet<Subscription> Subscriptions { get; set; }
-    
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+
+        builder.Entity<UserPreferences>()
+            .PrimitiveCollection(p => p.ConvertToGenreList)
+            .HasDefaultValue(new List<string>());
+        builder.Entity<UserPreferences>()
+            .PrimitiveCollection(p => p.BlackListedTags)
+            .HasDefaultValue(new List<string>());
+        builder.Entity<UserPreferences>()
+            .PrimitiveCollection(p => p.WhiteListedTags)
+            .HasDefaultValue(new List<string>());
+        builder.Entity<UserPreferences>()
+            .ComplexCollection(p => p.AgeRatingMappings, b => b.ToJson());
+        builder.Entity<UserPreferences>()
+            .ComplexCollection(p => p.TagMappings, b => b.ToJson());
+
+    }
 }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Mnema.Models.Entities.User;
 
 namespace Mnema.Models.Entities.Content;
 
@@ -6,6 +7,9 @@ public class Subscription
 {
     
     public Guid Id { get; set; }
+    
+    public Guid UserId { get; set; }
+    public virtual MnemaUser User { get; set; }
     
     /// <summary>
     /// The external content id
