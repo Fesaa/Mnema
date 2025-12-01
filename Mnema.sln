@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mnema.Server", "Mnema.Server\Mnema.Server.csproj", "{E88A5855-B9FE-4C74-B57C-2EE1C3E64D37}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mnema.Common", "Mnema.Common\Mnema.Common.csproj", "{58F610CF-1D8A-4EE2-9312-4DAB19376053}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mnema.Models", "Mnema.Models\Mnema.Models.csproj", "{C8601B19-25E9-4387-B882-F2A09191BF8B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mnema.Providers", "Mnema.Providers\Mnema.Providers.csproj", "{23FC77A9-EC46-4339-9309-CCBB2BE76554}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mnema.Database", "Mnema.Database\Mnema.Database.csproj", "{7DD81D17-B36D-4E7E-9AD0-24FE4967BF10}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E88A5855-B9FE-4C74-B57C-2EE1C3E64D37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E88A5855-B9FE-4C74-B57C-2EE1C3E64D37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E88A5855-B9FE-4C74-B57C-2EE1C3E64D37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E88A5855-B9FE-4C74-B57C-2EE1C3E64D37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58F610CF-1D8A-4EE2-9312-4DAB19376053}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58F610CF-1D8A-4EE2-9312-4DAB19376053}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58F610CF-1D8A-4EE2-9312-4DAB19376053}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58F610CF-1D8A-4EE2-9312-4DAB19376053}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8601B19-25E9-4387-B882-F2A09191BF8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8601B19-25E9-4387-B882-F2A09191BF8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8601B19-25E9-4387-B882-F2A09191BF8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8601B19-25E9-4387-B882-F2A09191BF8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23FC77A9-EC46-4339-9309-CCBB2BE76554}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23FC77A9-EC46-4339-9309-CCBB2BE76554}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23FC77A9-EC46-4339-9309-CCBB2BE76554}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23FC77A9-EC46-4339-9309-CCBB2BE76554}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DD81D17-B36D-4E7E-9AD0-24FE4967BF10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DD81D17-B36D-4E7E-9AD0-24FE4967BF10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DD81D17-B36D-4E7E-9AD0-24FE4967BF10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DD81D17-B36D-4E7E-9AD0-24FE4967BF10}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

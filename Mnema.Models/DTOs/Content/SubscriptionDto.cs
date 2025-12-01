@@ -1,0 +1,25 @@
+namespace Mnema.Models.Content;
+
+public class SubscriptionDto
+{
+    /// <inheritdoc cref="Subscription.Id"/>
+    public Guid Id { get; set; }
+    
+    /// <inheritdoc cref="Subscription.ContentId"/>
+    public required string ContentId { get; set; }
+    /// <inheritdoc cref="Subscription.BaseDir"/>
+    public required string BaseDir { get; set; }
+    /// <inheritdoc cref="Subscription.LastDownloadDir"/>
+    public required string LastDownloadDir { get; set; }
+ 
+    /// <inheritdoc cref="Subscription.LastRun"/>
+    public DateTime LastRun { get; set; }
+    /// <inheritdoc cref="Subscription.LastRunSuccess"/>
+    public bool LastRunSuccess { get; set; }
+    
+    /// <inheritdoc cref="Subscription.NextRun"/>
+    public DateTime NextRun { get; set; }
+    
+    /// <inheritdoc cref="Subscription.NoDownloadsRuns"/>
+    public int NoDownloadsRuns { get; set; }
+}
