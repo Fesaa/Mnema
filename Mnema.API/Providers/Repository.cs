@@ -1,9 +1,8 @@
-using Microsoft.Extensions.Caching.Distributed;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Publication;
 
-namespace Mnema.Providers;
+namespace Mnema.API.Providers;
 
 public sealed record DownloadUrl(string Url, string FallbackUrl);
 

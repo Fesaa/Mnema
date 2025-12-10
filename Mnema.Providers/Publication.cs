@@ -1,6 +1,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mnema.API.Providers;
 using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;

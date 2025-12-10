@@ -1,10 +1,15 @@
 using System.IO.Compression;
 using System.Reflection;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi;
+using Mnema.Common;
 using Mnema.Database.Extensions;
 using Mnema.Providers.Extensions;
+using Mnema.Server.Extensions;
 using Mnema.Server.Helpers;
+using Mnema.Services.Extensions;
 using Serilog;
 
 namespace Mnema.Server;
@@ -15,6 +20,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
     {
 
         services.AddProviders();
+        services.AddMnemaServices();
         
         services.AddControllers(options =>
         {
@@ -70,6 +76,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         }
 
         services.AddMnemaPostgresDatabase(configuration, env.IsDevelopment());
+        services.AddIdentityServices(configuration, env);
     }
 
     public void Configure(IApplicationBuilder app, IServiceProvider serviceProvider)
@@ -96,7 +103,26 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             opts.IncludeQueryInRequestPath = true;
         });
         
-        app.UseEndpoints(builder => builder.MapControllers());
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            HttpsCompression = HttpsCompressionMode.Compress,
+            OnPrepareResponse = ctx =>
+            {
+                ctx.Context.Response.Headers[HeaderNames.CacheControl] = "public,max-age=" + TimeSpan.FromHours(24);
+                ctx.Context.Response.Headers[Headers.RobotsTag] = "noindex,nofollow";
+            },
+        });
+        app.UseDefaultFiles();
+        
+        app.UseEndpoints(builder =>
+            {
+                builder.MapControllers();
+                builder.MapFallbackToController("Index", "Fallback");
+            }
+        );
 
         logger.LogInformation("Mnema starting up, stay tuned!");
     }

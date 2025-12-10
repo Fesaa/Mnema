@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.1" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.1">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -29,6 +30,7 @@
       <ProjectReference Include="..\Mnema.Database\Mnema.Database.csproj" />
       <ProjectReference Include="..\Mnema.Models\Mnema.Models.csproj" />
       <ProjectReference Include="..\Mnema.Providers\Mnema.Providers.csproj" />
+      <ProjectReference Include="..\Mnema.Services\Mnema.Services.csproj" />
     </ItemGroup>
 
 </Project>

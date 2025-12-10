@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Mnema.API\Mnema.API.csproj" />
       <ProjectReference Include="..\Mnema.Common\Mnema.Common.csproj" />
       <ProjectReference Include="..\Mnema.Models\Mnema.Models.csproj" />
     </ItemGroup>

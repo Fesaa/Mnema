@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mnema.Providers", "Mnema.Pr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mnema.Database", "Mnema.Database\Mnema.Database.csproj", "{7DD81D17-B36D-4E7E-9AD0-24FE4967BF10}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mnema.Services", "Mnema.Services\Mnema.Services.csproj", "{A6D168B4-A326-4DD0-98DA-80C2C34814AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mnema.API", "Mnema.API\Mnema.API.csproj", "{BB11418A-C475-44FA-9AB0-44826CDEB45A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,13 @@ Global
 		{7DD81D17-B36D-4E7E-9AD0-24FE4967BF10}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7DD81D17-B36D-4E7E-9AD0-24FE4967BF10}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7DD81D17-B36D-4E7E-9AD0-24FE4967BF10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6D168B4-A326-4DD0-98DA-80C2C34814AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6D168B4-A326-4DD0-98DA-80C2C34814AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6D168B4-A326-4DD0-98DA-80C2C34814AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6D168B4-A326-4DD0-98DA-80C2C34814AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB11418A-C475-44FA-9AB0-44826CDEB45A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB11418A-C475-44FA-9AB0-44826CDEB45A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB11418A-C475-44FA-9AB0-44826CDEB45A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB11418A-C475-44FA-9AB0-44826CDEB45A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

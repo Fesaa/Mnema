@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Mnema.API.Providers;
 using Mnema.Models.Entities.Content;
 using Mnema.Providers.Mangadex;
 

@@ -1,18 +1,8 @@
 
+using Mnema.API.Providers;
 using Mnema.Models.DTOs.Content;
 
 namespace Mnema.Providers;
-
-public interface IDownloadManager: IAsyncDisposable
-{
-    string BaseDir { get; }
-
-    Task Download(DownloadRequestDto request);
-    Task StopDownload(StopRequestDto request);
-    Task MoveToDownloadQueue(string id);
-    Task<Publication> GetPublicationById(string id);
-
-}
 
 public sealed class DownloadManager: IDownloadManager
 {
@@ -33,7 +23,7 @@ public sealed class DownloadManager: IDownloadManager
         throw new NotImplementedException();
     }
 
-    public Task<Publication> GetPublicationById(string id)
+    public Task<IPublication> GetPublicationById(string id)
     {
         throw new NotImplementedException();
     }
