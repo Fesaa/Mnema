@@ -3,6 +3,8 @@ using System.Reflection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.OpenApi;
 using Mnema.Database.Extensions;
+using Mnema.Providers.Extensions;
+using Mnema.Server.Helpers;
 using Serilog;
 
 namespace Mnema.Server;
@@ -12,7 +14,12 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
     public void ConfigureServices(IServiceCollection services)
     {
 
-        services.AddControllers();
+        services.AddProviders();
+        
+        services.AddControllers(options =>
+        {
+            options.ModelBinderProviders.Insert(0, new PaginationParamsModelBinderProvider());
+        });
         services.AddEndpointsApiExplorer();
         services.AddRateLimiter();
         services.AddCors();
@@ -89,9 +96,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             opts.IncludeQueryInRequestPath = true;
         });
         
-        app.UseEndpoints(builder => 
-            builder.MapControllers()
-            );
+        app.UseEndpoints(builder => builder.MapControllers());
 
         logger.LogInformation("Mnema starting up, stay tuned!");
     }

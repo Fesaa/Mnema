@@ -8,7 +8,11 @@
 
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="13.0.1" />
-      <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Mnema.Common\Mnema.Common.csproj" />
     </ItemGroup>
 
 </Project>

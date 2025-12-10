@@ -1,4 +1,4 @@
-namespace Mnema.Models.Content;
+namespace Mnema.Models.DTOs.Content;
 
 public class SubscriptionDto
 {

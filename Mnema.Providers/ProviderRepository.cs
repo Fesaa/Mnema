@@ -1,0 +1,41 @@
+using Microsoft.Extensions.Caching.Distributed;
+using Mnema.Common;
+using Mnema.Models.DTOs.Content;
+using Mnema.Models.Publication;
+
+namespace Mnema.Providers;
+
+public sealed record DownloadUrl(string Url, string FallbackUrl);
+
+public interface IRepository
+{
+
+    /// <summary>
+    /// Search for possible series to download given a request
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="pagination"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside our control fails</exception>
+    Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Retrieve series information by id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside of our control fails</exception>
+    Task<Series> SeriesInfo(string id, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Retrieve all urls that should be downloaded for a series 
+    /// </summary>
+    /// <param name="chapter"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside of our control fails</exception>
+    Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken);
+
+}

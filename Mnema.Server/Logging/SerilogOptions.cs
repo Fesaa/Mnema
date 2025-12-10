@@ -25,7 +25,7 @@ public class SerilogOptions
             .MinimumLevel.Override("Microsoft.AspNetCore.Hosting.Internal.WebHost", AspNetCoreLogLevelSwitch)
             .Enrich.FromLogContext()
             .WriteTo.Console(new ExpressionTemplate(outputTemplate))
-            .WriteTo.File(LogFile, rollingInterval: RollingInterval.Day, outputTemplate: outputTemplate)
+            .WriteTo.File(LogFile, rollingInterval: RollingInterval.Day)
             .Filter.ByIncludingOnly(ShouldIncludeLogStatement);
     }
 
