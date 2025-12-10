@@ -13,12 +13,17 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (req, next) => {
         case 404:
           toastr.warning("Something was not found");
           break;
+        case 403:
+          toastr.error("You're not allowed to do this!");
+          break
         case 501:
-          toastr.warning("Not feature has not been implemented yet")
+          toastr.warning("Not implemented yet!", "The feature you're trying to use is not available yet");
           break;
         case 401:
-          window.location.href = "/Auth/logout"
+          window.location.href = "/Auth/logout";
           break;
+        case 400:
+          toastr.error("Bad request!");
       }
 
       throw new err;

@@ -19,7 +19,7 @@ public class ConfigController(ILogger<ConfigController> logger, ISettingsService
 
     [HttpPost]
     [Authorize(Roles.ManageSettings)]
-    public async Task<IActionResult> UpdateSettings([FromBody] ServerSettingsDto dto)
+    public async Task<IActionResult> UpdateSettings([FromBody] UpdateServerSettingsDto dto)
     {
         await settingsService.SaveSettingsAsync(dto);
 

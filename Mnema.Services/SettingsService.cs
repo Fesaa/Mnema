@@ -112,24 +112,26 @@ public class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unitOf
         return false;
     }
 
-    public async Task SaveSettingsAsync(ServerSettingsDto dto)
+    public async Task SaveSettingsAsync(UpdateServerSettingsDto dto)
     {
         var settings = await unitOfWork.SettingsRepository.GetSettingsAsync();
 
         foreach (var serverSetting in settings)
         {
-            object value = serverSetting.Key switch
+            object? value = serverSetting.Key switch
             {
                 ServerSettingKey.MaxConcurrentTorrents => dto.MaxConcurrentTorrents,
                 ServerSettingKey.MaxConcurrentImages => dto.MaxConcurrentImages,
                 ServerSettingKey.RootDir => dto.RootDir,
-                ServerSettingKey.InstalledVersion => dto.InstalledVersion,
-                ServerSettingKey.FirstInstalledVersion => dto.FirstInstalledVersion,
-                ServerSettingKey.InstallDate => dto.InstallDate,
+                ServerSettingKey.InstalledVersion => null,
+                ServerSettingKey.FirstInstalledVersion => null,
+                ServerSettingKey.InstallDate => null,
                 ServerSettingKey.SubscriptionRefreshHour => dto.SubscriptionRefreshHour,
-                ServerSettingKey.LastUpdateDate => dto.LastUpdateDate,
+                ServerSettingKey.LastUpdateDate => null,
                 _ => throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key, "Unknown server settings key"),
             };
+
+            if (value == null) continue;
 
             var updated = await UpdateIfDifferent(serverSetting, value);
         }

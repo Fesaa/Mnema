@@ -22,5 +22,5 @@ public interface ISettingsService
     /// <returns></returns>
     Task<T> GetSettingsAsync<T>(ServerSettingKey key);
     Task<ServerSettingsDto> GetSettingsAsync();
-    Task SaveSettingsAsync(ServerSettingsDto settings);
+    Task SaveSettingsAsync(UpdateServerSettingsDto settings);
 }

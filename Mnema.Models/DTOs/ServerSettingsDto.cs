@@ -11,3 +11,11 @@ public class ServerSettingsDto
     public int SubscriptionRefreshHour { get; set; }
     public DateTime LastUpdateDate { get; set;  }
 }
+
+public class UpdateServerSettingsDto
+{
+    public int MaxConcurrentTorrents { get; set; }
+    public int MaxConcurrentImages { get; set; }
+    public string RootDir { get; set; }
+    public int SubscriptionRefreshHour { get; set; }
+}
