@@ -10,4 +10,5 @@ public class MnemaUser
     public UserPreferences Preferences { get; set; }
     public IList<Subscription> Subscriptions { get; set; }
     public IList<Page> Pages { get; set; }
+    public IList<Notification> Notifications { get; set; }
 }

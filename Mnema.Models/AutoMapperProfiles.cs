@@ -16,6 +16,7 @@ public class AutoMapperProfiles: Profile
         CreateMap<Subscription, SubscriptionDto>();
         CreateMap<Page, PageDto>();
         CreateMap<MnemaUser, UserDto>();
+        CreateMap<Notification, NotificationDto>();
     }
     
 }

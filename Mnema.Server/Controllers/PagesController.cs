@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mnema.API.Database;
+using Mnema.API.Services;
 using Mnema.Models.DTOs.UI;
+using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
 
-public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOfWork): BaseApiController
+public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOfWork, IPagesService pagesService): BaseApiController
 {
 
     /// <summary>
@@ -17,6 +20,41 @@ public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOf
         var pages = await unitOfWork.PagesRepository.GetPageDtosForUser(UserId);
         
         return Ok(pages);
+    }
+
+    [HttpPost("new")]
+    [HttpPost("update")]
+    [Authorize(Roles.ManagePages)]
+    public async Task<IActionResult> UpdatePages([FromBody] PageDto dto)
+    {
+        await pagesService.UpdatePage(dto);
+
+        return Ok();
+    }
+
+    [Authorize(Roles.ManagePages)]
+    [HttpDelete("{pageId:guid}")]
+    public async Task<IActionResult> DeletePage(Guid pageId)
+    {
+        await unitOfWork.PagesRepository.DeletePage(pageId);
+
+        return Ok();
+    }
+
+    [HttpPost("order")]
+    [Authorize(Roles.ManagePages)]
+    public async Task<IActionResult> OrderPages([FromBody] Guid[] ids)
+    {
+        await pagesService.OrderPages(ids);
+
+        return Ok();
+    }
+
+    [HttpPost("load-default")]
+    [Authorize(Roles.ManagePages)]
+    public async Task<IActionResult> LoadDefaults()
+    {
+        throw new NotImplementedException();
     }
     
 }

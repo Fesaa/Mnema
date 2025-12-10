@@ -17,6 +17,7 @@ public class UserController(ILogger<UserController> logger, IUnitOfWork unitOfWo
         return Ok(new UserDto
         {
             Id = user.Id,
+            Name = UserName, 
             Roles = UserRoles.ToList(),
         });
     }

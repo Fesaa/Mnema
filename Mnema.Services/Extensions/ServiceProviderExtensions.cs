@@ -12,6 +12,8 @@ public static class ServiceProviderExtensions
     {
         services.AddSingleton<ITicketStore, CustomTicketStore>();
         services.AddScoped<IOpenIdConnectService, OpenIdConnectService>();
+        services.AddScoped<ISettingsService, SettingsService>();
+        services.AddScoped<IPagesService, PageService>();
 
         return services;
     }

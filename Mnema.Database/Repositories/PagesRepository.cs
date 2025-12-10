@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Mnema.API.Database;
 using Mnema.Models.DTOs.UI;
+using Mnema.Models.Entities.UI;
 
 namespace Mnema.Database.Repositories;
 
@@ -15,5 +16,36 @@ public class PagesRepository(MnemaDataContext ctx, IMapper mapper): IPagesReposi
             .Where(p => p.Users.Select(u => u.Id).Contains(userId))
             .ProjectTo<PageDto>(mapper.ConfigurationProvider)
             .ToListAsync();
+    }
+    public Task<List<Page>> GetPages()
+    {
+        return ctx.Pages.ToListAsync();
+    }
+
+    public Task<Page?> GetPageById(Guid id)
+    {
+        return ctx.Pages.FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public Task<int> GetHighestSort()
+    {
+        return ctx.Pages.MaxAsync(p => p.SortValue);
+    }
+
+    public Task DeletePage(Guid id)
+    {
+        return ctx.Pages
+            .Where(p => p.Id == id)
+            .ExecuteDeleteAsync();
+    }
+
+    public void Add(Page page)
+    {
+        ctx.Pages.Add(page).State = EntityState.Added;
+    }
+
+    public void Update(Page page)
+    {
+        ctx.Pages.Add(page).State = EntityState.Modified;
     }
 }

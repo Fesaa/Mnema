@@ -38,6 +38,8 @@ public class Program
 
                     logger.LogInformation("Database has been migrated, starting Mnema");   
                 }
+
+                await context.SeedDatabase();
             }
             catch (Exception ex)
             {

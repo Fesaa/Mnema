@@ -11,11 +11,11 @@ public class Page
     public required string Title { get; set; }
     public string Icon { get; set; } = string.Empty;
     public required int SortValue { get; set; }
-    public required IList<Provider> Providers { get; set; }
-    public required IList<ModifierDto> Modifiers { get; set; }
-    public required IList<string> Dirs { get; set; }
+    public IList<Provider> Providers { get; set; } = [];
+    public IList<ModifierDto> Modifiers { get; set; } = [];
+    public IList<string> Dirs { get; set; } = [];
     public string CustomRootDir { get; set; } = string.Empty;
     
-    public IList<MnemaUser> Users { get; set; }
+    public IList<MnemaUser> Users { get; set; } = [];
 
 }

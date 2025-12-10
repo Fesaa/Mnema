@@ -6,6 +6,7 @@ public interface IUnitOfWork
     ISubscriptionRepository SubscriptionRepository { get; }
     IPagesRepository PagesRepository { get; }
     IUserRepository UserRepository { get; }
+    ISettingsRepository SettingsRepository { get; }
     
     Task<bool> CommitAsync();
     bool HasChanges();

@@ -10,6 +10,7 @@ using Mnema.Models;
 using Mnema.Providers.Extensions;
 using Mnema.Server.Extensions;
 using Mnema.Server.Helpers;
+using Mnema.Server.Middleware;
 using Mnema.Services.Extensions;
 using Serilog;
 
@@ -105,6 +106,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             //opts.EnrichDiagnosticContext = LogEnricher.EnrichFromRequest;
             opts.IncludeQueryInRequestPath = true;
         });
+        app.UseMiddleware<ExceptionMiddleware>();
         
         app.UseAuthentication();
         app.UseAuthorization();

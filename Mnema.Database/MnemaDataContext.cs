@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.UI;
 using Mnema.Models.Entities.User;
@@ -11,8 +12,9 @@ public class MnemaDataContext(DbContextOptions options): DbContext(options)
     public DbSet<MnemaUser> Users { get; set; }
     public DbSet<UserPreferences> UserPreferences { get; set; }
     public DbSet<Page> Pages { get; set; }
-    
     public DbSet<Subscription> Subscriptions { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+    public DbSet<ServerSetting> ServerSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mnema.API.Services;
 using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
@@ -12,6 +13,7 @@ public class BaseApiController: ControllerBase
 {
 
     protected Guid UserId => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
+    protected string UserName => User.FindFirst(IOpenIdConnectService.PreferredUsername)?.Value ?? User.FindFirst(ClaimTypes.GivenName)?.Value ?? "Unknown";
     protected IEnumerable<string> UserRoles => User.FindAll(ClaimTypes.Role).Where(c => Roles.AllRoles.Contains(c.Value)).Select(r => r.Value);
 
 
