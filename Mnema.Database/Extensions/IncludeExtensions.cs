@@ -1,4 +1,4 @@
-using Mnema.API.Database;
+using Mnema.API;
 using Mnema.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
 

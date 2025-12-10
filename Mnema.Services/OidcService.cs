@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using Mnema.API.Services;
+using Mnema.API;
 using Mnema.Models.Internal;
 
 namespace Mnema.Services;

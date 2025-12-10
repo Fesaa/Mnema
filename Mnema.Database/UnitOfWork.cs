@@ -1,6 +1,6 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Mnema.API.Database;
+using Mnema.API;
 using Mnema.Database.Repositories;
 
 namespace Mnema.Database;

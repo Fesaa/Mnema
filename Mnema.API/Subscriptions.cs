@@ -1,7 +1,12 @@
 using System.Collections.Immutable;
 using Mnema.Models.Entities.Content;
 
-namespace Mnema.API.Services;
+namespace Mnema.API;
+
+public interface ISubscriptionRepository
+{
+    
+}
 
 public interface ISubscriptionService
 {

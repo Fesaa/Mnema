@@ -1,5 +1,5 @@
 using AutoMapper;
-using Mnema.API.Database;
+using Mnema.API;
 
 namespace Mnema.Database.Repositories;
 

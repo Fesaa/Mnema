@@ -1,6 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Mnema.API.Database;
+using Mnema.API;
 using Mnema.Models.Entities;
 
 namespace Mnema.Database.Repositories;

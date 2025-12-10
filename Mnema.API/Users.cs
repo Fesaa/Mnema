@@ -1,6 +1,6 @@
 using Mnema.Models.Entities.User;
 
-namespace Mnema.API.Database;
+namespace Mnema.API;
 
 [Flags]
 public enum UserIncludes

@@ -1,7 +1,7 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using Mnema.API.Database;
+using Mnema.API;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.UI;
 

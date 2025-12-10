@@ -1,4 +1,4 @@
-namespace Mnema.API.Database;
+namespace Mnema.API;
 
 public interface IUnitOfWork
 {

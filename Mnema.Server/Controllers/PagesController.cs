@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Mnema.API.Database;
-using Mnema.API.Services;
+using Mnema.API;
+using Mnema.API;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Internal;
 

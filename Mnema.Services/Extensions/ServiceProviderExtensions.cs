@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
-using Mnema.API.Services;
+using Mnema.API;
 using Mnema.Services.Store;
 
 namespace Mnema.Services.Extensions;

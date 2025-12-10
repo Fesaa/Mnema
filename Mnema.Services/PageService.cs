@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
-using Mnema.API.Database;
-using Mnema.API.Services;
+using Mnema.API;
+using Mnema.API;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.UI;

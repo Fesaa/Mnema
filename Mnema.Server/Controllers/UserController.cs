@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Mnema.API.Database;
+using Mnema.API;
 using Mnema.Models.DTOs.User;
 
 namespace Mnema.Server.Controllers;

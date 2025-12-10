@@ -1,7 +1,7 @@
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.UI;
 
-namespace Mnema.API.Database;
+namespace Mnema.API;
 
 public interface IPagesRepository
 {
@@ -14,4 +14,10 @@ public interface IPagesRepository
     
     void Add(Page page);
     void Update(Page page);
+}
+
+public interface IPagesService
+{
+    Task UpdatePage(PageDto dto);
+    Task OrderPages(Guid[] ids);
 }

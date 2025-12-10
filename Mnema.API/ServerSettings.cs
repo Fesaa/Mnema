@@ -1,7 +1,16 @@
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
 
-namespace Mnema.API.Services;
+namespace Mnema.API;
+
+public interface ISettingsRepository
+{
+    void Update(ServerSetting settings);
+    void Remove(ServerSetting setting);
+
+    Task<ServerSetting> GetSettingsAsync(ServerSettingKey key);
+    Task<IList<ServerSetting>> GetSettingsAsync();
+}
 
 public interface ISettingsService
 {

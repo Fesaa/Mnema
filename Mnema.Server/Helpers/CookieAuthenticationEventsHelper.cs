@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Mnema.API.Services;
+using Mnema.API;
 
 namespace Mnema.Server.Helpers;
 

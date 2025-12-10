@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
-namespace Mnema.API.Services;
+namespace Mnema.API;
 
 public interface IOpenIdConnectService
 {

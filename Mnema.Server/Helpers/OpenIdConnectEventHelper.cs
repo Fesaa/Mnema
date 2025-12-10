@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Mnema.API.Database;
-using Mnema.API.Services;
+using Mnema.API;
+using Mnema.API;
 using Mnema.Common.Exceptions;
 using Mnema.Models.Internal;
 
