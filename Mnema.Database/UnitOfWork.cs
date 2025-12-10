@@ -8,7 +8,9 @@ namespace Mnema.Database;
 public class UnitOfWork(ILogger<UnitOfWork> logger, MnemaDataContext ctx, IMapper mapper): IUnitOfWork
 {
 
-    public ISubscriptionRepository SubscriptionRepository { get; init; } = new SubscriptionRepository(ctx, mapper);
+    public ISubscriptionRepository SubscriptionRepository { get; } = new SubscriptionRepository(ctx, mapper);
+    public IPagesRepository PagesRepository { get; } = new PagesRepository(ctx, mapper);
+    public IUserRepository UserRepository { get; } = new UserRepository(ctx, mapper);
     
     public async Task<bool> CommitAsync()
     {

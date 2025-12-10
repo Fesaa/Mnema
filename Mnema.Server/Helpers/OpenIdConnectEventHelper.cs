@@ -1,6 +1,10 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Mnema.API.Database;
 using Mnema.API.Services;
+using Mnema.Common.Exceptions;
+using Mnema.Models.Internal;
 
 namespace Mnema.Server.Helpers;
 
@@ -67,7 +71,19 @@ public class OpenIdConnectEventHelper: OpenIdConnectEvents
         {
             if (ctx.Principal == null) return;
 
+            var unitOfWork = ctx.HttpContext.RequestServices.GetRequiredService<IUnitOfWork>();
             var oidcService = ctx.HttpContext.RequestServices.GetRequiredService<IOpenIdConnectService>();
+
+            var externalId = ctx.Principal.FindFirst(ClaimTypes.NameIdentifier);
+            if (externalId == null) throw new UnauthorizedAccessException();
+
+            if (!Guid.TryParse(externalId.Value, out var guid)) throw new MnemaException("Id is not a Guid");
+
+            var roles = ctx.Principal.FindAll(ClaimTypes.Role).Where(c => Roles.AllRoles.Contains(c.Value));
+            if (!roles.Any()) throw new UnauthorizedAccessException();
+
+            // Ensure user is created
+            await unitOfWork.UserRepository.GetUserById(guid);
 
             var tokens = CopyOidcTokens(ctx);
             ctx.Properties ??= new AuthenticationProperties();

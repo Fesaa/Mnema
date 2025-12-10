@@ -133,10 +133,6 @@ namespace Mnema.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ExternalId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.ToTable("Users");
@@ -211,6 +207,21 @@ namespace Mnema.Database.Migrations
                     b.ToTable("UserPreferences");
                 });
 
+            modelBuilder.Entity("MnemaUserPage", b =>
+                {
+                    b.Property<Guid>("PagesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UsersId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("PagesId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("MnemaUserPage");
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.Content.Subscription", b =>
                 {
                     b.HasOne("Mnema.Models.Entities.User.MnemaUser", "User")
@@ -231,6 +242,21 @@ namespace Mnema.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MnemaUserPage", b =>
+                {
+                    b.HasOne("Mnema.Models.Entities.UI.Page", null)
+                        .WithMany()
+                        .HasForeignKey("PagesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mnema.Models.Entities.User.MnemaUser", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Mnema.Models.Entities.User.MnemaUser", b =>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Mnema.Common.Exceptions;
@@ -81,7 +82,16 @@ public static class OpenIdConnectServiceExtensions
                 options.Events = new OpenIdConnectEventHelper(environment.IsDevelopment());
             });
 
+        services.AddAuthorizationBuilder()
+            .AddPolicy(Roles.ManagePages);
+
         return services;
+    }
+    
+    private static AuthorizationBuilder AddPolicy(this AuthorizationBuilder builder, string roleName)
+    {
+        return builder.AddPolicy(roleName, policy => 
+            policy.RequireRole(roleName, roleName.ToLower(), roleName.ToUpper()));
     }
     
 }

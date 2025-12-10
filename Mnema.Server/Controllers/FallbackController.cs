@@ -8,8 +8,13 @@ public class FallbackController: Controller
 {
     [Authorize]
     [SwaggerIgnore]
-    public PhysicalFileResult Index()
+    public IActionResult Index()
     {
+        if (HttpContext.Request.Path.StartsWithSegments("/api"))
+        {
+            return NotFound();
+        }
+        
         return PhysicalFile(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "index.html"), "text/HTML");
     }
 }

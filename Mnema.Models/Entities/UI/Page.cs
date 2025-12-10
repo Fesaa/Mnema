@@ -1,5 +1,6 @@
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.User;
 
 namespace Mnema.Models.Entities.UI;
 
@@ -14,5 +15,7 @@ public class Page
     public required IList<ModifierDto> Modifiers { get; set; }
     public required IList<string> Dirs { get; set; }
     public string CustomRootDir { get; set; } = string.Empty;
+    
+    public IList<MnemaUser> Users { get; set; }
 
 }

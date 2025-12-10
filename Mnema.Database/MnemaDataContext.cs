@@ -37,6 +37,11 @@ public class MnemaDataContext(DbContextOptions options): DbContext(options)
             .PrimitiveCollection(p => p.Providers);
         builder.Entity<Page>()
             .PrimitiveCollection(p => p.Dirs);
+        builder.Entity<Page>()
+            .HasMany(p => p.Users);
+
+        builder.Entity<MnemaUser>()
+            .HasMany(u => u.Pages);
 
     }
 }

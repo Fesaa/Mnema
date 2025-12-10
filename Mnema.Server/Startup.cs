@@ -6,6 +6,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi;
 using Mnema.Common;
 using Mnema.Database.Extensions;
+using Mnema.Models;
 using Mnema.Providers.Extensions;
 using Mnema.Server.Extensions;
 using Mnema.Server.Helpers;
@@ -75,7 +76,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             services.AddDistributedMemoryCache();
         }
 
+        services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
         services.AddMnemaPostgresDatabase(configuration, env.IsDevelopment());
+        services.AddDatabaseServices();
         services.AddIdentityServices(configuration, env);
     }
 
