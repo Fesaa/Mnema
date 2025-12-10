@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
 using Mnema.API;
 using Mnema.Models.DTOs.UI;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
@@ -20,6 +21,12 @@ public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOf
         var pages = await unitOfWork.PagesRepository.GetPageDtosForUser(UserId);
         
         return Ok(pages);
+    }
+
+    [HttpGet("download-metadata")]
+    public async Task<IActionResult> DownloadMetadata([FromQuery] Provider provider)
+    {
+        return Ok();
     }
 
     [HttpPost("new")]

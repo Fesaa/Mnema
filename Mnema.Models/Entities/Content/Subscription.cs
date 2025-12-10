@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Models.Entities.Content;
@@ -9,7 +9,7 @@ public class Subscription
     public Guid Id { get; set; }
     
     public Guid UserId { get; set; }
-    public virtual MnemaUser User { get; set; }
+    public MnemaUser User { get; set; }
     
     /// <summary>
     /// The external content id
@@ -22,7 +22,9 @@ public class Subscription
     /// <summary>
     /// The last full directory (I.e. with name) the content was downloaded in
     /// </summary>
-    public required string LastDownloadDir { get; set; }
+    public string LastDownloadDir { get; set; } = string.Empty;
+    
+    public required DownloadMetadataDto Metadata { get; set; }
  
     /// <summary>
     /// When the last run took place

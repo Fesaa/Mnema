@@ -31,6 +31,6 @@ public sealed record DownloadRequestDto
 
 public sealed record DownloadMetadataDto
 {
-    public required bool StartImmediately { get; set; }
-    public required Dictionary<string, IList<string>> Extra { get; set; }
+    public bool StartImmediately { get; set; } = false;
+    public Dictionary<string, IList<string>> Extra { get; set; } = [];
 }

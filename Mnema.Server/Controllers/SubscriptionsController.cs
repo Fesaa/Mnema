@@ -1,12 +1,15 @@
+using Microsoft.AspNetCore.Authorization;
 using Mnema.API;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 
-public class SubscriptionsController: BaseApiController
+[Authorize(Roles.Subscriptions)]
+public class SubscriptionsController(ILogger<SubscriptionsController> logger, IUnitOfWork unitOfWork, ISubscriptionService subscriptionService): BaseApiController
 {
 
     [HttpGet("providers")]
@@ -16,15 +19,20 @@ public class SubscriptionsController: BaseApiController
     }
 
     [HttpGet("all")]
-    public async Task<ActionResult<IList<SubscriptionDto>>> GetAllSubscriptions([FromQuery] bool allUsers = false)
+    public async Task<ActionResult<IList<SubscriptionDto>>> GetAllSubscriptions()
     {
-        return Ok(new List<SubscriptionDto>());
+        return Ok(await unitOfWork.SubscriptionRepository.GetSubscriptionDtosForUser(UserId));
     }
 
     [HttpGet("{subscriptionId:guid}")]
     public async Task<ActionResult<SubscriptionDto>> GetSubscription(Guid subscriptionId)
     {
-        throw new NotImplementedException();
+        var sub = await unitOfWork.SubscriptionRepository.GetSubscriptionDto(subscriptionId);
+        if (sub == null) return NotFound();
+
+        if (sub.UserId != UserId) return Forbid();
+
+        return Ok(sub);
     }
 
     [HttpPost("run-once/{subscriptionId:guid}")]
@@ -33,17 +41,21 @@ public class SubscriptionsController: BaseApiController
         throw new NotImplementedException();
     }
 
-    /*[HttpPost("update")]
-    public async Task<IActionResult> UpdateSubscription([FromBody] UpdateSubscriptionDto updateDto)
+    [HttpPost("update")]
+    public async Task<IActionResult> UpdateSubscription([FromBody] SubscriptionDto updateDto)
     {
-        throw new NotImplementedException();
+        await subscriptionService.UpdateSubscription(UserId, updateDto);
+
+        return Ok();
     }
 
     [HttpPost("new")]
-    public async Task<IActionResult> CreateSubscription([FromBody] CreateSubscriptionDto createDto)
+    public async Task<IActionResult> CreateSubscription([FromBody] SubscriptionDto createDto)
     {
-        throw new NotImplementedException();
-    }*/
+        await subscriptionService.CreateSubscription(UserId, createDto);
+
+        return Ok();
+    }
 
     [HttpPost("run-all")]
     public async Task<IActionResult> RunAll([FromQuery] bool allUsers = false)
@@ -54,7 +66,16 @@ public class SubscriptionsController: BaseApiController
     [HttpDelete("{subscriptionId:guid}")]
     public async Task<IActionResult> DeleteSubscription(Guid subscriptionId)
     {
-        throw new NotImplementedException();
+        var sub = await unitOfWork.SubscriptionRepository.GetSubscription(subscriptionId);
+        if (sub == null) return NotFound();
+
+        if (sub.UserId != UserId) return Forbid();
+        
+        unitOfWork.SubscriptionRepository.Delete(sub);
+
+        await unitOfWork.CommitAsync();
+
+        return Ok();
     }
     
 }

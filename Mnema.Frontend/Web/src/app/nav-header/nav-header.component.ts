@@ -14,7 +14,7 @@ import {NavService} from "../_services/nav.service";
 import {NotificationService} from "../_services/notification.service";
 import {EventType, SignalRService} from "../_services/signal-r.service";
 import {TranslocoService} from "@jsverse/transloco";
-import {User} from "../_models/user";
+import {Role, User} from "../_models/user";
 import {Page} from "../_models/page";
 import {AsyncPipe, TitleCasePipe} from "@angular/common";
 import {animate, style, transition, trigger} from "@angular/animations";
@@ -26,6 +26,7 @@ interface NavItem {
   routerLink?: string;
   queryParams?: Record<string, any>;
   command?: () => void;
+  roles?: Role[];
 }
 
 const drawerAnimation = trigger('drawerAnimation', [
@@ -79,6 +80,13 @@ export class NavHeaderComponent implements OnInit {
   currentUser = this.accountService.currentUser;
   pageItems = signal<Page[]>([]);
   accountItems = signal<NavItem[]>([]);
+  visibleAccountItems = computed(() => {
+    const items = this.accountItems();
+    const roles = this.accountService.currentUser()?.roles;
+    if (!roles) return [];
+
+    return items.filter(item => !item.roles || item.roles.filter(r => !roles.includes(r)).length === 0);
+  })
 
   isMobileMenuOpen = signal(false);
   isAccountDropdownOpen = signal(false);
@@ -166,7 +174,8 @@ export class NavHeaderComponent implements OnInit {
       {
         label: this.transLoco.translate("nav-bar.subscriptions"),
         icon: "fa-bell",
-        routerLink: "/subscriptions"
+        routerLink: "/subscriptions",
+        roles: [Role.Subscriptions],
       },
       {
         label: this.transLoco.translate("nav-bar.notifications"),

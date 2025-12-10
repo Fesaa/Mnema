@@ -38,7 +38,7 @@
 
             @if (isAccountDropdownOpen()) {
               <ul class="account-dropdown" @dropdownAnimation>
-                @for (item of accountItems(); track item.label) {
+                @for (item of visibleAccountItems(); track item.label) {
                   <li>
                     @if (item.routerLink) {
                       <a

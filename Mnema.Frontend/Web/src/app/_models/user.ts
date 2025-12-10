@@ -4,10 +4,11 @@ export enum Role {
   ManageUsers          = "ManageUsers",
   ManageServerConfigs  = "ManageSettings",
   ManagePreferences    = "ManagePreferences",
+  Subscriptions        = "Subscriptions",
 }
 
 export const AllRoles = [
-  Role.ManagePages, Role.ManageUsers, Role.ManageServerConfigs, Role.ManagePreferences
+  Role.ManagePages, Role.ManageUsers, Role.ManageServerConfigs, Role.ManagePreferences, Role.Subscriptions
 ]
 
 export interface UserDto {

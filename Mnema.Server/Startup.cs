@@ -96,7 +96,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         app.UseSwaggerUI();
         app.UseResponseCaching();
         app.UseCors(opts => 
-            opts.WithOrigins("http://localhost:4200")
+            opts.WithOrigins("http://localhost:4600")
                 .AllowAnyMethod()
                 .AllowAnyHeader()
             );

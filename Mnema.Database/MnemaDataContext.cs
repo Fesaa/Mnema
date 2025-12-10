@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Mnema.Database.Extensions;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.UI;
@@ -44,6 +46,12 @@ public class MnemaDataContext(DbContextOptions options): DbContext(options)
 
         builder.Entity<MnemaUser>()
             .HasMany(u => u.Pages);
+
+        builder.Entity<Subscription>()
+            .Property(s => s.Metadata)
+            .HasJsonConversion(new DownloadMetadataDto())
+            .HasColumnType("TEXT")
+            .HasDefaultValue(new DownloadMetadataDto());
 
     }
 }

@@ -1,11 +1,20 @@
 using System.Collections.Immutable;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.API;
 
 public interface ISubscriptionRepository
 {
-    
+
+    Task<List<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId);
+    Task<Subscription?> GetSubscription(Guid id);
+    Task<SubscriptionDto?> GetSubscriptionDto(Guid id);
+
+    void Update(Subscription subscription);
+    void Add(Subscription subscription);
+    void Delete(Subscription subscription);
+
 }
 
 public interface ISubscriptionService
@@ -15,5 +24,8 @@ public interface ISubscriptionService
         Provider.Bato, Provider.Dynasty, Provider.MangaBuddy,
         Provider.Mangadex, Provider.Webtoons,
     ];
+
+    public Task UpdateSubscription(Guid userId, SubscriptionDto dto);
+    public Task CreateSubscription(Guid userId, SubscriptionDto dto);
 
 }
