@@ -116,8 +116,15 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             HttpsCompression = HttpsCompressionMode.Compress,
             OnPrepareResponse = ctx =>
             {
-                ctx.Context.Response.Headers[HeaderNames.CacheControl] = "public,max-age=" + TimeSpan.FromHours(24);
-                ctx.Context.Response.Headers[Headers.RobotsTag] = "noindex,nofollow";
+                if (ctx.Context.User.Identity?.IsAuthenticated ?? false)
+                {
+                    ctx.Context.Response.Headers[HeaderNames.CacheControl] = "public,max-age=" + TimeSpan.FromHours(24);
+                    ctx.Context.Response.Headers[Headers.RobotsTag] = "noindex,nofollow";
+                }
+                else
+                {
+                    ctx.Context.Response.Redirect($"/Auth/login?returnUrl={Uri.EscapeDataString(ctx.Context.Request.Path)}");
+                }
             },
         });
         app.UseDefaultFiles();
