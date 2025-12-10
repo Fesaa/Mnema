@@ -36,12 +36,6 @@
 
     <section class="settings-content" role="region" aria-live="polite">
 
-      @defer (when selected() === SettingsID.Account; prefetch on idle) {
-        @if (selected() === SettingsID.Account && canSee(SettingsID.Account)) {
-          <app-account-settings></app-account-settings>
-        }
-      }
-
       @defer (when selected() === SettingsID.Preferences; prefetch on idle) {
         @if (selected() === SettingsID.Preferences && canSee(SettingsID.Preferences)) {
           <app-preference-settings></app-preference-settings>

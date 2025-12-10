@@ -16,6 +16,9 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (req, next) => {
         case 501:
           toastr.warning("Not feature has not been implemented yet")
           break;
+        case 401:
+          window.location.href = "/Auth/logout"
+          break;
       }
 
       throw new err;

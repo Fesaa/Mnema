@@ -1,15 +1,22 @@
 export type Preferences = {
-  subscriptionRefreshHour: number,
-  logEmptyDownloads: boolean,
-  logSubNoDownloads: boolean,
-  convertToWebp: boolean,
+  imageFormat: ImageFormat;
   coverFallbackMethod: CoverFallbackMethod,
-  genreList: string[],
-  blackList: string[],
-  whiteList: string[],
+  convertToGenreList: string[],
+  blackListedTags: string[],
+  whiteListedTags: string[],
   ageRatingMappings: AgeRatingMap[],
   tagMappings: TagMap[],
 };
+
+export enum ImageFormat {
+  Upstream = 0,
+  Webp = 1,
+}
+
+export const ImageFormats = [
+  {label: "Upstream", value: ImageFormat.Upstream},
+  {label: "Webp", value: ImageFormat.Webp}
+];
 
 export enum CoverFallbackMethod {
   CoverFallbackFirst = 0,
@@ -30,25 +37,25 @@ export type TagMap = {
 
 export type AgeRatingMap = {
   tag: string
-  comicInfoAgeRating: ComicInfoAgeRating
+  ageRating: ComicInfoAgeRating
 }
 
 export enum ComicInfoAgeRating {
-  Unknown = "Unknown",
-  Pending = "Rating Pending",
-  EarlyChildhood = "Early Childhood",
-  Everyone = "Everyone",
-  G = "G",
-  Everyone10Plus = "Everyone 10+",
-  PG = "PG",
-  KidsToAdults = "Kids to Adults",
-  Teen = "Teen",
-  MA15Plus = "MA15+",
-  Mature17Plus = "Mature 17+",
-  M = "M",
-  R18Plus = "R18+",
-  AdultsOnly18Plus = "Adults Only 18+",
-  X18Plus = "X18+"
+  Unknown = 0,
+  Pending = 1,
+  EarlyChildhood = 2,
+  Everyone = 3,
+  G = 4,
+  Everyone10Plus = 5,
+  PG = 6,
+  KidsToAdults = 7,
+  Teen = 8,
+  MA15Plus = 9,
+  Mature17Plus = 10,
+  M = 11,
+  R18Plus = 12,
+  AdultsOnly18Plus = 13,
+  X18Plus = 14
 }
 
 export const ComicInfoAgeRatings = [

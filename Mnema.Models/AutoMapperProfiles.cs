@@ -17,6 +17,7 @@ public class AutoMapperProfiles: Profile
         CreateMap<Page, PageDto>();
         CreateMap<MnemaUser, UserDto>();
         CreateMap<Notification, NotificationDto>();
+        CreateMap<UserPreferences, UserPreferencesDto>();
     }
     
 }

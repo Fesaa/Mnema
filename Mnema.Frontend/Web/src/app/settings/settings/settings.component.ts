@@ -8,10 +8,8 @@ import {PagesSettingsComponent} from "./_components/pages-settings/pages-setting
 import {ServerSettingsComponent} from "./_components/server-settings/server-settings.component";
 import {UserSettingsComponent} from "./_components/user-settings/user-settings.component";
 import {TranslocoDirective} from "@jsverse/transloco";
-import {AccountSettingsComponent} from "./_components/account-settings/account-settings.component";
 
 export enum SettingsID {
-  Account = "account",
   Server = "server",
   Preferences = "preferences",
   Pages = "pages",
@@ -36,8 +34,7 @@ interface SettingsTab {
     PagesSettingsComponent,
     ServerSettingsComponent,
     UserSettingsComponent,
-    TranslocoDirective,
-    AccountSettingsComponent
+    TranslocoDirective
 
   ],
   templateUrl: './settings.component.html',
@@ -54,12 +51,11 @@ export class SettingsComponent {
   @ViewChild('mobileConfig') mobileDrawerElement!: ElementRef<HTMLDivElement>;
 
   user = signal<User | null>(null);
-  selected = signal<SettingsID>(SettingsID.Account);
+  selected = signal<SettingsID>(SettingsID.Preferences);
   showMobileConfig = signal(false);
 
   readonly settings: SettingsTab[] = [
-    { id: SettingsID.Account, title: "Account", icon: 'fa fa-user' },
-    { id: SettingsID.Preferences, title: "Preferences", icon: 'fa fa-heart', roles: [Role.ManagePreferences] },
+    { id: SettingsID.Preferences, title: "Preferences", icon: 'fa fa-heart', roles: [] },
     { id: SettingsID.Pages, title: 'Pages', icon: 'fa fa-thumbtack', roles: [Role.ManagePages] },
     { id: SettingsID.Server, title: 'Server', icon: 'fa fa-server', roles: [Role.ManageServerConfigs] },
     { id: SettingsID.User, title: 'Users', icon: 'fa fa-users', roles: [Role.ManageUsers] },

@@ -32,8 +32,10 @@ public class CookieAuthenticationEventsHelper: CookieAuthenticationEvents
         {
             ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
         }
-        
-        ctx.Response.Redirect($"/Auth/login?returnUrl={Uri.EscapeDataString(ctx.Request.Path)}");
+        else
+        {
+            ctx.Response.Redirect($"/Auth/login?returnUrl={Uri.EscapeDataString(ctx.Request.Path)}");
+        }
         
         return Task.CompletedTask;
     }

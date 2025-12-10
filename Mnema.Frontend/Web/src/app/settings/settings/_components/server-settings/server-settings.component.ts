@@ -11,8 +11,6 @@ import {ToastService} from "../../../../_services/toast.service";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {SettingsService} from "../../../../_services/settings.service";
 import {SettingsItemComponent} from "../../../../shared/form/settings-item/settings-item.component";
-import {SettingsSwitchComponent} from "../../../../shared/form/settings-switch/settings-switch.component";
-import {DefaultValuePipe} from "../../../../_pipes/default-value.pipe";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {debounceTime, distinctUntilChanged, map, tap} from "rxjs";
 
@@ -21,9 +19,7 @@ import {debounceTime, distinctUntilChanged, map, tap} from "rxjs";
   imports: [
     ReactiveFormsModule,
     TranslocoDirective,
-    SettingsItemComponent,
-    SettingsSwitchComponent,
-    DefaultValuePipe
+    SettingsItemComponent
   ],
   templateUrl: './server-settings.component.html',
   styleUrl: './server-settings.component.scss',

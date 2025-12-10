@@ -5,7 +5,7 @@ import {
   AgeRatingMap,
   ComicInfoAgeRating,
   ComicInfoAgeRatings,
-  CoverFallbackMethods,
+  CoverFallbackMethods, ImageFormats,
   Preferences,
   TagMap
 } from '../../../../_models/preferences';
@@ -19,6 +19,7 @@ import {CoverFallbackPipe} from "../../../../_pipes/cover-fallback.pipe";
 import {SettingsSwitchComponent} from "../../../../shared/form/settings-switch/settings-switch.component";
 import {SafeHtmlPipe} from "../../../../_pipes/safe-html-pipe";
 import {NgbNav, NgbNavContent, NgbNavItem, NgbNavLink, NgbNavOutlet} from "@ng-bootstrap/ng-bootstrap";
+import {ImageFormatPipe} from "../../../../_pipes/image-format.pipe";
 
 @Component({
   selector: 'app-preference-settings',
@@ -35,7 +36,8 @@ import {NgbNav, NgbNavContent, NgbNavItem, NgbNavLink, NgbNavOutlet} from "@ng-b
     NgbNavItem,
     NgbNavOutlet,
     NgbNavContent,
-    NgbNavLink
+    NgbNavLink,
+    ImageFormatPipe
   ],
   templateUrl: './preference-settings.component.html',
   styleUrl: './preference-settings.component.scss'
@@ -59,13 +61,11 @@ export class PreferenceSettingsComponent implements OnInit {
       this.preferences.set(preferences);
 
       this.preferencesForm = this.fb.group({
-        logEmptyDownloads: new FormControl(preferences.logEmptyDownloads),
-        logSubNoDownloads: new FormControl(preferences.logSubNoDownloads),
-        convertToWebp: new FormControl(preferences.convertToWebp),
+        imageFormat: new FormControl(preferences.imageFormat),
         coverFallbackMethod: [preferences.coverFallbackMethod],
-        blackList: new FormControl(preferences.blackList.join(',')),
-        whiteList: new FormControl(preferences.whiteList.join(',')),
-        genreList: new FormControl(preferences.genreList.join(',')),
+        blackList: new FormControl(preferences.blackListedTags.join(',')),
+        whiteList: new FormControl(preferences.whiteListedTags.join(',')),
+        genreList: new FormControl(preferences.convertToGenreList.join(',')),
         ageRatingMappings: new FormArray(preferences.ageRatingMappings.map(agm => this.ageRateMappingToFormGroup(agm))),
         tagMappings: new FormArray(preferences.tagMappings.map(agm => this.tagMappingToFormGroup(agm))),
       });
@@ -118,18 +118,18 @@ export class PreferenceSettingsComponent implements OnInit {
   addAgeRateMapping() {
     this.ageRatingMappingArray.push(this.ageRateMappingToFormGroup({
       tag: '',
-      comicInfoAgeRating: ComicInfoAgeRating.Pending,
+      ageRating: ComicInfoAgeRating.Pending,
     }));
   }
 
   private ageRateMappingToFormGroup(agm: AgeRatingMap) {
     return new FormGroup({
       tag: new FormControl(agm.tag, [Validators.required]),
-      comicInfoAgeRating: new FormControl(agm.comicInfoAgeRating, [Validators.required]),
+      ageRating: new FormControl(agm.ageRating, [Validators.required]),
     })
   }
 
-  packData() {
+  packData(): Preferences {
     const preferences = this.preferences();
     const formValue = this.preferencesForm.value;
 
@@ -137,13 +137,13 @@ export class PreferenceSettingsComponent implements OnInit {
       ...preferences,
       ...formValue,
       coverFallbackMethod: parseInt(formValue.coverFallbackMethod),
-      blackList: (formValue.blackList as string)
+      blackListedTags: (formValue.blackList as string)
         .split(',').map((item: string) => item.trim())
         .filter((t: string) => t.length > 0),
-      whiteList: (formValue.whiteList as string)
+      whiteListedTags: (formValue.whiteList as string)
         .split(',').map((item: string) => item.trim())
         .filter((t: string) => t.length > 0),
-      genreList: (formValue.genreList as string)
+      convertToGenreList: (formValue.genreList as string)
         .split(',').map((item: string) => item.trim())
         .filter((t: string) => t.length > 0),
     };
@@ -158,4 +158,5 @@ export class PreferenceSettingsComponent implements OnInit {
   }
 
   protected readonly ComicInfoAgeRatings = ComicInfoAgeRatings;
+  protected readonly ImageFormats = ImageFormats;
 }

@@ -18,6 +18,6 @@ export class PreferencesService {
   }
 
   save(preference: Preferences) {
-    return this.httpClient.post(this.baseUrl + '/save', preference)
+    return this.httpClient.post(this.baseUrl + '/', preference)
   }
 }

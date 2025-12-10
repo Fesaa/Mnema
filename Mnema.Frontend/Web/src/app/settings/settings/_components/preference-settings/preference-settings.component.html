@@ -12,38 +12,19 @@
           <a ngbNavLink>{{t('general-tab')}}</a>
           <ng-template ngbNavContent>
             <div class="col-md-12 col-sm-12 pt-4">
-              @if (preferencesForm.get('logEmptyDownloads'); as control) {
-                <app-settings-switch [control]="control" [title]="t('logEmptyDownloads-label')" [tooltip]="t('logEmptyDownloads-tooltip')" >
-                  <ng-template #switch>
+              @if (preferencesForm.get('imageFormat'); as control) {
+                <app-settings-item [control]="control" [title]="t('imageFormat-label')" [tooltip]="t('imageFormat-tooltip')" >
+                  <ng-template #view>{{control.value | imageFormat}}</ng-template>
+                  <ng-template #edit>
                     <div class="form-switch form-check">
-                      <input class="form-check-input" type="checkbox" formControlName="logEmptyDownloads">
+                      <select class="form-select" id="imageFormat" formControlName="imageFormat">
+                        @for (opt of ImageFormats; track opt.value) {
+                          <option [ngValue]="opt.value">{{opt.label}}</option>
+                        }
+                      </select>
                     </div>
                   </ng-template>
-                </app-settings-switch>
-              }
-            </div>
-
-            <div class="col-md-12 col-sm-12 pt-4">
-              @if (preferencesForm.get('logSubNoDownloads'); as control) {
-                <app-settings-switch [control]="control" [title]="t('logSubNoDownloads-label')" [tooltip]="t('logSubNoDownloads-tooltip')" >
-                  <ng-template #switch>
-                    <div class="form-switch form-check">
-                      <input class="form-check-input" type="checkbox" formControlName="logSubNoDownloads">
-                    </div>
-                  </ng-template>
-                </app-settings-switch>
-              }
-            </div>
-
-            <div class="col-md-12 col-sm-12 pt-4">
-              @if (preferencesForm.get('convertToWebp'); as control) {
-                <app-settings-switch [control]="control" [title]="t('convertToWebp-label')" [tooltip]="t('convertToWebp-tooltip')" >
-                  <ng-template #switch>
-                    <div class="form-switch form-check">
-                      <input class="form-check-input" type="checkbox" formControlName="convertToWebp">
-                    </div>
-                  </ng-template>
-                </app-settings-switch>
+                </app-settings-item>
               }
             </div>
 
@@ -177,8 +158,8 @@
                   </div>
 
                   <div class="col-md-5 col-sm-12">
-                    @if (agmFormGroup.get('comicInfoAgeRating'); as control) {
-                      <select formControlName="comicInfoAgeRating" class="form-select form-control">
+                    @if (agmFormGroup.get('ageRating'); as control) {
+                      <select formControlName="ageRating" class="form-select form-control">
                         @for (opt of ComicInfoAgeRatings; track opt.value) {
                           <option [value]="opt.value">{{opt.label}}</option>
                         }

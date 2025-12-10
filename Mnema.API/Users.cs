@@ -1,3 +1,4 @@
+using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.API;
@@ -14,4 +15,12 @@ public enum UserIncludes
 public interface IUserRepository
 {
     Task<MnemaUser> GetUserById(Guid id, UserIncludes includes = UserIncludes.Preferences);
+    Task<UserPreferences?> GetPreferences(Guid id);
+
+    void Update(UserPreferences pref);
+}
+
+public interface IUserService
+{
+    Task UpdatePreferences(Guid userId, UserPreferencesDto dto);
 }

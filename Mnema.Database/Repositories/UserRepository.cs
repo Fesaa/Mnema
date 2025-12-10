@@ -24,7 +24,6 @@ public class UserRepository(MnemaDataContext ctx, IMapper mapper): IUserReposito
             Id = id,
             Preferences = new UserPreferences
             {
-                LogEmptyDownloads = false,
                 ImageFormat = ImageFormat.Upstream,
                 CoverFallbackMethod = CoverFallbackMethod.First,
                 ConvertToGenreList = [],
@@ -39,5 +38,15 @@ public class UserRepository(MnemaDataContext ctx, IMapper mapper): IUserReposito
         await ctx.SaveChangesAsync();
 
         return await GetUserById(id);
+    }
+
+    public Task<UserPreferences?> GetPreferences(Guid id)
+    {
+        return ctx.UserPreferences.Where(p => p.UserId == id).FirstOrDefaultAsync();
+    }
+
+    public void Update(UserPreferences pref)
+    {
+        ctx.UserPreferences.Update(pref).State = EntityState.Modified;
     }
 }

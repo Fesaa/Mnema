@@ -14,6 +14,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<IOpenIdConnectService, OpenIdConnectService>();
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<IPagesService, PageService>();
+        services.AddScoped<IUserService, UserService>();
 
         return services;
     }
