@@ -1,0 +1,39 @@
+:root {
+  /* Primary Colors (Deep Purple-Pink) */
+  --primary-color: #7e3a59;            /* Dark Mulberry */
+  --primary-color-light: #a25e82;      /* Muted Rose */
+  --primary-color-lighter: #cba3b8;    /* Soft Pinkish Lavender */
+
+  /* Secondary Colors (Teal) */
+  --secondary-color: #3a7c7c;          /* Deep Teal */
+  --secondary-color-light: #659d9d;    /* Dusty Teal */
+  --secondary-color-lighter: #9cc8c8;  /* Pale Teal */
+
+  /* Background Colors */
+  --background-color: #f9fafb;         /* Near White */
+  --background-secondary: #e3e8e8;     /* Light Cool Gray */
+  --background-accent: #d0d8d8;        /* Very Pale Teal-Grey */
+
+  /* Text Colors */
+  --text-primary: #1c1c1c;              /* Dark Charcoal */
+  --text-secondary: #5a5a5a;            /* Medium Gray */
+  --text-light: #f4f4f5;                /* Very Light Gray */
+  --text-accent: #7e3a59;               /* Dark Purple-Pink */
+
+  /* Surface Colors */
+  --surface-card: #ffffff;              /* Pure White */
+  --surface-hover: #f3e6eb;             /* Light Rose Hover */
+  --surface-border: #c1cece;            /* Soft Teal-Grey Border */
+
+  /* Shadows */
+  --shadow-light: rgba(28, 28, 28, 0.05);
+  --shadow-medium: rgba(28, 28, 28, 0.1);
+  --shadow-dark: rgba(28, 28, 28, 0.2);
+
+  /* Alerts */
+  --error-color: #a54242;               /* Muted Red */
+  --error-color-light: #cd7a7a;         /* Soft Red */
+
+  --warning-color: #c29d2d;             /* Warm Gold */
+  --warning-color-light: #d9bc5a;       /* Light Gold */
+}

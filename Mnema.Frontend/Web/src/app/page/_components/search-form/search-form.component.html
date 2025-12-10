@@ -1,0 +1,65 @@
+<div class="search-form-container" *transloco="let t; prefix: 'search-form'">
+  <form [formGroup]="searchForm" (ngSubmit)="onSubmit()" class="search-form">
+
+    <div class="form-group mb-4">
+      <label for="query" class="form-label fw-semibold text-primary">{{ t('search-query-label') }}</label>
+      <input
+        type="text"
+        id="query"
+        class="form-control form-control-lg search-input"
+        formControlName="query"
+        [placeholder]="t('search-query-placeholder', {name: title()})"
+        autocomplete="off"
+        [class.is-invalid]="searchForm.get('query')?.touched && searchForm.get('query')?.errors">
+    </div>
+
+    @if (hasModifiers()) {
+      <div class="modifiers-section mb-4">
+        <h6 class="modifiers-title fw-semibold text-secondary mb-3">
+          <i class="bi bi-funnel me-2"></i>{{ t('search-filters-title') }}
+        </h6>
+
+        <div class="row">
+          @for (modifier of modifiers(); track trackModifier($index, modifier)) {
+            <div class="col-md-6 mb-3">
+              @if (modifier.type === ModifierType.SWITCH) {
+                <div class="form-check form-switch d-flex align-items-center">
+                  <input
+                    (change)="onModifierSwitchChange(modifier, $event)"
+                    type="checkbox"
+                    class="form-check-input"
+                    [id]="modifier.key"
+                  />
+                  <label class="form-check-label ms-2 user-select-none" [for]="modifier.key">{{modifier.title}}</label>
+                </div>
+              } @else {
+                <app-type-ahead
+                  [settings]="constructTypeaheadSettings(modifier)"
+                  (selectedData)="onModifierSelection(modifier, $event)"
+                >
+                  <ng-template #label>{{modifier.title}}</ng-template>
+                </app-type-ahead>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="form-actions d-flex gap-3 justify-content-end">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="loading()">
+        @if (loading()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+          <span>{{ t('button-searching') }}</span>
+        } @else {
+          <i class="fa fa-search me-2"></i>
+          <span>{{ t('button-search') }}</span>
+        }
+      </button>
+    </div>
+
+  </form>
+</div>

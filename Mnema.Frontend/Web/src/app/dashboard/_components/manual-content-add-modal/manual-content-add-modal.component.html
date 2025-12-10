@@ -1,0 +1,64 @@
+<ng-container *transloco="let t;prefix:'dashboard.manual-add'">
+  <div class="modal-container">
+
+    <div class="modal-header">
+      <h1>{{ t('title') }}</h1>
+    </div>
+
+    <div class="modal-body scrollable-modal">
+
+      <form [formGroup]="form" class="row">
+
+        @if (form.get('id'); as control) {
+          <div class="col-md-6 col-sm-12">
+            <app-settings-item [control]="control" [title]="t('id-label')" [tooltip]="t('id-tooltip')">
+              <ng-template #view>{{control.value | defaultValue}}</ng-template>
+              <ng-template #edit>
+                <input formControlName="id" class="form-control">
+              </ng-template>
+            </app-settings-item>
+          </div>
+        }
+
+        @if (form.get('name'); as control) {
+          <div class="col-md-6 col-sm-12">
+            <app-settings-item [control]="control" [title]="t('name-label')" [tooltip]="t('name-tooltip')">
+              <ng-template #view>{{control.value | defaultValue}}</ng-template>
+              <ng-template #edit>
+                <input formControlName="name" class="form-control">
+              </ng-template>
+            </app-settings-item>
+          </div>
+        }
+
+        @if (form.get('provider'); as control) {
+          <div class="col-md-6 col-sm-12">
+            <app-settings-item [control]="control" [title]="t('provider-label')" [tooltip]="t('provider-tooltip')">
+              <ng-template #view>{{control.value | providerName}}</ng-template>
+              <ng-template #edit>
+                <select formControlName="provider" class="form-select form-control">
+                  @for (provider of AllProviders; track provider) {
+                    <option [ngValue]="provider">{{provider | providerName}}</option>
+                  }
+                </select>
+              </ng-template>
+            </app-settings-item>
+          </div>
+        }
+
+
+      </form>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="close()">
+        {{t('cancel')}}
+      </button>
+      <button class="btn btn-secondary" (click)="submit()" [disabled]="!this.form.valid">
+        {{t('next')}}
+      </button>
+    </div>
+  </div>
+
+</ng-container>

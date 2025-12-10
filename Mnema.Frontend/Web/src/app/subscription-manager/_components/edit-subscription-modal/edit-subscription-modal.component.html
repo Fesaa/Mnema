@@ -1,0 +1,216 @@
+<ng-container *transloco="let t; prefix: 'edit-subscription-modal'">
+
+  <div class="modal-container">
+
+    <div class="modal-header">
+      <h5 class="modal-title fw-semibold">
+        @if (subscription().ID === -1) {
+          {{t('new-sub-title', {name: subscription().title})}}
+        } @else {
+          {{t('title', {name: subscription().title})}}
+        }
+      </h5>
+      <button type="button" class="btn-close" [attr.aria-label]="t('close')" (click)="close()">
+      </button>
+    </div>
+
+    <div class="modal-body scrollable-modal">
+
+      <form [formGroup]="subscriptionForm">
+
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
+
+          <li [ngbNavItem]="'general'">
+            <a ngbNavLink>{{t('general')}}</a>
+            <ng-template ngbNavContent>
+
+              <div class="row">
+
+                <div class="col-md-12 col-sm-12">
+                  @if (subscriptionForm.get('title'); as control) {
+                    <app-settings-item [control]="control" [title]="t('title-label')" [tooltip]="t('title-tooltip')">
+                      <ng-template #view>
+                        <div class="d-flex align-items-center">
+                          <span>{{control.value}}</span>
+                        </div>
+                      </ng-template>
+                      <ng-template #edit>
+                        <input formControlName="title" id="title" class="form-control flex-grow-1">
+                      </ng-template>
+                    </app-settings-item>
+                  }
+                </div>
+
+                <div class="col-md-12 col-sm-12 pt-4">
+                  @if (subscriptionForm.get('contentId'); as control) {
+                    <app-settings-item [control]="control" [title]="t('content-id-label')" [tooltip]="t('content-id-tooltip')">
+                      <ng-template #view>
+                        <div class="d-flex align-items-center">
+                          <button class="btn btn-secondary btn-small me-2" (click)="openExternal()">
+                            <i class="fa fa-link"></i>
+                          </button>
+                          <span>{{control.value}}</span>
+                        </div>
+                      </ng-template>
+                      <ng-template #edit>
+                        <div class="d-flex align-items-center">
+                          <input formControlName="contentId" id="contentId" class="form-control flex-grow-1">
+                        </div>
+                      </ng-template>
+                    </app-settings-item>
+                  }
+                </div>
+
+                <div class="col-md-6 col-sm-12 pt-4">
+                  @if (subscriptionForm.get('baseDir'); as control) {
+                    <app-settings-item [control]="control" [title]="t('base-dir-label')">
+                      <ng-template #view>
+                        <div class="d-flex align-items-center">
+                          <button class="btn btn-primary me-2" (click)="pickDirectory()">
+                            <i class="fa fa-folder"></i>
+                          </button>
+                          <span>{{control.value}}</span>
+                        </div>
+                      </ng-template>
+                      <ng-template #edit>
+                        <div class="d-flex align-items-center">
+                          <button class="btn btn-primary me-2" (click)="pickDirectory()">
+                            <i class="fa fa-folder"></i>
+                          </button>
+                          <input formControlName="baseDir" id="dir" class="form-control flex-grow-1">
+                        </div>
+                      </ng-template>
+                    </app-settings-item>
+                  }
+                </div>
+
+                <div class="col-md-6 col-sm-12 pt-4">
+                  @if (subscriptionForm.get('lastDownloadDir'); as control) {
+                    <app-settings-item [control]="control" [title]="t('last-download-dir-label')" [tooltip]="t('last-download-dir-tooltip')">
+                      <ng-template #view>
+                        <span>{{control.value | defaultValue}}</span>
+                      </ng-template>
+                      <ng-template #edit>
+                        <div class="d-flex align-items-center">
+                          <input formControlName="lastDownloadDir" id="lastDownloadDir" class="form-control flex-grow-1">
+                        </div>
+                      </ng-template>
+                    </app-settings-item>
+                  }
+                </div>
+
+                <div class="row col-md-12 col-sm-12 pt-4">
+
+                  <div class="col-md-6 col-sm-12">
+                    @if (subscriptionForm.get('provider'); as control) {
+                      <app-settings-item [showEdit]="false" [control]="control" [title]="t('provider-label')" [tooltip]="t('provider-tooltip')">
+                        <ng-template #view>
+                          <div class="d-flex align-items-center">
+                            <span>{{control.value | providerName}}</span>
+                          </div>
+                        </ng-template>
+                        <ng-template #edit>
+                          <select formControlName="provider" class="form-control form-select">
+                            @for (provider of providers(); track provider) {
+                              <option [value]="provider">{{provider | providerName}}</option>
+                            }
+                          </select>
+                        </ng-template>
+                      </app-settings-item>
+                    }
+                  </div>
+
+                  <div class="col-md-6 col-sm-12">
+                    @if (subscriptionForm.get('refreshFrequency'); as control) {
+                      <app-settings-item [showEdit]="false" [control]="control" [title]="t('refresh-frequency-label')" [tooltip]="t('refresh-frequency-tooltip')">
+                        <ng-template #view>
+                          <div class="d-flex align-items-center">
+                            <span>{{control.value | refreshFrequency}}</span>
+                          </div>
+                        </ng-template>
+                        <ng-template #edit>
+                          <select formControlName="refreshFrequency" class="form-control form-select">
+                            @for (freq of RefreshFrequencies; track freq) {
+                              <option [value]="freq.value">{{freq.label}}</option>
+                            }
+                          </select>
+                        </ng-template>
+                      </app-settings-item>
+                    }
+                  </div>
+
+                </div>
+
+              </div>
+
+            </ng-template>
+          </li>
+
+          <li [ngbNavItem]="'extra'">
+            <a ngbNavLink>{{t('extra')}}</a>
+            <ng-template ngbNavContent>
+              <div [formGroup]="subscriptionForm" *transloco="let t; prefix: 'download-modal'">
+                @for (def of metadata().definitions; track def.key) {
+                  <div class="col-md-12 col-sm-12 pt-4">
+                    @if (subscriptionForm.get('metadata.'+def.key); as control) {
+                      <app-settings-item [control]="control" [showEdit]="def.formType !== DownloadMetadataFormType.SWITCH" [title]="t( `extra-metadata.${def.key}.label`)" [tooltip]="t( `extra-metadata.${def.key}.tooltip`)">
+                        <ng-template #view>
+                          @if (def.formType === DownloadMetadataFormType.SWITCH) {
+                            <div class="form-switch form-check" formGroupName="metadata">
+                              <input class="form-check-input" type="checkbox" [formControlName]="def.key">
+                            </div>
+                          } @else {
+                            {{getValue(def, control.value) | defaultValue}}
+                          }
+                        </ng-template>
+                        <ng-template #edit>
+                          <div formGroupName="metadata">
+                            @switch (def.formType) {
+                              @case (DownloadMetadataFormType.DROPDOWN) {
+                                <select [formControlName]="def.key" class="form-control">
+                                  @for (opt of def.options; track opt.key) {
+                                    <option [value]="opt.key">{{opt.value}}</option>
+                                  }
+                                </select>
+                              }
+                              @case (DownloadMetadataFormType.SWITCH) {
+                                <div class="form-switch form-check">
+                                  <input class="form-check-input" type="checkbox" [formControlName]="def.key">
+                                </div>
+                              }
+                              @case (DownloadMetadataFormType.TEXT) {
+                                <input [formControlName]="def.key" type="text" class="form-control">
+                              }
+                            }
+                          </div>
+                        </ng-template>
+                      </app-settings-item>
+                    }
+                  </div>
+                }
+              </div>
+            </ng-template>
+          </li>
+
+        </ul>
+
+        <div class="row g-0 mb-2 mx-4">
+          <div [ngbNavOutlet]="nav" class="mt-2"></div>
+        </div>
+
+      </form>
+
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="close()">
+        {{t('cancel')}}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="save()">
+        <span>{{ subscription().ID === -1 ? t('create') : t('save')}}</span>
+      </button>
+    </div>
+
+  </div>
+
+</ng-container>

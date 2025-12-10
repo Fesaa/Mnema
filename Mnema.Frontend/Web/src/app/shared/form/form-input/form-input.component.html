@@ -1,0 +1,42 @@
+<div *transloco="let t; prefix: 'input'">
+  <label [for]="id()" class="form-label">
+    {{title()}}
+  </label>
+
+  <div>
+    @if (type() === 'switch') {
+      <div class="form-check form-switch">
+        <input
+          type="checkbox"
+          [id]="id()"
+          [formControl]="control()"
+          [ngbTooltip]="toolTip()"
+          class="form-check-input"
+          [class.is-invalid]="control().invalid && control().dirty"
+        />
+      </div>
+    } @else {
+      <input
+        [type]="type()"
+        [id]="id()"
+        [formControl]="control()"
+        [ngbTooltip]="toolTip()"
+        class="form-control"
+        [class.is-invalid]="control().invalid && control().dirty"
+      />
+    }
+
+    @if (control().dirty && control().invalid) {
+      <div class="invalid-feedback d-block" role="alert">
+        @for (error of control().errors | keyvalue; track $index) {
+          <div>{{t('errors.'+error.key, {error: error})}}</div>
+        }
+      </div>
+    }
+
+  </div>
+
+  @if (subTitle(); as subTitle) {
+    <div class="text-muted small">{{ subTitle }}</div>
+  }
+</div>

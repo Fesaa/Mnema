@@ -1,0 +1,40 @@
+
+<ng-container [ngTemplateOutlet]="itemsTemplate" [ngTemplateOutletContext]="{$implicit: visibleItems()}">
+</ng-container>
+
+@if (totalPages() > 1) {
+  <div class="pagination-container" *transloco="let t; prefix: 'paginator'">
+    <div class="pagination-info">
+      <span class="pagination-text">
+        {{t('pages', {currentPage: currentPage(), totalPages: totalPages()})}}
+      </span>
+    </div>
+
+    <div class="pagination-controls">
+      <button
+        class="pagination-btn pagination-btn-prev"
+        [disabled]="currentPage() === 1"
+        (click)="prevPage()">
+        {{t('prev')}}
+      </button>
+
+      <div class="pagination-numbers">
+        @for (page of range(totalPages()); track $index) {
+          <button
+            class="pagination-btn pagination-btn-number"
+            [class.active]="currentPage() === page + 1"
+            (click)="goToPage(page + 1)">
+            {{ page + 1 }}
+          </button>
+        }
+      </div>
+
+      <button
+        class="pagination-btn pagination-btn-next"
+        [disabled]="currentPage() === totalPages()"
+        (click)="nextPage()">
+        {{t('next')}}
+      </button>
+    </div>
+  </div>
+}

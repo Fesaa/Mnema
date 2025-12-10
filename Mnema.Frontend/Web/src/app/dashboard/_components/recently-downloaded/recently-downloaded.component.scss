@@ -1,0 +1,128 @@
+
+.recently-downloaded-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 3rem;
+  font-family: 'Spectral', serif;
+
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    letter-spacing: 0.025em;
+  }
+
+  .download-item {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px var(--shadow-light);
+
+    &:hover {
+      background: var(--surface-hover);
+      box-shadow: 0 4px 16px var(--shadow-medium);
+      transform: translateY(-2px);
+      border-color: var(--primary-color-lighter);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px var(--shadow-light);
+    }
+
+    .download-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+
+      .download-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin: 0;
+        line-height: 1.4;
+        flex: 1;
+        padding-right: 1rem;
+      }
+
+      .download-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-shrink: 0;
+
+        .download-date {
+          font-size: 0.875rem;
+          color: var(--text-secondary);
+          font-weight: 300;
+          white-space: nowrap;
+        }
+      }
+    }
+
+    .download-summary {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin: 0;
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    padding-top: 2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+
+    .download-item {
+      padding: 1.25rem;
+
+      .download-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+
+        .download-title {
+          padding-right: 0;
+        }
+
+        .download-actions {
+          align-self: flex-end;
+          margin-top: 0.5rem;
+        }
+      }
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .download-item {
+      .download-header {
+        .download-actions {
+          .download-date {
+            font-size: 0.8rem;
+          }
+        }
+      }
+
+      .download-summary {
+        font-size: 0.85rem;
+      }
+    }
+  }
+}

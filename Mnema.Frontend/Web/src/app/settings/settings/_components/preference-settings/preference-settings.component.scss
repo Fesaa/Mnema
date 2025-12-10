@@ -1,0 +1,15 @@
+.text-muted {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-family: 'Spectral', serif;
+
+  a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--secondary-color-light);
+    }
+  }
+}

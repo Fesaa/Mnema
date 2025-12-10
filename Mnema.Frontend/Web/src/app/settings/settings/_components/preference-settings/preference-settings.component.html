@@ -1,0 +1,254 @@
+<div class="d-flex w-100 flex-grow-1 flex-column" *transloco="let t; prefix: 'settings.preferences'">
+
+  <h2 class="h2 fw-bold mt-4 mb-3">{{ t('title') }}</h2>
+
+  @let pref = preferences();
+  @if (preferencesForm && pref) {
+    <form class="row pt-4" [formGroup]="preferencesForm">
+
+      <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeId">
+
+        <li [ngbNavItem]="'general'">
+          <a ngbNavLink>{{t('general-tab')}}</a>
+          <ng-template ngbNavContent>
+            <div class="col-md-12 col-sm-12 pt-4">
+              @if (preferencesForm.get('logEmptyDownloads'); as control) {
+                <app-settings-switch [control]="control" [title]="t('logEmptyDownloads-label')" [tooltip]="t('logEmptyDownloads-tooltip')" >
+                  <ng-template #switch>
+                    <div class="form-switch form-check">
+                      <input class="form-check-input" type="checkbox" formControlName="logEmptyDownloads">
+                    </div>
+                  </ng-template>
+                </app-settings-switch>
+              }
+            </div>
+
+            <div class="col-md-12 col-sm-12 pt-4">
+              @if (preferencesForm.get('logSubNoDownloads'); as control) {
+                <app-settings-switch [control]="control" [title]="t('logSubNoDownloads-label')" [tooltip]="t('logSubNoDownloads-tooltip')" >
+                  <ng-template #switch>
+                    <div class="form-switch form-check">
+                      <input class="form-check-input" type="checkbox" formControlName="logSubNoDownloads">
+                    </div>
+                  </ng-template>
+                </app-settings-switch>
+              }
+            </div>
+
+            <div class="col-md-12 col-sm-12 pt-4">
+              @if (preferencesForm.get('convertToWebp'); as control) {
+                <app-settings-switch [control]="control" [title]="t('convertToWebp-label')" [tooltip]="t('convertToWebp-tooltip')" >
+                  <ng-template #switch>
+                    <div class="form-switch form-check">
+                      <input class="form-check-input" type="checkbox" formControlName="convertToWebp">
+                    </div>
+                  </ng-template>
+                </app-settings-switch>
+              }
+            </div>
+
+            <div class="col-md-12 col-sm-12 py-4">
+
+              @if (preferencesForm.get('coverFallbackMethod'); as control) {
+                <app-settings-item [control]="control" [title]="t('cover-fallback-method')">
+                  <ng-template #view>{{control.value | coverFallback}}</ng-template>
+                  <ng-template #edit>
+                    <select
+                      class="form-select"
+                      id="coverFallbackMethod"
+                      formControlName="coverFallbackMethod"
+                    >
+                      @for (opt of CoverFallbackMethods; track opt.value) {
+                        <option [value]="opt.value">{{ opt.label }}</option>
+                      }
+                    </select>
+                  </ng-template>
+
+                </app-settings-item>
+              }
+
+            </div>
+          </ng-template>
+        </li>
+
+        <li [ngbNavItem]="'mappings'">
+          <a ngbNavLink>{{t('mappings-tab')}}</a>
+          <ng-template ngbNavContent>
+            <div class="col-md-12 col-sm-12 pt-4">
+              @if (preferencesForm.get('blackList'); as formControl) {
+                <app-settings-item
+                  [control]="formControl"
+                  [title]="t('tags-blacklist-label')"
+                  [tooltip]="t('tags-blacklist-tooltip')"
+                >
+                  <ng-template #view>
+                    @let val = breakString(formControl.value);
+                    @for (opt of val; track opt) {
+                      <app-tag-badge>{{ opt.trim() }}</app-tag-badge>
+                    } @empty {
+                      -
+                    }
+                  </ng-template>
+
+                  <ng-template #edit>
+              <textarea
+                rows="3"
+                id="blacklist"
+                class="form-control"
+                formControlName="blackList"
+              ></textarea>
+                  </ng-template>
+                </app-settings-item>
+              }
+            </div>
+
+            <div class="col-md-12 col-sm-12 pt-4">
+              @if (preferencesForm.get('whiteList'); as formControl) {
+                <app-settings-item
+                  [control]="formControl"
+                  [title]="t('tags-whitelist-label')"
+                  [tooltip]="t('tags-whitelist-tooltip')"
+                >
+                  <ng-template #view>
+                    @let val = breakString(formControl.value);
+                    @for (opt of val; track opt) {
+                      <app-tag-badge>{{ opt.trim() }}</app-tag-badge>
+                    } @empty {
+                      -
+                    }
+                  </ng-template>
+
+                  <ng-template #edit>
+              <textarea
+                rows="3"
+                id="whiteList"
+                class="form-control"
+                formControlName="whiteList"
+              ></textarea>
+                  </ng-template>
+                </app-settings-item>
+              }
+            </div>
+
+            <div class="col-md-12 col-sm-12 pt-4">
+              @if (preferencesForm.get('genreList'); as formControl) {
+                <app-settings-item
+                  [control]="formControl"
+                  [title]="t('tags-to-genre-label')"
+                  [tooltip]="t('tags-to-genre-tooltip')"
+                >
+                  <ng-template #view>
+                    @let val = breakString(formControl.value);
+                    @for (opt of val; track opt) {
+                      <app-tag-badge>{{ opt.trim() }}</app-tag-badge>
+                    } @empty {
+                      -
+                    }
+                  </ng-template>
+
+                  <ng-template #edit>
+              <textarea
+                rows="3"
+                id="tagToGenre"
+                class="form-control"
+                formControlName="genreList"
+              ></textarea>
+                  </ng-template>
+                </app-settings-item>
+              }
+            </div>
+
+            <div class="col-md-12 col-sm-12 pt-4">
+              <div class="settings-row">
+                <h4 class="setting-title">
+                  <label class="section-title">{{ t('age-rating-mappings-label') }}</label>
+                </h4>
+              </div>
+
+              <div class="text-muted my-2" [innerHTML]="t('age-rating-mappings-tooltip') | safeHtml"></div>
+
+              @for (agmFormGroup of ageRatingMappingArray.controls; track agmFormGroup.get('tag')?.value; let last = $last; let idx = $index) {
+                <div class="row pt-4 align-items-center" [formGroup]="agmFormGroup">
+
+                  <div class="col-md-5 col-sm-12">
+                    @if (agmFormGroup.get('tag'); as control) {
+                      <input type="text" class="form-control" formControlName="tag">
+                    }
+                  </div>
+
+                  <div class="col-md-5 col-sm-12">
+                    @if (agmFormGroup.get('comicInfoAgeRating'); as control) {
+                      <select formControlName="comicInfoAgeRating" class="form-select form-control">
+                        @for (opt of ComicInfoAgeRatings; track opt.value) {
+                          <option [value]="opt.value">{{opt.label}}</option>
+                        }
+                      </select>
+                    }
+                  </div>
+
+                  <div class="col-md-2 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center">
+                      <button class="btn btn-error btn-small" (click)="deleteAgeRatingMapping(idx)"><i class="fa fa-trash"></i></button>
+                      @if (last) {
+                        <button class="btn btn-primary btn-small ms-2" [disabled]="!agmFormGroup.valid" (click)="addAgeRateMapping()"><i class="fa fa-plus"></i></button>
+                      }
+                    </div>
+                  </div>
+
+                </div>
+              } @empty {
+                <div class="d-flex align-items-center justify-content-end">
+                  <button class="btn btn-primary btn-small" (click)="addAgeRateMapping()"><i class="fa fa-plus"></i></button>
+                </div>
+              }
+            </div>
+
+            <div class="col-md-12 col-sm-12 pt-4 mb-5">
+              <div class="settings-row">
+                <h4 class="setting-title">
+                  <label class="section-title">{{ t('tags-mappings-label') }}</label>
+                </h4>
+              </div>
+
+              <div class="text-muted my-2" [innerHTML]="t('tags-mappings-tooltip') | safeHtml"></div>
+
+              @for (tmFormGroup of tagMappingsArray.controls; track tmFormGroup.get('originTag')?.value; let last = $last; let idx = $index) {
+                <div class="row pt-4 align-items-center" [formGroup]="tmFormGroup">
+
+                  <div class="col-md-5 col-sm-12">
+                    @if (tmFormGroup.get('originTag'); as control) {
+                      <input type="text" class="form-control" formControlName="originTag">
+                    }
+                  </div>
+
+                  <div class="col-md-5 col-sm-12">
+                    @if (tmFormGroup.get('destinationTag'); as control) {
+                      <input type="text" class="form-control" formControlName="destinationTag">
+                    }
+                  </div>
+
+                  <div class="col-md-2 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center">
+                      <button class="btn btn-error btn-small" (click)="deleteTagMapping(idx)"><i class="fa fa-trash"></i></button>
+                      @if (last) {
+                        <button class="btn btn-primary btn-small ms-2" [disabled]="!tmFormGroup.valid" (click)="addTagMapping()"><i class="fa fa-plus"></i></button>
+                      }
+                    </div>
+                  </div>
+
+                </div>
+              } @empty {
+                <div class="d-flex align-items-center justify-content-end">
+                  <button class="btn btn-primary btn-small" (click)="addTagMapping()"><i class="fa fa-plus"></i></button>
+                </div>
+              }
+            </div>
+          </ng-template>
+        </li>
+      </ul>
+
+      <div [ngbNavOutlet]="nav"></div>
+
+    </form>
+  }
+</div>

@@ -1,0 +1,69 @@
+<div class="table-container">
+  <div class="table-wrapper">
+    <table class="custom-table">
+      <thead class="table-header">
+        <ng-container [ngTemplateOutlet]="headerTemplate"></ng-container>
+      </thead>
+
+      @if (dragAble()) {
+        <tbody cdkDropList [cdkDropListData]="paginatedItems()" (cdkDropListDropped)="onDrop.emit($event)" class="table-body" id="drag-and-drop-table">
+          @for (item of paginatedItems(); track trackByIdFunc()($index, item); let index = $index; let last = $last; let first = $first) {
+            <tr class="table-row" cdkDrag [cdkDragData]="item">
+              <ng-container [ngTemplateOutlet]="cellTemplate" [ngTemplateOutletContext]="{ $implicit: item, idx: index, last: last, first: first }"></ng-container>
+            </tr>
+          }
+        </tbody>
+      } @else {
+        <tbody class="table-body">
+          @for (item of paginatedItems(); track trackByIdFunc()($index, item); let index = $index; let last = $last; let first = $first) {
+            <tr class="table-row" [class.no-hover]="noHoverColour()">
+              <ng-container [ngTemplateOutlet]="cellTemplate" [ngTemplateOutletContext]="{ $implicit: item, idx: index, last: last, first: first }"></ng-container>
+            </tr>
+          }
+        </tbody>
+      }
+
+      @if (paginatedItems().length === 0) {
+        <ng-container [ngTemplateOutlet]="emptyTemplate"></ng-container>
+      }
+
+    </table>
+  </div>
+
+  @if (totalPages() > 1 && this.pagination()) {
+    <div class="pagination-container">
+      <div class="pagination-info">
+      <span class="pagination-text">
+        Page {{ currentPage() }} of {{ totalPages() }}
+      </span>
+      </div>
+
+      <div class="pagination-controls">
+        <button
+          class="pagination-btn pagination-btn-prev"
+          [disabled]="currentPage() === 1"
+          (click)="prevPage()">
+          Previous
+        </button>
+
+        <div class="pagination-numbers">
+          @for (page of range(totalPages()); track $index) {
+            <button
+              class="pagination-btn pagination-btn-number"
+              [class.active]="currentPage() === page + 1"
+              (click)="goToPage(page + 1)">
+              {{ page + 1 }}
+            </button>
+          }
+        </div>
+
+        <button
+          class="pagination-btn pagination-btn-next"
+          [disabled]="currentPage() === totalPages()"
+          (click)="nextPage()">
+          Next
+        </button>
+      </div>
+    </div>
+  }
+</div>

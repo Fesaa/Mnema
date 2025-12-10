@@ -1,0 +1,48 @@
+<div class="search-card" [@bounceIn200ms] *transloco="let t; prefix: 'page.search-result'">
+  <div class="card-image" [ngStyle]="{ 'background-image': 'url(' + imageSource() + ')' }">
+
+    <div class="card-overlay">
+      <div class="card-title-group">
+        <a [href]="searchResult().RefUrl" target="_blank" rel="noopener noreferrer" class="card-title">{{ searchResult().Name }}</a>
+      </div>
+    </div>
+
+    @if (searchResult().Size) {
+      <div class="card-size-badge">
+        <span class="card-size">{{ searchResult().Size }}</span>
+      </div>
+    }
+
+    <div class="card-actions">
+      <button
+        (click)="download()"
+        class="icon-btn"
+        [ngbTooltip]="t('download')"
+      >
+        <span class="fa fa-download"></span>
+      </button>
+
+      @if (providers().includes(searchResult().Provider)) {
+        <button
+          class="icon-btn"
+          (click)="addAsSub()"
+          [ngbTooltip]="t('add-as-sub')"
+        >
+          <span class="fa fa-bell"></span>
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (searchResult().Tags.length > 0) {
+    <div class="card-info">
+      <div class="card-tags">
+        @for (tag of searchResult().Tags; track $index) {
+          <span class="card-tag">
+          {{ tag.Name }}: {{ tag.Value }}
+        </span>
+        }
+      </div>
+    </div>
+  }
+</div>

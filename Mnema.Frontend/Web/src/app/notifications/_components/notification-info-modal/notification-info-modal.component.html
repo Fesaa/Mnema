@@ -1,0 +1,31 @@
+<ng-container *transloco="let t; prefix: 'confirm-modal'">
+  <div class="modal-container">
+    <div class="modal-header band-{{notification().colour}}">
+      <h5 class="modal-title">{{notification().title}}</h5>
+      <button type="button" class="btn-close" [attr.aria-label]="t('close')" (click)="close()">
+      </button>
+    </div>
+
+    <div class="modal-body scrollable-modal">
+
+      <div class="d-flex justify-content-end gap-2 mb-3">
+        <div class="d-flex flex-column align-items-end">
+          @if (notification().group) {
+            <app-badge [colour]="notification().colour">{{notification().group}}</app-badge>
+          }
+          @if (notification().CreatedAt) {
+            <span class="text-muted">{{notification().CreatedAt | date:'short'}}</span>
+          }
+        </div>
+      </div>
+
+      <div [innerHtml]="body | safeHtml"></div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="close()">{{translate('common.dismiss')}}</button>
+    </div>
+
+  </div>
+</ng-container>

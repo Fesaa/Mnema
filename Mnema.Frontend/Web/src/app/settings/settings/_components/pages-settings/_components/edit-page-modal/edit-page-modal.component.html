@@ -1,0 +1,171 @@
+
+
+<ng-container *transloco="let t; prefix :'edit-page-modal'">
+
+  <div class="modal-container">
+
+    <div class="modal-header">
+      <span class="modal-title">{{t('title')}}</span>
+      <button type="button" class="btn-close" [attr.aria-label]="t('close')" (click)="close()">
+      </button>
+    </div>
+
+    <div class="modal-body scrollable-modal">
+
+      <form [formGroup]="pageForm">
+
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
+
+          <li [ngbNavItem]="'general'">
+            <a ngbNavLink>{{t('general')}}</a>
+            <ng-template ngbNavContent>
+
+              <div class="text-muted" [innerHtml]="t('wiki') | safeHtml"></div>
+
+              <div class="row">
+
+                <div class="col-md-6 col-sm-12 pt-2">
+                  @if (pageForm.get('title'); as control) {
+                    <app-settings-item [control]="control" [title]="t('title-label')" [tooltip]="t('title-tooltip')">
+                      <ng-template #view>{{control.value | defaultValue}}</ng-template>
+                      <ng-template #edit>
+                        <input type="text" formControlName="title" class="form-control">
+                      </ng-template>
+                    </app-settings-item>
+                  }
+                </div>
+
+                <div class="col-md-6 col-sm-12 pt-2">
+                  @if (pageForm.get('icon'); as control) {
+                    <app-settings-item [control]="control" [title]="t('icon-label')" [tooltip]="t('icon-tooltip')">
+                      <ng-template #view>
+                        <i [class]="'fa ' + control.value"></i>
+                        @if (!control.value) {
+                          <span>{{null | defaultValue}}</span>
+                        }
+                      </ng-template>
+                      <ng-template #edit>
+                        <input type="text" formControlName="icon" class="form-control">
+                      </ng-template>
+                    </app-settings-item>
+                  }
+                </div>
+
+                <div class="col-md-6 col-sm-12 pt-2">
+                  @if (pageForm.get('customRootDir'); as control) {
+                    <app-settings-item [control]="control" [title]="t('custom-root-dir-label')" [tooltip]="t('custom-root-dir-tooltip')">
+                      <ng-template #view>
+                        <div class="d-flex align-items-center">
+                          <button class="btn btn-primary btn-small me-2" (click)="pickCustomRootDir()"><i class="fa fa-folder"></i></button>
+                          <span>{{control.value | defaultValue}}</span>
+                        </div>
+                      </ng-template>
+                      <ng-template #edit>
+                        <div class="d-flex">
+                          <button class="btn btn-primary me-2" (click)="pickCustomRootDir()"><i class="fa fa-folder"></i></button>
+                          <input type="text" formControlName="customRootDir" class="form-control">
+                        </div>
+                      </ng-template>
+                    </app-settings-item>
+                  }
+                </div>
+
+                <div class="col-md-6 col-sm-12 pt-2">
+                  @if (pageForm.get('dirs'); as control) {
+                    <app-settings-item [control]="control" [title]="t('dirs-label')" [tooltip]="t('dirs-tooltip')">
+                      <ng-template #view>
+                        <div class="d-flex">
+                          @for (dir of break(control.value); track $index) {
+                            <div class="me-2"><app-badge>{{dir}}</app-badge></div>
+                          } @empty {
+                            {{null | defaultValue}}
+                          }
+                        </div>
+                      </ng-template>
+                      <ng-template #edit>
+                        <div class="d-flex">
+                          <button class="btn btn-primary me-2" (click)="addDir()"><i class="fa fa-folder-plus"></i></button>
+                          <input type="text" formControlName="dirs" class="form-control">
+                        </div>
+                      </ng-template>
+                    </app-settings-item>
+                  }
+                </div>
+
+                <div class="col-md-12 col-sm-12 pt-2">
+                  <app-type-ahead [settings]="providerTypeaheadSettings()" (selectedData)="updateSelectedProviders($event)">
+                    <ng-template #badgeItem let-item>{{item | providerName}}</ng-template>
+                    <ng-template #optionItem let-item>{{item | providerName}}</ng-template>
+                  </app-type-ahead>
+                </div>
+
+              </div>
+
+            </ng-template>
+          </li>
+
+          <li [ngbNavItem]="'modifiers'">
+            <a ngbNavLink>{{t('modifiers')}}</a>
+            <ng-template ngbNavContent>
+
+              <div class="text-muted mb-2" [innerHtml]="t('wiki-modifiers') | safeHtml"></div>
+
+              <app-table
+                [items]="modifiersFormArray.controls"
+                [pagination]="false"
+                [dragAble]="true"
+                (onDrop)="sortModifiers($event)"
+                [noHoverColour]="true"
+                dragTableId="modifier-table"
+                [trackByIdFunc]="modifierTrack"
+              >
+
+                <ng-template #cell let-modifier let-last='last' let-idx='idx'>
+                  <td class="table-cell">
+                    <span class="fas fa-grip-lines drag-handle" cdkDragHandle></span>
+                  </td>
+                  <td class="table-cell">
+                    {{modifier.get('title')?.value | defaultValue}}
+                  </td>
+                  <td class="table-cell d-flex align-items-center justify-content-end">
+                    <button class="btn btn-primary btn-small me-2" (click)="editModifier(modifier)"><i class="fa fa-edit"></i></button>
+                    <button class="btn btn-error btn-small" (click)="deleteModifier(modifier.get('title')?.value, idx)"><i class="fa fa-trash"></i></button>
+                    @if (last) {
+                      <button class="btn btn-secondary btn-small ms-2" [disabled]="!modifier.valid" (click)="addModifier()"><i class="fa fa-plus"></i></button>
+                    }
+                  </td>
+                </ng-template>
+
+                <ng-template #empty>
+                  <div class="p-2 d-flex justify-content-end">
+                    <button class="btn btn-secondary ms-2"(click)="addModifier()"><i class="fa fa-plus"></i></button>
+                  </div>
+                </ng-template>
+
+              </app-table>
+
+            </ng-template>
+          </li>
+
+        </ul>
+
+        <div class="g-0 mb-2">
+          <div [ngbNavOutlet]="nav" class="mt-2 mx-5"></div>
+        </div>
+
+      </form>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="close()">
+        {{t(('close'))}}
+      </button>
+      <button class="btn btn-primary" (click)="save()" [disabled]="!pageForm.valid">
+        {{t('save')}}
+      </button>
+    </div>
+
+  </div>
+
+</ng-container>

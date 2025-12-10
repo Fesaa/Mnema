@@ -1,0 +1,39 @@
+<ng-container *transloco="let t;">
+  <div>
+    <div class="settings-row row g-0 d-flex align-items-center justify-content-between">
+      @if (title(); as title) {
+        <div class="col-auto setting-title edit">
+          <h4 class="section-title">
+            @if (labelId()) {
+              <label class="reset-label" [for]="labelId()">{{ title }}</label>
+            } @else {
+              {{ title }}
+            }
+          </h4>
+        </div>
+      }
+      @if (showEdit()) {
+        <div class="col-auto">
+          <button type="button"
+                  class="btn btn-icon edit-btn btn-sm btn-alignment"
+                  (click)="toggleEditMode()"
+                  [disabled]="!canEdit()">
+            {{ isEditMode() ? t('common.close') : (editLabel() || t('common.edit')) }}
+          </button>
+        </div>
+      }
+    </div>
+
+    @if (isEditMode()) {
+      <ng-container [ngTemplateOutlet]="valueEditRef"></ng-container>
+    } @else {
+      <span class="view-value" [ngClass]="{'non-selectable': (!canEdit() || !showEdit())}" (click)="toggleEditMode()">
+        <ng-container [ngTemplateOutlet]="valueViewRef"></ng-container>
+      </span>
+    }
+
+    @if (tooltip(); as subtitle) {
+      <div class="text-muted mt-2" [innerHTML]="subtitle | safeHtml"></div>
+    }
+  </div>
+</ng-container>

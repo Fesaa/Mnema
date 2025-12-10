@@ -1,0 +1,111 @@
+<ng-container *transloco="let t;prefix:'dashboard'">
+  <div class="modal-container">
+
+    <div class="modal-header">
+      <h1>{{ info().name }}</h1>
+    </div>
+
+    <div class="modal-body scrollable-modal">
+
+      <div class="d-flex">
+        <button class="btn btn-secondary me-2" (click)="reverse()">
+          <span class="fa fa-arrows-up-down"></span>
+        </button>
+        <button class="btn btn-secondary me-2" (click)="unselectAll()">
+          <span class="fa fa-x"></span>
+        </button>
+        <button class="btn btn-secondary me-2" (click)="toggleUIAll()">
+          <span class="fa {{allToggled() ? 'fa-eye-slash' : 'fa-eye'}}"></span>
+        </button>
+        <button class="btn btn-primary" (click)="selectAll()">
+          <span class="fa fa-check"></span>
+        </button>
+      </div>
+
+      @if (loading()) {
+        <app-loading-spinner size="large"></app-loading-spinner>
+      }
+
+      <div class="mt-4">
+        @for (cd of content(); track trackByContent(cd)) {
+          <ng-container
+            [ngTemplateOutlet]="contentData"
+            [ngTemplateOutletContext]="{ $implicit: cd, depth: 0 }"
+          ></ng-container>
+        }
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="close()">
+        {{t('cancel')}}
+      </button>
+      <button class="btn btn-secondary" (click)="submit()">
+        {{t('set-filter')}}
+      </button>
+    </div>
+  </div>
+
+</ng-container>
+
+<ng-template #contentData let-data let-depth='depth'>
+  <div class="content-item d-flex align-items-start gap-3 py-2 px-3 mb-1 rounded-2 position-relative"
+       [style.margin-left]="depth*20+16+'px'" [class.item-hover]="true">
+
+    @let toggled = toggles().has(data.label);
+
+    @if (data.children?.length > 0) {
+      <div>
+        @if (toggled) {
+          <i class="fa fa-eye-slash" (click)="toggleUI(data.label)"></i>
+        } @else {
+          <i class="fa fa-eye" (click)="toggleUI(data.label)"></i>
+        }
+      </div>
+    }
+
+    <div class="checkbox-wrapper position-relative">
+      <input
+        type="checkbox"
+        class="form-check-input position-absolute opacity-0"
+        [checked]="isSelected(data)"
+        style="z-index: 2; cursor: pointer;"
+        (click)="toggle(data); $event.stopPropagation()"
+      />
+      <div class="custom-checkbox d-flex align-items-center justify-content-center">
+        <i class="fas fa-check check-icon"></i>
+      </div>
+    </div>
+
+    <label class="form-check-label flex-grow-1 mb-0 cursor-pointer" (click)="toggle(data); $event.stopPropagation()">
+      <div class="d-flex align-items-center justify-content-between w-100">
+        <div class="d-flex align-items-center gap-2">
+          @if (depth > 0) {
+            <div class="depth-line"></div>
+          }
+
+          <span class="label-text">{{ data.label }}</span>
+
+          @if (data.children?.length > 0) {
+            <app-badge>{{data.children.length}}</app-badge>
+          }
+        </div>
+      </div>
+    </label>
+  </div>
+
+  @if (!toggled) {
+    @if (data.children?.length > 0) {
+      @for (child of data.children; track trackByContent(child)) {
+        <ng-container
+          [ngTemplateOutlet]="contentData"
+          [ngTemplateOutletContext]="{ $implicit: child, depth: depth+1 }"
+        ></ng-container>
+      }
+    }
+  }
+
+</ng-template>
+
+
