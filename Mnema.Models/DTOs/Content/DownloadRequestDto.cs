@@ -1,3 +1,4 @@
+using Mnema.Common;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.Models.DTOs.Content;
@@ -13,18 +14,17 @@ public sealed record DownloadRequestDto
 
     public string? GetString(string key)
     {
-        if (DownloadMetadata.Extra.TryGetValue(key, out var list) && list.Count > 0)
-        {
-            return list[0];
-        }
-
-        return null;
+        return DownloadMetadata.Extra.GetString(key);
     }
     
     public string GetStringOrDefault(string key, string defaultValue)
     {
-        var value = GetString(key);
-        return string.IsNullOrEmpty(value) ? defaultValue : value;
+        return DownloadMetadata.Extra.GetStringOrDefault(key, defaultValue);
+    }
+
+    public bool GetBool(string key, bool fallback = false)
+    {
+        return DownloadMetadata.Extra.GetBool(key, fallback);
     }
     
 }
@@ -32,5 +32,5 @@ public sealed record DownloadRequestDto
 public sealed record DownloadMetadataDto
 {
     public bool StartImmediately { get; set; } = false;
-    public Dictionary<string, IList<string>> Extra { get; set; } = [];
+    public MetadataBag Extra { get; set; } = [];
 }

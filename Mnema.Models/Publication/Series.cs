@@ -11,7 +11,7 @@ public sealed record Series
     public string? RefUrl { get; set; }
     
     public required PublicationStatus Status { get; set; }
-    public required PublicationStatus TranslationStatus { get; set; }
+    public PublicationStatus? TranslationStatus { get; set; }
     
     public int? Year { get; set; }
     

@@ -18,15 +18,15 @@ public interface IRepository
     /// <returns></returns>
     /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside our control fails</exception>
     Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// Retrieve series information by id
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside of our control fails</exception>
-    Task<Series> SeriesInfo(string id, CancellationToken cancellationToken);
+    Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken);
     
     /// <summary>
     /// Retrieve all urls that should be downloaded for a series 

@@ -21,7 +21,16 @@ public class OnDiskContent
 
 internal static class RequestConstants
 {
-    public const string TitleOverride = "title_override";
+    public const string LanguageKey                        = "tl-lang";
+    public const string AllowNonMatchingScanlationGroupKey = "allow_non_matching_scanlation_group";
+    public const string DownloadOneShotKey                 = "download_one_shot";
+    public const string IncludeNotMatchedTagsKey           = "include_not_matched_tags";
+    public const string IncludeCover                       = "include_cover";
+    public const string UpdateCover                        = "update_cover";
+    public const string TitleOverride                      = "title_override";
+    public const string AssignEmptyVolumes                 = "assign_empty_volumes";
+    public const string ScanlationGroupKey                 = "scanlation_group";
+    public const string SkipVolumeWithoutChapter           = "skip_volume_without_chapter";
 }
 
 public interface IPublicationExtensions

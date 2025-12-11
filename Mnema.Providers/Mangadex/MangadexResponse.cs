@@ -1,6 +1,8 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Mnema.Common.Extensions;
+using Mnema.Models.Publication;
 
 namespace Mnema.Providers.Mangadex;
 
@@ -22,7 +24,7 @@ internal record Identifiable
     public required string Type { get; set; }
 }
 
-internal sealed record SearchData: Identifiable
+internal sealed record MangaData: Identifiable
 {
     public required MangaAttributes Attributes { get; set; }
     public required IList<RelationShip> RelationShips { get; set; }
@@ -41,6 +43,34 @@ internal sealed record SearchData: Identifiable
 
         return null;
     }
+
+    private static readonly Dictionary<string, PersonRole[]> RelationMappings = new()
+    {
+        ["author"] = [PersonRole.Writer],
+        ["artist"] = [PersonRole.Colorist],
+    };
+
+    public IList<Person> People => RelationShips.Select(r =>
+    {
+        if (!r.Attributes.TryGetValue("name", out var nameEl) || nameEl.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        var name = nameEl.GetString();
+        if (string.IsNullOrEmpty(name)) return null;
+        
+        if (RelationMappings.TryGetValue(r.Type, out var roles))
+        {
+            return new Person
+            {
+                Name = name,
+                Roles = roles,
+            };
+        }
+
+        return null;
+    }).WhereNotNull().ToList();
 }
 
 internal sealed record MangaAttributes
@@ -95,7 +125,33 @@ internal sealed record MangaAttributes
 
         return sb.ToString();
     }
+
+    public int? HighestChapter => string.IsNullOrWhiteSpace(LastChapter) ? null :
+        int.TryParse(LastChapter, out var result) ? result : null;
     
+    public int? HighestVolume => string.IsNullOrWhiteSpace(LastVolume) ? null :
+        int.TryParse(LastVolume, out var result) ? result : null;
+
+}
+
+internal sealed record ChapterData: Identifiable
+{
+    public required ChapterAttributes Attributes { get; set; }
+    
+    public required IList<RelationShip> RelationShips { get; set; }
+}
+
+internal sealed record ChapterAttributes
+{
+    public string Title { get; set; } = string.Empty; 
+    public string Volume { get; set; } = string.Empty;
+    public string Chapter { get; set; } = string.Empty;
+    public string TranslatedLanguage { get; set; } = string.Empty;
+    public string ExternalUrl { get; set; } = string.Empty;
+    public DateTime PublishedAt { get; set; }
+    public DateTime ReadableAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }
 
 internal enum Status
@@ -108,6 +164,34 @@ internal enum Status
     Hiatus,
     [JsonPropertyName("cancelled")]
     Cancelled,
+}
+
+internal static class EnumExtensions
+{
+    public static AgeRating AsAgeRating(this ContentRating contentRating)
+    {
+        return contentRating switch
+        {
+
+            ContentRating.Safe => AgeRating.Everyone,
+            ContentRating.Suggestive => AgeRating.Teen,
+            ContentRating.Erotica => AgeRating.Mature17Plus,
+            ContentRating.Pornographic => AgeRating.AdultsOnly,
+            _ => throw new ArgumentOutOfRangeException(nameof(contentRating), contentRating, null)
+        };
+    }
+
+    public static PublicationStatus AsPublicationStatus(this Status status)
+    {
+        return status switch
+        {
+            Status.Ongoing => PublicationStatus.Ongoing,
+            Status.Completed => PublicationStatus.Completed,
+            Status.Hiatus => PublicationStatus.Paused,
+            Status.Cancelled => PublicationStatus.Cancelled,
+            _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
+        };
+    }
 }
 
 internal enum ContentRating
@@ -141,4 +225,8 @@ internal sealed record RelationShip: Identifiable
     public IDictionary<string, JsonElement> Attributes { get; set; } = new Dictionary<string, JsonElement>();
 }
 
-internal sealed record MangadexSearchResponse: MangadexResponse<IList<SearchData>>;
+internal sealed record SearchResponse: MangadexResponse<IList<MangaData>>;
+
+internal sealed record MangaResponse: MangadexResponse<MangaData>;
+
+internal sealed record ChaptersResponse: MangadexResponse<List<ChapterData>>;

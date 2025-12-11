@@ -4,7 +4,7 @@ public sealed record Chapter
 {
     public required string Id { get; set; }
     public required string Title { get; set; }
-    public required string Summary { get; set; }
+    public string Summary { get; set; } = string.Empty;
     
     public required string VolumeCount { get; set; }
     public required string ChapterCount { get; set; }
