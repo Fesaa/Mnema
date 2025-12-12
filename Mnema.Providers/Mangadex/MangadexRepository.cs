@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using Flurl;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using Mnema.API.Providers;
+using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;

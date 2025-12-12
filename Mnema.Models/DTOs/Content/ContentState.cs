@@ -1,6 +1,6 @@
-namespace Mnema.Models.Publication;
+namespace Mnema.Models.DTOs.Content;
 
-public enum PublicationState
+public enum ContentState
 {
     Queued = 0,
     Loading = 1,

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
-using Mnema.API.Providers;
+using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
@@ -9,7 +9,7 @@ using Mnema.Providers;
 
 namespace Mnema.Server.Controllers;
 
-public class ContentController(ISearchService searchService): BaseApiController
+public class ContentController(ISearchService searchService, IDownloadService downloadService): BaseApiController
 {
 
     [HttpPost]
@@ -19,6 +19,15 @@ public class ContentController(ISearchService searchService): BaseApiController
         pagination ??= PaginationParams.Default;
 
         return searchService.Search(searchRequest, pagination, HttpContext.RequestAborted);
+    }
+
+    [HttpPost("download")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Download(DownloadRequestDto request)
+    {
+        await downloadService.StartDownload(request);
+
+        return Ok();
     }
 
     [HttpGet("stats")]

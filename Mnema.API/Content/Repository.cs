@@ -2,7 +2,7 @@ using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Publication;
 
-namespace Mnema.API.Providers;
+namespace Mnema.API.Content;
 
 public sealed record DownloadUrl(string Url, string FallbackUrl);
 

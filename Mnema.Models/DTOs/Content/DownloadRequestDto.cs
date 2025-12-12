@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Mnema.Common;
 using Mnema.Models.Entities.Content;
 
@@ -11,6 +12,9 @@ public sealed record DownloadRequestDto
     public required string BaseDir { get; set; }
     public required string TempTitle { get; set; }
     public required DownloadMetadataDto DownloadMetadata { get; set; }
+
+    [JsonIgnore]
+    public Guid UserId;
 
     public string? GetString(string key)
     {

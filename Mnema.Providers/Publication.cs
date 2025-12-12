@@ -1,8 +1,11 @@
 
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mnema.API.Providers;
+using Mnema.API;
+using Mnema.API.Content;
 using Mnema.Common;
+using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
@@ -50,18 +53,16 @@ public interface IPublicationExtensions
     Task Cleanup(string path);
 }
 
-public partial class Publication(IServiceScope scope, Provider provider)
+public partial class Publication(IServiceScope scope, Provider provider, DownloadRequestDto request): IPublication
 {
-    private ILogger<Publication> Logger { get; init; } = scope.ServiceProvider.GetRequiredService<ILogger<Publication>>();
-    private IDownloadManager DownloadManager { get; init; } = scope.ServiceProvider.GetRequiredService<IDownloadManager>();
-    private IRepository Repository { get; init; } = scope.ServiceProvider.GetRequiredKeyedService<IRepository>(provider);
-    private DownloadRequestDto Request { get; init; } = scope.ServiceProvider.GetRequiredService<DownloadRequestDto>();
-    
-    public IPublicationExtensions Extensions { get; init; } = scope.ServiceProvider.GetRequiredService<IPublicationExtensions>();
+    private ILogger<Publication> Logger { get; } = scope.ServiceProvider.GetRequiredService<ILogger<Publication>>();
+    private IUnitOfWork UnitOfWork { get; } = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+    private IPublicationManager PublicationManager { get; } = (IPublicationManager) scope.ServiceProvider.GetRequiredKeyedService<IContentManager>(provider.ToString());
+    private IRepository Repository { get; } = scope.ServiceProvider.GetRequiredKeyedService<IRepository>(provider.ToString());
+    public IPublicationExtensions Extensions { get; } = scope.ServiceProvider.GetRequiredKeyedService<IPublicationExtensions>(provider.ToString());
+    private DownloadRequestDto Request { get; } = request;
 
-    public CancellationTokenSource CancellationTokenSource { get; init; } = new ();
-
-    public PublicationState State { get; private set; } = PublicationState.Queued;
+    public ContentState State { get; private set; } = ContentState.Queued;
 
     private UserPreferences Preferences { get; set; } = null!;
     private Series? Series { get; set; } = null;
@@ -92,19 +93,13 @@ public partial class Publication(IServiceScope scope, Provider provider)
     private int FailedDownloadsTracker { get; set; } = 0;
     private SpeedTracker? SpeedTracker { get; set; } = null;
 
-    public string Id() => Series != null ? Series.Id : Request.Id;
+    public string Id => Series != null ? Series.Id : Request.Id;
 
-    public string Title()
-    {
-        if (Series == null)
-        {
-            return Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(Request.TempTitle, Request.Id);
-        }
-        
-        return Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(Series.Title, Request.Id);
-    }
+    public string Title =>  Series == null
+        ? Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(Request.TempTitle, Request.Id) 
+        : Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(Series.Title, Request.Id);
 
-    public string DownloadDir => Series != null ? Path.Join(Request.BaseDir, Title()) : Request.BaseDir;
+    public string DownloadDir => Series != null ? Path.Join(Request.BaseDir, Title) : Request.BaseDir;
 
     public OnDiskContent? GetContentByName(string name) => ExistingContent.FirstOrDefault(c
         => Path.GetFileNameWithoutExtension(c.Name) == name);
@@ -124,20 +119,18 @@ public partial class Publication(IServiceScope scope, Provider provider)
     
     public async Task Cancel()
     {
-        Logger.LogTrace("Stopping download of {Id} - {Title}", Id(), Title());
-        
-        await CancellationTokenSource.CancelAsync();
+        Logger.LogTrace("Stopping download of {Id} - {Title}", Id, Title);
 
         var req = new StopRequestDto
         {
             Provider = provider,
-            Id = Id(),
+            Id = Id,
             DeleteFiles = true,
         };
 
         try
         {
-            await DownloadManager.StopDownload(req);
+            await PublicationManager.StopDownload(req);
         }
         catch (Exception ex)
         {
@@ -145,4 +138,25 @@ public partial class Publication(IServiceScope scope, Provider provider)
         }
     }
 
+    public async Task LoadMetadataAsync(CancellationToken cancellationToken)
+    {
+        State = ContentState.Loading;
+
+        var sw = Stopwatch.StartNew();
+
+        var preferences = await UnitOfWork.UserRepository.GetPreferences(Request.UserId);
+        if (preferences == null)
+        {
+            Logger.LogWarning("Failed to load user preferences, stopping downloading");
+            await Cancel();
+            return;
+        }
+
+        Preferences = preferences;
+    }
+
+    public Task DownloadContentAsync(CancellationToken cancellation)
+    {
+        throw new NotImplementedException();
+    }
 }
