@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Mnema.Database;
 using Mnema.Server.Logging;
 using Serilog;
+using Serilog.Templates;
 
 namespace Mnema.Server;
 
@@ -14,7 +15,7 @@ public class Program
     {
         Console.OutputEncoding = Encoding.UTF8;
         Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console()
+            .WriteTo.Console(new ExpressionTemplate(SerilogOptions.OutputTemplate))
             .MinimumLevel
             .Information()
             .CreateBootstrapLogger();
