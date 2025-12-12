@@ -41,7 +41,9 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int) statusCode;
 
-            var response = new ApiException(context.Response.StatusCode, errorMessage, ex.StackTrace);
+            var details = (context.User.Identity?.IsAuthenticated ?? false) ? ex.StackTrace : null;
+
+            var response = new ApiException(context.Response.StatusCode, errorMessage, details);
             var json = JsonSerializer.Serialize(response, JsonSerializerOptions);
 
             await context.Response.WriteAsync(json);
