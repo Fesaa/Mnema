@@ -16,6 +16,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<IPagesService, PageService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ISubscriptionService, SubscriptionService>();
+        services.AddScoped<ISearchService, SearchService>();
 
         return services;
     }

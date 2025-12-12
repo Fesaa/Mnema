@@ -1,13 +1,50 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Mnema.Common.Extensions;
 
 public static class HttpClientExtensions
 {
+    
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new ()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+    };
+
+    private static readonly DistributedCacheEntryOptions CacheEntryOptions = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
+    };
 
     extension(HttpClient httpClient)
     {
+        
+        public async Task<Result<TResult, HttpRequestException>> GetCachedAsync<TResult>(string url, IDistributedCache cache, CancellationToken cancellationToken = default)
+        {
+            var cachedResponse = await cache.GetAsJsonAsync<TResult>(url, cancellationToken);
+            if (cachedResponse != null)
+            {
+                return Result<TResult, HttpRequestException>.Ok(cachedResponse);
+            }
+
+            var result = await httpClient.GetAsync<TResult>(url, JsonSerializerOptions, cancellationToken);
+            if (result.IsErr)
+            {
+                return result;
+            }
+
+            var resultValue = result.Unwrap();
+            if (resultValue != null)
+            {
+                await cache.SetAsJsonAsync(url, result.Unwrap(), CacheEntryOptions, cancellationToken);
+            }
+
+            return result;
+        }
 
         public async Task<Result<TResult, HttpRequestException>> GetAsync<TResult>(string url, JsonSerializerOptions jsonSerializerOptions, CancellationToken cancellationToken = default)
         {

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mnema.API;
 using Mnema.API.Providers;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
@@ -8,16 +9,16 @@ using Mnema.Providers;
 
 namespace Mnema.Server.Controllers;
 
-public class ContentController([FromKeyedServices(nameof(Provider.Mangadex))] IRepository repository): BaseApiController
+public class ContentController(ISearchService searchService): BaseApiController
 {
 
     [HttpPost]
     [AllowAnonymous]
-    public async Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, [FromQuery] PaginationParams? pagination)
+    public Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, [FromQuery] PaginationParams? pagination)
     {
         pagination ??= PaginationParams.Default;
-        
-        return await repository.SearchPublications(searchRequest, pagination, HttpContext.RequestAborted);
+
+        return searchService.Search(searchRequest, pagination, HttpContext.RequestAborted);
     }
 
     [HttpGet("stats")]

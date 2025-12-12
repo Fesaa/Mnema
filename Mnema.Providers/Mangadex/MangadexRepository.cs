@@ -17,23 +17,12 @@ namespace Mnema.Providers.Mangadex;
 
 public class MangadexRepository: IRepository
 {
-    
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new ()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        PropertyNameCaseInsensitive = true,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
-    };
-
-    private static readonly DistributedCacheEntryOptions CacheEntryOptions = new()
-    {
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
-    };
 
     private readonly AsyncLazy<ConcurrentDictionary<string, string>> _tagMap;
     private readonly ILogger<MangadexRepository> _logger;
     private readonly IDistributedCache _cache;
     private readonly IHttpClientFactory _httpClientFactory;
+    private HttpClient Client => _httpClientFactory.CreateClient(nameof(Provider.Mangadex));
 
     public MangadexRepository(ILogger<MangadexRepository> logger, IDistributedCache cache, IHttpClientFactory httpClientFactory)
     {
@@ -60,7 +49,7 @@ public class MangadexRepository: IRepository
             .AddPagination(pagination)
             .AddIncludes();
         
-        var result = await GetCachedAsync<SearchResponse>(url.ToString(), cancellationToken);
+        var result = await Client.GetCachedAsync<SearchResponse>(url.ToString(), _cache, cancellationToken);
         if (result.IsErr)
         {
             throw new MnemaException("Failed to search for series", result.Error);
@@ -95,7 +84,7 @@ public class MangadexRepository: IRepository
         var id = request.Id;
         var url = $"/manga/{id}".AddIncludes();
 
-        var result = await GetCachedAsync<MangaResponse>(url, cancellationToken);
+        var result = await Client.GetCachedAsync<MangaResponse>(url.ToString(), _cache, cancellationToken);
         if (result.IsErr)
         {
             _logger.LogError(result.Error, "Failed to retrieve information for manga {Id} - {Url}", id, url);
@@ -156,7 +145,7 @@ public class MangadexRepository: IRepository
             .AddPagination(20, offSet)
             .AddAllContentRatings();
 
-        var result = await GetCachedAsync<ChaptersResponse>(url, cancellationToken);
+        var result = await Client.GetCachedAsync<ChaptersResponse>(url, _cache, cancellationToken);
         if (result.IsErr)
         {
             _logger.LogError(result.Error, "Failed to retrieve chapter information for manga {Id} with offset {OffSet} - {Url}", id, offSet, url);
@@ -230,7 +219,7 @@ public class MangadexRepository: IRepository
     {
         var url = $"/at-home/server/{chapter.Id}";
 
-        var result = await GetCachedAsync<ChapterImagesResponse>(url, cancellationToken);
+        var result = await Client.GetCachedAsync<ChapterImagesResponse>(url, _cache, cancellationToken);
         if (result.IsErr)
         {
             _logger.LogError(result.Error, "Failed to retrieve chapter images for {Id}", chapter.Id);
@@ -268,7 +257,7 @@ public class MangadexRepository: IRepository
     
     private async Task<ConcurrentDictionary<string, string>> LoadTags()
     {
-        var result = await GetCachedAsync<TagResponse>("/manga/tag");
+        var result = await Client.GetCachedAsync<TagResponse>("/manga/tag", _cache);
         if (result.IsErr)
         {
             _logger.LogError(result.Error, "Failed to load tags");
@@ -285,31 +274,6 @@ public class MangadexRepository: IRepository
         }
 
         return dictionary;
-    }
-
-    private async Task<Result<TResult, HttpRequestException>> GetCachedAsync<TResult>(string url, CancellationToken cancellationToken = default)
-    {
-        var cachedResponse = await _cache.GetAsJsonAsync<TResult>(url, cancellationToken);
-        if (cachedResponse != null)
-        {
-            return Result<TResult, HttpRequestException>.Ok(cachedResponse);
-        }
-        
-        var client = _httpClientFactory.CreateClient(nameof(Provider.Mangadex));
-
-        var result = await client.GetAsync<TResult>(url, JsonSerializerOptions, cancellationToken);
-        if (result.IsErr)
-        {
-            return result;
-        }
-
-        var resultValue = result.Unwrap();
-        if (resultValue != null)
-        {
-            await _cache.SetAsJsonAsync(url, result.Unwrap(), CacheEntryOptions, cancellationToken);
-        }
-
-        return result;
     }
 
 }
