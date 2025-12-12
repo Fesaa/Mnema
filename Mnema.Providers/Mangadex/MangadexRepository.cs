@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Flurl;
@@ -14,8 +15,9 @@ using Mnema.Providers.Extensions;
 
 namespace Mnema.Providers.Mangadex;
 
-public class MangadexRepository(ILogger<MangadexRepository> logger, IDistributedCache cache, IHttpClientFactory httpClientFactory): IRepository
+public class MangadexRepository: IRepository
 {
+    
     private static readonly JsonSerializerOptions JsonSerializerOptions = new ()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -23,17 +25,38 @@ public class MangadexRepository(ILogger<MangadexRepository> logger, IDistributed
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
-    private readonly DistributedCacheEntryOptions _cacheEntryOptions = new()
+    private static readonly DistributedCacheEntryOptions CacheEntryOptions = new()
     {
         AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
     };
 
+    private readonly AsyncLazy<ConcurrentDictionary<string, string>> _tagMap;
+    private readonly ILogger<MangadexRepository> _logger;
+    private readonly IDistributedCache _cache;
+    private readonly IHttpClientFactory _httpClientFactory;
+
+    public MangadexRepository(ILogger<MangadexRepository> logger, IDistributedCache cache, IHttpClientFactory httpClientFactory)
+    {
+        _logger = logger;
+        _cache = cache;
+        _httpClientFactory = httpClientFactory;
+        _tagMap = new AsyncLazy<ConcurrentDictionary<string, string>>(LoadTags);
+    }
+
     public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken)
     {
+        var skipNotFoundTags = request.Modifiers.GetBool("SkipNotFoundTags", true);
+        var includeTags = await MapTags(request.Modifiers.GetStrings("includeTags"), skipNotFoundTags);
+        var excludeTags = await MapTags(request.Modifiers.GetStrings("excludeTags"), skipNotFoundTags);
+        
         var url = "/manga".SetQueryParam("title", request.Query)
             .AddRange("status", request.Modifiers.GetStrings("status"))
             .AddRange("contentRating", request.Modifiers.GetStrings("contentRating"))
             .AddRange("publicationDemographic", request.Modifiers.GetStrings("publicationDemographic"))
+            .AddRange("includedTags", includeTags)
+            .SetQueryParam("includedTagsMode", request.Modifiers.GetStringOrDefault("includedTagsMode", "AND"))
+            .AddRange("excludeTags", excludeTags)
+            .SetQueryParam("excludedTagsMode", request.Modifiers.GetStringOrDefault("excludedTagsMode", "OR"))
             .AddPagination(pagination)
             .AddIncludes();
         
@@ -46,11 +69,11 @@ public class MangadexRepository(ILogger<MangadexRepository> logger, IDistributed
         var response = result.Unwrap();
         if (response.Data == null)
         {
-            logger.LogError("Response contained null data, did something go wrong?");
+            _logger.LogError("Response contained null data, did something go wrong?");
             return PagedList<SearchResult>.Empty();
         }
         
-        logger.LogDebug("Found {Amount} items out of {Total} for query {Query}", response.Data.Count, response.Total, request.Query);
+        _logger.LogDebug("Found {Amount} items out of {Total} for query {Query}", response.Data.Count, response.Total, request.Query);
 
         var items = response.Data.Select(searchResult => new SearchResult
         {
@@ -75,7 +98,7 @@ public class MangadexRepository(ILogger<MangadexRepository> logger, IDistributed
         var result = await GetCachedAsync<MangaResponse>(url, cancellationToken);
         if (result.IsErr)
         {
-            logger.LogError(result.Error, "Failed to retrieve information for manga {Id} - {Url}", id, url);
+            _logger.LogError(result.Error, "Failed to retrieve information for manga {Id} - {Url}", id, url);
             throw new MnemaException($"Failed to retrieve information for manga {id}", result.Error);
         }
 
@@ -136,7 +159,7 @@ public class MangadexRepository(ILogger<MangadexRepository> logger, IDistributed
         var result = await GetCachedAsync<ChaptersResponse>(url, cancellationToken);
         if (result.IsErr)
         {
-            logger.LogError(result.Error, "Failed to retrieve chapter information for manga {Id} with offset {OffSet} - {Url}", id, offSet, url);
+            _logger.LogError(result.Error, "Failed to retrieve chapter information for manga {Id} with offset {OffSet} - {Url}", id, offSet, url);
             throw new MnemaException($"Failed to retrieve chapter information for manga {id} with offset {offSet}", result.Error);
         }
 
@@ -203,20 +226,76 @@ public class MangadexRepository(ILogger<MangadexRepository> logger, IDistributed
         };
     }
     
-    public Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var url = $"/at-home/server/{chapter.Id}";
+
+        var result = await GetCachedAsync<ChapterImagesResponse>(url, cancellationToken);
+        if (result.IsErr)
+        {
+            _logger.LogError(result.Error, "Failed to retrieve chapter images for {Id}", chapter.Id);
+            throw new MnemaException("Failed to retrieve chapter images", result.Error);
+        }
+
+        var imageInfo = result.Unwrap();
+        var baseUrl = imageInfo.BaseUrl;
+        var hash = imageInfo.Chapter.Hash;
+
+        return imageInfo.Chapter.Data.Select(image =>
+        {
+            var preferredUrl = $"{baseUrl}/data/{hash}/{image}";
+            // Mangadex is timing out on single chapter images. For these we'll get them from the fallback
+            var fallbackUrl = $"https://uploads.mangadex.org/data/{hash}/{imageInfo}";
+
+            return new DownloadUrl(preferredUrl, fallbackUrl);
+        }).ToList();
+    }
+
+    private async Task<IList<string>> MapTags(IEnumerable<string> tags, bool skipNotFound)
+    {
+        var tagMap = await _tagMap;
+        
+        return tags.Select(tag =>
+        {
+            if (tagMap.TryGetValue(tag, out var value))
+            {
+                return value;
+            }
+
+            return skipNotFound ? null : tag;
+        }).WhereNotNull().ToList();
+    }
+    
+    private async Task<ConcurrentDictionary<string, string>> LoadTags()
+    {
+        var result = await GetCachedAsync<TagResponse>("/manga/tag");
+        if (result.IsErr)
+        {
+            _logger.LogError(result.Error, "Failed to load tags");
+            return [];
+        }
+
+        ConcurrentDictionary<string, string> dictionary = [];
+        foreach (var tagData in result.Unwrap().Data)
+        {
+            if (tagData.Attributes.Name.TryGetValue("en", out var value))
+            {
+                dictionary[value] = tagData.Id;
+            }
+        }
+
+        return dictionary;
     }
 
     private async Task<Result<TResult, HttpRequestException>> GetCachedAsync<TResult>(string url, CancellationToken cancellationToken = default)
     {
-        var cachedResponse = await cache.GetAsJsonAsync<TResult>(url, cancellationToken);
+        var cachedResponse = await _cache.GetAsJsonAsync<TResult>(url, cancellationToken);
         if (cachedResponse != null)
         {
             return Result<TResult, HttpRequestException>.Ok(cachedResponse);
         }
         
-        var client = httpClientFactory.CreateClient(nameof(Provider.Mangadex));
+        var client = _httpClientFactory.CreateClient(nameof(Provider.Mangadex));
 
         var result = await client.GetAsync<TResult>(url, JsonSerializerOptions, cancellationToken);
         if (result.IsErr)
@@ -227,7 +306,7 @@ public class MangadexRepository(ILogger<MangadexRepository> logger, IDistributed
         var resultValue = result.Unwrap();
         if (resultValue != null)
         {
-            await cache.SetAsJsonAsync(url, result.Unwrap(), _cacheEntryOptions, cancellationToken);
+            await _cache.SetAsJsonAsync(url, result.Unwrap(), CacheEntryOptions, cancellationToken);
         }
 
         return result;

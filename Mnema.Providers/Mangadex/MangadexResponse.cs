@@ -225,8 +225,23 @@ internal sealed record RelationShip: Identifiable
     public IDictionary<string, JsonElement> Attributes { get; set; } = new Dictionary<string, JsonElement>();
 }
 
+internal sealed record ChapterImagesResponse
+{
+    public required string Result { get; set; }
+    public required string BaseUrl { get; set; }
+    public required ChapterImagesInfo Chapter { get; set; }
+}
+
+internal sealed record ChapterImagesInfo
+{
+    public required string Hash { get; set; }
+    public required IList<string> Data { get; set; }
+}
+
 internal sealed record SearchResponse: MangadexResponse<IList<MangaData>>;
 
 internal sealed record MangaResponse: MangadexResponse<MangaData>;
 
 internal sealed record ChaptersResponse: MangadexResponse<List<ChapterData>>;
+
+internal sealed record TagResponse: MangadexResponse<List<TagData>>;
