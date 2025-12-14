@@ -20,27 +20,11 @@ public class OnDiskContent
     public string? Volume { get; init; }
 }
 
-public interface IPublicationExtensions
-{
-    Task DownloadCallback(Publication publication);
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="fileName"></param>
-    /// <returns></returns>
-    OnDiskContent? ParseOnDiskFile(string fileName);
-    /// <summary>
-    /// Called during cleanup
-    /// </summary>
-    /// <param name="publication"></param>
-    /// <param name="path"></param>
-    /// <returns></returns>
-    Task Cleanup(Publication publication, string path);
-
-    string? ParseVolumeFromFile(Publication publication, OnDiskContent content);
-}
-
-public partial class Publication(IServiceScope scope, Provider provider, DownloadRequestDto request): IPublication
+internal partial class Publication(
+    IServiceScope scope,
+    Provider provider,
+    DownloadRequestDto request
+    ): IPublication
 {
     public DownloadRequestDto Request { get; } = request;
     
@@ -50,6 +34,7 @@ public partial class Publication(IServiceScope scope, Provider provider, Downloa
     private readonly IRepository _repository = scope.ServiceProvider.GetRequiredKeyedService<IRepository>(provider);
     private readonly IPublicationExtensions _extensions = scope.ServiceProvider.GetRequiredKeyedService<IPublicationExtensions>(provider);
     private readonly IFileSystem _fileSystem = scope.ServiceProvider.GetRequiredService<IFileSystem>();
+    private readonly ISettingsService _settingsService = scope.ServiceProvider.GetRequiredService<ISettingsService>();
 
     private CancellationTokenSource _tokenSource = new ();
     
@@ -149,10 +134,5 @@ public partial class Publication(IServiceScope scope, Provider provider, Downloa
         {
             _logger.LogWarning(ex, "Failed to remove download");
         }
-    }
-
-    public Task DownloadContentAsync(CancellationTokenSource cancellation)
-    {
-        throw new NotImplementedException();
     }
 }

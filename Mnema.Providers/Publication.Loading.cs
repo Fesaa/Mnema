@@ -7,7 +7,7 @@ using Mnema.Models.Publication;
 
 namespace Mnema.Providers;
 
-public partial class Publication 
+internal partial class Publication 
 {
     public async Task LoadMetadataAsync(CancellationTokenSource source)
     {

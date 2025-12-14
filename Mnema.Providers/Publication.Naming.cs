@@ -5,7 +5,7 @@ using Mnema.Models.Publication;
 
 namespace Mnema.Providers;
 
-public partial class Publication
+internal partial class Publication
 {
 
     private string VolumeDir(Chapter chapter) => $"{Title} Vol. {chapter.VolumeMarker}";

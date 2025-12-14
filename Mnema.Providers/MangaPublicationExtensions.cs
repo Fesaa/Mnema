@@ -1,8 +1,25 @@
 namespace Mnema.Providers;
 
-public class MangaPublicationExtensions: IPublicationExtensions
+internal interface IPublicationExtensions
 {
-    public Task DownloadCallback(Publication publication)
+    OnDiskContent? ParseOnDiskFile(string fileName);
+    
+    string? ParseVolumeFromFile(Publication publication, OnDiskContent content);
+    
+    Task DownloadCallback(Publication publication, IoWork ioWork);
+    
+    Task Cleanup(Publication publication, string path);
+
+}
+
+internal interface IPreDownloadHook
+{
+    Task PreDownloadHook(Publication publication);
+}
+
+internal class MangaPublicationExtensions: IPublicationExtensions
+{
+    public Task DownloadCallback(Publication publication, IoWork ioWork)
     {
         throw new NotImplementedException();
     }
