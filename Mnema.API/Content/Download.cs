@@ -9,7 +9,7 @@ public interface IDownloadService
 
     Task CancelDownload(StopRequestDto request);
 
-    Task<IList<DownloadInfo>> GetCurrentContent();
+    Task<IList<DownloadInfo>> GetCurrentContent(Guid userId);
     
 }
 

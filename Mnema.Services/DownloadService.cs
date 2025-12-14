@@ -25,7 +25,7 @@ public class DownloadService(ILogger<DownloadService> logger, IServiceScopeFacto
         return contentManager.StopDownload(request);
     }
 
-    public async Task<IList<DownloadInfo>> GetCurrentContent()
+    public async Task<IList<DownloadInfo>> GetCurrentContent(Guid userId)
     {
         var downloads = new List<DownloadInfo>();
         
@@ -41,21 +41,23 @@ public class DownloadService(ILogger<DownloadService> logger, IServiceScopeFacto
 
             var content = await contentManager.GetAllContent();
             
-            downloads.AddRange(content.Select(c => new DownloadInfo
-            {
-                Provider = provider,
-                Id = c.Id,
-                ContentState = c.State,
-                Name = c.Title,
-                RefUrl = "",
-                Size = "",
-                Downloading = false,
-                Progress = 0,
-                Estimated = 0,
-                SpeedType = SpeedType.Bytes,
-                Speed = 0,
-                DownloadDir = "",
-            }));
+            downloads.AddRange(content
+                .Where(c => c.Request.UserId == userId)
+                .Select(c => new DownloadInfo
+                {
+                    Provider = provider,
+                    Id = c.Id,
+                    ContentState = c.State,
+                    Name = c.Title,
+                    RefUrl = "",
+                    Size = "",
+                    Downloading = false,
+                    Progress = 0,
+                    Estimated = 0,
+                    SpeedType = SpeedType.Bytes,
+                    Speed = 0,
+                    DownloadDir = "",
+                }));
         }
 
         return downloads;

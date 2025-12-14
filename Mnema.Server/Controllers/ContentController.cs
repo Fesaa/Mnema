@@ -36,7 +36,7 @@ public class ContentController(ISearchService searchService, IDownloadService do
     [HttpGet("stats")]
     public async Task<ActionResult<IEnumerable<DownloadInfo>>> Stats()
     {
-        return Ok(await downloadService.GetCurrentContent());
+        return Ok(await downloadService.GetCurrentContent(Guid.Parse("2f461b21-85f0-4e1e-b64b-fb48c774cdb6")));
     }
     
     [AllowAnonymous]
