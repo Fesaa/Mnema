@@ -20,6 +20,8 @@ public interface IContent
     string Title { get; }
     
     ContentState State { get; }
+    
+    DownloadInfo DownloadInfo { get; }
 
     Task Cancel();
 }
@@ -34,4 +36,5 @@ public interface IContentManager
     Task Download(DownloadRequestDto request);
     Task StopDownload(StopRequestDto request);
     Task MoveToDownloadQueue(string id);
+    Task<IEnumerable<IContent>> GetAllContent();
 }

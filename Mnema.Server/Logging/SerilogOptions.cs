@@ -7,21 +7,15 @@ namespace Mnema.Server.Logging;
 
 public class SerilogOptions
 {
-    public const string OutputTemplate = "[Mnema] [{@t:yyyy-MM-dd HH:mm:ss.fff zzz}] [{@l}] {SourceContext} {@m:lj}\n{@x}";
+    public const string OutputTemplate = "[Mnema] [{@t:yyyy-MM-dd HH:mm:ss.fff zzz}]  ({SourceContext}) [{@l}] {@m:lj}\n{@x}";
     public const string LogFile = "config/logs/mnema.log";
 
     private static readonly LoggingLevelSwitch LogLevelSwitch = new ();
-    private static readonly LoggingLevelSwitch MicrosoftLogLevelSwitch = new (LogEventLevel.Error);
-    private static readonly LoggingLevelSwitch MicrosoftHostingLifetimeLogLevelSwitch = new (LogEventLevel.Error);
-    private static readonly LoggingLevelSwitch AspNetCoreLogLevelSwitch = new (LogEventLevel.Error);
 
-    public static LoggerConfiguration CreateConfig(LoggerConfiguration configuration)
+    public static LoggerConfiguration CreateConfig(HostBuilderContext context, LoggerConfiguration configuration)
     {
         return configuration
-            .MinimumLevel.ControlledBy(LogLevelSwitch)
-            .MinimumLevel.Override("Microsoft", MicrosoftLogLevelSwitch)
-            .MinimumLevel.Override("Microsoft.Hosting.Lifetime", MicrosoftHostingLifetimeLogLevelSwitch)
-            .MinimumLevel.Override("Microsoft.AspNetCore.Hosting.Internal.WebHost", AspNetCoreLogLevelSwitch)
+            .ReadFrom.Configuration(context.Configuration)
             .Enrich.FromLogContext()
             .WriteTo.Console(new ExpressionTemplate(OutputTemplate))
             .WriteTo.File(LogFile, rollingInterval: RollingInterval.Day)

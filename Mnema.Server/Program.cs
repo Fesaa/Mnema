@@ -62,9 +62,9 @@ public class Program
 
     private static IHostBuilder CreateHostBuilder(string[] args)
         => Host.CreateDefaultBuilder(args)
-            .UseSerilog((_, _, config) =>
+            .UseSerilog((context, _, config) =>
             {
-                SerilogOptions.CreateConfig(config);
+                SerilogOptions.CreateConfig(context, config);
             })
             .ConfigureAppConfiguration((ctx, conf) =>
             {

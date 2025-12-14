@@ -8,13 +8,13 @@ public sealed record DownloadInfo
     public required string Id { get; init; }
     public required ContentState ContentState { get; init; }
     public required string Name { get; init; }
-    public required string RefUrl { get; init; }
+    public required string? RefUrl { get; init; }
     public required string Size { get; init; }
     public required bool Downloading { get; init; }
-    public required long Progress { get; init; }
-    public required long Estimated { get; init; }
+    public required double Progress { get; init; }
+    public required double Estimated { get; init; }
     public required SpeedType SpeedType { get; init; }
-    public required long Speed { get; init; }
+    public required double Speed { get; init; }
     public required string DownloadDir { get; init; }
     
 }

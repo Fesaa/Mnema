@@ -21,19 +21,22 @@ public class ContentController(ISearchService searchService, IDownloadService do
         return searchService.Search(searchRequest, pagination, HttpContext.RequestAborted);
     }
 
-    [HttpPost("download")]
     [AllowAnonymous]
+    [HttpPost("download")]
     public async Task<IActionResult> Download(DownloadRequestDto request)
     {
+        request.UserId = Guid.Parse("2f461b21-85f0-4e1e-b64b-fb48c774cdb6");
+        
         await downloadService.StartDownload(request);
 
         return Ok();
     }
-
+    
+    [AllowAnonymous]
     [HttpGet("stats")]
-    public IActionResult Stats()
+    public async Task<ActionResult<IEnumerable<DownloadInfo>>> Stats()
     {
-        return Ok();
+        return Ok(await downloadService.GetCurrentContent());
     }
     
 }

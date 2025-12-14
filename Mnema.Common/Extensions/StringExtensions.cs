@@ -20,7 +20,7 @@ public static class StringExtensions
         }
         
 
-        public string OrNonEmpty(params string?[] other)
+        public string OrNonEmpty(params string[] other)
         {
             if (!string.IsNullOrEmpty(s)) return s;
 
@@ -30,6 +30,19 @@ public static class StringExtensions
             }
 
             return string.Empty;
+        }
+
+        public string PadFloat(int n)
+        {
+            if (string.IsNullOrEmpty(s)) return string.Empty;
+            
+            var parts = s.Split(".");
+            if (parts.Length < 2)
+            {
+                return s.PadLeft(n, '0');
+            }
+
+            return parts[0].PadLeft(n, '0') + "." + parts[1];
         }
         
     }

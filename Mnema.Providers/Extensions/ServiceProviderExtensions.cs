@@ -13,9 +13,9 @@ public static class ServiceProviderExtensions
 
         #region Mangadex
 
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(nameof(Provider.Mangadex));
-        services.AddKeyedScoped<IRepository, MangadexRepository>(nameof(Provider.Mangadex));
-        services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(nameof(Provider.Mangadex));
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Mangadex);
+        services.AddKeyedScoped<IRepository, MangadexRepository>(Provider.Mangadex);
+        services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Mangadex);
         services.AddHttpClient(nameof(Provider.Mangadex), client =>
         {
             client.BaseAddress = new Uri("https://api.mangadex.org");

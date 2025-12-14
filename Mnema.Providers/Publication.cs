@@ -1,11 +1,9 @@
-
-using System.Diagnostics;
+using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
-using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
@@ -22,23 +20,9 @@ public class OnDiskContent
     public string? Volume { get; init; }
 }
 
-internal static class RequestConstants
-{
-    public const string LanguageKey                        = "tl-lang";
-    public const string AllowNonMatchingScanlationGroupKey = "allow_non_matching_scanlation_group";
-    public const string DownloadOneShotKey                 = "download_one_shot";
-    public const string IncludeNotMatchedTagsKey           = "include_not_matched_tags";
-    public const string IncludeCover                       = "include_cover";
-    public const string UpdateCover                        = "update_cover";
-    public const string TitleOverride                      = "title_override";
-    public const string AssignEmptyVolumes                 = "assign_empty_volumes";
-    public const string ScanlationGroupKey                 = "scanlation_group";
-    public const string SkipVolumeWithoutChapter           = "skip_volume_without_chapter";
-}
-
 public interface IPublicationExtensions
 {
-    Task DownloadCallback();
+    Task DownloadCallback(Publication publication);
     /// <summary>
     /// 
     /// </summary>
@@ -48,63 +32,84 @@ public interface IPublicationExtensions
     /// <summary>
     /// Called during cleanup
     /// </summary>
+    /// <param name="publication"></param>
     /// <param name="path"></param>
     /// <returns></returns>
-    Task Cleanup(string path);
+    Task Cleanup(Publication publication, string path);
+
+    string? ParseVolumeFromFile(Publication publication, OnDiskContent content);
 }
 
 public partial class Publication(IServiceScope scope, Provider provider, DownloadRequestDto request): IPublication
 {
-    private ILogger<Publication> Logger { get; } = scope.ServiceProvider.GetRequiredService<ILogger<Publication>>();
-    private IUnitOfWork UnitOfWork { get; } = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-    private IPublicationManager PublicationManager { get; } = (IPublicationManager) scope.ServiceProvider.GetRequiredKeyedService<IContentManager>(provider.ToString());
-    private IRepository Repository { get; } = scope.ServiceProvider.GetRequiredKeyedService<IRepository>(provider.ToString());
-    public IPublicationExtensions Extensions { get; } = scope.ServiceProvider.GetRequiredKeyedService<IPublicationExtensions>(provider.ToString());
-    private DownloadRequestDto Request { get; } = request;
+    private readonly ILogger<Publication> _logger = scope.ServiceProvider.GetRequiredService<ILogger<Publication>>();
+    private readonly IUnitOfWork _unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+    private readonly IPublicationManager _publicationManager = (IPublicationManager) scope.ServiceProvider.GetRequiredKeyedService<IContentManager>(provider);
+    private readonly IRepository _repository = scope.ServiceProvider.GetRequiredKeyedService<IRepository>(provider);
+    private readonly IPublicationExtensions _extensions = scope.ServiceProvider.GetRequiredKeyedService<IPublicationExtensions>(provider);
+    private readonly IFileSystem _fileSystem = scope.ServiceProvider.GetRequiredService<IFileSystem>();
 
-    public ContentState State { get; private set; } = ContentState.Queued;
+    private readonly DownloadRequestDto _request = request;
+    private Subscription? _subscription;
+    private UserPreferences _preferences = null!;
+    private Series? _series;
 
-    private UserPreferences Preferences { get; set; } = null!;
-    private Series? Series { get; set; } = null;
-
-    private TriState HasDuplicateVolumes { get; set; } = TriState.NotSet;
+    private bool? _hasDuplicateVolumes  = null;
 
     /// <summary>
     /// List of <see cref="Chapter.Id"/> that are queued for downloading
     /// </summary>
-    private IList<string> QueuedChapters { get; set; } = [];
+    private IList<string> _queuedChapters = [];
     /// <summary>
     /// List of directory paths pointing to chapters we've downloaded this run 
     /// </summary>
-    public IList<string> DownloadedPaths { get; set; } = [];
+    public IList<string> DownloadedPaths = [];
     /// <summary>
     /// List of paths pointing to chapters already on disk before this run
     /// </summary>
-    public IList<OnDiskContent> ExistingContent { get; set; } = [];
+    public IList<OnDiskContent> _existingContent = [];
     /// <summary>
     /// List of paths pointing to chapters that got replaced this run
     /// </summary>
-    public IList<string> ToRemovePaths { get; set; } = [];
+    public IList<string> ToRemovePaths = [];
     /// <summary>
     /// List of <see cref="Chapter.Id"/> selected by the user in the UI
     /// </summary>
-    public IList<string> UserSelectedIds { get; set; } = [];
+    private IList<string> _userSelectedIds = [];
 
-    private int FailedDownloadsTracker { get; set; } = 0;
-    private SpeedTracker? SpeedTracker { get; set; } = null;
+    private int _failedDownloadsTracker = 0;
+    private SpeedTracker? _speedTracker = null;
 
-    public string Id => Series != null ? Series.Id : Request.Id;
+    public ContentState State { get; private set; } = ContentState.Queued;
 
-    public string Title =>  Series == null
-        ? Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(Request.TempTitle, Request.Id) 
-        : Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(Series.Title, Request.Id);
+    public DownloadInfo DownloadInfo => new DownloadInfo
+    {
+        Provider = provider,
+        Id = Id,
+        ContentState = State,
+        Name = Title,
+        RefUrl = _series?.RefUrl,
+        Size = _userSelectedIds.Count > 0 ? $"{_userSelectedIds.Count} Chapters" : $"{_queuedChapters.Count} Chapters",
+        Downloading = State == ContentState.Downloading,
+        Progress = Math.Floor(_speedTracker?.Progress() ?? 0),
+        Estimated = 0,
+        SpeedType = SpeedType.Images,
+        Speed = Math.Floor(_speedTracker?.Speed() ?? 0),
+        DownloadDir = DownloadDir,
+    };
 
-    public string DownloadDir => Series != null ? Path.Join(Request.BaseDir, Title) : Request.BaseDir;
+    public string Id => _series != null ? _series.Id : _request.Id;
 
-    public OnDiskContent? GetContentByName(string name) => ExistingContent.FirstOrDefault(c
+    public string Title =>  _series == null
+        ? _request.GetString(RequestConstants.TitleOverride).OrNonEmpty(_request.TempTitle, _request.Id)
+        : _request.GetString(RequestConstants.TitleOverride).OrNonEmpty(_series.Title, _request.Id);
+
+    public string DownloadDir => _series != null ? Path.Join(_request.BaseDir, Title) : _request.BaseDir;
+
+    public OnDiskContent? GetContentByName(string name) => _existingContent.FirstOrDefault(c
         => Path.GetFileNameWithoutExtension(c.Name) == name);
 
-    public OnDiskContent? GetContentByVolumeAndChapter(string volume, string chapter) => ExistingContent.FirstOrDefault(c =>
+    public OnDiskContent? GetContentByVolumeAndChapter(string volume, string chapter) => _existingContent.FirstOrDefault(c =>
     {
         if (c.Volume == volume && c.Chapter == chapter) return true;
 
@@ -119,7 +124,7 @@ public partial class Publication(IServiceScope scope, Provider provider, Downloa
     
     public async Task Cancel()
     {
-        Logger.LogTrace("Stopping download of {Id} - {Title}", Id, Title);
+        _logger.LogTrace("Stopping download of {Id} - {Title}", Id, Title);
 
         var req = new StopRequestDto
         {
@@ -130,29 +135,12 @@ public partial class Publication(IServiceScope scope, Provider provider, Downloa
 
         try
         {
-            await PublicationManager.StopDownload(req);
+            await _publicationManager.StopDownload(req);
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "Failed to remove download");
+            _logger.LogWarning(ex, "Failed to remove download");
         }
-    }
-
-    public async Task LoadMetadataAsync(CancellationToken cancellationToken)
-    {
-        State = ContentState.Loading;
-
-        var sw = Stopwatch.StartNew();
-
-        var preferences = await UnitOfWork.UserRepository.GetPreferences(Request.UserId);
-        if (preferences == null)
-        {
-            Logger.LogWarning("Failed to load user preferences, stopping downloading");
-            await Cancel();
-            return;
-        }
-
-        Preferences = preferences;
     }
 
     public Task DownloadContentAsync(CancellationToken cancellation)

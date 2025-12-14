@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using System.IO.Compression;
 using System.Reflection;
 using Microsoft.AspNetCore.Http.Features;
@@ -23,6 +24,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddProviders();
         services.AddMnemaServices();
+
+        services.AddScoped<IFileSystem, FileSystem>();
         
         services.AddControllers(options =>
         {

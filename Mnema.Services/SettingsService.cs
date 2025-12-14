@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Mnema.API;
-using Mnema.API;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
 

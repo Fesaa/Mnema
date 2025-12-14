@@ -110,8 +110,8 @@ public class MangadexRepository: IRepository
         {
             Id = chapter.Id,
             Title = chapter.Attributes.Title,
-            VolumeCount = chapter.Attributes.Volume,
-            ChapterCount = chapter.Attributes.Chapter,
+            VolumeMarker = chapter.Attributes.Volume,
+            ChapterMarker = chapter.Attributes.Chapter,
             ReleaseDate = chapter.Attributes.PublishedAt,
             Tags = [],
             People = [],

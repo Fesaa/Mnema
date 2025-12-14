@@ -47,7 +47,6 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
             throw new MnemaException("Content already exists");
         }
 
-        // Create publication from request (you'll need to implement this factory)
         var publication = CreatePublication(request);
         
         if (!_content.TryAdd(publication.Id, publication))
@@ -89,6 +88,11 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
         }
 
         await AddToDownloadQueueAsync(publication);
+    }
+
+    public Task<IEnumerable<IContent>> GetAllContent()
+    {
+        return Task.FromResult<IEnumerable<IContent>>(_content.Values.ToList());
     }
 
     public Task<IPublication> GetPublicationById(string id)

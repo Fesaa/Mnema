@@ -3,6 +3,11 @@ namespace Mnema.Common;
 public class MetadataBag: Dictionary<string, IList<string>>
 {
 
+    public void SetValue(string key, params string[] value)
+    {
+        Add(key, value.ToList());
+    }
+
     public IEnumerable<string> GetStrings(string key)
     {
         return TryGetValue(key, out var list) ? list : [];
