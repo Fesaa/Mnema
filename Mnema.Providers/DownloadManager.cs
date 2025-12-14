@@ -155,19 +155,25 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
                     continue;
                 }
 
-                var loadingTask = _loadingChannel.Reader.ReadAsync(_cts.Token).AsTask();
-                var downloadingTask = _downloadingChannel.Reader.ReadAsync(_cts.Token).AsTask();
+                if (_downloadingChannel.Reader.TryRead(out var downloadingContent))
+                {
+                    await downloadingContent.DownloadContentAsync(_cts.Token);
+                    continue;
+                }
+
+                var loadingTask = _loadingChannel.Reader.WaitToReadAsync(_cts.Token).AsTask();
+                var downloadingTask = _downloadingChannel.Reader.WaitToReadAsync(_cts.Token).AsTask();
 
                 var completedTask = await Task.WhenAny(loadingTask, downloadingTask);
 
                 if (completedTask == loadingTask)
                 {
-                    var content = await loadingTask;
+                    var content = await _loadingChannel.Reader.ReadAsync();
                     await ProcessLoadInfoAsync(content);
                 }
                 else
                 {
-                    var content = await downloadingTask;
+                    var content = await _downloadingChannel.Reader.ReadAsync();
                     await content.DownloadContentAsync(_cts.Token);
                 }
             }

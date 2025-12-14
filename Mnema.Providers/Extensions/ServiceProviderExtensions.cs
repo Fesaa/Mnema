@@ -24,7 +24,34 @@ public static class ServiceProviderExtensions
         });
 
         #endregion
-        
+
+        #region Webtoons
+
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Webtoons);
+        services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Webtoons);
+
+        #endregion
+
+        #region Dynasty
+
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Dynasty);
+        services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Dynasty);
+
+        #endregion
+
+        #region Bato
+
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Bato);
+        services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Bato);
+
+        #endregion
+
+        #region MangaBuddy
+
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.MangaBuddy);
+        services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.MangaBuddy);
+
+        #endregion
 
         return services;
     }
