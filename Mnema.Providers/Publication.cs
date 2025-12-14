@@ -42,6 +42,8 @@ public interface IPublicationExtensions
 
 public partial class Publication(IServiceScope scope, Provider provider, DownloadRequestDto request): IPublication
 {
+    public DownloadRequestDto Request { get; } = request;
+    
     private readonly ILogger<Publication> _logger = scope.ServiceProvider.GetRequiredService<ILogger<Publication>>();
     private readonly IUnitOfWork _unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
     private readonly IPublicationManager _publicationManager = (IPublicationManager) scope.ServiceProvider.GetRequiredKeyedService<IContentManager>(provider);
@@ -50,8 +52,7 @@ public partial class Publication(IServiceScope scope, Provider provider, Downloa
     private readonly IFileSystem _fileSystem = scope.ServiceProvider.GetRequiredService<IFileSystem>();
 
     private CancellationTokenSource _tokenSource = new ();
-
-    private readonly DownloadRequestDto _request = request;
+    
     private Subscription? _subscription;
     private UserPreferences _preferences = null!;
     private Series? _series;
@@ -100,13 +101,13 @@ public partial class Publication(IServiceScope scope, Provider provider, Downloa
         DownloadDir = DownloadDir,
     };
 
-    public string Id => _series != null ? _series.Id : _request.Id;
+    public string Id => _series != null ? _series.Id : Request.Id;
 
     public string Title =>  _series == null
-        ? _request.GetString(RequestConstants.TitleOverride).OrNonEmpty(_request.TempTitle, _request.Id)
-        : _request.GetString(RequestConstants.TitleOverride).OrNonEmpty(_series.Title, _request.Id);
+        ? Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(Request.TempTitle, Request.Id)
+        : Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(_series.Title, Request.Id);
 
-    private string DownloadDir => _series != null ? Path.Join(_request.BaseDir, Title) : _request.BaseDir;
+    private string DownloadDir => _series != null ? Path.Join(Request.BaseDir, Title) : Request.BaseDir;
 
     private OnDiskContent? GetContentByName(string name) => _existingContent.FirstOrDefault(c
         => Path.GetFileNameWithoutExtension(c.Name) == name);
@@ -130,11 +131,14 @@ public partial class Publication(IServiceScope scope, Provider provider, Downloa
 
         await _tokenSource.CancelAsync();
 
+        if (await _publicationManager.GetPublicationById(Id) == null) return;
+
         var req = new StopRequestDto
         {
             Provider = provider,
             Id = Id,
             DeleteFiles = true,
+            UserId = Request.UserId,
         };
 
         try

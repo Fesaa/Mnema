@@ -39,4 +39,15 @@ public class ContentController(ISearchService searchService, IDownloadService do
         return Ok(await downloadService.GetCurrentContent());
     }
     
+    [AllowAnonymous]
+    [HttpPost("stop")]
+    public async Task<IActionResult> Stop(StopRequestDto request)
+    {
+        request.UserId = Guid.Parse("2f461b21-85f0-4e1e-b64b-fb48c774cdb6");
+
+        await downloadService.CancelDownload(request);
+        
+        return Ok();
+    }
+    
 }

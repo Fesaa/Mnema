@@ -19,7 +19,10 @@ public class DownloadService(ILogger<DownloadService> logger, IServiceScopeFacto
 
     public Task CancelDownload(StopRequestDto request)
     {
-        throw new NotImplementedException();
+        using var scope = scopeFactory.CreateScope();
+        var contentManager = scope.ServiceProvider.GetRequiredKeyedService<IContentManager>(request.Provider);
+
+        return contentManager.StopDownload(request);
     }
 
     public async Task<IList<DownloadInfo>> GetCurrentContent()

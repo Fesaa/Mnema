@@ -69,7 +69,12 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
     {
         if (!_content.TryRemove(request.Id, out var publication))
         {
-            throw new MnemaException("Content not found");
+            throw new NotFoundException();
+        }
+
+        if (publication.Request.UserId != request.UserId)
+        {
+            throw new ForbiddenException();
         }
 
         _logger.LogInformation("Removing content: {Id} - {Title}, DeleteFiles: {DeleteFiles}",
@@ -95,14 +100,14 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
         return Task.FromResult<IEnumerable<IContent>>(_content.Values.ToList());
     }
 
-    public Task<IPublication> GetPublicationById(string id)
+    public Task<IPublication?> GetPublicationById(string id)
     {
         if (!_content.TryGetValue(id, out var publication))
         {
-            throw new MnemaException("Content not found");
+            return Task.FromResult<IPublication?>(null);
         }
 
-        return Task.FromResult(publication);
+        return Task.FromResult<IPublication?>(publication);
     }
 
     private async Task AddToLoadingQueueAsync(IPublication publication)

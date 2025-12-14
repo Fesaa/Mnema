@@ -2,7 +2,7 @@ namespace Mnema.API.Content;
 
 public interface IPublicationManager: IContentManager
 {
-    Task<IPublication> GetPublicationById(string id);
+    Task<IPublication?> GetPublicationById(string id);
 
 }
 

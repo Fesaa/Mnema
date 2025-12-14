@@ -12,7 +12,7 @@ public partial class Publication
 
     private string ChapterPath(Chapter chapter)
     {
-        var basePath = Path.Join(_publicationManager.BaseDir, _request.BaseDir, Title);
+        var basePath = Path.Join(_publicationManager.BaseDir, Request.BaseDir, Title);
 
         if (!string.IsNullOrEmpty(chapter.VolumeMarker) && !true) // TODO: Port config switches
         {

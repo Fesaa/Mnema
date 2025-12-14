@@ -19,7 +19,7 @@ public partial class Publication
         
         State = ContentState.Loading;
         
-        var preferences = await _unitOfWork.UserRepository.GetPreferences(_request.UserId);
+        var preferences = await _unitOfWork.UserRepository.GetPreferences(Request.UserId);
         if (preferences == null)
         {
             _logger.LogWarning("Failed to load user preferences, stopping downloading");
@@ -40,9 +40,9 @@ public partial class Publication
             return;
         }
 
-        if (_request.SubscriptionId != null)
+        if (Request.SubscriptionId != null)
         {
-            _subscription = await _unitOfWork.SubscriptionRepository.GetSubscription(_request.SubscriptionId.Value);
+            _subscription = await _unitOfWork.SubscriptionRepository.GetSubscription(Request.SubscriptionId.Value);
             if (_subscription == null)
             {
                 throw new MnemaException("Invalid subscription linked to download");
@@ -58,7 +58,7 @@ public partial class Publication
         
         FilterAlreadyDownloadedContent(cancellationToken);
 
-        if (_queuedChapters.Count == 0 && _request.DownloadMetadata.StartImmediately)
+        if (_queuedChapters.Count == 0 && Request.DownloadMetadata.StartImmediately)
         {
             _logger.LogDebug("No chapters to download for {Title}, stopping download", Title);
             State = ContentState.Waiting;
@@ -66,7 +66,7 @@ public partial class Publication
             return;
         }
 
-        State = _request.DownloadMetadata.StartImmediately ? ContentState.Ready : ContentState.Waiting;
+        State = Request.DownloadMetadata.StartImmediately ? ContentState.Ready : ContentState.Waiting;
         
         _logger.LogDebug("Loading metadata for {Title}, {ToDownload}/{Total} chapters in {Elapsed}ms",
             Title, _queuedChapters.Count, _series!.Chapters.Count, sw.ElapsedMilliseconds);
@@ -143,7 +143,7 @@ public partial class Publication
             if (content == null)
             {
                 // Some providers, *dynasty*, have terrible naming schemes for specials.
-                if (_request.GetBool(RequestConstants.SkipVolumeWithoutChapter) && !string.IsNullOrEmpty(chapter.VolumeMarker))
+                if (Request.GetBool(RequestConstants.SkipVolumeWithoutChapter) && !string.IsNullOrEmpty(chapter.VolumeMarker))
                 {
                     return !string.IsNullOrEmpty(chapter.ChapterMarker);
                 }
@@ -174,7 +174,7 @@ public partial class Publication
     {
         var sw = Stopwatch.StartNew();
 
-        _series = await _repository.SeriesInfo(_request, cancellationToken);
+        _series = await _repository.SeriesInfo(Request, cancellationToken);
 
         if (string.IsNullOrWhiteSpace(_series.Title))
         {
@@ -183,7 +183,7 @@ public partial class Publication
 
         _logger.LogDebug("Successfully loaded series information for {SeriesName} with {Chapters} chapters in {Elapsed}ms", _series.Title, _series.Chapters.Count, sw.ElapsedMilliseconds);
 
-        if (!_request.GetBool(RequestConstants.AssignEmptyVolumes)) return;
+        if (!Request.GetBool(RequestConstants.AssignEmptyVolumes)) return;
 
         var hasAnyVolumes = _series.Chapters.Any(c => !string.IsNullOrEmpty(c.VolumeMarker));
         if (!hasAnyVolumes) return;

@@ -21,6 +21,8 @@ public interface IContent
     
     ContentState State { get; }
     
+    DownloadRequestDto Request { get; }
+    
     DownloadInfo DownloadInfo { get; }
 
     Task Cancel();
