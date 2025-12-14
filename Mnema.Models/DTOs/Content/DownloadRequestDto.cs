@@ -11,7 +11,7 @@ public sealed record DownloadRequestDto
     public required string Id { get; set; }
     public required string BaseDir { get; set; }
     public required string TempTitle { get; set; }
-    public required DownloadMetadataDto     DownloadMetadata { get; set; }
+    public required DownloadMetadataDto DownloadMetadata { get; set; }
 
     [JsonIgnore]
     public Guid UserId;

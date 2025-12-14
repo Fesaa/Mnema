@@ -1,10 +1,12 @@
 using System.IO.Abstractions;
+using System.Threading.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Extensions;
+using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
@@ -40,6 +42,8 @@ internal partial class Publication(
     
     private Subscription? _subscription;
     private UserPreferences _preferences = null!;
+    private ServerSettingsDto _settings = null!;
+    private FixedWindowRateLimiter _limiter = null!;
     private Series? _series;
 
     private bool? _hasDuplicateVolumes  = null;
@@ -118,21 +122,21 @@ internal partial class Publication(
 
         if (await _publicationManager.GetPublicationById(Id) == null) return;
 
-        var req = new StopRequestDto
-        {
-            Provider = provider,
-            Id = Id,
-            DeleteFiles = true,
-            UserId = Request.UserId,
-        };
-
         try
         {
-            await _publicationManager.StopDownload(req);
+            await _publicationManager.StopDownload(StopRequest(true));
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to remove download");
         }
     }
+
+    private StopRequestDto StopRequest(bool deleteFiles) => new()
+    {
+        Provider = provider,
+        Id = Id,
+        DeleteFiles = deleteFiles,
+        UserId = Request.UserId,
+    };
 }

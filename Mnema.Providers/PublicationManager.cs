@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.Content;
 
 namespace Mnema.Providers;
 
@@ -20,7 +21,7 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _workerTask;
     
-    public string BaseDir { get; private set; } = null!;
+    public string BaseDir { get; private set; } = "/Users/amelia/GitHub/Mnema/downloads";
 
     public PublicationManager(ILogger<PublicationManager> logger, IServiceScopeFactory scopeFactory)
     {
@@ -162,7 +163,7 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
 
                 if (_downloadingChannel.Reader.TryRead(out var downloadingContent))
                 {
-                    await downloadingContent.DownloadContentAsync(CancellationTokenSource.CreateLinkedTokenSource(_cts.Token));
+                    await ProcessDownloadInfoAsync(downloadingContent);
                     continue;
                 }
 
@@ -179,7 +180,7 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
                 else
                 {
                     var content = await _downloadingChannel.Reader.ReadAsync();
-                    await content.DownloadContentAsync(CancellationTokenSource.CreateLinkedTokenSource(_cts.Token));
+                    await ProcessDownloadInfoAsync(content);
                 }
             }
         }
@@ -207,14 +208,51 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
     /// </summary>
     private async Task ProcessLoadInfoAsync(IPublication publication)
     {
-        _logger.LogDebug("Starting load info for {Id} - {Title}", publication.Id, publication.Title);
-
-        await publication.LoadMetadataAsync(CancellationTokenSource.CreateLinkedTokenSource(_cts.Token));
-
-        if (publication.State == ContentState.Ready)
+        try
         {
-            _logger.LogTrace("Content {Id} is ready after loading, moving to download queue", publication.Id);
-            await AddToDownloadQueueAsync(publication);
+            _logger.LogDebug("Starting load info for {Id} - {Title}", publication.Id, publication.Title);
+
+            await publication.LoadMetadataAsync(CancellationTokenSource.CreateLinkedTokenSource(_cts.Token));
+
+            if (publication.State == ContentState.Ready)
+            {
+                _logger.LogTrace("Content {Id} is ready after loading, moving to download queue", publication.Id);
+                await AddToDownloadQueueAsync(publication);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unhandled exceptions while loading metadata {Title}", publication.Title);
+
+            await StopDownload(new StopRequestDto
+            {
+                Provider = publication.Request.Provider,
+                Id = publication.Id,
+                DeleteFiles = true,
+                UserId = publication.Request.UserId,
+            });
+        }
+    }
+
+    private async Task ProcessDownloadInfoAsync(IPublication publication)
+    {
+        try
+        {
+            _logger.LogDebug("Starting download for {Id} - {Title}", publication.Id, publication.Title);
+
+            await publication.DownloadContentAsync(CancellationTokenSource.CreateLinkedTokenSource(_cts.Token));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unhandled exceptions while downloading {Title}", publication.Title);
+
+            await StopDownload(new StopRequestDto
+            {
+                Provider = publication.Request.Provider,
+                Id = publication.Id,
+                DeleteFiles = true,
+                UserId = publication.Request.UserId,
+            });
         }
     }
 

@@ -10,5 +10,5 @@ public sealed record StopRequestDto
     public required bool DeleteFiles { get; init; }
     
     [JsonIgnore]
-    public Guid UserId { get; set; }
+    public required Guid UserId { get; set; }
 }

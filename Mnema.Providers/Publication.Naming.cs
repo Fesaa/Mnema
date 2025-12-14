@@ -26,7 +26,7 @@ internal partial class Publication
 
     private string DefaultFileName(Chapter chapter)
     {
-        var fileName = chapter.Title;
+        var fileName = Title;
 
         if (!string.IsNullOrEmpty(chapter.VolumeMarker) && ShouldIncludeVolumeMarker())
         {
@@ -64,7 +64,7 @@ internal partial class Publication
     {
         var fileName = $"{Title} {chapter.Title}".Trim();
         
-        if (!true)  // TODO: Port config switches
+        if (!false)  // TODO: Port config switches
         {
             fileName += " (OneShot)";
         }

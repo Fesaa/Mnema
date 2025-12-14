@@ -1,20 +1,32 @@
 using System.Diagnostics;
 using System.Threading.Channels;
+using System.Threading.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
-using Mnema.Models.Entities;
 using Mnema.Models.Publication;
 
 namespace Mnema.Providers;
 
-internal sealed record IoWork();
+internal sealed record IoWork(Stream Stream, string FilePath, string Url, int Idx);
+
+internal sealed record DownloadWork(int Idx, DownloadUrl Url);
+
+internal sealed record DownloadContext
+{
+    public ChannelReader<DownloadWork> Reader { get; init; }
+    public ChannelWriter<IoWork> Writer { get; init; }
+    public Chapter Chapter { get; init; }
+}
 
 internal partial class Publication
 {
+
+    private readonly IHttpClientFactory _httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
     
     public Task DownloadContentAsync(CancellationTokenSource tokenSource)
     {
@@ -79,7 +91,15 @@ internal partial class Publication
 
         var sw = Stopwatch.StartNew();
 
-        var maxImages = await _settingsService.GetSettingsAsync<int>(ServerSettingKey.MaxConcurrentImages);
+        _settings = await _settingsService.GetSettingsAsync();
+        _limiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = _settings.MaxConcurrentImages,
+            Window = TimeSpan.FromSeconds(1),
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 10000,
+        });
+        var maxImages = _settings.MaxConcurrentImages;
 
         var ioChannel = Channel.CreateBounded<IoWork>(maxImages * 2);
 
@@ -87,6 +107,12 @@ internal partial class Publication
         workers.Add(ProcessDownloads(ioChannel));
 
         await Task.WhenAll(workers);
+        
+        _logger.LogInformation("Downloaded all chapters in {Elapsed}ms", sw.ElapsedMilliseconds);
+
+        State = ContentState.Cleanup;
+
+        await _publicationManager.StopDownload(StopRequest(false));
     }
 
     private async Task IoWorker(Channel<IoWork> channel)
@@ -95,7 +121,9 @@ internal partial class Publication
         {
             try
             {
-                await _extensions.DownloadCallback(this, ioWork);
+                var filePath = await _extensions.DownloadCallback(this, ioWork, _tokenSource.Token);
+                
+                _logger.LogTrace("Wrote {FilePath} / {Idx} to disk", filePath, ioWork.Idx);
             }
             catch (Exception ex)
             {
@@ -128,7 +156,137 @@ internal partial class Publication
 
     private async Task DownloadChapter(Channel<IoWork> channel, Chapter chapter)
     {
+
+        var urls = await _repository.ChapterUrls(chapter, _tokenSource.Token);
+
+        if (urls.Count == 0)
+        {
+            _logger.LogWarning("Chapter has no urls to download. Unexpected? Report this!");
+            return;
+        }
+
+        var chapterPath = ChapterPath(chapter);
+        _fileSystem.Directory.CreateDirectory(chapterPath);
         
+        // Mark as downloaded as soon as the directory is created as we need to remove it in case of an error
+        DownloadedPaths.Add(chapterPath);
+
+        try
+        {
+            await WriteMetadataForChapter(chapter);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "An exception occured while writing metadata");
+        }
+        
+        _logger.LogDebug("Starting download of chapter {ChapterMarker} with {Count} urls", chapter.ChapterMarker, urls.Count);
+
+        var sw = Stopwatch.StartNew();
+        
+        _speedTracker!.SetIntermediate(urls.Count);
+
+        var urlChannel = BuildUrlChannel(urls);
+
+        await Task.WhenAll(Enumerable.Range(0, _settings.MaxConcurrentImages)
+            .Select(_ => DownloadWorker(new DownloadContext
+            {
+                Reader = urlChannel.Reader,
+                Writer = channel.Writer,
+                Chapter = chapter,
+            })));
+        
+        _logger.LogDebug("Finished downloading chapter {Chapter} in {Elasped}ms", chapter.ChapterMarker, sw.ElapsedMilliseconds);
+
+        if (urls.Count < 5)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1));
+        }
+        
+        _speedTracker!.ClearIntermediate();
+        _speedTracker!.Increment();
+    }
+
+    private async Task DownloadWorker(DownloadContext ctx)
+    {
+        var failedTasks = await ProcessDownloadsAsync(ctx, isRetry: false);
+        
+        if (failedTasks.Count == 0)
+        {
+            return;
+        }
+
+        _logger.LogDebug("Some tasks failed to complete, retrying. Count: {Count}", failedTasks.Count);
+
+        var retryChannel = Channel.CreateUnbounded<DownloadWork>();
+        foreach (var task in failedTasks)
+        {
+            retryChannel.Writer.TryWrite(task);
+        }
+        retryChannel.Writer.Complete();
+
+        await ProcessDownloadsAsync(ctx, isRetry: true);
+    }
+
+    private async Task<List<DownloadWork>> ProcessDownloadsAsync(DownloadContext ctx, bool isRetry)
+    {
+        var failedTasks = new List<DownloadWork>();
+        var client = _httpClientFactory.CreateClient(provider.ToString());
+
+        await foreach (var task in ctx.Reader.ReadAllAsync(_tokenSource.Token))
+        {
+            if (_tokenSource.Token.IsCancellationRequested)
+            {
+                return failedTasks;
+            }
+
+            using var lease = await _limiter.AcquireAsync(cancellationToken: _tokenSource.Token);
+            if (!lease.IsAcquired)
+            {
+                _logger.LogWarning("Failed to acquire rate limiter lease for {Url}", task.Url);
+                continue;
+            }
+
+            var url = isRetry && !string.IsNullOrEmpty(task.Url.FallbackUrl) ? task.Url.FallbackUrl : task.Url.Url;
+
+            _logger.LogTrace("Processing task {Idx} with URL {Url}", task.Idx, url);
+
+            try
+            {
+                var stream = await client.GetStreamAsync(url);
+
+                _speedTracker!.IncrementIntermediate();
+
+                await ctx.Writer.WriteAsync(new IoWork(stream, ChapterPath(ctx.Chapter), url, task.Idx));
+            }
+            catch (Exception ex)
+            {
+                if (isRetry) throw;
+                
+                _logger.LogWarning(ex, "Task {Idx} on {Url} has failed failed for the first time, retrying later", task.Idx, url);
+                failedTasks.Add(task);
+            }
+        }
+
+        return failedTasks;
+    }
+
+    private Channel<DownloadWork> BuildUrlChannel(IEnumerable<DownloadUrl> urls)
+    {
+        var channel = Channel.CreateUnbounded<DownloadWork>();
+
+        var idx = 0;
+        foreach (var url in urls)
+        {
+            if (!channel.Writer.TryWrite(new DownloadWork(++idx, url)))
+            {
+                _logger.LogWarning("Failed to write {Url} to channel", url);
+            }
+        }
+
+        channel.Writer.Complete();
+        
+        return channel;
     }
     
 }
