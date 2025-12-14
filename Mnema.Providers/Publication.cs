@@ -49,6 +49,8 @@ public partial class Publication(IServiceScope scope, Provider provider, Downloa
     private readonly IPublicationExtensions _extensions = scope.ServiceProvider.GetRequiredKeyedService<IPublicationExtensions>(provider);
     private readonly IFileSystem _fileSystem = scope.ServiceProvider.GetRequiredService<IFileSystem>();
 
+    private CancellationTokenSource _tokenSource = new ();
+
     private readonly DownloadRequestDto _request = request;
     private Subscription? _subscription;
     private UserPreferences _preferences = null!;
@@ -104,12 +106,12 @@ public partial class Publication(IServiceScope scope, Provider provider, Downloa
         ? _request.GetString(RequestConstants.TitleOverride).OrNonEmpty(_request.TempTitle, _request.Id)
         : _request.GetString(RequestConstants.TitleOverride).OrNonEmpty(_series.Title, _request.Id);
 
-    public string DownloadDir => _series != null ? Path.Join(_request.BaseDir, Title) : _request.BaseDir;
+    private string DownloadDir => _series != null ? Path.Join(_request.BaseDir, Title) : _request.BaseDir;
 
-    public OnDiskContent? GetContentByName(string name) => _existingContent.FirstOrDefault(c
+    private OnDiskContent? GetContentByName(string name) => _existingContent.FirstOrDefault(c
         => Path.GetFileNameWithoutExtension(c.Name) == name);
 
-    public OnDiskContent? GetContentByVolumeAndChapter(string volume, string chapter) => _existingContent.FirstOrDefault(c =>
+    private OnDiskContent? GetContentByVolumeAndChapter(string volume, string chapter) => _existingContent.FirstOrDefault(c =>
     {
         if (c.Volume == volume && c.Chapter == chapter) return true;
 
@@ -125,6 +127,8 @@ public partial class Publication(IServiceScope scope, Provider provider, Downloa
     public async Task Cancel()
     {
         _logger.LogTrace("Stopping download of {Id} - {Title}", Id, Title);
+
+        await _tokenSource.CancelAsync();
 
         var req = new StopRequestDto
         {
@@ -143,7 +147,7 @@ public partial class Publication(IServiceScope scope, Provider provider, Downloa
         }
     }
 
-    public Task DownloadContentAsync(CancellationToken cancellation)
+    public Task DownloadContentAsync(CancellationTokenSource cancellation)
     {
         throw new NotImplementedException();
     }

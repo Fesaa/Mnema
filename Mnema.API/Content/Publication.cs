@@ -9,8 +9,8 @@ public interface IPublicationManager: IContentManager
 public interface IPublication: IContent
 {
 
-    Task LoadMetadataAsync(CancellationToken cancellationToken);
-    Task DownloadContentAsync(CancellationToken cancellation);
+    Task LoadMetadataAsync(CancellationTokenSource source);
+    Task DownloadContentAsync(CancellationTokenSource source);
 
 }
 

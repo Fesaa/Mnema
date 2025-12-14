@@ -9,8 +9,12 @@ namespace Mnema.Providers;
 
 public partial class Publication 
 {
-    public async Task LoadMetadataAsync(CancellationToken cancellationToken)
+    public async Task LoadMetadataAsync(CancellationTokenSource source)
     {
+        _tokenSource = source;
+
+        var cancellationToken = _tokenSource.Token;
+        
         var sw = Stopwatch.StartNew();
         
         State = ContentState.Loading;

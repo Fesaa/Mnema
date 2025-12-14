@@ -157,7 +157,7 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
 
                 if (_downloadingChannel.Reader.TryRead(out var downloadingContent))
                 {
-                    await downloadingContent.DownloadContentAsync(_cts.Token);
+                    await downloadingContent.DownloadContentAsync(CancellationTokenSource.CreateLinkedTokenSource(_cts.Token));
                     continue;
                 }
 
@@ -174,7 +174,7 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
                 else
                 {
                     var content = await _downloadingChannel.Reader.ReadAsync();
-                    await content.DownloadContentAsync(_cts.Token);
+                    await content.DownloadContentAsync(CancellationTokenSource.CreateLinkedTokenSource(_cts.Token));
                 }
             }
         }
@@ -204,7 +204,7 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
     {
         _logger.LogDebug("Starting load info for {Id} - {Title}", publication.Id, publication.Title);
 
-        await publication.LoadMetadataAsync(_cts.Token);
+        await publication.LoadMetadataAsync(CancellationTokenSource.CreateLinkedTokenSource(_cts.Token));
 
         if (publication.State == ContentState.Ready)
         {
