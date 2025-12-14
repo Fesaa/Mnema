@@ -75,7 +75,7 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.contentService.infoStats().subscribe(info => {
       this.loading.set(false);
-      this.items.set(info.running || []);
+      this.items.set(info || []);
     })
 
     this.signalR.events$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
@@ -181,7 +181,7 @@ export class DashboardComponent implements OnInit {
   }
 
   async browse(info: InfoStat) {
-    await this.modalService.getDirectory(info.download_dir, {showFiles: true});
+    await this.modalService.getDirectory(info.downloadDir, {showFiles: true});
   }
 
   markReady(info: InfoStat) {

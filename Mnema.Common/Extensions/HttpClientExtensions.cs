@@ -22,6 +22,34 @@ public static class HttpClientExtensions
 
     extension(HttpClient httpClient)
     {
+        /// <summary>
+        /// Makes a head request to the url, and parses the first content type header to determine the content type
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public async Task<string?> GetContentType(string url)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Head, url);
+            using var response = await httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+            
+            if (!response.Content.Headers.TryGetValues("Content-Type", out var contentTypeHeader))
+            {
+                return null;
+            }
+
+            var contentType = contentTypeHeader.FirstOrDefault()?.Split(";").FirstOrDefault();
+            if (string.IsNullOrEmpty(contentType))
+            {
+                return null;
+            }
+
+            return contentType;
+        }
         
         public async Task<Result<TResult, HttpRequestException>> GetCachedAsync<TResult>(string url, IDistributedCache cache, CancellationToken cancellationToken = default)
         {

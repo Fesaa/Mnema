@@ -30,7 +30,6 @@ import {ImageFormatPipe} from "../../../../_pipes/image-format.pipe";
     SettingsItemComponent,
     TagBadgeComponent,
     CoverFallbackPipe,
-    SettingsSwitchComponent,
     SafeHtmlPipe,
     NgbNav,
     NgbNavItem,

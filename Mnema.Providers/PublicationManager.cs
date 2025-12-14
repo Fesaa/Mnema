@@ -37,7 +37,7 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
 
         _workerTask = Task.Run(WorkerAsync);
         
-        _logger.LogDebug("PublicationManager initialized");
+        _logger.LogTrace("PublicationManager initialized");
     }
 
     public async Task Download(DownloadRequestDto request)
@@ -148,7 +148,7 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
     /// </summary>
     private async Task WorkerAsync()
     {
-        _logger.LogDebug("Worker started");
+        _logger.LogTrace("Worker started");
 
         try
         {
@@ -197,7 +197,7 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
         }
         finally
         {
-            _logger.LogDebug("Worker stopped");
+            _logger.LogTrace("Worker stopped");
         }
     }
 

@@ -2,11 +2,12 @@ import {Injectable} from '@angular/core';
 import {environment} from "../../environments/environment";
 import {HttpClient} from "@angular/common/http";
 import {map, Observable} from "rxjs";
-import {StatsResponse} from "../_models/stats";
+import {InfoStat, StatsResponse} from "../_models/stats";
 import {DownloadRequest, SearchRequest, StopRequest} from "../_models/search";
 import {SearchInfo} from "../_models/Info";
 import {ListContentData, Message, MessageType} from "../_models/messages";
 import {Provider} from "../_models/page";
+import {PagedList} from "../_models/paged-list";
 
 @Injectable({
   providedIn: 'root'
@@ -43,8 +44,8 @@ export class ContentService {
     }).pipe(map(list => list || []));
   }
 
-  search(req: SearchRequest): Observable<SearchInfo[]> {
-    return this.httpClient.post<SearchInfo[]>(this.baseUrl + 'search', req)
+  search(req: SearchRequest, pageNumber: number = 0, pageSize: number = 20) {
+    return this.httpClient.post<PagedList<SearchInfo>>(this.baseUrl + `search?pageNumber=${pageNumber}&pageSize=${pageSize}`, req)
   }
 
   download(req: DownloadRequest) {
@@ -56,7 +57,7 @@ export class ContentService {
   }
 
   infoStats() {
-    return this.httpClient.get<StatsResponse>(this.baseUrl + 'stats')
+    return this.httpClient.get<InfoStat[]>(this.baseUrl + 'stats')
   }
 
   private sendMessage<T, R>(msg: Message<T>): Observable<R | undefined> {

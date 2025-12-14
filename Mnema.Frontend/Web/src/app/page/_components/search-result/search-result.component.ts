@@ -48,10 +48,10 @@ export class SearchResultComponent implements OnInit{
 
     const newSub: Subscription = {
       ID: -1,
-      contentId: this.searchResult().InfoHash,
-      provider: this.searchResult().Provider,
+      contentId: this.searchResult().id,
+      provider: this.searchResult().provider,
       refreshFrequency: RefreshFrequency.Week,
-      title: this.searchResult().Name,
+      title: this.searchResult().name,
       baseDir: this.page().dirs[0],
       lastDownloadDir: '',
       lastCheck: null!,
@@ -84,16 +84,16 @@ export class SearchResultComponent implements OnInit{
   }
 
   loadImage() {
-    if (this.searchResult().ImageUrl === "") {
+    if (this.searchResult().imageUrl === "") {
       return;
     }
 
-    if (this.searchResult().ImageUrl.startsWith("proxy")) {
-      this.imageService.getImage(this.searchResult().ImageUrl).subscribe(src => {
+    if (this.searchResult().imageUrl.startsWith("proxy")) {
+      this.imageService.getImage(this.searchResult().imageUrl).subscribe(src => {
         this.imageSource.set(src);
       })
     } else {
-      this.imageSource.set(this.searchResult().ImageUrl);
+      this.imageSource.set(this.searchResult().imageUrl);
     }
   }
 

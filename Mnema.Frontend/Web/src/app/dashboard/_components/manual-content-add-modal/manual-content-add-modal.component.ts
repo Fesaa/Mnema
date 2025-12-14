@@ -65,15 +65,14 @@ export class ManualContentAddModalComponent {
         component.defaultDir.set('');
         component.rootDir.set('');
         component.info.set({
-          Name: data.name ?? data.id,
-          Description: "",
-          Size: "",
-          Tags: [],
-          Link: "",
-          InfoHash: data.id,
-          ImageUrl: "",
-          RefUrl: "",
-          Provider: data.provider,
+          id: data.id,
+          name: data.name ?? data.id,
+          description: "",
+          size: "",
+          tags: [],
+          imageUrl: "",
+          url: "",
+          provider: data.provider,
         });
       }),
       catchError(() => {

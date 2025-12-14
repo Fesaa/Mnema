@@ -11,7 +11,7 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (req, next) => {
 
       switch (err.status) {
         case 404:
-          toastr.warning("Something was not found");
+          //toastr.warning("Something was not found");
           break;
         case 403:
           toastr.error("You're not allowed to do this!");
@@ -26,7 +26,7 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (req, next) => {
           toastr.error("Bad request!");
       }
 
-      throw new err;
+      throw err;
     }),
   );
 };

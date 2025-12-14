@@ -15,7 +15,7 @@ public class SearchService(ILogger<SearchService> logger, IServiceScopeFactory s
     {
         using var scope = serviceScopeFactory.CreateScope();
 
-        var repository = scope.ServiceProvider.GetKeyedService<IRepository>(searchRequest.Provider.ToString());
+        var repository = scope.ServiceProvider.GetKeyedService<IRepository>(searchRequest.Provider);
         if (repository == null)
         {
             logger.LogWarning("No repository found for {Provider}, cannot search", searchRequest.Provider.ToString());

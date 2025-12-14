@@ -1,4 +1,4 @@
-import {Component, effect, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, effect, inject, OnInit, signal} from '@angular/core';
 import {NavService} from "../_services/nav.service";
 import {PageService} from "../_services/page.service";
 import {DownloadMetadata, Page, Provider} from "../_models/page";
@@ -11,10 +11,11 @@ import {ProviderNamePipe} from "../_pipes/provider-name.pipe";
 import {ToastService} from "../_services/toast.service";
 import {ContentService} from "../_services/content.service";
 import {TranslocoDirective} from "@jsverse/transloco";
-import {PaginatorComponent} from "../shared/_component/paginator/paginator.component";
+import {PageLoader, PaginatorComponent} from "../shared/_component/paginator/paginator.component";
 import {SearchFormComponent} from "./_components/search-form/search-form.component";
 import {fadeOut} from "../_animations/fade-out";
 import {LoadingSpinnerComponent} from "../shared/_component/loading-spinner/loading-spinner.component";
+import {EMPTY_PAGE, PagedList} from "../_models/paged-list";
 
 @Component({
   selector: 'app-page',
@@ -46,7 +47,16 @@ export class PageComponent implements OnInit {
 
   loading = signal(false);
   showForm = signal(true);
-  searchResults = signal<SearchInfo[]>([]);
+
+  searchRequest = signal<SearchRequest | null>(null);
+  pageLoader = computed<PageLoader<SearchInfo> | null>(() => {
+    const req = this.searchRequest();
+    if (!req) return null;
+
+    console.log("new search request")
+    return (pn, pz) => this.contentService.search(req, pn, pz);
+  });
+
 
   constructor() {
     effect(() => {
@@ -63,7 +73,6 @@ export class PageComponent implements OnInit {
 
       this.pageService.getPage(index).subscribe(page => {
         this.page.set(page);
-        this.searchResults.set([]);
         this.showForm.set(true);
       });
     })
@@ -84,22 +93,9 @@ export class PageComponent implements OnInit {
 
     this.showForm.set(false);
 
-    req.provider = this.page()?.providers ?? [];
-    this.loading.set(true)
-    this.contentService.search(req).subscribe({
-      next: info => {
-        if (!info || info.length == 0) {
-          this.showForm.set(true);
-          this.toastService.errorLoco("page.toasts.no-results")
-        } else {
-          this.toastService.successLoco("page.toasts.search-success", {}, {amount: info.length});
-        }
-        this.searchResults.set(info ?? [])
-      },
-      error: error => {
-        this.toastService.genericError(error.error.message);
-      }
-    }).add(() => this.loading.set(false));
+    req.provider = (this.page()?.providers[0] ?? 0) as any as number[];
+
+    this.searchRequest.set(req);
   }
 
   private loadMetadata(page: Page) {

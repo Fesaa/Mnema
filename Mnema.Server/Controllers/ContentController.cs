@@ -12,8 +12,8 @@ namespace Mnema.Server.Controllers;
 public class ContentController(ISearchService searchService, IDownloadService downloadService): BaseApiController
 {
 
-    [HttpPost]
     [AllowAnonymous]
+    [HttpPost("search")]
     public Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, [FromQuery] PaginationParams? pagination)
     {
         pagination ??= PaginationParams.Default;

@@ -25,7 +25,7 @@ public interface IRepository
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside of our control fails</exception>
+    /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside our control fails</exception>
     Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken);
     
     /// <summary>
@@ -34,7 +34,7 @@ public interface IRepository
     /// <param name="chapter"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside of our control fails</exception>
+    /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside our control fails</exception>
     Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken);
 
 }

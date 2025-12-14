@@ -3,13 +3,13 @@
 
     <div class="card-overlay">
       <div class="card-title-group">
-        <a [href]="searchResult().RefUrl" target="_blank" rel="noopener noreferrer" class="card-title">{{ searchResult().Name }}</a>
+        <a [href]="searchResult().url" target="_blank" rel="noopener noreferrer" class="card-title">{{ searchResult().name }}</a>
       </div>
     </div>
 
-    @if (searchResult().Size) {
+    @if (searchResult().size) {
       <div class="card-size-badge">
-        <span class="card-size">{{ searchResult().Size }}</span>
+        <span class="card-size">{{ searchResult().size }}</span>
       </div>
     }
 
@@ -22,7 +22,7 @@
         <span class="fa fa-download"></span>
       </button>
 
-      @if (providers().includes(searchResult().Provider)) {
+      @if (providers().includes(searchResult().provider)) {
         <button
           class="icon-btn"
           (click)="addAsSub()"
@@ -34,12 +34,12 @@
     </div>
   </div>
 
-  @if (searchResult().Tags.length > 0) {
+  @if (searchResult().tags.length > 0) {
     <div class="card-info">
       <div class="card-tags">
-        @for (tag of searchResult().Tags; track $index) {
+        @for (tag of searchResult().tags; track $index) {
           <span class="card-tag">
-          {{ tag.Name }}: {{ tag.Value }}
+          {{ tag }}
         </span>
         }
       </div>

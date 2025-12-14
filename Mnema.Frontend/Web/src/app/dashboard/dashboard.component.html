@@ -32,11 +32,11 @@
 
           <ng-template #cell let-info>
             <th class="table-cell">
-              @if (info.ref_url === "") {
+              @if (info.refUrl === "") {
                 <h2 class="h5">{{ info.name | contentTitle }}</h2>
               } @else {
                 <a class="h5 text-decoration-none" target="_blank" rel="noopener noreferrer"
-                   [href]="info.ref_url">{{ info.name | contentTitle }}</a>
+                   [href]="info.refUrl">{{ info.name | contentTitle }}</a>
               }
             </th>
             <th class="table-cell">

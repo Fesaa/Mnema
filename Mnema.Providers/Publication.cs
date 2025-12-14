@@ -85,7 +85,7 @@ public partial class Publication(IServiceScope scope, Provider provider, Downloa
 
     public ContentState State { get; private set; } = ContentState.Queued;
 
-    public DownloadInfo DownloadInfo => new DownloadInfo
+    public DownloadInfo DownloadInfo => new()
     {
         Provider = provider,
         Id = Id,

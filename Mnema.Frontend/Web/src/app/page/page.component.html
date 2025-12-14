@@ -21,16 +21,20 @@
         <app-loading-spinner size="large"></app-loading-spinner>
       }
 
-      <app-paginator [items]="searchResults()" [pageSize]="10">
-        <ng-template #items let-results>
-          <div class="results-grid">
-            @for (res of results; track res.InfoHash) {
-              <app-search-result [metadata]="getDownloadMetadata(res.Provider)" [page]="page()!"
-                                 [searchResult]="res" [providers]="providers()" [@fadeAnimation]></app-search-result>
-            }
-          </div>
-        </ng-template>
-      </app-paginator>
+      @let pageLoaderValue = pageLoader();
+
+      @if (pageLoaderValue) {
+        <app-paginator [pageLoader]="pageLoaderValue" [successKey]="'page.toasts.search-success'" [noResultsKey]="'page.toasts.no-results'">
+          <ng-template #items let-results>
+            <div class="results-grid">
+              @for (res of results; track res.id) {
+                <app-search-result [metadata]="getDownloadMetadata(res.Provider)" [page]="page()!"
+                                   [searchResult]="res" [providers]="providers()" [@fadeAnimation]></app-search-result>
+              }
+            </div>
+          </ng-template>
+        </app-paginator>
+      }
     </section>
   </div>
 }

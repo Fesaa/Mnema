@@ -36,9 +36,6 @@ export class ImageService {
         }
         reader.readAsDataURL(blob);
       },
-      error: err => {
-        this.toastService.errorLoco("services.image.failed", {}, {url: imageUrl, msg: err.error.message});
-      }
     })
     return imageSrc.asObservable();
   }

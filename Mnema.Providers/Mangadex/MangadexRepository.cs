@@ -76,7 +76,7 @@ public class MangadexRepository: IRepository
             ImageUrl = searchResult.CoverUrl(),
         });
 
-        return new PagedList<SearchResult>(items, response.Total, response.Offset, response.Limit);
+        return new PagedList<SearchResult>(items, response.Total, response.Offset / response.Limit, response.Limit);
     }
 
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)

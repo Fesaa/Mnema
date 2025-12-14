@@ -5,14 +5,14 @@ export type InfoStat = {
   id: string;
   contentState: ContentState;
   name: string;
-  ref_url: string;
+  refUrl: string;
   size: string;
   downloading: boolean;
   progress: number;
   estimated?: number;
   speed_type: SpeedType;
   speed: number;
-  download_dir: string;
+  downloadDir: string;
 }
 
 export enum ContentState {

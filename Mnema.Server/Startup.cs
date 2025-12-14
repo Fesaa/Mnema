@@ -8,6 +8,7 @@ using Microsoft.OpenApi;
 using Mnema.Common;
 using Mnema.Database.Extensions;
 using Mnema.Models;
+using Mnema.Models.Internal;
 using Mnema.Providers.Extensions;
 using Mnema.Server.Extensions;
 using Mnema.Server.Helpers;
@@ -34,6 +35,11 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddEndpointsApiExplorer();
         services.AddRateLimiter();
         services.AddCors();
+        services.AddOutputCache(options =>
+        {
+            options.AddPolicy(CacheProfiles.OneDay, b => b.Expire(TimeSpan.FromDays(1)));
+            options.AddPolicy(CacheProfiles.OneWeek, b => b.Expire(TimeSpan.FromDays(7)));
+        });
         services.AddSwaggerGen(c =>
         {
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -74,6 +80,11 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 options.Configuration = redisConnectionString;
                 options.InstanceName = "Mnema";
             });
+            services.AddStackExchangeRedisOutputCache(options =>
+            {
+                options.Configuration = redisConnectionString;
+                options.InstanceName = "Mnema/output-cache";
+            });
         }
         else
         {
@@ -103,7 +114,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 .AllowAnyMethod()
                 .AllowAnyHeader()
             );
-        
+        app.UseOutputCache();
         app.UseSerilogRequestLogging(opts =>
         {
             //opts.EnrichDiagnosticContext = LogEnricher.EnrichFromRequest;

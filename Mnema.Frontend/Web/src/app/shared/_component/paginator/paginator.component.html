@@ -1,37 +1,43 @@
 
-<ng-container [ngTemplateOutlet]="itemsTemplate" [ngTemplateOutletContext]="{$implicit: visibleItems()}">
+<ng-container [ngTemplateOutlet]="itemsTemplate" [ngTemplateOutletContext]="{$implicit: pagedList().items}">
 </ng-container>
+
+@let currentPage = pagedList().currentPage;
 
 @if (totalPages() > 1) {
   <div class="pagination-container" *transloco="let t; prefix: 'paginator'">
     <div class="pagination-info">
       <span class="pagination-text">
-        {{t('pages', {currentPage: currentPage(), totalPages: totalPages()})}}
+        {{t('pages', {currentPage: currentPage, totalPages: totalPages()})}}
       </span>
     </div>
 
     <div class="pagination-controls">
       <button
         class="pagination-btn pagination-btn-prev"
-        [disabled]="currentPage() === 1"
+        [disabled]="currentPage === 1"
         (click)="prevPage()">
         {{t('prev')}}
       </button>
 
       <div class="pagination-numbers">
-        @for (page of range(totalPages()); track $index) {
-          <button
-            class="pagination-btn pagination-btn-number"
-            [class.active]="currentPage() === page + 1"
-            (click)="goToPage(page + 1)">
-            {{ page + 1 }}
-          </button>
+        @for (pageItem of visiblePages(); track $index) {
+          @if (isNumber(pageItem)) {
+            <button
+              class="pagination-btn pagination-btn-number"
+              [class.active]="currentPage === pageItem"
+              (click)="goToPage(pageItem)">
+              {{ pageItem }}
+            </button>
+          } @else {
+            <span class="pagination-ellipsis">{{ pageItem }}</span>
+          }
         }
       </div>
 
       <button
         class="pagination-btn pagination-btn-next"
-        [disabled]="currentPage() === totalPages()"
+        [disabled]="currentPage === totalPages()"
         (click)="nextPage()">
         {{t('next')}}
       </button>

@@ -59,9 +59,9 @@ export class DownloadModalComponent implements OnInit {
     const metadata = this.metadata();
 
     // Not used in form, but required in download request
-    this.downloadForm.addControl('id', new FormControl(info.InfoHash));
-    this.downloadForm.addControl('provider', new FormControl(info.Provider));
-    this.downloadForm.addControl('title', new FormControl(info.Name, []));
+    this.downloadForm.addControl('id', new FormControl(info.id));
+    this.downloadForm.addControl('provider', new FormControl(info.provider));
+    this.downloadForm.addControl('title', new FormControl(info.name, []));
 
     this.downloadForm.addControl('dir', new FormControl(this.defaultDir(), [Validators.required]));
 
@@ -143,7 +143,7 @@ export class DownloadModalComponent implements OnInit {
 
     this.contentService.download(req).subscribe({
       next: () => {
-        this.toastService.successLoco("page.download-dialog.toasts.download-success", {}, {name: this.info().Name});
+        this.toastService.successLoco("page.download-dialog.toasts.download-success", {}, {name: this.info().name});
       },
       error: (err) => {
         this.toastService.genericError(err.error.message);

@@ -1,6 +1,22 @@
-import {Component, computed, ContentChild, effect, input, signal, TemplateRef} from '@angular/core';
+import {
+  Component,
+  computed,
+  ContentChild,
+  effect,
+  inject,
+  input,
+  model,
+  OnInit,
+  signal,
+  TemplateRef
+} from '@angular/core';
 import {NgTemplateOutlet} from "@angular/common";
-import {TranslocoDirective} from "@jsverse/transloco";
+import {isNumber, TranslocoDirective} from "@jsverse/transloco";
+import {EMPTY_PAGE, PagedList} from "../../../_models/paged-list";
+import {Observable} from "rxjs";
+import {ToastService} from "../../../_services/toast.service";
+
+export type PageLoader<T> = (pageNumber: number, pageSize: number) => Observable<PagedList<T>>;
 
 @Component({
   selector: 'app-paginator',
@@ -11,35 +27,82 @@ import {TranslocoDirective} from "@jsverse/transloco";
   templateUrl: './paginator.component.html',
   styleUrl: './paginator.component.scss'
 })
-export class PaginatorComponent<T> {
+export class PaginatorComponent<T> implements OnInit {
+
+  private readonly toastService = inject(ToastService);
 
   @ContentChild("items") itemsTemplate!: TemplateRef<any>;
 
-  items = input.required<T[]>();
-  pageSize = input(10);
+  pageLoader = input.required<PageLoader<T>>();
+  pageSize = input(20);
+  startPage = input(0);
 
-  currentPage = signal(1);
-  totalPages = computed(() => Math.ceil(this.items().length / this.pageSize()));
-  visibleItems = computed(() => {
-    const page = this.currentPage();
-    const pageSize = this.pageSize();
-    const items = this.items();
+  noResultsKey = input<string | null>('common.no-results');
+  successKey = input<string | null>(null);
 
-    return items.slice((page-1) * pageSize, page * pageSize);
-  })
+  pagedList = signal<PagedList<T>>(EMPTY_PAGE);
+  totalPages = computed(() => this.pagedList().totalPages);
+  currentPage = computed(() => this.pagedList().currentPage);
 
-  constructor() {
-    effect(() => {
-      this.items();
-      this.currentPage.set(1);
-    });
-  }
+  visiblePages = computed(() => {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const maxVisible = 10;
+
+    if (total <= maxVisible) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const pages: (number | string)[] = [];
+
+    pages.push(1);
+
+    let start = Math.max(2, current - 1);
+    let end = Math.min(total - 1, current + 1);
+
+    if (start > 2) {
+      pages.push('...');
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    if (end < total - 1) {
+      pages.push('...');
+    }
+
+    if (total > 1) {
+      pages.push(total);
+    }
+
+    return pages;
+  });
 
   range = (n: number) => Array.from({ length: n}, (_, i) => i);
 
+  ngOnInit() {
+    this.loadPage(this.startPage());
+  }
+
+  private loadPage(pageNumber: number) {
+    this.pageLoader()(pageNumber, this.pageSize()).subscribe(pagedList => {
+      const noResultKey = this.noResultsKey();
+      const successKey = this.successKey();
+
+      if (pagedList.totalCount === 0 && noResultKey) {
+        this.toastService.errorLoco(noResultKey);
+      } else if (pagedList.totalCount > 0 && successKey && pagedList.currentPage === 0) {
+        this.toastService.successLoco(successKey, {}, { amount: pagedList.totalCount});
+      }
+
+      this.pagedList.set(pagedList)
+    });
+  }
+
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages()) {
-      this.currentPage.set(page);
+      this.loadPage(page);
     }
   }
 
@@ -52,4 +115,5 @@ export class PaginatorComponent<T> {
   }
 
 
+  protected readonly isNumber = isNumber;
 }

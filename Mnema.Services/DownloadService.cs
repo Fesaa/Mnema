@@ -43,21 +43,7 @@ public class DownloadService(ILogger<DownloadService> logger, IServiceScopeFacto
             
             downloads.AddRange(content
                 .Where(c => c.Request.UserId == userId)
-                .Select(c => new DownloadInfo
-                {
-                    Provider = provider,
-                    Id = c.Id,
-                    ContentState = c.State,
-                    Name = c.Title,
-                    RefUrl = "",
-                    Size = "",
-                    Downloading = false,
-                    Progress = 0,
-                    Estimated = 0,
-                    SpeedType = SpeedType.Bytes,
-                    Speed = 0,
-                    DownloadDir = "",
-                }));
+                .Select(c => c.DownloadInfo));
         }
 
         return downloads;
