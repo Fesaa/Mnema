@@ -132,6 +132,7 @@ public class MangadexRepository: IRepository
             Year = manga.Attributes.Year,
             HighestChapterNumber = manga.Attributes.HighestChapter,
             HighestVolumeNumber = manga.Attributes.HighestVolume,
+            Links = [],
             Tags = tags,
             People = manga.People,
             Chapters = filteredChapters,

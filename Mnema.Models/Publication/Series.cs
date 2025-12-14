@@ -21,6 +21,7 @@ public sealed record Series
     public AgeRating? AgeRating { get; set; }
     public required IList<Tag> Tags { get; set; }
     public required IList<Person> People { get; set; }
+    public required IList<string> Links { get; set; }
     
     public required IList<Chapter> Chapters { get; set; }
     

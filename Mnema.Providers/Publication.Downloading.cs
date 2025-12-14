@@ -196,7 +196,7 @@ internal partial class Publication
                 Chapter = chapter,
             })));
         
-        _logger.LogDebug("Finished downloading chapter {Chapter} in {Elasped}ms", chapter.ChapterMarker, sw.ElapsedMilliseconds);
+        _logger.LogDebug("Finished downloading chapter {Chapter} in {Elapsed}ms", chapter.ChapterMarker, sw.ElapsedMilliseconds);
 
         if (urls.Count < 5)
         {
