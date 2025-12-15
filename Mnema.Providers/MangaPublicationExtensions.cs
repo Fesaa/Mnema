@@ -13,7 +13,7 @@ internal interface IPublicationExtensions
 {
     OnDiskContent? ParseOnDiskFile(string fileName);
     
-    string? ParseVolumeFromFile(Publication publication, OnDiskContent content);
+    string? ParseVolumeFromFile(OnDiskContent content);
     
     Task<string> DownloadCallback(IoWork ioWork, CancellationToken cancellationToken);
     
@@ -95,7 +95,6 @@ internal partial class MangaPublicationExtensions: IPublicationExtensions
     private static string TrimLeadingZero(string value)
     {
         return string.IsNullOrEmpty(value) ? value : value.Trim().TrimStart('0');
-
     }
 
     public async Task Cleanup(string path)
@@ -106,7 +105,7 @@ internal partial class MangaPublicationExtensions: IPublicationExtensions
         Directory.Delete(path, true);
     }
 
-    public string? ParseVolumeFromFile(Publication publication, OnDiskContent content)
+    public string? ParseVolumeFromFile(OnDiskContent content)
     {
         var zipFile = ZipFile.OpenRead(content.Path);
 

@@ -152,7 +152,7 @@ internal partial class Publication
             }
         }
 
-        var onDiskVolume = string.IsNullOrEmpty(content.Volume) ? _extensions.ParseVolumeFromFile(this, content) : content.Volume;
+        var onDiskVolume = string.IsNullOrEmpty(content.Volume) ? _extensions.ParseVolumeFromFile(content) : content.Volume;
         if (onDiskVolume == null)
         {
             return false;

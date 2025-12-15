@@ -139,6 +139,8 @@ internal partial class Publication
         
         foreach (var chapterId in _queuedChapters)
         {
+            if (_tokenSource.Token.IsCancellationRequested) break;
+            
             var chapter = Series!.Chapters.FirstOrDefault(c => c.Id == chapterId);
             if (chapter == null)
             {
@@ -211,7 +213,7 @@ internal partial class Publication
     {
         var failedTasks = await ProcessDownloadsAsync(ctx, isRetry: false);
         
-        if (failedTasks.Count == 0)
+        if (failedTasks.Count == 0 || _tokenSource.Token.IsCancellationRequested)
         {
             return;
         }
