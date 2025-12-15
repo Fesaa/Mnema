@@ -11,7 +11,7 @@
   </div>
 
   <app-table
-    [items]="filteredSubscriptions()"
+    [pageLoader]="pageLoader.bind(this)"
     [trackByIdFunc]="trackBy"
   >
     <ng-template #header>
@@ -20,7 +20,7 @@
         <th class="table-header-cell">{{ t('next-exec') }}</th>
         <th class="table-header-cell">{{ t('last') }}</th>
         <th class="table-header-cell">{{ t('frequency') }}</th>
-        <th class="table-header-cell">{{t('actions.label')}}</th>
+        <th class="table-header-cell">{{ t('actions.label') }}</th>
       </tr>
     </ng-template>
 

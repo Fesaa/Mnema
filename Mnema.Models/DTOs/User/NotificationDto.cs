@@ -10,4 +10,6 @@ public class NotificationDto
     public string? Body { get; set; }
     public NotificationColour Colour { get; set; }
     public bool Read { get; set; } = false;
+    public DateTime CreatedUtc { get; set; }
+    public DateTime LastModifiedUtc { get; set; }
 }

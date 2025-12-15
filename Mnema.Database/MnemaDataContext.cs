@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Mnema.Database.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities;
@@ -8,8 +9,14 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Database;
 
-public class MnemaDataContext(DbContextOptions options): DbContext(options)
+public sealed class MnemaDataContext: DbContext
 {
+
+    public MnemaDataContext(DbContextOptions options): base(options)
+    {
+        ChangeTracker.Tracked += OnEntityTracked;
+        ChangeTracker.StateChanged += OnEntityStateChanged;
+    }
     
     public DbSet<MnemaUser> Users { get; set; }
     public DbSet<UserPreferences> UserPreferences { get; set; }
@@ -53,5 +60,23 @@ public class MnemaDataContext(DbContextOptions options): DbContext(options)
             .HasColumnType("TEXT")
             .HasDefaultValue(new DownloadMetadataDto());
 
+    }
+    
+    private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)
+    {
+        if (e.FromQuery || e.Entry.State != EntityState.Added || e.Entry.Entity is not IEntityDate entity) return;
+
+        entity.LastModifiedUtc = DateTime.UtcNow;
+
+        if (entity.CreatedUtc == DateTime.MinValue)
+        {
+            entity.CreatedUtc = DateTime.UtcNow;
+        }
+    }
+
+    private static void OnEntityStateChanged(object? sender, EntityStateChangedEventArgs e)
+    {
+        if (e.NewState != EntityState.Modified || e.Entry.Entity is not IEntityDate entity) return;
+        entity.LastModifiedUtc = DateTime.UtcNow;
     }
 }

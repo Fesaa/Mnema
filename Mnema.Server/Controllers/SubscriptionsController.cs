@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Mnema.API;
+using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
@@ -19,9 +20,11 @@ public class SubscriptionsController(ILogger<SubscriptionsController> logger, IU
     }
 
     [HttpGet("all")]
-    public async Task<ActionResult<IList<SubscriptionDto>>> GetAllSubscriptions()
+    public async Task<ActionResult<PagedList<SubscriptionDto>>> GetAllSubscriptions([FromQuery] PaginationParams? paginationParams)
     {
-        return Ok(await unitOfWork.SubscriptionRepository.GetSubscriptionDtosForUser(UserId));
+        paginationParams ??= PaginationParams.Default;
+        
+        return Ok(await unitOfWork.SubscriptionRepository.GetSubscriptionDtosForUser(UserId, paginationParams));
     }
 
     [HttpGet("{subscriptionId:guid}")]

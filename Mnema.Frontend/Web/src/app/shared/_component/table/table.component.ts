@@ -12,6 +12,8 @@ import {
 } from '@angular/core';
 import {NgTemplateOutlet} from '@angular/common';
 import {CdkDrag, CdkDragDrop, CdkDropList} from '@angular/cdk/drag-drop';
+import {PageLoader, PaginatorComponent} from "../paginator/paginator.component";
+import {of} from "rxjs";
 
 
 @Component({
@@ -19,22 +21,22 @@ import {CdkDrag, CdkDragDrop, CdkDropList} from '@angular/cdk/drag-drop';
   imports: [
     NgTemplateOutlet,
     CdkDropList,
-    CdkDrag
+    CdkDrag,
+    PaginatorComponent
   ],
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TableComponent<T> implements OnInit {
+export class TableComponent<T> {
 
   @ContentChild('header') headerTemplate!: TemplateRef<any>;
   @ContentChild('cell') cellTemplate!: TemplateRef<any>;
   @ContentChild('empty') emptyTemplate!: TemplateRef<any>;
 
   trackByIdFunc = input.required<(index: number, value: T) => string>();
-  items = input.required<T[]>();
-  pagination = input(true);
-  pageSize = input(10);
+  pageLoader = input<PageLoader<T>>();
+  items = input<Array<T>>();
 
   dragAble = input(false);
   dragTableId = input<string>();
@@ -42,43 +44,28 @@ export class TableComponent<T> implements OnInit {
 
   noHoverColour = input(false);
 
-  currentPage = signal(1);
+  finalPageLoader = computed<PageLoader<T>>(() => {
+    const pageLoader = this.pageLoader();
+    const items = this.items();
 
-  totalPages = computed(() => Math.ceil(this.items().length / this.pageSize()));
+    if (pageLoader && items) {
+      throw new Error("Only one of PageLoader and Items may be set");
+    }
 
-  paginatedItems = computed(() => {
-    if (!this.pagination()) return this.items();
-    const start = (this.currentPage() - 1) * this.pageSize();
-    const end = start + this.pageSize();
-    return this.items().slice(start, end);
+    if (pageLoader) return pageLoader;
+
+    if (items) {
+      return (pn, ps) => of({
+        items: items,
+        totalPages: 1,
+        currentPage: 0,
+        pageSize: items.length,
+        totalCount: items.length,
+      });
+    }
+
+    throw new Error("PageLoader or Items must be set");
   });
 
-  constructor() {
-    // Reset current page if total page changes and becomes smaller
-    effect(() => {
-      if (this.currentPage() > this.totalPages()) {
-        this.currentPage.set(1);
-      }
-    });
-  }
-
-  range = (n: number) => Array.from({ length: n}, (_, i) => i);
-
-  ngOnInit(): void {
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages()) {
-      this.currentPage.set(page);
-    }
-  }
-
-  nextPage(): void {
-    this.goToPage(this.currentPage() + 1);
-  }
-
-  prevPage(): void {
-    this.goToPage(this.currentPage() - 1);
-  }
-
+  @Output() currentItems = new EventEmitter<T[]>();
 }

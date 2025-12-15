@@ -1,9 +1,10 @@
 import {Injectable} from '@angular/core';
 import {environment} from "../../environments/environment";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpParams} from "@angular/common/http";
 import {Subscription} from "../_models/subscription";
 import {Observable} from "rxjs";
 import {Provider} from "../_models/page";
+import {PagedList} from "../_models/paged-list";
 
 @Injectable({
   providedIn: 'root'
@@ -31,8 +32,10 @@ export class SubscriptionService {
     return this.httpClient.delete(`${this.baseUrl}/${id}`, {responseType: 'text'});
   }
 
-  all(): Observable<Subscription[]> {
-    return this.httpClient.get<Subscription[]>(`${this.baseUrl}/all`);
+  all(pageNumber: number, pageSize: number) {
+    const params = new HttpParams().set('pageNumber', pageNumber).set('pageSize', pageSize);
+
+    return this.httpClient.get<PagedList<Subscription>>(`${this.baseUrl}/all`, { params });
   }
 
   new(s: Subscription): Observable<Subscription> {

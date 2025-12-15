@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {environment} from "../../environments/environment";
 import {Notification} from "../_models/notifications";
+import {PagedList} from "../_models/paged-list";
 
 @Injectable({
   providedIn: 'root'
@@ -11,13 +12,10 @@ export class NotificationService {
 
   constructor(private http: HttpClient) {}
 
-  all(after?: Date) {
-    let params = new HttpParams();
-    if (after) {
-      const formattedDate = after.toISOString();
-      params = params.set('after', formattedDate);
-    }
-    return this.http.get<Notification[]>(`${this.baseUrl}/all`, { params });
+  all(pageNumber: number, pageSize: number) {
+    const params = new HttpParams().set("pageNumber", pageNumber).set("pageSize", pageSize);
+
+    return this.http.get<PagedList<Notification>>(`${this.baseUrl}/all`, { params });
   }
 
   recent(limit: number = 5) {
@@ -41,7 +39,7 @@ export class NotificationService {
   }
 
   readMany(ids: number[]) {
-    return this.http.post(`${this.baseUrl}/many`, ids);
+    return this.http.post(`${this.baseUrl}/many/read`, ids);
   }
 
   deleteMany(ids: number[]) {

@@ -2,6 +2,8 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Mnema.API;
+using Mnema.Common;
+using Mnema.Database.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 
@@ -10,12 +12,12 @@ namespace Mnema.Database.Repositories;
 public class SubscriptionRepository(MnemaDataContext ctx, IMapper mapper): ISubscriptionRepository
 {
 
-    public Task<List<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId)
+    public Task<PagedList<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId, PaginationParams pagination)
     {
         return ctx.Subscriptions
             .Where(s => s.UserId == userId)
             .ProjectTo<SubscriptionDto>(mapper.ConfigurationProvider)
-            .ToListAsync();
+            .AsPagedList(pagination);
     }
 
     public Task<Subscription?> GetSubscription(Guid id)

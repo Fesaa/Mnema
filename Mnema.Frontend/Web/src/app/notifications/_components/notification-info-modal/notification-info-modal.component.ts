@@ -3,7 +3,6 @@ import {Notification} from "../../../_models/notifications";
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {SafeHtmlPipe} from "../../../_pipes/safe-html-pipe";
-import {BadgeComponent} from "../../../shared/_component/badge/badge.component";
 import {DatePipe} from "@angular/common";
 
 @Component({
@@ -11,7 +10,6 @@ import {DatePipe} from "@angular/common";
   imports: [
     TranslocoDirective,
     SafeHtmlPipe,
-    BadgeComponent,
     DatePipe
   ],
   templateUrl: './notification-info-modal.component.html',

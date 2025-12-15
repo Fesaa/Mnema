@@ -1,5 +1,5 @@
 <div class="recently-downloaded-container" *transloco="let t; prefix:'recently-downloaded'">
-  @for (download of downloads(); track download.ID) {
+  @for (download of downloads(); track download.id) {
     <div
       class="download-item"
       (click)="show(download)"
@@ -11,7 +11,7 @@
 
         <div class="download-actions">
           <app-badge>
-            <span class="p-2">{{ download.CreatedAt.toString() | utcToLocalTime }}</span>
+            <span class="p-2">{{ download.createdUtc.toString() | utcToLocalTime }}</span>
           </app-badge>
           <button
             type="button"

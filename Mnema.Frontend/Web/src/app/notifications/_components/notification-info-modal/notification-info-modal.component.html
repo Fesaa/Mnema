@@ -10,11 +10,8 @@
 
       <div class="d-flex justify-content-end gap-2 mb-3">
         <div class="d-flex flex-column align-items-end">
-          @if (notification().group) {
-            <app-badge [colour]="notification().colour">{{notification().group}}</app-badge>
-          }
-          @if (notification().CreatedAt) {
-            <span class="text-muted">{{notification().CreatedAt | date:'short'}}</span>
+          @if (notification().createdUtc) {
+            <span class="text-muted">{{notification().createdUtc | date:'short'}}</span>
           }
         </div>
       </div>

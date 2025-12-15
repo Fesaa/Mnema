@@ -1,4 +1,14 @@
-import {Component, computed, effect, ElementRef, HostListener, inject, signal, ViewChild} from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  linkedSignal,
+  signal,
+  ViewChild
+} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NavService} from '../../_services/nav.service';
 import {AccountService} from '../../_services/account.service';
@@ -6,14 +16,12 @@ import {Role, User} from '../../_models/user';
 import {PreferenceSettingsComponent} from "./_components/preference-settings/preference-settings.component";
 import {PagesSettingsComponent} from "./_components/pages-settings/pages-settings.component";
 import {ServerSettingsComponent} from "./_components/server-settings/server-settings.component";
-import {UserSettingsComponent} from "./_components/user-settings/user-settings.component";
 import {TranslocoDirective} from "@jsverse/transloco";
 
 export enum SettingsID {
   Server = "server",
   Preferences = "preferences",
   Pages = "pages",
-  User = "user"
 }
 
 interface SettingsTab {
@@ -33,9 +41,7 @@ interface SettingsTab {
     PreferenceSettingsComponent,
     PagesSettingsComponent,
     ServerSettingsComponent,
-    UserSettingsComponent,
-    TranslocoDirective
-
+    TranslocoDirective,
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']
@@ -50,15 +56,13 @@ export class SettingsComponent {
 
   @ViewChild('mobileConfig') mobileDrawerElement!: ElementRef<HTMLDivElement>;
 
-  user = signal<User | null>(null);
-  selected = signal<SettingsID>(SettingsID.Preferences);
+  user = this.accountService.currentUser;
   showMobileConfig = signal(false);
 
   readonly settings: SettingsTab[] = [
     { id: SettingsID.Preferences, title: "Preferences", icon: 'fa fa-heart', roles: [] },
     { id: SettingsID.Pages, title: 'Pages', icon: 'fa fa-thumbtack', roles: [Role.ManagePages] },
     { id: SettingsID.Server, title: 'Server', icon: 'fa fa-server', roles: [Role.ManageServerConfigs] },
-    { id: SettingsID.User, title: 'Users', icon: 'fa fa-users', roles: [Role.ManageUsers] },
   ];
 
   readonly visibleSettings = computed(() => {
@@ -67,21 +71,24 @@ export class SettingsComponent {
     return this.settings.filter(setting => this.canSee(setting.id));
   });
 
+  readonly selected = linkedSignal<SettingsTab[], SettingsID>({
+    source: this.visibleSettings,
+    computation: (newSettings, prev) => {
+      if (newSettings.length === 0) return SettingsID.Preferences;
+
+      const prevValue = prev?.value;
+      if (!prevValue) return newSettings[0].id;
+
+      if (newSettings.map(t => t.id).includes(prevValue)) {
+        return prevValue;
+      }
+
+      return newSettings[0].id;
+    }
+  });
+
   constructor() {
     this.navService.setNavVisibility(true);
-
-    effect(() => {
-      const user = this.accountService.currentUser();
-      if (!user) {
-        this.router.navigateByUrl('/login');
-        return;
-      }
-      this.user.set(user);
-
-      if (!this.canSee(this.selected())) {
-        this.selected.set(this.visibleSettings()[0].id);
-      }
-    });
 
     this.route.fragment.subscribe(fragment => {
       if (fragment && Object.values(SettingsID).includes(fragment as SettingsID)) {

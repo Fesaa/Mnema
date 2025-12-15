@@ -41,7 +41,7 @@ export class SubscriptionManagerComponent implements OnInit {
 
   private readonly modalService = inject(ModalService);
   private readonly navService = inject(NavService);
-  private readonly subscriptionService = inject(SubscriptionService);
+  protected readonly subscriptionService = inject(SubscriptionService);
   private readonly toastService = inject(ToastService);
   private readonly pageService = inject(PageService);
   private readonly providerNamePipe = inject(ProviderNamePipe);
@@ -49,49 +49,32 @@ export class SubscriptionManagerComponent implements OnInit {
 
   metadata = signal<Map<Provider, DownloadMetadata>>(new Map());
   allowedProviders = signal<Provider[]>([]);
-  subscriptions = signal<Subscription[]>([]);
   hasRanAll = signal(false);
   filterText = signal('');
-
-  filteredSubscriptions = computed(() => {
-    const filter = this.filterText();
-    const subs = this.subscriptions();
-
-    if (!filter) return subs;
-
-    const normalizedFilter = this.utilityService.normalize(filter);
-    return subs.filter(s => this.utilityService.normalize(s.title).includes(normalizedFilter));
-  })
 
   constructor() {
     effect(() => {
       const providers = this.allowedProviders();
       for (const provider of providers) {
-        this.pageService.metadata(provider).subscribe({
-          next: metadata => {
-            this.metadata.update(m => {
-              m.set(provider, metadata);
-              return m;
-            })
-          },
-          error: error => {
-            this.toastService.errorLoco("page.toasts.metadata-failed",
-              {provider: this.providerNamePipe.transform(provider)}, {msg: error.error.message});
-          }
-        })
+        this.pageService.metadata(provider).subscribe(metadata => {
+          this.metadata.update(m => {
+            m.set(provider, metadata);
+            return m;
+          });
+        });
       }
     });
+  }
+
+  pageLoader(pn: number, ps: number) {
+    return this.subscriptionService.all(pn, ps);
   }
 
   ngOnInit(): void {
     this.navService.setNavVisibility(true);
 
-    forkJoin([
-      this.subscriptionService.all(),
-      this.subscriptionService.providers(),
-    ]).subscribe(([s, providers]) => {
-      this.subscriptions.set(s ?? [])
-      this.allowedProviders.set(providers ?? [])
+    this.subscriptionService.providers().subscribe(providers => {
+      this.allowedProviders.set(providers ?? []);
     });
   }
 
@@ -116,11 +99,11 @@ export class SubscriptionManagerComponent implements OnInit {
   }
 
   runOnce(sub: Subscription) {
-    if (sub.ID == 0) {
+    if (sub.id == 0) {
       return
     }
 
-    this.subscriptionService.runOnce(sub.ID).subscribe({
+    this.subscriptionService.runOnce(sub.id).subscribe({
       next: () => {
         this.toastService.successLoco("subscriptions.toasts.run-once.success", {}, {name: sub.title});
       },
@@ -138,9 +121,8 @@ export class SubscriptionManagerComponent implements OnInit {
     }
 
 
-    this.subscriptionService.delete(sub.ID).subscribe({
+    this.subscriptionService.delete(sub.id).subscribe({
       next: () => {
-        this.subscriptions.update(subs => subs.filter(s => s.ID !== sub.ID));
         this.toastService.successLoco("subscriptions.toasts.delete.success", {name: sub.title});
       },
       error: err => {
@@ -161,7 +143,7 @@ export class SubscriptionManagerComponent implements OnInit {
   }
 
   trackBy(idx: number, sub: Subscription) {
-    return `${sub.ID}`
+    return `${sub.id}`
   }
 
   edit(sub: Subscription) {
@@ -169,9 +151,5 @@ export class SubscriptionManagerComponent implements OnInit {
     component.subscription.set(sub);
     component.providers.set(this.allowedProviders());
     component.metadata.set(this.metadata().get(sub.provider) ?? {definitions: []});
-
-    modal.result.then(() => this.subscriptionService.all().subscribe(subs => {
-      this.subscriptions.set(subs);
-    }));
   }
 }

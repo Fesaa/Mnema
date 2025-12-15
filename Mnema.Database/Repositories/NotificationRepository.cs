@@ -12,10 +12,10 @@ namespace Mnema.Database.Repositories;
 public class NotificationRepository(MnemaDataContext ctx, IMapper mapper): INotificationRepository
 {
 
-    public Task<PagedList<NotificationDto>> GetNotificationsForUser(Guid userId, PaginationParams pagination)
+    public Task<PagedList<NotificationDto>> GetNotificationsForUser(Guid userId, bool? read, PaginationParams pagination)
     {
         return ctx.Notifications
-            .Where(n => n.UserId == userId)
+            .Where(n => n.UserId == userId && (read == null || n.Read == read))
             .ProjectTo<NotificationDto>(mapper.ConfigurationProvider)
             .AsPagedList(pagination);
     }
@@ -46,7 +46,7 @@ public class NotificationRepository(MnemaDataContext ctx, IMapper mapper): INoti
     public Task<int> UnReadNotifications(Guid userId)
     {
         return ctx.Notifications
-            .Where(n => n.UserId == userId)
+            .Where(n => n.UserId == userId && !n.Read)
             .CountAsync();
     }
 

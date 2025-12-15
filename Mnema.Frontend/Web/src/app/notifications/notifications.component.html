@@ -2,16 +2,6 @@
 
   <div class="d-flex flex-row justify-content-end gap-3 mb-4">
 
-    @if (timeAgoForm.get('timeAgo'); as control) {
-      <form [formGroup]="timeAgoForm" class="d-flex flex-grow-1">
-        <select class="form-select" formControlName="timeAgo">
-          @for (opt of timeAgoOptions; track opt.value) {
-            <option [selected]="control.value === opt.value" [ngValue]="opt.value">{{opt.label}}</option>
-          }
-        </select>
-      </form>
-    }
-
     <button type="button" class="btn btn-warning" (click)="readSelected()">
       {{ t('actions.read-selected') }}
     </button>
@@ -23,16 +13,16 @@
   </div>
 
   <app-table
-    [items]="sortedNotifications()"
+    [pageLoader]="loadNotifications.bind(this)"
     [trackByIdFunc]="trackBy"
     [noHoverColour]="true"
     *transloco="let t; prefix:'notifications.table'"
+    (currentItems)="onItemsChange($event)"
   >
 
     <ng-template #header>
       <tr>
         <th class="table-header-cell">{{ t('time') }}</th>
-        <th class="table-header-cell">{{ t('group') }}</th>
         <th class="table-header-cell">{{ t('title') }}</th>
         <th class="table-header-cell">{{ t('summary') }}</th>
         <th class="table-header-cell">
@@ -45,8 +35,7 @@
     </ng-template>
 
     <ng-template #cell let-notification>
-      <td class="table-cell">{{ notification.CreatedAt | utcToLocalTime:'shortDate' }}</td>
-      <td class="table-cell"><app-badge [colour]="notification.colour">{{ notification.group }}</app-badge></td>
+      <td class="table-cell">{{ notification.createdUtc | utcToLocalTime:'shortDate' }}</td>
       <td class="table-cell"><div [innerHtml]="notification.title"></div></td>
       <td class="table-cell"><div [innerHtml]="notification.summary"></div></td>
       <td class="table-cell">
@@ -95,8 +84,7 @@
             </button>
           </div>
 
-
-          <input class="form-check-input" type="checkbox" [checked]="tracker.lookup().has(notification.ID)" (click)="toggleSelect(notification)">
+          <input class="form-check-input" type="checkbox" [checked]="tracker.lookup().has(notification.id)" (click)="toggleSelect(notification)">
 
         </div>
       </td>

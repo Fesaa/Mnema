@@ -53,12 +53,6 @@
           <app-server-settings></app-server-settings>
         }
       }
-
-      @defer (when selected() === SettingsID.User; prefetch on idle) {
-        @if (selected() === SettingsID.User && canSee(SettingsID.User)) {
-          <app-user-settings></app-user-settings>
-        }
-      }
     </section>
 
   </main>

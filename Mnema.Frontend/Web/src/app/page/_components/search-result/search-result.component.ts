@@ -47,7 +47,7 @@ export class SearchResultComponent implements OnInit{
     const [_, component] = this.modalService.open(EditSubscriptionModalComponent, DefaultModalOptions);
 
     const newSub: Subscription = {
-      ID: -1,
+      id: -1,
       contentId: this.searchResult().id,
       provider: this.searchResult().provider,
       refreshFrequency: RefreshFrequency.Week,

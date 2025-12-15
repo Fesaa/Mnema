@@ -42,9 +42,9 @@ export class RecentlyDownloadedComponent implements OnInit{
   }
 
   markRead(download: Notification) {
-    this.notificationService.markAsRead(download.ID).subscribe({
+    this.notificationService.markAsRead(download.id).subscribe({
       next: () => {
-        this.downloads.update(x => x.filter(d => d.ID !== download.ID));
+        this.downloads.update(x => x.filter(d => d.id !== download.id));
         this.load();
       },
       error: err => {

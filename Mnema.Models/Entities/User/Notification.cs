@@ -8,7 +8,7 @@ public enum NotificationColour
     Error = 3,
 }
 
-public class Notification
+public class Notification: IEntityDate
 {
     
     public Guid Id { get; set; }
@@ -21,4 +21,6 @@ public class Notification
     public required Guid UserId { get; set; }
     public virtual MnemaUser User { get; set; }
 
+    public DateTime CreatedUtc { get; set; }
+    public DateTime LastModifiedUtc { get; set; }
 }

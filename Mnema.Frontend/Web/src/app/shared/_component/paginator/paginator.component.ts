@@ -1,12 +1,10 @@
 import {
   Component,
   computed,
-  ContentChild,
-  effect,
+  ContentChild, effect, EventEmitter,
   inject,
-  input,
-  model,
-  OnInit,
+  input, linkedSignal,
+  OnInit, Output,
   signal,
   TemplateRef
 } from '@angular/core';
@@ -22,7 +20,7 @@ export type PageLoader<T> = (pageNumber: number, pageSize: number) => Observable
   selector: 'app-paginator',
   imports: [
     NgTemplateOutlet,
-    TranslocoDirective
+    TranslocoDirective,
   ],
   templateUrl: './paginator.component.html',
   styleUrl: './paginator.component.scss'
@@ -79,7 +77,15 @@ export class PaginatorComponent<T> implements OnInit {
     return pages;
   });
 
-  range = (n: number) => Array.from({ length: n}, (_, i) => i);
+  items = linkedSignal(() => this.pagedList().items);
+
+  @Output() currentItems = new EventEmitter<T[]>();
+
+  constructor() {
+    effect(() => {
+      this.currentItems.emit(this.items());
+    });
+  }
 
   ngOnInit() {
     this.loadPage(this.startPage());

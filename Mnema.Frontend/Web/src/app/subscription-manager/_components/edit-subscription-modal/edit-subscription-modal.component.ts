@@ -52,7 +52,7 @@ export class EditSubscriptionModalComponent implements OnInit {
     const subscription = this.subscription();
     const metadata = this.metadata();
 
-    this.subscriptionForm.addControl("ID", new FormControl(subscription.ID));
+    this.subscriptionForm.addControl("ID", new FormControl(subscription.id));
     this.subscriptionForm.addControl('provider', new FormControl(subscription.provider));
     this.subscriptionForm.addControl('contentId', new FormControl(subscription.contentId));
     this.subscriptionForm.addControl('refreshFrequency', new FormControl(subscription.refreshFrequency));
@@ -142,10 +142,10 @@ export class EditSubscriptionModalComponent implements OnInit {
   save() {
     const sub = this.packData();
 
-    const actions$ = this.subscription().ID === -1
+    const actions$ = this.subscription().id === -1
       ? this.subscriptionService.new(sub)
       : this.subscriptionService.update(sub);
-    const kind = this.subscription().ID === -1 ? 'new' : 'update';
+    const kind = this.subscription().id === -1 ? 'new' : 'update';
 
     actions$.subscribe({
       next: () => {

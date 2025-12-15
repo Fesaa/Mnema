@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Models.Entities.User;
 
 namespace Mnema.Providers;
 
@@ -30,6 +31,18 @@ internal partial class PublicationManager
                 sub.LastDownloadDir = Path.Join(BaseDir, publication.DownloadDir);
                 await unitOfWork.CommitAsync();
             }
+
+            if (publication.DownloadedPaths.Count > 0)
+            {
+                await AddNotification(new Notification
+                {
+                    Title = "Download completed",
+                    UserId = publication.Request.UserId,
+                    Summary = $"<a class=\"hover:pointer hover:underline\" href=\"%s\" target=\"_blank\">{publication.DownloadInfo.RefUrl}</a> finished downloading {publication.DownloadedPaths.Count} item(s)",
+                    Colour = NotificationColour.Primary,
+                });
+            }
+            
         }
     }
 

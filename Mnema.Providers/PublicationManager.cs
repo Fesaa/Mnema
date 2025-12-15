@@ -3,10 +3,12 @@ using System.IO.Abstractions;
 using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.User;
 
 namespace Mnema.Providers;
 
@@ -251,6 +253,15 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         {
             _logger.LogError(ex, "Unhandled exceptions while downloading {Title}", publication.Title);
 
+            await AddNotification(new Notification
+            {
+                Title = $"Download failed for {publication.Title}",
+                UserId = publication.Request.UserId,
+                Summary = ex.Message,
+                Body = ex.StackTrace,
+                Colour = NotificationColour.Error,
+            });
+
             await StopDownload(new StopRequestDto
             {
                 Provider = publication.Request.Provider,
@@ -293,4 +304,16 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
 
         _cts.Dispose();
     }
+
+    private Task AddNotification(Notification notification, IUnitOfWork? unitOfWork = null)
+    {
+        if (unitOfWork == null)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        } 
+        
+        unitOfWork.NotificationRepository.AddNotification(notification);
+        return unitOfWork.CommitAsync();
+    } 
 }

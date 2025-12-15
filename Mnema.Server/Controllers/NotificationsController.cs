@@ -13,7 +13,7 @@ public class NotificationsController(IUnitOfWork unitOfWork): BaseApiController
     {
         pagination ??= PaginationParams.Default;
 
-        var notifications = await unitOfWork.NotificationRepository.GetNotificationsForUser(UserId, pagination);
+        var notifications = await unitOfWork.NotificationRepository.GetNotificationsForUser(UserId, null, pagination);
 
         return Ok(notifications);
     }
@@ -21,7 +21,7 @@ public class NotificationsController(IUnitOfWork unitOfWork): BaseApiController
     [HttpGet("recent")]
     public async Task<ActionResult<IList<NotificationDto>>> GetRecentNotifications([FromQuery] int limit)
     {
-        var notifications = await unitOfWork.NotificationRepository.GetNotificationsForUser(UserId, new PaginationParams
+        var notifications = await unitOfWork.NotificationRepository.GetNotificationsForUser(UserId, false, new PaginationParams
         {
             PageNumber = 0,
             PageSize = limit,

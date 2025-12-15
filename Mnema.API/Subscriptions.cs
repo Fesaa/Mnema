@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 
@@ -7,7 +8,7 @@ namespace Mnema.API;
 public interface ISubscriptionRepository
 {
 
-    Task<List<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId);
+    Task<PagedList<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId, PaginationParams pagination);
     Task<Subscription?> GetSubscription(Guid id);
     Task<SubscriptionDto?> GetSubscriptionDto(Guid id);
 

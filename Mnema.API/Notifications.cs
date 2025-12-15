@@ -7,7 +7,7 @@ namespace Mnema.API;
 public interface INotificationRepository
 {
 
-    Task<PagedList<NotificationDto>> GetNotificationsForUser(Guid userId, PaginationParams pagination);
+    Task<PagedList<NotificationDto>> GetNotificationsForUser(Guid userId, bool? read, PaginationParams pagination);
 
     Task MarkNotificationsAsRead(Guid userId, IEnumerable<Guid> ids);
     Task MarkNotificationsAsUnRead(Guid userId, IEnumerable<Guid> ids);
