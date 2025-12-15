@@ -11,14 +11,14 @@ public enum NotificationColour
 public class Notification
 {
     
-    public required Guid Id { get; set; }
+    public Guid Id { get; set; }
     public required string Title { get; set; }
     public string? Summary { get; set; }
     public string? Body { get; set; }
     public NotificationColour Colour { get; set; }
     public bool Read { get; set; } = false;
 
-    public Guid UserId { get; set; }
+    public required Guid UserId { get; set; }
     public virtual MnemaUser User { get; set; }
 
 }

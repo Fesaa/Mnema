@@ -8,12 +8,12 @@ public static class PagedListExtensions
 
     extension<T>(IQueryable<T> source)
     {
-        public async Task<PagedList<T>> CreateAsync(PaginationParams pagination)
+        public async Task<PagedList<T>> AsPagedList(PaginationParams pagination)
         {
-            return await CreateAsync(source, pagination.PageNumber, pagination.PageSize);
+            return await AsPagedList(source, pagination.PageNumber, pagination.PageSize);
         }
 
-        public async Task<PagedList<T>> CreateAsync(int pageNumber, int pageSize)
+        public async Task<PagedList<T>> AsPagedList(int pageNumber, int pageSize)
         {
             // NOTE: OrderBy warning being thrown here even if query has the orderby statement
             var count = await source.CountAsync();
