@@ -11,4 +11,11 @@ public static class XmlHelper
 
         serializer.Serialize(writer, obj);
     }
+
+    public static T? Deserialize<T>(Stream content)
+    {
+        var serializer = new XmlSerializer(typeof(T));
+        var ret = serializer.Deserialize(content);
+        return ret == null ? default : (T) ret;
+    }
 }

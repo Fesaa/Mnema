@@ -121,7 +121,7 @@ internal partial class Publication
         {
             try
             {
-                var filePath = await _extensions.DownloadCallback(this, ioWork, _tokenSource.Token);
+                var filePath = await _extensions.DownloadCallback(ioWork, _tokenSource.Token);
                 
                 _logger.LogTrace("Wrote {FilePath} / {Idx} to disk", filePath, ioWork.Idx);
             }

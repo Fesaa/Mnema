@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
+using Mnema.Common.Helpers;
+using Mnema.Models.External;
 
 namespace Mnema.Providers;
 
@@ -13,9 +15,9 @@ internal interface IPublicationExtensions
     
     string? ParseVolumeFromFile(Publication publication, OnDiskContent content);
     
-    Task<string> DownloadCallback(Publication publication, IoWork ioWork, CancellationToken cancellationToken);
+    Task<string> DownloadCallback(IoWork ioWork, CancellationToken cancellationToken);
     
-    Task Cleanup(Publication publication, string path);
+    Task Cleanup(string path);
 
 }
 
@@ -32,7 +34,7 @@ internal partial class MangaPublicationExtensions: IPublicationExtensions
     
     private static readonly Regex ContentVolumeRegex = MyContentVolumeRegex();
     
-    public async Task<string> DownloadCallback(Publication publication, IoWork ioWork, CancellationToken cancellationToken)
+    public async Task<string> DownloadCallback(IoWork ioWork, CancellationToken cancellationToken)
     {
         var fileType = Path.GetExtension(ioWork.Url);
 
@@ -96,7 +98,7 @@ internal partial class MangaPublicationExtensions: IPublicationExtensions
 
     }
 
-    public async Task Cleanup(Publication publication, string path)
+    public async Task Cleanup(string path)
     {
         await ZipFile.CreateFromDirectoryAsync(path, path + ".cbz",
             CompressionLevel.SmallestSize, includeBaseDirectory: false);
@@ -104,9 +106,18 @@ internal partial class MangaPublicationExtensions: IPublicationExtensions
         Directory.Delete(path, true);
     }
 
-    public string ParseVolumeFromFile(Publication publication, OnDiskContent content)
+    public string? ParseVolumeFromFile(Publication publication, OnDiskContent content)
     {
-        return string.Empty;
+        var zipFile = ZipFile.OpenRead(content.Path);
+
+        var archiveEntry = zipFile.Entries
+            .FirstOrDefault(e => e.Name.Equals("ComicInfo.xml", StringComparison.InvariantCultureIgnoreCase));
+
+        if (archiveEntry == null) return null;
+
+        var comicInfo = XmlHelper.Deserialize<ComicInfo>(archiveEntry.Open());
+
+        return comicInfo?.Volume;
     }
 
     [GeneratedRegex(@".* (?:Vol\. ([\d\.]+)) (?:Ch)\. ([\d\.]+)\.cbz", RegexOptions.Compiled)]

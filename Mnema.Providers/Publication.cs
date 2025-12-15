@@ -60,7 +60,7 @@ internal partial class Publication(
 
     public Task FinalizeChapter(string path)
     {
-        return _extensions.Cleanup(this, path);
+        return _extensions.Cleanup(path);
     }
 
     /// <summary>
