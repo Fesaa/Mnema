@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.IO.Abstractions;
 using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -9,12 +10,13 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.Providers;
 
-public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
+internal partial class PublicationManager : IPublicationManager, IAsyncDisposable
 {
     private readonly ILogger<PublicationManager> _logger;
+    private readonly IFileSystem _fileSystem;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ConcurrentDictionary<string, IPublication> _content = new();
     
+    private readonly ConcurrentDictionary<string, IPublication> _content = new();
     private readonly Channel<IPublication> _loadingChannel;
     private readonly Channel<IPublication> _downloadingChannel;
     
@@ -23,9 +25,10 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
     
     public string BaseDir { get; private set; } = "/Users/amelia/GitHub/Mnema/downloads";
 
-    public PublicationManager(ILogger<PublicationManager> logger, IServiceScopeFactory scopeFactory)
+    public PublicationManager(ILogger<PublicationManager> logger, IServiceScopeFactory scopeFactory, IFileSystem fileSystem)
     {
         _logger = logger;
+        _fileSystem = fileSystem;
         _scopeFactory = scopeFactory;
 
         var channelOptions = new BoundedChannelOptions(100)
@@ -82,6 +85,8 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
             request.Id, publication.Title, request.DeleteFiles);
 
         publication.Cancel();
+
+        Task.Run(() => CleanupAfterDownload(publication, request.DeleteFiles));
         
         return Task.CompletedTask;
     }
@@ -186,11 +191,11 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
         }
         catch (OperationCanceledException)
         {
-            _logger.LogDebug("Worker cancelled");
+            _logger.LogTrace("Worker cancelled");
         }
         catch (ChannelClosedException)
         {
-            _logger.LogDebug("Channel closed");
+            _logger.LogTrace("Channel closed");
         }
         catch (Exception ex)
         {
@@ -267,7 +272,7 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        _logger.LogDebug("Shutting down PublicationManager");
+        _logger.LogTrace("Shutting down PublicationManager");
 
         await _cts.CancelAsync();
 
@@ -283,7 +288,7 @@ public sealed class PublicationManager : IPublicationManager, IAsyncDisposable
         }
         else
         {
-            _logger.LogDebug("PublicationManager shutdown complete");
+            _logger.LogTrace("PublicationManager shutdown complete");
         }
 
         _cts.Dispose();

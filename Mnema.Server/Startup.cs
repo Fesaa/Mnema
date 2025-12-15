@@ -27,6 +27,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddMnemaServices();
 
         services.AddScoped<IFileSystem, FileSystem>();
+        services.AddSingleton<IFileSystem, FileSystem>();
         
         services.AddControllers(options =>
         {

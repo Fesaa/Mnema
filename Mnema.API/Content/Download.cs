@@ -19,6 +19,8 @@ public interface IContent
     
     string Title { get; }
     
+    string DownloadDir { get; }
+    
     ContentState State { get; }
     
     DownloadRequestDto Request { get; }

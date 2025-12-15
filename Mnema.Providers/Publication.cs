@@ -14,14 +14,6 @@ using Mnema.Models.Publication;
 
 namespace Mnema.Providers;
 
-public class OnDiskContent
-{
-    public required string Name { get; init; }
-    public required string Path { get; init; }
-    public string? Chapter { get; init; }
-    public string? Volume { get; init; }
-}
-
 internal partial class Publication(
     IServiceScope scope,
     Provider provider,
@@ -55,15 +47,21 @@ internal partial class Publication(
     /// <summary>
     /// List of directory paths pointing to chapters we've downloaded this run 
     /// </summary>
-    public IList<string> DownloadedPaths = [];
+    public IList<string> DownloadedPaths { get; } = [];
     /// <summary>
     /// List of paths pointing to chapters already on disk before this run
     /// </summary>
-    public IList<OnDiskContent> _existingContent = [];
+    public IList<OnDiskContent> ExistingContent { get; private set; } = [];
     /// <summary>
     /// List of paths pointing to chapters that got replaced this run
     /// </summary>
-    public IList<string> ToRemovePaths = [];
+    public IList<string> ToRemovePaths { get; private set; } = [];
+
+    public Task FinalizeChapter(string path)
+    {
+        return _extensions.Cleanup(this, path);
+    }
+
     /// <summary>
     /// List of <see cref="Chapter.Id"/> selected by the user in the UI
     /// </summary>
@@ -96,12 +94,12 @@ internal partial class Publication(
         ? Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(Request.TempTitle, Request.Id)
         : Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(_series.Title, Request.Id);
 
-    private string DownloadDir => _series != null ? Path.Join(Request.BaseDir, Title) : Request.BaseDir;
+    public string DownloadDir => _series != null ? Path.Join(Request.BaseDir, Title) : Request.BaseDir;
 
-    private OnDiskContent? GetContentByName(string name) => _existingContent.FirstOrDefault(c
+    private OnDiskContent? GetContentByName(string name) => ExistingContent.FirstOrDefault(c
         => Path.GetFileNameWithoutExtension(c.Name) == name);
 
-    private OnDiskContent? GetContentByVolumeAndChapter(string volume, string chapter) => _existingContent.FirstOrDefault(c =>
+    private OnDiskContent? GetContentByVolumeAndChapter(string volume, string chapter) => ExistingContent.FirstOrDefault(c =>
     {
         if (c.Volume == volume && c.Chapter == chapter) return true;
 

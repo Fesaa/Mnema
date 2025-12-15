@@ -9,9 +9,22 @@ public interface IPublicationManager: IContentManager
 public interface IPublication: IContent
 {
 
+    IList<OnDiskContent> ExistingContent { get; }
+    IList<string> DownloadedPaths { get; }
+    IList<string> ToRemovePaths { get; }
+
+    Task FinalizeChapter(string path);
     Task LoadMetadataAsync(CancellationTokenSource source);
     Task DownloadContentAsync(CancellationTokenSource source);
 
+}
+
+public class OnDiskContent
+{
+    public string Name { get; init; }
+    public string Path { get; init; }
+    public string? Chapter { get; init; }
+    public string? Volume { get; init; }
 }
 
 public static class RequestConstants

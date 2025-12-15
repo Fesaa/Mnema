@@ -62,7 +62,7 @@ internal partial class Publication
         {
             _logger.LogDebug("No chapters to download for {Title}, stopping download", Title);
             State = ContentState.Waiting;
-            await Cancel();
+            await _publicationManager.StopDownload(StopRequest(false));
             return;
         }
 
@@ -78,7 +78,7 @@ internal partial class Publication
 
         var sw = Stopwatch.StartNew();
         
-        _existingContent = ParseDirectoryForContent(DownloadDir, cancellationToken);
+        ExistingContent = ParseDirectoryForContent(DownloadDir, cancellationToken);
 
         _queuedChapters = _series!.Chapters.Where(ShouldDownloadChapter).Select(c => c.Id).ToList();
         
@@ -102,7 +102,7 @@ internal partial class Publication
 
             if (_fileSystem.Directory.Exists(entry))
             {
-                contents.AddRange(ParseDirectoryForContent(Path.Join(path, entry), cancellationToken));
+                contents.AddRange(ParseDirectoryForContent(entry, cancellationToken));
                 continue;
             }
 
@@ -118,7 +118,7 @@ internal partial class Publication
             contents.Add(new OnDiskContent
             {
                 Name = Path.GetFileNameWithoutExtension(entry),
-                Path = Path.Join(path, entry),
+                Path = entry,
                 Volume = content.Volume,
                 Chapter = content.Chapter,
             });
@@ -152,7 +152,7 @@ internal partial class Publication
             }
         }
 
-        var onDiskVolume = _extensions.ParseVolumeFromFile(this, content);
+        var onDiskVolume = string.IsNullOrEmpty(content.Volume) ? _extensions.ParseVolumeFromFile(this, content) : content.Volume;
         if (onDiskVolume == null)
         {
             return false;
@@ -164,7 +164,7 @@ internal partial class Publication
         {
             _logger.LogDebug("Redownloading chapter {ChapterMarker} as volume changed from {Old} to {New}", 
                 chapter.ChapterMarker, onDiskVolume, chapter.ChapterMarker);
-            ToRemovePaths.Add(Path.Join(_publicationManager.BaseDir, content.Path));
+            ToRemovePaths.Add(content.Path);
         }
 
         return volumeChanged;

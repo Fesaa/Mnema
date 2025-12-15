@@ -19,6 +19,8 @@ public sealed record DownloadRequestDto
     [JsonIgnore]
     public Guid? SubscriptionId { get; set; }
 
+    public bool IsSubscription => SubscriptionId != null;
+    
     public string? GetString(string key)
     {
         return DownloadMetadata.Extra.GetString(key);
