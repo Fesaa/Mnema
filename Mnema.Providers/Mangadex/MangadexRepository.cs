@@ -277,4 +277,29 @@ public class MangadexRepository: IRepository
         return dictionary;
     }
 
+    internal async Task<CoverResponse> GetCoverImages(string id, CancellationToken cancellationToken, int offset = 0)
+    {
+        var url = $"/cover?order[volume]=asc&limit=20&manga[]={id}&offset={offset}";
+
+        var result = await Client.GetCachedAsync<CoverResponse>(url, _cache, cancellationToken);
+        if (result.IsErr)
+        {
+            _logger.LogError(result.Error, "Failed to load cover images for {Id}", id);
+            throw new MnemaException($"Failed to load cover images for {id}", result.Error);
+        }
+
+        var resp = result.Unwrap();
+
+        if (resp.Total < resp.Limit + resp.Offset)
+        {
+            return resp;
+        }
+
+        var extra = await GetCoverImages(id, cancellationToken, resp.Limit + resp.Offset);
+
+        resp.Data.AddRange(extra.Data);
+
+        return resp;
+    }
+
 }

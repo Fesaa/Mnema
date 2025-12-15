@@ -53,27 +53,27 @@ internal partial class Publication
 
     private async Task Download()
     {
-        if (_series == null)
+        if (Series == null)
             throw new MnemaException("Publication is downloading before series has loaded");
         
         var hook = scope.ServiceProvider.GetKeyedService<IPreDownloadHook>(provider);
         if (hook != null)
         {
-            await hook.PreDownloadHook(this);
+            await hook.PreDownloadHook(this, scope, _tokenSource.Token);
         }
 
         if (_userSelectedIds.Count > 0)
         {
             var initialSize = _queuedChapters.Count;
 
-            _queuedChapters = _series.Chapters.Select(c => c.Id).Where(_userSelectedIds.Contains).ToList();
+            _queuedChapters = Series.Chapters.Select(c => c.Id).Where(_userSelectedIds.Contains).ToList();
             
             _logger.LogDebug("Chapters filtered after user selection. Old: {Old}, New: {New}", initialSize, _queuedChapters.Count);
 
             if (ToRemovePaths.Count > 0)
             {
                 var paths = _queuedChapters
-                    .Select(id => _series.Chapters.FirstOrDefault(c => c.Id == id))
+                    .Select(id => Series.Chapters.FirstOrDefault(c => c.Id == id))
                     .WhereNotNull()
                     .Select(c => ChapterPath(c) + "cbz")
                     .ToList();
@@ -139,7 +139,7 @@ internal partial class Publication
         
         foreach (var chapterId in _queuedChapters)
         {
-            var chapter = _series!.Chapters.FirstOrDefault(c => c.Id == chapterId);
+            var chapter = Series!.Chapters.FirstOrDefault(c => c.Id == chapterId);
             if (chapter == null)
             {
                 _logger.LogWarning("Not downloading chapter with id {Id}, no matching info found", chapterId);

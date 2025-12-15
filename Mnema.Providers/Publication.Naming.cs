@@ -52,7 +52,7 @@ internal partial class Publication
             return _hasDuplicateVolumes.Value;
         }
 
-        _hasDuplicateVolumes = _series.Chapters
+        _hasDuplicateVolumes = Series.Chapters
             .GroupBy(c => c.ChapterMarker)
             .Select(g => g.Count())
             .Any(amount => amount > 1);

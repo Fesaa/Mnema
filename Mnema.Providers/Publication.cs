@@ -33,10 +33,11 @@ internal partial class Publication(
     private CancellationTokenSource _tokenSource = new ();
     
     private Subscription? _subscription;
-    private UserPreferences _preferences = null!;
     private ServerSettingsDto _settings = null!;
     private FixedWindowRateLimiter _limiter = null!;
-    private Series? _series;
+
+    internal UserPreferences Preferences = null!;
+    internal Series? Series { get; private set; }
 
     private bool? _hasDuplicateVolumes  = null;
 
@@ -78,7 +79,7 @@ internal partial class Publication(
         Id = Id,
         ContentState = State,
         Name = Title,
-        RefUrl = _series?.RefUrl,
+        RefUrl = Series?.RefUrl,
         Size = _userSelectedIds.Count > 0 ? $"{_userSelectedIds.Count} Chapters" : $"{_queuedChapters.Count} Chapters",
         Downloading = State == ContentState.Downloading,
         Progress = Math.Floor(_speedTracker?.Progress() ?? 0),
@@ -88,13 +89,13 @@ internal partial class Publication(
         DownloadDir = DownloadDir,
     };
 
-    public string Id => _series != null ? _series.Id : Request.Id;
+    public string Id => Series != null ? Series.Id : Request.Id;
 
-    public string Title =>  _series == null
+    public string Title =>  Series == null
         ? Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(Request.TempTitle, Request.Id)
-        : Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(_series.Title, Request.Id);
+        : Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(Series.Title, Request.Id);
 
-    public string DownloadDir => _series != null ? Path.Join(Request.BaseDir, Title) : Request.BaseDir;
+    public string DownloadDir => Series != null ? Path.Join(Request.BaseDir, Title) : Request.BaseDir;
 
     private OnDiskContent? GetContentByName(string name) => ExistingContent.FirstOrDefault(c
         => Path.GetFileNameWithoutExtension(c.Name) == name);

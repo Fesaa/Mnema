@@ -16,7 +16,7 @@ internal partial class Publication
     
     private async Task WriteMetadataForChapter(Chapter chapter)
     {
-        var coverUrl = string.IsNullOrEmpty(chapter.CoverUrl) ? _series!.CoverUrl : chapter.CoverUrl;
+        var coverUrl = string.IsNullOrEmpty(chapter.CoverUrl) ? Series!.CoverUrl : chapter.CoverUrl;
 
         if (Request.GetBool(RequestConstants.IncludeCover, true))
         {
@@ -41,14 +41,14 @@ internal partial class Publication
 
     private ComicInfo? BuildComicInfoForChapter(Chapter chapter)
     {
-        if (_series == null) return null;
+        if (Series == null) return null;
         
         var ci = new ComicInfo
         {
             Notes = string.Format(ComicInfoNote, provider.ToString()),
             Series = Title,
-            AlternateSeries = _series.AltTitle ?? string.Empty,
-            Summary = chapter.Summary.OrNonEmpty(_series.Summary),
+            AlternateSeries = Series.AltTitle ?? string.Empty,
+            Summary = chapter.Summary.OrNonEmpty(Series.Summary),
             Title = chapter.Title,
         };
 
@@ -68,15 +68,15 @@ internal partial class Publication
         
         foreach (var role in Enum.GetValues<PersonRole>())
         {
-            var value = string.Join(',', _series.People
+            var value = string.Join(',', Series.People
                 .Where(p => p.Roles.Contains(role))
                 .Select(p => p.Name));
             ci.SetForRole(value, role);
         }
 
-        ci.Web = string.Join(',', _series.Links.Concat([_series.RefUrl]).Distinct());
+        ci.Web = string.Join(',', Series.Links.Concat([Series.RefUrl]).Distinct());
 
-        var allTags = _series.Tags.Concat(chapter.Tags).ToList();
+        var allTags = Series.Tags.Concat(chapter.Tags).ToList();
         (ci.Genre, ci.Tags) = GetGenreAndTags(allTags);
 
         var ar = GetAgeRating(allTags);
@@ -124,10 +124,10 @@ internal partial class Publication
 
     private (string, string) GetGenreAndTags(IList<Tag> allTags)
     {
-        var mapToGenre = _preferences.ConvertToGenreList.Select(g => g.ToNormalized()).ToList();
-        var blackListed = _preferences.BlackListedTags.Select(g => g.ToNormalized()).ToList();
-        var whiteListed = _preferences.WhiteListedTags.Select(g => g.ToNormalized()).ToList();
-        var mappings = _preferences.TagMappings.Select(m => m with
+        var mapToGenre = Preferences.ConvertToGenreList.Select(g => g.ToNormalized()).ToList();
+        var blackListed = Preferences.BlackListedTags.Select(g => g.ToNormalized()).ToList();
+        var whiteListed = Preferences.WhiteListedTags.Select(g => g.ToNormalized()).ToList();
+        var mappings = Preferences.TagMappings.Select(m => m with
         {
             OriginTag = m.OriginTag.ToNormalized(),
         }).ToList();
@@ -168,12 +168,12 @@ internal partial class Publication
 
     private AgeRating? GetAgeRating(IList<Tag> allTags)
     {
-        var mappings = _preferences.TagMappings.Select(m => m with
+        var mappings = Preferences.TagMappings.Select(m => m with
         {
             OriginTag = m.OriginTag.ToNormalized(),
         }).ToList();
 
-        var ageRatingMappings = _preferences.AgeRatingMappings.Select(m => m with
+        var ageRatingMappings = Preferences.AgeRatingMappings.Select(m => m with
         {
             Tag = m.Tag.ToNormalized(),
         }).ToList();
@@ -182,7 +182,7 @@ internal partial class Publication
 
         var ageRatings = allTags
             .Select(GetAgeRatingForTag)
-            .Concat([_series!.AgeRating])
+            .Concat([Series!.AgeRating])
             .WhereNotNull()
             .ToList();
 
@@ -209,32 +209,32 @@ internal partial class Publication
 
     private (int?, bool) GetCount()
     {
-        if (_series == null) return (null, false);
+        if (Series == null) return (null, false);
 
-        if (_series.Status != PublicationStatus.Completed)
+        if (Series.Status != PublicationStatus.Completed)
         {
             return (null, false);
         }
 
-        if (_series.TranslationStatus != null && _series.TranslationStatus != PublicationStatus.Completed)
+        if (Series.TranslationStatus != null && Series.TranslationStatus != PublicationStatus.Completed)
         {
             return (null, false);
         }
 
-        var chapterNumbers = _series.Chapters.Select(c => c.ChapterNumber()).WhereNotNull().ToList();
-        var volumeNumbers = _series.Chapters.Select(c => c.VolumeNumber()).WhereNotNull().ToList();
+        var chapterNumbers = Series.Chapters.Select(c => c.ChapterNumber()).WhereNotNull().ToList();
+        var volumeNumbers = Series.Chapters.Select(c => c.VolumeNumber()).WhereNotNull().ToList();
 
         var highestChapter = chapterNumbers.Count == 0 ? null : chapterNumbers.Max();
         var highestVolume = volumeNumbers.Count == 0 ? null : volumeNumbers.Max();
 
-        if (_series.HighestVolumeNumber != null)
+        if (Series.HighestVolumeNumber != null)
         {
-            return ((int?)_series.HighestVolumeNumber, _series.HighestVolumeNumber.SafeEquals(highestVolume));
+            return ((int?)Series.HighestVolumeNumber, Series.HighestVolumeNumber.SafeEquals(highestVolume));
         }
         
-        if (_series.HighestChapterNumber != null)
+        if (Series.HighestChapterNumber != null)
         {
-            return ((int?)_series.HighestChapterNumber, _series.HighestChapterNumber.SafeEquals(highestChapter));
+            return ((int?)Series.HighestChapterNumber, Series.HighestChapterNumber.SafeEquals(highestChapter));
         }
 
         if (highestVolume != null)

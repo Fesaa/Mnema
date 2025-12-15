@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.IO.Pipelines;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
 
@@ -20,7 +21,7 @@ internal interface IPublicationExtensions
 
 internal interface IPreDownloadHook
 {
-    Task PreDownloadHook(Publication publication);
+    Task PreDownloadHook(Publication publication, IServiceScope scope, CancellationToken cancellationToken);
 }
 
 internal partial class MangaPublicationExtensions: IPublicationExtensions

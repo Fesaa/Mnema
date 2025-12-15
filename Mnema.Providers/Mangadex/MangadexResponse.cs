@@ -238,6 +238,22 @@ internal sealed record ChapterImagesInfo
     public required IList<string> Data { get; set; }
 }
 
+internal sealed record CoverData: Identifiable
+{
+    public CoverAttributes Attributes { get; set; }
+    public IList<RelationShip> RelationShips { get; set; } = [];
+
+    public string Url(string seriesId) => $"https://uploads.mangadex.org/covers/{seriesId}/{Attributes.FileName}.512.jpg";
+}
+
+internal sealed record CoverAttributes
+{
+    public string Descritpion { get; set; }
+    public string Volume { get; set; }
+    public string FileName { get; set; }
+    public string Locale { get; set; }
+}
+
 internal sealed record SearchResponse: MangadexResponse<IList<MangaData>>;
 
 internal sealed record MangaResponse: MangadexResponse<MangaData>;
@@ -245,3 +261,5 @@ internal sealed record MangaResponse: MangadexResponse<MangaData>;
 internal sealed record ChaptersResponse: MangadexResponse<List<ChapterData>>;
 
 internal sealed record TagResponse: MangadexResponse<List<TagData>>;
+
+internal sealed record CoverResponse: MangadexResponse<List<CoverData>>;
