@@ -22,7 +22,7 @@ internal partial class Publication
         var preferences = await _unitOfWork.UserRepository.GetPreferences(Request.UserId);
         if (preferences == null)
         {
-            _logger.LogWarning("Failed to load user preferences, stopping downloading");
+            _logger.LogWarning("Failed to load user preferences for {UserId}, stopping downloading", Request.UserId);
             await Cancel();
             return;
         }
@@ -58,7 +58,7 @@ internal partial class Publication
         
         FilterAlreadyDownloadedContent(cancellationToken);
 
-        if (_queuedChapters.Count == 0 && Request.DownloadMetadata.StartImmediately)
+        if (_queuedChapters.Count == 0 && (Request.DownloadMetadata.StartImmediately || Request.IsSubscription))
         {
             _logger.LogDebug("No chapters to download for {Title}, stopping download", Title);
             State = ContentState.Waiting;
@@ -66,7 +66,7 @@ internal partial class Publication
             return;
         }
 
-        State = Request.DownloadMetadata.StartImmediately ? ContentState.Ready : ContentState.Waiting;
+        State = Request.DownloadMetadata.StartImmediately || Request.IsSubscription ? ContentState.Ready : ContentState.Waiting;
         
         _logger.LogDebug("Loading metadata for {Title}, {ToDownload}/{Total} chapters in {Elapsed}ms",
             Title, _queuedChapters.Count, Series!.Chapters.Count, sw.ElapsedMilliseconds);

@@ -316,11 +316,8 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
 
     private Task AddNotification(Notification notification, IUnitOfWork? unitOfWork = null)
     {
-        if (unitOfWork == null)
-        {
-            using var scope = _scopeFactory.CreateScope();
-            unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        } 
+        using var scope = _scopeFactory.CreateScope();
+        unitOfWork ??= scope.ServiceProvider.GetRequiredService<IUnitOfWork>(); 
         
         unitOfWork.NotificationRepository.AddNotification(notification);
         return unitOfWork.CommitAsync();
