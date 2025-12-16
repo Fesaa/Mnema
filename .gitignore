@@ -7,3 +7,4 @@ riderModule.iml
 wwwroot
 *.log
 downloads
+appsettings.Development.json

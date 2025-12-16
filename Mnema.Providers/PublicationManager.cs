@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.IO.Abstractions;
 using System.Threading.Channels;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
@@ -9,6 +10,7 @@ using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
+using Mnema.Models.Internal;
 
 namespace Mnema.Providers;
 
@@ -25,13 +27,20 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _workerTask;
     
-    public string BaseDir { get; private set; } = "/Users/amelia/GitHub/Mnema/downloads";
+    public string BaseDir { get; }
 
-    public PublicationManager(ILogger<PublicationManager> logger, IServiceScopeFactory scopeFactory, IFileSystem fileSystem)
+    public PublicationManager(
+        ILogger<PublicationManager> logger,
+        IServiceScopeFactory scopeFactory,
+        IFileSystem fileSystem,
+        ApplicationConfiguration configuration
+        )
     {
         _logger = logger;
         _fileSystem = fileSystem;
         _scopeFactory = scopeFactory;
+
+        BaseDir = configuration.BaseDir;
 
         var channelOptions = new BoundedChannelOptions(100)
         {

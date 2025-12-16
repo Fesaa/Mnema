@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi;
 using Mnema.Common;
+using Mnema.Common.Exceptions;
 using Mnema.Database.Extensions;
 using Mnema.Models;
 using Mnema.Models.Internal;
@@ -24,6 +25,14 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
     public void ConfigureServices(IServiceCollection services)
     {
+
+        var appConfig = configuration.GetSection("Application").Get<ApplicationConfiguration>();
+        if (appConfig == null)
+        {
+            throw new MnemaException($"Application config must be set with key Application");
+        }
+        
+        services.AddSingleton(appConfig);
 
         services.AddProviders();
         services.AddMnemaServices();
