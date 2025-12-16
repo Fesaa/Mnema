@@ -54,9 +54,9 @@ export class SearchResultComponent implements OnInit{
       title: this.searchResult().name,
       baseDir: this.page().dirs[0],
       lastDownloadDir: '',
-      lastCheck: null!,
-      lastCheckSuccess: null!,
-      nextExecution: null!,
+      lastRun: null!,
+      lastRunSuccess: null!,
+      nextRun: null!,
       metadata: {
         startImmediately: true,
         extra: {}

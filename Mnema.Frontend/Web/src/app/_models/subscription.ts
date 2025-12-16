@@ -3,16 +3,15 @@ import {DownloadRequestMetadata} from "./search";
 
 export type Subscription = {
   id: number;
-  provider: Provider;
   contentId: string;
   refreshFrequency: RefreshFrequency;
   title: string;
-  description?: string;
   baseDir: string;
   lastDownloadDir: string;
-  lastCheck: Date;
-  lastCheckSuccess: boolean;
-  nextExecution: Date;
+  lastRun: Date;
+  lastRunSuccess: boolean;
+  nextRun: Date;
+  provider: Provider;
   metadata: DownloadRequestMetadata;
 }
 

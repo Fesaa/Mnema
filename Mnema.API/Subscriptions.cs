@@ -5,12 +5,19 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.API;
 
+public interface ISubscriptionScheduler
+{
+    Task EnsureScheduledAsync();
+    Task RescheduleAsync(int hour);
+}
+
 public interface ISubscriptionRepository
 {
 
     Task<PagedList<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId, string query, PaginationParams pagination);
     Task<Subscription?> GetSubscription(Guid id);
     Task<SubscriptionDto?> GetSubscriptionDto(Guid id);
+    Task<List<Subscription>> GetAllSubscriptions();
 
     void Update(Subscription subscription);
     void Add(Subscription subscription);

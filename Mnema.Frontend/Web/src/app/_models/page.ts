@@ -23,33 +23,18 @@ export type ModifierValue = {
 }
 
 export enum Provider {
-  NYAA = 2,
-  YTS,
-  LIMETORRENTS,
-  SUBSPLEASE,
-  MANGADEX,
-  WEBTOON,
-  DYNASTY,
-  BATO,
-  MANGABUDDY
+  NYAA = 0,
+  MANGADEX = 1,
+  WEBTOON = 2,
+  DYNASTY = 3,
+  BATO = 4,
+  MANGABUDDY = 5
 }
 
 export const Providers = [
   {
     label: "Nyaa",
     value: Provider.NYAA
-  },
-  {
-    label: "YTS",
-    value: Provider.YTS
-  },
-  {
-    label: "LimeTorrents",
-    value: Provider.LIMETORRENTS
-  },
-  {
-    label: "SubsPlease",
-    value: Provider.SUBSPLEASE
   },
   {
     label: "MangaDex",

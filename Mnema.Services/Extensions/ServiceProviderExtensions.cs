@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Services.Scheduled;
 using Mnema.Services.Store;
 
 namespace Mnema.Services.Extensions;
@@ -19,6 +20,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<ISubscriptionService, SubscriptionService>();
         services.AddScoped<ISearchService, SearchService>();
         services.AddScoped<IDownloadService, DownloadService>();
+        services.AddScoped<ISubscriptionScheduler, SubscriptionScheduler>();
 
         return services;
     }

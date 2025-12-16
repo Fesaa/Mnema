@@ -30,6 +30,7 @@ public class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfWor
             sub.BaseDir = dto.BaseDir;
         }
 
+        sub.Provider = dto.Provider;
         sub.Metadata = dto.Metadata;
         sub.NoDownloadsRuns = 0;
         if (!string.IsNullOrEmpty(dto.LastDownloadDir))
@@ -48,6 +49,7 @@ public class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfWor
             ContentId = dto.ContentId,
             BaseDir = dto.BaseDir,
             Metadata = dto.Metadata,
+            Provider = dto.Provider,
         };
         
         unitOfWork.SubscriptionRepository.Add(sub);

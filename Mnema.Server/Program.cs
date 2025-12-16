@@ -2,6 +2,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Mnema.API;
 using Mnema.Database;
 using Mnema.Server.Logging;
 using Serilog;
@@ -47,6 +48,8 @@ public class Program
                 logger.LogCritical(ex, "An exception occured while migrating the database. Mnema will not start");
                 return;
             }
+
+            await scope.ServiceProvider.GetRequiredService<JobsBootstrapper>().Boostrap();
             
             await host.RunAsync();
         }

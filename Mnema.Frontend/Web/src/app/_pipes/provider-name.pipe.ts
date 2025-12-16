@@ -10,16 +10,6 @@ export class ProviderNamePipe implements PipeTransform {
     switch (value) {
       case Provider.DYNASTY:
         return "Dynasty";
-      case Provider.LIMETORRENTS:
-        return "Limetorrents";
-      case Provider.MANGADEX:
-        return "Mangadex";
-      case Provider.NYAA:
-        return "Nyaa";
-      case Provider.SUBSPLEASE:
-        return "Subsplease";
-      case Provider.YTS:
-        return "YTS";
       case Provider.WEBTOON:
         return "WebToon";
       case Provider.BATO:

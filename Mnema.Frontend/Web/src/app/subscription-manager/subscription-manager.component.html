@@ -40,10 +40,10 @@
 
       <th class="table-cell">
         <app-badge
-          [colour]="sub.lastCheckSuccess ? 'primary' : 'error'"
-          [ngbTooltip]="(sub.lastCheck | date: 'yyyy-MM-dd HH:mm:ss') ?? t('unknown')"
+          [colour]="sub.lastRunSuccess ? 'primary' : 'error'"
+          [ngbTooltip]="(sub.lastRun | date: 'yyyy-MM-dd HH:mm:ss') ?? t('unknown')"
         >
-          {{ sub.lastCheckSuccess ? t('success') : t('failing') }}
+          {{ sub.lastRunSuccess ? t('success') : t('failing') }}
         </app-badge>
       </th>
 

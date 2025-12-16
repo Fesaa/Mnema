@@ -38,6 +38,11 @@ public class SubscriptionRepository(MnemaDataContext ctx, IMapper mapper): ISubs
         return sub == null ? null : mapper.Map<SubscriptionDto>(sub);
     }
 
+    public Task<List<Subscription>> GetAllSubscriptions()
+    {
+        return ctx.Subscriptions.ToListAsync();
+    }
+
     public void Update(Subscription subscription)
     {
         ctx.Subscriptions.Add(subscription).State = EntityState.Modified;

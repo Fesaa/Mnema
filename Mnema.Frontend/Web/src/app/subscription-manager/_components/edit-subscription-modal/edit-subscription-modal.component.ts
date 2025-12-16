@@ -57,7 +57,6 @@ export class EditSubscriptionModalComponent implements OnInit {
     this.subscriptionForm.addControl('contentId', new FormControl(subscription.contentId));
     this.subscriptionForm.addControl('refreshFrequency', new FormControl(subscription.refreshFrequency));
     this.subscriptionForm.addControl('title', new FormControl(subscription.title));
-    this.subscriptionForm.addControl('description', new FormControl(subscription.description));
     this.subscriptionForm.addControl('baseDir', new FormControl(subscription.baseDir));
     this.subscriptionForm.addControl('lastDownloadDir', new FormControl(subscription.lastDownloadDir));
 

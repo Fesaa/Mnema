@@ -28,6 +28,7 @@ public class Subscription
     /// </summary>
     public string LastDownloadDir { get; set; } = string.Empty;
     
+    public required Provider Provider { get; set; }
     public required DownloadMetadataDto Metadata { get; set; }
  
     /// <summary>

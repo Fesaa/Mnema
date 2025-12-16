@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi;
+using Mnema.API;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Database.Extensions;
@@ -39,6 +40,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddScoped<IFileSystem, FileSystem>();
         services.AddSingleton<IFileSystem, FileSystem>();
+        services.AddScoped<JobsBootstrapper>();
         
         services.AddControllers(options =>
         {
