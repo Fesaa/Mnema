@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Mnema.Common.Exceptions;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
+using Mnema.Server.Configuration;
 
 namespace Mnema.Server.Controllers;
 

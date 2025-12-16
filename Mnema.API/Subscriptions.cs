@@ -8,7 +8,7 @@ namespace Mnema.API;
 public interface ISubscriptionRepository
 {
 
-    Task<PagedList<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId, PaginationParams pagination);
+    Task<PagedList<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId, string query, PaginationParams pagination);
     Task<Subscription?> GetSubscription(Guid id);
     Task<SubscriptionDto?> GetSubscriptionDto(Guid id);
 

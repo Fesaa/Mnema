@@ -14,7 +14,7 @@ import {TableComponent} from "../shared/_component/table/table.component";
 import {BadgeComponent} from "../shared/_component/badge/badge.component";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {ModalService} from "../_services/modal.service";
-import {forkJoin} from "rxjs";
+import {forkJoin, map, switchMap, tap} from "rxjs";
 import {EditSubscriptionModalComponent} from "./_components/edit-subscription-modal/edit-subscription-modal.component";
 import {DefaultModalOptions} from "../_models/default-modal-options";
 import {PageService} from "../_services/page.service";
@@ -44,38 +44,37 @@ export class SubscriptionManagerComponent implements OnInit {
   protected readonly subscriptionService = inject(SubscriptionService);
   private readonly toastService = inject(ToastService);
   private readonly pageService = inject(PageService);
-  private readonly providerNamePipe = inject(ProviderNamePipe);
-  private readonly utilityService = inject(UtilityService);
 
   metadata = signal<Map<Provider, DownloadMetadata>>(new Map());
   allowedProviders = signal<Provider[]>([]);
   hasRanAll = signal(false);
   filterText = signal('');
+  hasAny = signal(false);
 
-  constructor() {
-    effect(() => {
-      const providers = this.allowedProviders();
-      for (const provider of providers) {
-        this.pageService.metadata(provider).subscribe(metadata => {
-          this.metadata.update(m => {
-            m.set(provider, metadata);
-            return m;
-          });
-        });
-      }
-    });
-  }
+  pageLoader = computed(() => {
+    const query = this.filterText();
 
-  pageLoader(pn: number, ps: number) {
-    return this.subscriptionService.all(pn, ps);
-  }
+    return (pn: number, ps: number) => {
+      return this.subscriptionService.all(query, pn, ps);
+    }
+  });
 
   ngOnInit(): void {
     this.navService.setNavVisibility(true);
 
-    this.subscriptionService.providers().subscribe(providers => {
-      this.allowedProviders.set(providers ?? []);
-    });
+    this.subscriptionService.providers()
+      .pipe(
+        tap(providers => this.allowedProviders.set(providers ?? [])),
+        switchMap(providers => {
+          const loaders$ = providers.map(
+            p => this.pageService.metadata(p).pipe(
+              map(m => [p, m] as [Provider, DownloadMetadata])
+            ));
+
+          return forkJoin(loaders$);
+        }),
+        tap(metadata => this.metadata.set(new Map(metadata)))
+      ).subscribe();
   }
 
   updateFilter(event: Event) {

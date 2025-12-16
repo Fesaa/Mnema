@@ -12,10 +12,12 @@ namespace Mnema.Database.Repositories;
 public class SubscriptionRepository(MnemaDataContext ctx, IMapper mapper): ISubscriptionRepository
 {
 
-    public Task<PagedList<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId, PaginationParams pagination)
+    public Task<PagedList<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId, string query, PaginationParams pagination)
     {
+        var queryMatcher = $"%{query.ToLower()}%";
+        
         return ctx.Subscriptions
-            .Where(s => s.UserId == userId)
+            .Where(s => s.UserId == userId && EF.Functions.Like(s.Title.ToLower(), queryMatcher))
             .ProjectTo<SubscriptionDto>(mapper.ConfigurationProvider)
             .AsPagedList(pagination);
     }

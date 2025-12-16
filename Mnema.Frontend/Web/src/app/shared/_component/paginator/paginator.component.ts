@@ -25,7 +25,7 @@ export type PageLoader<T> = (pageNumber: number, pageSize: number) => Observable
   templateUrl: './paginator.component.html',
   styleUrl: './paginator.component.scss'
 })
-export class PaginatorComponent<T> implements OnInit {
+export class PaginatorComponent<T> {
 
   private readonly toastService = inject(ToastService);
 
@@ -85,10 +85,12 @@ export class PaginatorComponent<T> implements OnInit {
     effect(() => {
       this.currentItems.emit(this.items());
     });
-  }
 
-  ngOnInit() {
-    this.loadPage(this.startPage());
+    // Reload from start when page loader changes
+    effect(() => {
+      this.pageLoader();
+      this.loadPage(this.startPage());
+    });
   }
 
   private loadPage(pageNumber: number) {

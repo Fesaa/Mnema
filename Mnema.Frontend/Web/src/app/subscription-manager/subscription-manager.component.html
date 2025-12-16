@@ -5,13 +5,14 @@
       <input class="form-control" type="text" [placeholder]="t('filter')" (input)="updateFilter($event)">
     </div>
 
-    <button class="btn btn-secondary" (click)="runAll()" [disabled]="hasRanAll()">
+    <button class="btn btn-secondary" (click)="runAll()" [disabled]="hasRanAll() || !hasAny()">
       {{ t('actions.run-all') }}
     </button>
   </div>
 
   <app-table
-    [pageLoader]="pageLoader.bind(this)"
+    [pageLoader]="pageLoader()"
+    (currentItems)="hasAny.set($event.length > 0)"
     [trackByIdFunc]="trackBy"
   >
     <ng-template #header>
@@ -84,6 +85,27 @@
 
         </div>
       </th>
+    </ng-template>
+
+    <ng-template #empty>
+      <tr>
+        <td colspan="5" class="py-5">
+          <div class="d-flex flex-column align-items-center text-center gap-3 text-muted">
+
+            <div style="font-size: 3rem;">
+              🔔✨
+            </div>
+
+            <h5 class="mb-1">
+              {{t('empty.title')}}
+            </h5>
+
+            <p class="mb-0" [innerHtml]="t('empty.description')">
+            </p>
+
+          </div>
+        </td>
+      </tr>
     </ng-template>
 
   </app-table>

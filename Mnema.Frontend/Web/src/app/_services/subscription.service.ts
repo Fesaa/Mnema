@@ -32,8 +32,14 @@ export class SubscriptionService {
     return this.httpClient.delete(`${this.baseUrl}/${id}`, {responseType: 'text'});
   }
 
-  all(pageNumber: number, pageSize: number) {
-    const params = new HttpParams().set('pageNumber', pageNumber).set('pageSize', pageSize);
+  all(query: string, pageNumber: number, pageSize: number) {
+    let params = new HttpParams()
+      .set('pageNumber', pageNumber)
+      .set('pageSize', pageSize);
+
+    if (query) {
+      params = params.set('query', query);
+    }
 
     return this.httpClient.get<PagedList<Subscription>>(`${this.baseUrl}/all`, { params });
   }

@@ -4,6 +4,7 @@ using Mnema.API;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
+using Mnema.Server.Configuration;
 
 namespace Mnema.Server.Controllers;
 
@@ -23,7 +24,8 @@ public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOf
     }
 
     [HttpGet("download-metadata")]
-    public async Task<IActionResult> DownloadMetadata([FromQuery] Provider provider)
+    [ResponseCache(CacheProfileName = CacheProfiles.OneHour, VaryByHeader = "providers")]
+    public async Task<IActionResult> DownloadMetadata([FromQuery] Provider providers)
     {
         return Ok();
     }

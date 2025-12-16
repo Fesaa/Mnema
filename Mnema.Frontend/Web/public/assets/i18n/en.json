@@ -354,8 +354,11 @@
       },
       "select-all": "Select All",
       "select-none": "Select None",
-      "empty": "No notifications to report",
-      "extra-info": "More information"
+      "extra-info": "More information",
+      "empty": {
+        "title": "Nothing to report",
+        "description": "When subscriptions download items, or things go wrong you'll see a notifications here"
+      }
     },
     "confirm-delete": "Are you sure you want to delete {{title}}?",
     "confirm-delete-many": "Are you sure you want to delete {{amount}} notification(s)?",
@@ -757,6 +760,10 @@
           "summary": "{{msg}}"
         }
       }
+    },
+    "empty": {
+      "title": "Nothing here yet",
+      "description": "You don’t have any subscriptions yet.<br>Start a search and click the <strong>bell icon</strong> to create one — we’ll keep an eye on things for you."
     }
   },
 

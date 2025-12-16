@@ -2,6 +2,7 @@ using System.IO.Abstractions;
 using System.IO.Compression;
 using System.Reflection;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi;
@@ -10,6 +11,7 @@ using Mnema.Database.Extensions;
 using Mnema.Models;
 using Mnema.Models.Internal;
 using Mnema.Providers.Extensions;
+using Mnema.Server.Configuration;
 using Mnema.Server.Extensions;
 using Mnema.Server.Helpers;
 using Mnema.Server.Middleware;
@@ -32,14 +34,23 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddControllers(options =>
         {
             options.ModelBinderProviders.Insert(0, new PaginationParamsModelBinderProvider());
+
+            options.CacheProfiles
+                .AddCacheProfile(CacheProfiles.FiveMinutes, TimeSpan.FromMinutes(5))
+                .AddCacheProfile(CacheProfiles.OneHour, TimeSpan.FromHours(1))
+                .AddCacheProfile(CacheProfiles.OneDay, TimeSpan.FromDays(1))
+                .AddCacheProfile(CacheProfiles.OneWeek, TimeSpan.FromDays(7));
         });
         services.AddEndpointsApiExplorer();
         services.AddRateLimiter();
         services.AddCors();
         services.AddOutputCache(options =>
         {
-            options.AddPolicy(CacheProfiles.OneDay, b => b.Expire(TimeSpan.FromDays(1)));
-            options.AddPolicy(CacheProfiles.OneWeek, b => b.Expire(TimeSpan.FromDays(7)));
+            options
+                .AddCachePolicy(CacheProfiles.FiveMinutes, TimeSpan.FromMinutes(5))
+                .AddCachePolicy(CacheProfiles.OneHour, TimeSpan.FromHours(1))
+                .AddCachePolicy(CacheProfiles.OneDay, TimeSpan.FromDays(1))
+                .AddCachePolicy(CacheProfiles.OneWeek, TimeSpan.FromDays(7));
         });
         services.AddSwaggerGen(c =>
         {

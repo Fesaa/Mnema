@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
+using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 
@@ -16,6 +17,11 @@ public class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfWor
         if (sub == null) throw new NotFoundException();
 
         if (sub.UserId != userId) throw new ForbiddenException();
+
+        if (sub.Title != dto.Title)
+        {
+            sub.Title = dto.Title;
+        }
 
         if (sub.BaseDir != dto.BaseDir)
         {
@@ -38,6 +44,7 @@ public class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfWor
         var sub = new Subscription
         {
             UserId = userId,
+            Title = dto.Title,
             ContentId = dto.ContentId,
             BaseDir = dto.BaseDir,
             Metadata = dto.Metadata,

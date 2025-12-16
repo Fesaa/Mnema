@@ -20,11 +20,11 @@ public class SubscriptionsController(ILogger<SubscriptionsController> logger, IU
     }
 
     [HttpGet("all")]
-    public async Task<ActionResult<PagedList<SubscriptionDto>>> GetAllSubscriptions([FromQuery] PaginationParams? paginationParams)
+    public async Task<ActionResult<PagedList<SubscriptionDto>>> GetAllSubscriptions([FromQuery] string query = "", [FromQuery] PaginationParams? paginationParams = null)
     {
         paginationParams ??= PaginationParams.Default;
         
-        return Ok(await unitOfWork.SubscriptionRepository.GetSubscriptionDtosForUser(UserId, paginationParams));
+        return Ok(await unitOfWork.SubscriptionRepository.GetSubscriptionDtosForUser(UserId, query, paginationParams));
     }
 
     [HttpGet("{subscriptionId:guid}")]

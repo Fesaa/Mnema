@@ -16,6 +16,10 @@ public class Subscription
     /// </summary>
     public required string ContentId { get; set; }
     /// <summary>
+    /// Title given by the user, defaults to the series name
+    /// </summary>
+    public required string Title { get; set; }
+    /// <summary>
     /// The directory to download the content in
     /// </summary>
     public required string BaseDir { get; set; }
