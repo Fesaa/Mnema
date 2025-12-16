@@ -1,8 +1,8 @@
 using System.IO.Abstractions;
 using System.IO.Compression;
 using System.Reflection;
+using Hangfire;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi;
@@ -115,6 +115,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
         services.AddMnemaPostgresDatabase(configuration, env.IsDevelopment());
         services.AddDatabaseServices();
+        services.AddAndConfigureHangFire(configuration);
         services.AddIdentityServices(configuration, env);
     }
 
@@ -145,6 +146,11 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.UseHangfireDashboard("/hangfire", new DashboardOptions
+        {
+            Authorization = [new HangfireDashboardAuthorizationFilter()],
+        });
 
         app.UseStaticFiles(new StaticFileOptions
         {
