@@ -10,39 +10,35 @@ namespace Mnema.Providers;
 internal partial class PublicationManager
 {
 
-    private async Task CleanupAfterDownload(IPublication publication, bool deleteFiles)
+    private async Task CleanupAfterDownload(IPublication publication, bool skipSaving)
     {
-        if (deleteFiles)
+        try
         {
-            await DeleteFiles(publication);
-            return;
-        }
-
-        await CleanUp(publication);
-
-        using var scope = _scopeFactory.CreateScope();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-        if (publication.Request.IsSubscription)
-        {
-            var sub = await unitOfWork.SubscriptionRepository.GetSubscription(publication.Request.SubscriptionId!.Value);
-            if (sub != null)
+            if (!skipSaving)
             {
-                sub.LastDownloadDir = Path.Join(BaseDir, publication.DownloadDir);
-                await unitOfWork.CommitAsync();
-            }
+                await CleanUp(publication);
 
-            if (publication.DownloadedPaths.Count > 0)
-            {
-                await AddNotification(new Notification
+                if (publication.Request.IsSubscription)
                 {
-                    Title = "Download completed",
-                    UserId = publication.Request.UserId,
-                    Summary = $"<a class=\"hover:pointer hover:underline\" href=\"%s\" target=\"_blank\">{publication.DownloadInfo.RefUrl}</a> finished downloading {publication.DownloadedPaths.Count} item(s)",
-                    Colour = NotificationColour.Primary,
-                });
+                    if (publication.DownloadedPaths.Count > 0)
+                    {
+                        await AddNotification(new Notification
+                        {
+                            Title = "Download completed",
+                            UserId = publication.Request.UserId,
+                            Summary =
+                                $"<a class=\"hover:pointer hover:underline\" href=\"%s\" target=\"_blank\">{publication.DownloadInfo.RefUrl}</a> finished downloading {publication.DownloadedPaths.Count} item(s)",
+                            Colour = NotificationColour.Primary,
+                        });
+                    }
+                }
             }
-            
+
+            await DeleteFiles(publication);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An exception occured while cleaning up download for {Id} - {Title}", publication.Id, publication.Title);
         }
     }
 
@@ -57,48 +53,24 @@ internal partial class PublicationManager
 
         var sw = Stopwatch.StartNew();
 
-        directory = Path.Join(BaseDir, directory);
-
-        if (!_fileSystem.Directory.Exists(directory))
+        directory = Path.Join(_configuration.DownloadDir, directory);
+        if (string.IsNullOrEmpty(directory) || !_fileSystem.Directory.Exists(directory))
         {
             _logger.LogDebug("Directory to cleanup does not exist: {Directory}", directory);
             return Task.CompletedTask;
         }
 
-        foreach (var path in publication.DownloadedPaths)
+        while (!string.IsNullOrEmpty(directory)
+               && directory != _configuration.DownloadDir
+               && !_fileSystem.Directory.EnumerateFileSystemEntries(directory).Any())
         {
-            _logger.LogTrace("Deleting newly downloaded directory: {Directory}", path);
+            _logger.LogTrace("Going to remove directory {Directory}", directory);
+            _fileSystem.Directory.Delete(directory);
 
-            try
-            {
-                _fileSystem.Directory.Delete(path, true);
-            }
-            catch (IOException ex)
-            {
-                _logger.LogError(ex, "Failed to delete newly downloaded directory {Directory}, you may have lingering content", path);
-            }
+            directory = _fileSystem.Directory.GetParent(directory)?.FullName;
         }
         
-        foreach (var subDirectory in _fileSystem.Directory.EnumerateDirectories(directory))
-        {
-            if (_fileSystem.Directory.EnumerateFileSystemEntries(subDirectory).Any())
-            {
-                continue;
-            }
-                
-            _logger.LogTrace("Found empty subdirectory {SubDirectory} removing", subDirectory);
-
-            try
-            {
-                _fileSystem.Directory.Delete(subDirectory, false);
-            }
-            catch (IOException ex)
-            {
-                _logger.LogError(ex, "Failed to delete subdirectory {SubDirectory}", subDirectory);
-            }
-        }
-        
-        _logger.LogDebug("Finished removing newly downloaded items  in {Directory} in {Elapsed}ms", directory, sw.ElapsedMilliseconds);
+        _logger.LogDebug("Finished removing files in download in {Elapsed}ms", sw.ElapsedMilliseconds);
 
         return Task.CompletedTask;
     }
@@ -119,12 +91,19 @@ internal partial class PublicationManager
             
             try
             {
-                _fileSystem.File.Delete(path);
+                _fileSystem.File.Delete(_fileSystem.Path.Join(_configuration.BaseDir, path));
             }
             catch (IOException ex)
             {
                 _logger.LogError(ex, "Failed to delete old file {File}", path);
             }
+        }
+
+        var baseDir = _fileSystem.Path.Join(_configuration.BaseDir, publication.DownloadDir);
+        if (!_fileSystem.Directory.Exists(baseDir))
+        {
+            _logger.LogDebug("Base directory {Dir} does not exist, creating", baseDir);
+            _fileSystem.Directory.CreateDirectory(baseDir);
         }
         
         foreach (var path in publication.DownloadedPaths)
@@ -133,7 +112,10 @@ internal partial class PublicationManager
 
             try
             {
-                await publication.FinalizeChapter(path);
+                var src = _fileSystem.Path.Join(_configuration.DownloadDir, path);
+                var dest = _fileSystem.Path.Join(_configuration.BaseDir, path);
+                
+                await publication.FinalizeChapter(src, dest);
             }
             catch (Exception ex)
             {

@@ -171,7 +171,7 @@ internal partial class Publication
         _fileSystem.Directory.CreateDirectory(chapterPath);
         
         // Mark as downloaded as soon as the directory is created as we need to remove it in case of an error
-        DownloadedPaths.Add(chapterPath);
+        DownloadedPaths.Add(chapterPath.RemovePrefix(_configuration.DownloadDir));
 
         try
         {

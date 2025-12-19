@@ -15,8 +15,6 @@ public class SubscriptionDto
     public required string Title { get; set; }
     /// <inheritdoc cref="Subscription.BaseDir"/>
     public required string BaseDir { get; set; }
-    /// <inheritdoc cref="Subscription.LastDownloadDir"/>
-    public required string LastDownloadDir { get; set; }
     /// <inheritdoc cref="Subscription.Provider"/>
     public Provider Provider { get; set; }
     /// <inheritdoc cref="Subscription.Metadata"/>

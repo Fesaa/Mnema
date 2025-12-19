@@ -13,7 +13,7 @@ public interface IPublication: IContent
     IList<string> DownloadedPaths { get; }
     IList<string> ToRemovePaths { get; }
 
-    Task FinalizeChapter(string path);
+    Task FinalizeChapter(string src, string dest);
     Task LoadMetadataAsync(CancellationTokenSource source);
     Task DownloadContentAsync(CancellationTokenSource source);
 

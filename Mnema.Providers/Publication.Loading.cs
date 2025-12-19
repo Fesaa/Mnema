@@ -90,7 +90,7 @@ internal partial class Publication
 
     private List<OnDiskContent> ParseDirectoryForContent(string path, CancellationToken cancellationToken)
     {
-        var fullPath = Path.Join(_publicationManager.BaseDir, path);
+        var fullPath = Path.Join(_configuration.BaseDir, path);
         if (!_fileSystem.Directory.Exists(fullPath)) return [];
 
 

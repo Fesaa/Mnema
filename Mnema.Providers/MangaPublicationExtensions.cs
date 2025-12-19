@@ -17,7 +17,7 @@ internal interface IPublicationExtensions
     
     Task<string> DownloadCallback(IoWork ioWork, CancellationToken cancellationToken);
     
-    Task Cleanup(string path);
+    Task Cleanup(string src, string dest);
 
 }
 
@@ -97,12 +97,12 @@ internal partial class MangaPublicationExtensions: IPublicationExtensions
         return string.IsNullOrEmpty(value) ? value : value.Trim().TrimStart('0');
     }
 
-    public async Task Cleanup(string path)
+    public async Task Cleanup(string src, string dest)
     {
-        await ZipFile.CreateFromDirectoryAsync(path, path + ".cbz",
+        await ZipFile.CreateFromDirectoryAsync(src, dest + ".cbz",
             CompressionLevel.SmallestSize, includeBaseDirectory: false);
-        
-        Directory.Delete(path, true);
+
+        Directory.Delete(src, true);
     }
 
     public string? ParseVolumeFromFile(OnDiskContent content)

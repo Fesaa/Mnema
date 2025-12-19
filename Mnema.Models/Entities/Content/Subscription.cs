@@ -23,10 +23,6 @@ public class Subscription
     /// The directory to download the content in
     /// </summary>
     public required string BaseDir { get; set; }
-    /// <summary>
-    /// The last full directory (I.e. with name) the content was downloaded in
-    /// </summary>
-    public string LastDownloadDir { get; set; } = string.Empty;
     
     public required Provider Provider { get; set; }
     public required DownloadMetadataDto Metadata { get; set; }

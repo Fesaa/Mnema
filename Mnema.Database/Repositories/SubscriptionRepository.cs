@@ -19,6 +19,7 @@ public class SubscriptionRepository(MnemaDataContext ctx, IMapper mapper): ISubs
         return ctx.Subscriptions
             .Where(s => s.UserId == userId && EF.Functions.Like(s.Title.ToLower(), queryMatcher))
             .ProjectTo<SubscriptionDto>(mapper.ConfigurationProvider)
+            .OrderBy(s => s.Id)
             .AsPagedList(pagination);
     }
 

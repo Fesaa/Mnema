@@ -35,5 +35,6 @@ public interface ISubscriptionService
 
     public Task UpdateSubscription(Guid userId, SubscriptionDto dto);
     public Task CreateSubscription(Guid userId, SubscriptionDto dto);
+    public Task RunOnce(Guid userId, Guid subId);
 
 }

@@ -10,6 +10,7 @@ using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
+using Mnema.Models.Internal;
 using Mnema.Models.Publication;
 
 namespace Mnema.Providers;
@@ -29,6 +30,7 @@ internal partial class Publication(
     private readonly IPublicationExtensions _extensions = scope.ServiceProvider.GetRequiredKeyedService<IPublicationExtensions>(provider);
     private readonly IFileSystem _fileSystem = scope.ServiceProvider.GetRequiredService<IFileSystem>();
     private readonly ISettingsService _settingsService = scope.ServiceProvider.GetRequiredService<ISettingsService>();
+    private readonly ApplicationConfiguration _configuration = scope.ServiceProvider.GetRequiredService<ApplicationConfiguration>();
 
     private CancellationTokenSource _tokenSource = new ();
     
@@ -58,9 +60,9 @@ internal partial class Publication(
     /// </summary>
     public IList<string> ToRemovePaths { get; private set; } = [];
 
-    public Task FinalizeChapter(string path)
+    public Task FinalizeChapter(string src, string dest)
     {
-        return _extensions.Cleanup(path);
+        return _extensions.Cleanup(src, dest);
     }
 
     /// <summary>

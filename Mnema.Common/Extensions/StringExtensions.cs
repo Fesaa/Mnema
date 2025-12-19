@@ -46,5 +46,17 @@ public static class StringExtensions
         }
         
     }
+
+    extension(string s)
+    {
+        public string RemovePrefix(string other)
+        {
+            if (string.IsNullOrEmpty(other) || s.Length < other.Length) return s;
+
+            if (!s.StartsWith(other)) return s;
+
+            return s[other.Length..];
+        }
+    }
     
 }

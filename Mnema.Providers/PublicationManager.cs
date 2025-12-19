@@ -19,6 +19,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
     private readonly ILogger<PublicationManager> _logger;
     private readonly IFileSystem _fileSystem;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ApplicationConfiguration _configuration;
     
     private readonly ConcurrentDictionary<string, IPublication> _content = new();
     private readonly Channel<IPublication> _loadingChannel;
@@ -26,8 +27,6 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
     
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _workerTask;
-    
-    public string BaseDir { get; }
 
     public PublicationManager(
         ILogger<PublicationManager> logger,
@@ -39,8 +38,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         _logger = logger;
         _fileSystem = fileSystem;
         _scopeFactory = scopeFactory;
-
-        BaseDir = configuration.BaseDir;
+        _configuration = configuration;
 
         var channelOptions = new BoundedChannelOptions(100)
         {

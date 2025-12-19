@@ -35,7 +35,6 @@ public interface IContent
 /// </summary>
 public interface IContentManager
 {
-    string BaseDir { get; }
 
     Task Download(DownloadRequestDto request);
     Task StopDownload(StopRequestDto request);

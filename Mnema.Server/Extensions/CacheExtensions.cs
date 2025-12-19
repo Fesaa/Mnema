@@ -17,7 +17,7 @@ public static class CacheExtensions
         // No client side caches during development
         dictionary.Add(name, new CacheProfile
         {
-            Duration = IsDevelopment ? 0 : (int) duration.TotalSeconds,
+            Duration = IsDevelopment ? 1 : (int) duration.TotalSeconds,
             Location = location,
         });
 

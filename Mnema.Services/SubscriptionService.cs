@@ -1,14 +1,14 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
-using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services;
 
-public class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfWork unitOfWork): ISubscriptionService
+public class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfWork unitOfWork, IServiceScopeFactory scopeFactory): ISubscriptionService
 {
     
     public async Task UpdateSubscription(Guid userId, SubscriptionDto dto)
@@ -33,8 +33,6 @@ public class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfWor
         sub.Provider = dto.Provider;
         sub.Metadata = dto.Metadata;
         sub.NoDownloadsRuns = 0;
-        if (!string.IsNullOrEmpty(dto.LastDownloadDir))
-            sub.LastDownloadDir = dto.LastDownloadDir;
         
         unitOfWork.SubscriptionRepository.Update(sub);
 
@@ -55,5 +53,34 @@ public class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfWor
         unitOfWork.SubscriptionRepository.Add(sub);
 
         await unitOfWork.CommitAsync();
+    }
+
+    public async Task RunOnce(Guid userId, Guid subId)
+    {
+        var sub = await unitOfWork.SubscriptionRepository.GetSubscription(subId);
+        if (sub == null)
+        {
+            throw new NotFoundException();
+        }
+
+        if (sub.UserId != userId)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var downloadRequest = new DownloadRequestDto
+        {
+            Provider = sub.Provider,
+            Id = sub.ContentId,
+            BaseDir = sub.BaseDir,
+            TempTitle = sub.Title,
+            DownloadMetadata = sub.Metadata,
+            UserId = userId,
+        };
+
+        using var scope = scopeFactory.CreateScope();
+        var manager = scope.ServiceProvider.GetRequiredKeyedService<IContentManager>(sub.Provider);
+
+        await manager.Download(downloadRequest);
     }
 }
