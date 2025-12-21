@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Mnema.Database.Migrations
 {
     [DbContext(typeof(MnemaDataContext))]
-    [Migration("20251210135700_AddServerSettings")]
-    partial class AddServerSettings
+    [Migration("20251221160916_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,21 +40,30 @@ namespace Mnema.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("LastDownloadDir")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("LastRun")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("LastRunSuccess")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("{\"StartImmediately\":false,\"Extra\":{}}");
+
                     b.Property<DateTime>("NextRun")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("NoDownloadsRuns")
                         .HasColumnType("integer");
+
+                    b.Property<int>("Provider")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -167,6 +176,12 @@ namespace Mnema.Database.Migrations
                     b.Property<int>("Colour")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastModifiedUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("Read")
                         .HasColumnType("boolean");
 
@@ -211,7 +226,7 @@ namespace Mnema.Database.Migrations
                     b.Property<int>("ImageFormat")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("LogEmptyDownloads")
+                    b.Property<bool>("PinSubscriptionTitles")
                         .HasColumnType("boolean");
 
                     b.Property<Guid>("UserId")

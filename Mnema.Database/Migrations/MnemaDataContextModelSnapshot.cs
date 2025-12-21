@@ -37,10 +37,6 @@ namespace Mnema.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("LastDownloadDir")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("LastRun")
                         .HasColumnType("timestamp with time zone");
 

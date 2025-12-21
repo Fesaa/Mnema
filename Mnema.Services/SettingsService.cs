@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Models.DTOs;
@@ -27,9 +28,9 @@ public class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unitOf
             ServerSettingKey.RootDir => setting.Value,
             ServerSettingKey.InstalledVersion => setting.Value,
             ServerSettingKey.FirstInstalledVersion => setting.Value,
-            ServerSettingKey.InstallDate => DateTime.Parse(setting.Value),
+            ServerSettingKey.InstallDate => DateTime.Parse(setting.Value, CultureInfo.InvariantCulture),
             ServerSettingKey.SubscriptionRefreshHour => int.Parse(setting.Value),
-            ServerSettingKey.LastUpdateDate => DateTime.Parse(setting.Value),
+            ServerSettingKey.LastUpdateDate => DateTime.Parse(setting.Value, CultureInfo.InvariantCulture),
             _ => default(T),
         };
 
