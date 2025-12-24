@@ -10,7 +10,7 @@ public class FallbackController: Controller
     [SwaggerIgnore]
     public IActionResult Index()
     {
-        if (HttpContext.Request.Path.StartsWithSegments("/api"))
+        if (HttpContext.Request.Path.StartsWithSegments("/api") || HttpContext.Request.Path.StartsWithSegments("/ws"))
         {
             return NotFound();
         }

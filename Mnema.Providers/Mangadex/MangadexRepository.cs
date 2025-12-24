@@ -17,7 +17,7 @@ namespace Mnema.Providers.Mangadex;
 public class MangadexRepository: IRepository
 {
 
-    private readonly AsyncLazy<ConcurrentDictionary<string, string>> _tagMap;
+    private readonly AsyncLazy<List<ModifierValueDto>> _tagOptions;
     private readonly ILogger<MangadexRepository> _logger;
     private readonly IDistributedCache _cache;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -28,27 +28,23 @@ public class MangadexRepository: IRepository
         _logger = logger;
         _cache = cache;
         _httpClientFactory = httpClientFactory;
-        _tagMap = new AsyncLazy<ConcurrentDictionary<string, string>>(LoadTags);
+        _tagOptions = new AsyncLazy<List<ModifierValueDto>>(LoadTagOptions);
     }
 
     public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken)
     {
-        var skipNotFoundTags = request.Modifiers.GetBool("SkipNotFoundTags", true);
-        var includeTags = await MapTags(request.Modifiers.GetStrings("includeTags"), skipNotFoundTags);
-        var excludeTags = await MapTags(request.Modifiers.GetStrings("excludeTags"), skipNotFoundTags);
-        
         var url = "/manga".SetQueryParam("title", request.Query)
             .AddRange("status", request.Modifiers.GetStrings("status"))
             .AddRange("contentRating", request.Modifiers.GetStrings("contentRating"))
             .AddRange("publicationDemographic", request.Modifiers.GetStrings("publicationDemographic"))
-            .AddRange("includedTags", includeTags)
+            .AddRange("includedTags", request.Modifiers.GetStrings("includeTags"))
             .SetQueryParam("includedTagsMode", request.Modifiers.GetStringOrDefault("includedTagsMode", "AND"))
-            .AddRange("excludedTags", excludeTags)
+            .AddRange("excludedTags", request.Modifiers.GetStrings("excludeTags"))
             .SetQueryParam("excludedTagsMode", request.Modifiers.GetStringOrDefault("excludedTagsMode", "OR"))
             .AddPagination(pagination)
             .AddIncludes();
         
-        var result = await Client.GetCachedAsync<SearchResponse>(url.ToString(), _cache, cancellationToken);
+        var result = await Client.GetCachedAsync<SearchResponse>(url.ToString(), _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
             _logger.LogError(result.Error, "Failed to retrieve search info with url {Url}", url);
@@ -84,7 +80,7 @@ public class MangadexRepository: IRepository
         var id = request.Id;
         var url = $"/manga/{id}".AddIncludes();
 
-        var result = await Client.GetCachedAsync<MangaResponse>(url.ToString(), _cache, cancellationToken);
+        var result = await Client.GetCachedAsync<MangaResponse>(url.ToString(), _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
             _logger.LogError(result.Error, "Failed to retrieve information for manga {Id} - {Url}", id, url);
@@ -146,7 +142,7 @@ public class MangadexRepository: IRepository
             .AddPagination(20, offSet)
             .AddAllContentRatings();
 
-        var result = await Client.GetCachedAsync<ChaptersResponse>(url, _cache, cancellationToken);
+        var result = await Client.GetCachedAsync<ChaptersResponse>(url, _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
             _logger.LogError(result.Error, "Failed to retrieve chapter information for manga {Id} with offset {OffSet} - {Url}", id, offSet, url);
@@ -220,7 +216,7 @@ public class MangadexRepository: IRepository
     {
         var url = $"/at-home/server/{chapter.Id}";
 
-        var result = await Client.GetCachedAsync<ChapterImagesResponse>(url, _cache, cancellationToken);
+        var result = await Client.GetCachedAsync<ChapterImagesResponse>(url, _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
             _logger.LogError(result.Error, "Failed to retrieve chapter images for {Id}", chapter.Id);
@@ -329,14 +325,14 @@ public class MangadexRepository: IRepository
                 Title = "Include Tags",
                 Type = ModifierType.Multi,
                 Key = "includeTags",
-                Values = (await _tagMap).Select(t => ModifierValueDto.Option(t.Key, t.Key)).ToList(),
+                Values = await _tagOptions,
             },
             new ModifierDto
             {
                 Title = "Exclude Tags",
                 Type = ModifierType.Multi,
                 Key = "excludeTags",
-                Values = (await _tagMap).Select(t => ModifierValueDto.Option(t.Key, t.Key)).ToList(),
+                Values = await _tagOptions,
             },
             new ModifierDto
             {
@@ -354,23 +350,8 @@ public class MangadexRepository: IRepository
             },
         ];
     }
-
-    private async Task<IList<string>> MapTags(IEnumerable<string> tags, bool skipNotFound)
-    {
-        var tagMap = await _tagMap;
-        
-        return tags.Select(tag =>
-        {
-            if (tagMap.TryGetValue(tag, out var value))
-            {
-                return value;
-            }
-
-            return skipNotFound ? null : tag;
-        }).WhereNotNull().ToList();
-    }
     
-    private async Task<ConcurrentDictionary<string, string>> LoadTags()
+    private async Task<List<ModifierValueDto>> LoadTagOptions()
     {
         var result = await Client.GetCachedAsync<TagResponse>("/manga/tag", _cache);
         if (result.IsErr)
@@ -379,23 +360,23 @@ public class MangadexRepository: IRepository
             return [];
         }
 
-        ConcurrentDictionary<string, string> dictionary = [];
+        List<ModifierValueDto> options = [];
         foreach (var tagData in result.Unwrap().Data)
         {
             if (tagData.Attributes.Name.TryGetValue("en", out var value))
             {
-                dictionary[value] = tagData.Id;
+                options.Add(ModifierValueDto.Option(tagData.Id, value));
             }
         }
 
-        return dictionary;
+        return options;
     }
 
     internal async Task<CoverResponse> GetCoverImages(string id, CancellationToken cancellationToken, int offset = 0)
     {
         var url = $"/cover?order[volume]=asc&limit=20&manga[]={id}&offset={offset}";
 
-        var result = await Client.GetCachedAsync<CoverResponse>(url, _cache, cancellationToken);
+        var result = await Client.GetCachedAsync<CoverResponse>(url, _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
             _logger.LogError(result.Error, "Failed to load cover images for {Id}", id);

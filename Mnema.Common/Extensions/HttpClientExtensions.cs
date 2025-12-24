@@ -50,8 +50,38 @@ public static class HttpClientExtensions
 
             return contentType;
         }
+
+        public async Task<Result<string, HttpRequestException>> GetCachedStringAsync(
+            string url,
+            IDistributedCache cache,
+            DistributedCacheEntryOptions? cacheEntryOptions = null,
+            CancellationToken cancellationToken = default)
+        {
+            var cachedResponse = await cache.GetStringAsync(url, cancellationToken);
+            if (!string.IsNullOrEmpty(cachedResponse))
+            {
+                return Result<string, HttpRequestException>.Ok(cachedResponse);
+            }
+
+            try
+            {
+                var response = await httpClient.GetStringAsync(url, cancellationToken);
+                
+                await cache.SetStringAsync(url, response, cacheEntryOptions ?? CacheEntryOptions, cancellationToken);
+
+                return Result<string, HttpRequestException>.Ok(response);
+            }
+            catch (HttpRequestException ex)
+            {
+                return Result<string, HttpRequestException>.Err(ex);
+            }
+        }
         
-        public async Task<Result<TResult, HttpRequestException>> GetCachedAsync<TResult>(string url, IDistributedCache cache, CancellationToken cancellationToken = default)
+        public async Task<Result<TResult, HttpRequestException>> GetCachedAsync<TResult>(
+            string url,
+            IDistributedCache cache,
+            DistributedCacheEntryOptions? cacheEntryOptions = null,
+            CancellationToken cancellationToken = default)
         {
             var cachedResponse = await cache.GetAsJsonAsync<TResult>(url, cancellationToken);
             if (cachedResponse != null)
@@ -68,7 +98,7 @@ public static class HttpClientExtensions
             var resultValue = result.Unwrap();
             if (resultValue != null)
             {
-                await cache.SetAsJsonAsync(url, result.Unwrap(), CacheEntryOptions, cancellationToken);
+                await cache.SetAsJsonAsync(url, result.Unwrap(), cacheEntryOptions ?? CacheEntryOptions, cancellationToken);
             }
 
             return result;

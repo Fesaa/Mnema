@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Providers.Bato;
 using Mnema.Providers.Mangadex;
 
 namespace Mnema.Providers.Extensions;
@@ -43,7 +44,14 @@ public static class ServiceProviderExtensions
         #region Bato
 
         services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Bato);
+        services.AddKeyedScoped<IRepository, BatoRepository>(Provider.Bato);
         services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Bato);
+        services.AddHttpClient(nameof(Provider.Bato), client =>
+        {
+            client.BaseAddress = new Uri("https://jto.to");
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.DefaultRequestHeaders.Add("User-Agent", "Mnema");
+        });
 
         #endregion
 

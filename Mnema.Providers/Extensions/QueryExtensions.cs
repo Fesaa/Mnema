@@ -1,7 +1,7 @@
 using Flurl;
 using Mnema.Common;
 
-namespace Mnema.Providers.Mangadex;
+namespace Mnema.Providers.Extensions;
 
 internal static class QueryExtensions
 {
@@ -18,6 +18,12 @@ internal static class QueryExtensions
 
     extension(Url url)
     {
+
+        internal Url SetQueryParamIf(bool condition, string key, string value)
+        {
+            return condition ? url.SetQueryParam(key, value) : url;
+        }
+        
         internal Url AddIncludes()
         {
             return url.SetQueryParam("includes[]", "cover_art")
@@ -34,7 +40,7 @@ internal static class QueryExtensions
         }
 
         internal Url AddPagination(PaginationParams pagination)
-            => AddPagination(url, pagination.PageSize, pagination.PageNumber * pagination.PageSize);
+            => url.AddPagination(pagination.PageSize, pagination.PageNumber * pagination.PageSize);
 
         internal Url AddPagination(int pageSize, int offSet)
         {

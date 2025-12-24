@@ -193,15 +193,10 @@ internal partial class Publication
             var tagValue = tag.Value.ToNormalized();
             var tagId = tag.Id.ToNormalized();
 
-            var tagAgeRating = AgeRating.Unknown;
-            
-            foreach (var mapping in ageRatingMappings)
-            {
-                if (mapping.Tag != tagValue && mapping.Tag != tagId)
-                    continue;
-                
-                tagAgeRating = tagAgeRating > mapping.AgeRating ? tagAgeRating : mapping.AgeRating;
-            }
+            var tagAgeRating = ageRatingMappings
+                .Where(mapping => mapping.Tag == tagValue || mapping.Tag == tagId)
+                .Aggregate(AgeRating.Unknown,
+                    (current, mapping) => current > mapping.AgeRating ? current : mapping.AgeRating);
 
             return tagAgeRating > AgeRating.Unknown ? tagAgeRating : null;
         }
