@@ -6,7 +6,7 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services;
 
-public class DownloadService(ILogger<DownloadService> logger, IServiceScopeFactory scopeFactory): IDownloadService
+internal class DownloadService(ILogger<DownloadService> logger, IServiceScopeFactory scopeFactory): IDownloadService
 {
 
     public Task StartDownload(DownloadRequestDto request)

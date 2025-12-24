@@ -5,7 +5,7 @@ using Mnema.Models.DTOs.User;
 
 namespace Mnema.Services;
 
-public class UserService(ILogger<UserService> logger, IUnitOfWork unitOfWork): IUserService
+internal class UserService(ILogger<UserService> logger, IUnitOfWork unitOfWork): IUserService
 {
 
     public async Task UpdatePreferences(Guid userId, UserPreferencesDto dto)

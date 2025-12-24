@@ -6,7 +6,7 @@ using Mnema.Models.Entities;
 
 namespace Mnema.Services;
 
-public class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unitOfWork): ISettingsService
+internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unitOfWork): ISettingsService
 {
     public async Task<T> GetSettingsAsync<T>(ServerSettingKey key)
     {

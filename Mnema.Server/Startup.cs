@@ -41,7 +41,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddScoped<IFileSystem, FileSystem>();
         services.AddSingleton<IFileSystem, FileSystem>();
         services.AddScoped<JobsBootstrapper>();
-        
+
+        services.AddSignalR();
         services.AddControllers(options =>
         {
             options.ModelBinderProviders.Insert(0, new PaginationParamsModelBinderProvider());
@@ -177,6 +178,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         
         app.UseEndpoints(builder =>
             {
+                builder.MapMnema();
                 builder.MapControllers();
                 builder.MapFallbackToController("Index", "Fallback");
             }

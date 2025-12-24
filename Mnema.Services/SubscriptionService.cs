@@ -8,7 +8,7 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services;
 
-public class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfWork unitOfWork, IServiceScopeFactory scopeFactory): ISubscriptionService
+internal class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfWork unitOfWork, IServiceScopeFactory scopeFactory): ISubscriptionService
 {
     
     public async Task UpdateSubscription(Guid userId, SubscriptionDto dto)

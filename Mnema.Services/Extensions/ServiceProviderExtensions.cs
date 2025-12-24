@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Services.Hubs;
 using Mnema.Services.Scheduled;
 using Mnema.Services.Store;
 
@@ -21,8 +24,14 @@ public static class ServiceProviderExtensions
         services.AddScoped<ISearchService, SearchService>();
         services.AddScoped<IDownloadService, DownloadService>();
         services.AddScoped<ISubscriptionScheduler, SubscriptionScheduler>();
+        services.AddScoped<IMessageService, MessageService>();
 
         return services;
+    }
+
+    public static void MapMnema(this IEndpointRouteBuilder builder)
+    {
+        builder.MapHub<MessageHub>("/ws");
     }
     
 }

@@ -6,7 +6,7 @@ using Mnema.Models.Entities.UI;
 
 namespace Mnema.Services;
 
-public class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork): IPagesService
+internal class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork): IPagesService
 {
 
     public async Task UpdatePage(PageDto dto)

@@ -8,7 +8,7 @@ using Mnema.Models.DTOs.Content;
 
 namespace Mnema.Services;
 
-public class SearchService(ILogger<SearchService> logger, IServiceScopeFactory serviceScopeFactory): ISearchService
+internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory serviceScopeFactory): ISearchService
 {
 
     public Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, PaginationParams paginationParams, CancellationToken cancellationToken)
