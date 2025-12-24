@@ -13,7 +13,7 @@
   </div>
 
   <app-table
-    [pageLoader]="loadNotifications.bind(this)"
+    [pageLoader]="pageLoader()"
     [trackByIdFunc]="trackBy"
     [noHoverColour]="true"
     *transloco="let t; prefix:'notifications.table'"

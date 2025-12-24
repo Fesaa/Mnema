@@ -38,6 +38,12 @@ export class NotificationsComponent implements OnInit {
   visibleItems = signal<Notification[]>([]);
   allSelected = computed(() => this.visibleItems().length > 0 && this.visibleItems().length === this.tracker.items().length);
 
+  pageLoader = computed(() => {
+    return (pn: number, ps: number) => {
+      return this.notificationService.all(pn, ps);
+    }
+  });
+
   ngOnInit(): void {
     this.navService.setNavVisibility(true);
   }
@@ -45,10 +51,6 @@ export class NotificationsComponent implements OnInit {
   onItemsChange(items: Notification[]) {
     this.visibleItems.set(items);
     this.tracker.reset();
-  }
-
-  loadNotifications(pn: number, ps: number) {
-    return this.notificationService.all(pn, ps);
   }
 
   toggleAll() {
