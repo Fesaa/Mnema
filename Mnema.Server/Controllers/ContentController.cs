@@ -92,5 +92,15 @@ public class ContentController(ISearchService searchService, IDownloadService do
         
         return Ok();
     }
+
+    [HttpPost("message")]
+    public async Task<ActionResult<MessageDto>> RelayMessage(MessageDto message)
+    {
+        var contentManager = serviceProvider.GetKeyedService<IContentManager>(message.Provider);
+        if (contentManager == null)
+            return NotFound();
+        
+        return Ok(await contentManager.RelayMessage(message));
+    }
     
 }

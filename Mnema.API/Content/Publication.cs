@@ -1,3 +1,5 @@
+using Mnema.Models.DTOs.Content;
+
 namespace Mnema.API.Content;
 
 public interface IPublicationManager: IContentManager
@@ -16,6 +18,8 @@ public interface IPublication: IContent
     Task FinalizeChapter(string src, string dest);
     Task LoadMetadataAsync(CancellationTokenSource source);
     Task DownloadContentAsync(CancellationTokenSource source);
+
+    Task<MessageDto> ProcessMessage(MessageDto message);
 
 }
 

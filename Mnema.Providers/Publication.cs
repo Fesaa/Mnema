@@ -100,7 +100,7 @@ internal partial class Publication(
     public string DownloadDir => Series != null ? Path.Join(Request.BaseDir, Title) : Request.BaseDir;
 
     private OnDiskContent? GetContentByName(string name) => ExistingContent.FirstOrDefault(c
-        => Path.GetFileNameWithoutExtension(c.Name) == name);
+        => c.Name == name);
 
     private OnDiskContent? GetContentByVolumeAndChapter(string volume, string chapter) => ExistingContent.FirstOrDefault(c =>
     {

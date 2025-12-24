@@ -61,6 +61,12 @@ export class ContentService {
   }
 
   private sendMessage<T, R>(msg: Message<T>): Observable<R | undefined> {
-    return this.httpClient.post<Message<R>>(this.baseUrl + "message", msg).pipe(map(msg => msg.data))
+    return this.httpClient.post<Message<string>>(this.baseUrl + "message", msg).pipe(map(msg => {
+      if (msg.data) {
+        return JSON.parse(msg.data) as R;
+      }
+
+      return msg.data as R;
+    }))
   }
 }

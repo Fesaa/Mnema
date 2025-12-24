@@ -40,4 +40,5 @@ public interface IContentManager
     Task StopDownload(StopRequestDto request);
     Task MoveToDownloadQueue(string id);
     Task<IEnumerable<IContent>> GetAllContent();
+    Task<MessageDto> RelayMessage(MessageDto message);
 }

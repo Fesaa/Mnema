@@ -191,6 +191,7 @@ public class BatoRepository: IRepository
         return new Series
         {
             Id = request.Id,
+            RefUrl = $"{Client.BaseAddress?.ToString()}title/{request.Id}",
             Title = CleanTitleRegex.Replace(title, string.Empty).Trim(),
             Summary = summary,
             Status = TranslatePublicationStatus(statusNode?.InnerText) ?? PublicationStatus.Unknown,

@@ -115,6 +115,16 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         return Task.FromResult<IEnumerable<IContent>>(_content.Values.ToList());
     }
 
+    public Task<MessageDto> RelayMessage(MessageDto message)
+    {
+        if (!_content.TryGetValue(message.ContentId, out var publication))
+        {
+            throw new NotFoundException();
+        }
+        
+        return publication.ProcessMessage(message);
+    }
+
     public Task<IPublication?> GetPublicationById(string id)
     {
         if (!_content.TryGetValue(id, out var publication))
