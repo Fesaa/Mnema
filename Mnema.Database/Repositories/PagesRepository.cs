@@ -13,7 +13,7 @@ public class PagesRepository(MnemaDataContext ctx, IMapper mapper): IPagesReposi
     public Task<List<PageDto>> GetPageDtosForUser(Guid userId)
     {
         return ctx.Pages
-            .Where(p => p.Users.Select(u => u.Id).Contains(userId))
+            //.Where(p => p.Users.Select(u => u.Id).Contains(userId))
             .ProjectTo<PageDto>(mapper.ConfigurationProvider)
             .ToListAsync();
     }
