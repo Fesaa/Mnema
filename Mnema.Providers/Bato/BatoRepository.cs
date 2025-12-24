@@ -166,8 +166,8 @@ public class BatoRepository: IRepository
         
         var summary = summaryXPaths
             .Select(xPath => document.DocumentNode.SelectSingleNode(xPath))
-            .Select(n => n?.InnerText ?? string.Empty)
-            .FirstOrDefault() ??  string.Empty;
+            .Select(n => n?.InnerText)
+            .FirstOrDefault(n => !string.IsNullOrEmpty(n)) ??  string.Empty;
 
         var statusNode = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[2]/div[3]/span[3]");
         var translationStatusNode =
