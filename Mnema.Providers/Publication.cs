@@ -69,7 +69,7 @@ internal partial class Publication(
     /// <summary>
     /// List of <see cref="Chapter.Id"/> selected by the user in the UI
     /// </summary>
-    private IList<string> _userSelectedIds = [];
+    private List<string> _userSelectedIds = [];
 
     private int _failedDownloadsTracker = 0;
     private SpeedTracker? _speedTracker = null;
@@ -88,7 +88,7 @@ internal partial class Publication(
         Progress = Math.Floor(_speedTracker?.Progress() ?? 0),
         Estimated = _speedTracker?.EstimatedTimeRemaining() ?? 0,
         SpeedType = SpeedType.Images,
-        Speed = Math.Floor(_speedTracker?.Speed() ?? 0),
+        Speed = Math.Floor(_speedTracker?.IntermediateSpeed() ?? 0),
         DownloadDir = DownloadDir,
     };
 

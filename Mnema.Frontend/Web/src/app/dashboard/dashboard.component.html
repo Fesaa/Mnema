@@ -56,7 +56,11 @@
                   ></div>
                 </div>
                 <div class="d-flex flex-column flex-md-row justify-content-between small text-muted mt-1">
-                  <span>{{ info.speed | speed:info.speed_type }} {{ info.speed_type | speedType }}</span>
+                  @if (info.speed) {
+                    <span>{{ info.speed | speed:info.speed_type }} {{ info.speed_type | speedType }}</span>
+                  } @else {
+                    <span></span>
+                  }
                   @if (info.estimated) {
                     <span class="d-none d-md-inline">{{ info.estimated | time }}</span>
                   }
