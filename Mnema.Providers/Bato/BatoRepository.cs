@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Fizzler.Systems.HtmlAgilityPack;
 using Flurl;
 using HtmlAgilityPack;
@@ -23,6 +24,23 @@ internal sealed record BatoSearchOptions(List<ModifierValueDto> Genres, List<Mod
 public class BatoRepository: IRepository
 {
 
+    private static readonly Regex ChapterUrlRegex = new(@"https://[^""]+?\.webp", RegexOptions.Compiled,  TimeSpan.FromSeconds(5));
+    private static readonly Regex BadServerRegex = new(@"k[0-9]{2}\.[a-z]+\.org", RegexOptions.Compiled,  TimeSpan.FromSeconds(5));
+    private static readonly Regex CleanTitleRegex = new(@"[\(\[\{<«][^)\]\}>»]*[\)\]\}>»]", RegexOptions.Compiled,  TimeSpan.FromSeconds(5));
+
+    private static readonly List<Regex> VolumeChapterRegexes =
+    [
+        new(@"(?:(?:Volume|Vol\.?) ?(\d+)\s+)?(?:Chapter|Ch\.?) ([\d\.]+)", RegexOptions.Compiled,  TimeSpan.FromSeconds(5)),
+        new(@"(?:\[S(\d+)] ?)?Episode ([\d\.]+)", RegexOptions.Compiled,  TimeSpan.FromSeconds(5)),
+    ];
+
+    private static readonly Dictionary<string, List<PersonRole>> RoleMappings = new()
+    {
+        ["(Story&amp;Art)"] = [PersonRole.Writer, PersonRole.Colorist],
+        ["(Story)"] = [PersonRole.Writer],
+        ["(Art)"] = [PersonRole.Colorist],
+    };
+    
     private readonly AsyncLazy<BatoSearchOptions> _searchOptions;
     private readonly ILogger<BatoRepository> _logger;
     private readonly IDistributedCache _cache;
@@ -123,14 +141,188 @@ public class BatoRepository: IRepository
         return new PagedList<SearchResult>(items, items.Count + (lastPage - 1) * 36, currentPage, 36);
     }
 
-    public Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
+    public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var result = await Client.GetCachedStringAsync($"/title/{request.Id}", _cache, cancellationToken: cancellationToken);
+        if (result.IsErr)
+        {
+            _logger.LogError(result.Error, "Failed to retrieve chapter urls for chapter {Id}", request.Id);
+            throw new MnemaException("Failed to retrieve chapter urls", result.Error);
+        }
+        
+        var document = new HtmlDocument();
+        document.LoadHtml(result.Unwrap());
+
+        var titleNode = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[1]/h3/a");
+        if (titleNode == null)
+            throw new MnemaException($"Series {request.Id} has no title");
+        
+        var title = titleNode.InnerText;
+
+        List<string> summaryXPaths = [
+            "/html/body/div/main/div[1]/div[2]/div[4]/astro-island/div/div[1]/astro-slot/div/astro-island[1]/div/div/div",
+            "/html/body/div/main/div[1]/div[2]/div[5]/astro-island/div/div[1]/astro-slot/div/astro-island[1]/div/div/div"
+        ];
+        
+        var summary = summaryXPaths
+            .Select(xPath => document.DocumentNode.SelectSingleNode(xPath))
+            .Select(n => n?.InnerText ?? string.Empty)
+            .FirstOrDefault() ??  string.Empty;
+
+        var statusNode = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[2]/div[3]/span[3]");
+        var translationStatusNode =
+            document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[2]/div[4]/span[3]");
+
+        var genres = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[2]/div[1]")
+            .QuerySelectorAll("span > span:first-child")
+            .Select(n => new Tag {Id = n.InnerText, Value = n.InnerText})
+            .ToList();
+        
+        var people = document.DocumentNode
+            .SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[1]/div[2]")
+            .QuerySelectorAll("a")
+            .Select(n => ParsePerson(n?.InnerText))
+            .WhereNotNull()
+            .ToList();
+
+        var chapterNodes = document.DocumentNode
+            .QuerySelectorAll("[name=\"chapter-list\"] astro-slot > div");
+        
+        return new Series
+        {
+            Id = request.Id,
+            Title = CleanTitleRegex.Replace(title, string.Empty).Trim(),
+            Summary = summary,
+            Status = TranslatePublicationStatus(statusNode?.InnerText) ?? PublicationStatus.Unknown,
+            TranslationStatus = TranslatePublicationStatus(translationStatusNode?.InnerText),
+            Tags = genres,
+            People = people,
+            Links = [],
+            Chapters = chapterNodes?.Select(ParseChapter).ToList() ?? [],
+        };
+
+        PublicationStatus? TranslatePublicationStatus(string? publicationStatus)
+        {
+            if (string.IsNullOrEmpty(publicationStatus))
+                return null;
+
+            return publicationStatus switch
+            {
+                "pending" => PublicationStatus.Unknown,
+                "ongoing" => PublicationStatus.Ongoing,
+                "completed" => PublicationStatus.Completed,
+                "hiatus" => PublicationStatus.Paused,
+                "cancelled" => PublicationStatus.Cancelled,
+                _ => PublicationStatus.Unknown,
+            };
+        }
+
+        Chapter ParseChapter(HtmlNode node)
+        {
+            var linkNode = node.QuerySelector("div > a.link-hover.link-primary");
+            var (volume, chapter) = ParseVolumeAndChapter(linkNode.InnerText);
+                
+            var chapterTitle = ParseTitle(linkNode.InnerText);
+            if (string.IsNullOrEmpty(chapterTitle))
+            {
+                chapterTitle = node.QuerySelector("div > span.opacity-80")?.FirstChild?.InnerText.RemovePrefix(":").Trim();
+            }
+
+            // OneShot
+            if (string.IsNullOrEmpty(chapterTitle) && string.IsNullOrEmpty(volume) && string.IsNullOrEmpty(chapter))
+            {
+                chapterTitle = linkNode.InnerText.Trim();
+            }
+
+            var translatorNode = node.QuerySelector("div.avatar > div > a")?.FirstChild;
+            var translator = translatorNode?.GetAttributeValue("href", string.Empty)?.RemovePrefix("/u/");
+
+            return new Chapter
+            {
+                Id = linkNode.GetAttributeValue("href", "").RemovePrefix("/title/"),
+                Title = chapterTitle ?? string.Empty,
+                VolumeMarker = volume,
+                ChapterMarker = chapter,
+                Tags = [],
+                People = [],
+                TranslationGroups = string.IsNullOrEmpty(translator) ? [] : [translator],
+            };
+        }
+
+        Person? ParsePerson(string? person)
+        {
+            if (string.IsNullOrEmpty(person))
+                return null;
+
+            foreach (var mapping in RoleMappings.Where(mapping => person.Contains(mapping.Key)))
+            {
+                return new Person
+                {
+                    Name = person.Replace(mapping.Key, string.Empty).Trim(),
+                    Roles = mapping.Value
+                };
+            }
+            
+            return new Person
+            {
+                Name = person.Trim(),
+                Roles = [PersonRole.Writer]
+            };
+        }
+
+        (string Volume, string Chapter) ParseVolumeAndChapter(string input)
+        {
+            foreach (var regex in VolumeChapterRegexes)
+            {
+                var match = regex.Match(input);
+                if (!match.Success) continue;
+
+                var volume = match.Groups.Count > 1 ? match.Groups[1].Value : "";
+                var chapter = match.Groups.Count > 2 ? match.Groups[2].Value : "";
+
+                return (volume, chapter);
+            }
+            
+            return (string.Empty, string.Empty);
+        }
+
+        string ParseTitle(string input)
+        {
+            var idx = input.IndexOf(':');
+            if (idx == -1) return string.Empty;
+            
+            if (idx + 1 == input.Length) return string.Empty;
+            
+            return input[idx..];
+        }
     }
 
-    public Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var result = await Client.GetCachedStringAsync($"/title/{chapter.Id}", _cache, cancellationToken: cancellationToken);
+        if (result.IsErr)
+        {
+            _logger.LogError(result.Error, "Failed to retrieve chapter urls for chapter {Id}", chapter.Id);
+            throw new MnemaException("Failed to retrieve chapter urls", result.Error);
+        }
+        
+        var document = new HtmlDocument();
+        document.LoadHtml(result.Unwrap());
+
+        var astroIsland = document.DocumentNode.SelectSingleNode("/html/body/div/astro-island[1]");
+        if (astroIsland == null)
+            throw new MnemaException("No astro island found");
+        
+        var props = astroIsland.GetAttributeValue("props", string.Empty);
+        if (string.IsNullOrEmpty(props))
+            throw new MnemaException("No properties found");
+
+        props = BadServerRegex.Replace(props, "n11.mbznp.org");
+
+        return ChapterUrlRegex
+            .Matches(props)
+            .Select(match => new DownloadUrl(match.Value, match.Value))
+            .ToList();
     }
 
     public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)

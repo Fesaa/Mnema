@@ -5,11 +5,12 @@ using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Publication;
 using Mnema.Providers;
 
 namespace Mnema.Server.Controllers;
 
-public class ContentController(ISearchService searchService, IDownloadService downloadService): BaseApiController
+public class ContentController(ISearchService searchService, IDownloadService downloadService, IServiceProvider serviceProvider): BaseApiController
 {
 
     [AllowAnonymous]
@@ -19,6 +20,48 @@ public class ContentController(ISearchService searchService, IDownloadService do
         pagination ??= PaginationParams.Default;
 
         return searchService.Search(searchRequest, pagination, HttpContext.RequestAborted);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("series-info")]
+    public async Task<ActionResult<Series>> GetSeriesInfo([FromQuery] Provider provider, [FromQuery] string id)
+    {
+        var repository = serviceProvider.GetKeyedService<IRepository>(provider);
+        if (repository == null)
+            return NotFound();
+
+        var request = new DownloadRequestDto
+        {
+            Provider = provider,
+            Id = id,
+            BaseDir = string.Empty,
+            TempTitle = string.Empty,
+            DownloadMetadata = new DownloadMetadataDto(),
+        };
+        
+        return Ok(await repository.SeriesInfo(request, HttpContext.RequestAborted));
+    }
+    
+    [AllowAnonymous]
+    [HttpGet("chapter-urls")]
+    public async Task<ActionResult<List<DownloadUrl>>> GetChapterUrls([FromQuery] Provider provider, [FromQuery] string id)
+    {
+        var repository = serviceProvider.GetKeyedService<IRepository>(provider);
+        if (repository == null)
+            return NotFound();
+
+        var chapter = new Chapter
+        {
+            Id = id,
+            Title = string.Empty,
+            VolumeMarker = string.Empty,
+            ChapterMarker = string.Empty,
+            Tags = [],
+            People = [],
+            TranslationGroups = []
+        };
+        
+        return Ok(await repository.ChapterUrls(chapter, HttpContext.RequestAborted));
     }
 
     [AllowAnonymous]

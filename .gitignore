@@ -9,4 +9,4 @@ wwwroot
 ./downloads
 ./content
 appsettings.Development.json
-.DSStore_
+.DS_Store

@@ -9,7 +9,9 @@ public sealed record DownloadRequestDto
     
     public required Provider Provider { get; set; }
     public required string Id { get; set; }
+    [JsonPropertyName("dir")]
     public required string BaseDir { get; set; }
+    [JsonPropertyName("title")]
     public required string TempTitle { get; set; }
     public required DownloadMetadataDto DownloadMetadata { get; set; }
 

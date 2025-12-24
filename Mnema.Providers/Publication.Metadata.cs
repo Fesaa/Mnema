@@ -47,7 +47,7 @@ internal partial class Publication
         {
             Notes = string.Format(ComicInfoNote, provider.ToString()),
             Series = Title,
-            AlternateSeries = Series.AltTitle ?? string.Empty,
+            LocalizedSeries = Series.LocalizedSeries ?? string.Empty,
             Summary = chapter.Summary.OrNonEmpty(Series.Summary),
             Title = chapter.Title,
         };

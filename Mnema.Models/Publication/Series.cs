@@ -4,7 +4,7 @@ public sealed record Series
 {
     public required string Id { get; set; }
     public required string Title { get; set; }
-    public string? AltTitle { get; set; }
+    public string? LocalizedSeries { get; set; }
     public required string Summary { get; set; }
     
     public string? CoverUrl { get; set; }
