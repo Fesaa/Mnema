@@ -5,9 +5,9 @@ using Serilog.Templates;
 
 namespace Mnema.Server.Logging;
 
-public class SerilogOptions
+public static class SerilogOptions
 {
-    public const string OutputTemplate = "[Mnema] [{@t:yyyy-MM-dd HH:mm:ss.fff zzz}]  ({SourceContext}) [{@l}] {@m:lj}\n{@x}";
+    public const string OutputTemplate = "[Mnema] [{@t:yyyy-MM-dd HH:mm:ss.fff zzz}] ({SourceContext}) [{@l}] {@m:lj}\n{@x}";
     public const string LogFile = "config/logs/mnema.log";
 
     private static readonly LoggingLevelSwitch LogLevelSwitch = new ();

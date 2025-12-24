@@ -56,6 +56,8 @@ internal partial class Publication
         if (Series == null)
             throw new MnemaException("Publication is downloading before series has loaded");
         
+        await _messageService.StateUpdate(Request.UserId, Id, ContentState.Downloading);
+        
         var hook = scope.ServiceProvider.GetKeyedService<IPreDownloadHook>(provider);
         if (hook != null)
         {

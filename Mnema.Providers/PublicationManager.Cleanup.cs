@@ -69,17 +69,9 @@ internal partial class PublicationManager
             return Task.CompletedTask;
         }
 
-        while (!string.IsNullOrEmpty(directory)
-               && directory != _configuration.DownloadDir
-               && !_fileSystem.Directory.EnumerateFileSystemEntries(directory).Any())
-        {
-            _logger.LogTrace("Going to remove directory {Directory}", directory);
-            _fileSystem.Directory.Delete(directory);
+        _fileSystem.Directory.Delete(directory, true);
 
-            directory = _fileSystem.Directory.GetParent(directory)?.FullName;
-        }
-        
-        _logger.LogDebug("Finished removing files in download in {Elapsed}ms", sw.ElapsedMilliseconds);
+        _logger.LogDebug("Finished removing files in {Directory} in {Elapsed}ms", directory, sw.ElapsedMilliseconds);
 
         return Task.CompletedTask;
     }
