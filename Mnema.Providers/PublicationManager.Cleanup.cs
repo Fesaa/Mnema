@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Providers;
@@ -12,6 +13,9 @@ internal partial class PublicationManager
 
     private async Task CleanupAfterDownload(IPublication publication, bool skipSaving)
     {
+        using var scope = _scopeFactory.CreateScope();
+        var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
+        
         try
         {
             if (!skipSaving)
@@ -38,7 +42,12 @@ internal partial class PublicationManager
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occured while cleaning up download for {Id} - {Title}", publication.Id, publication.Title);
+            _logger.LogError(ex, "An exception occured while cleaning up download for {Id} - {Title}", publication.Id,
+                publication.Title);
+        }
+        finally
+        {
+            await messageService.DeleteContent(publication.Request.UserId, publication.Id);
         }
     }
 

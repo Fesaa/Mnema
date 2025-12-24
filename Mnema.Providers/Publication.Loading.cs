@@ -67,6 +67,7 @@ internal partial class Publication
         }
 
         State = Request.DownloadMetadata.StartImmediately || Request.IsSubscription ? ContentState.Ready : ContentState.Waiting;
+        await _messageService.UpdateContent(Request.UserId, DownloadInfo);
         
         _logger.LogDebug("Loading metadata for {Title}, {ToDownload}/{Total} chapters in {Elapsed}ms",
             Title, _queuedChapters.Count, Series!.Chapters.Count, sw.ElapsedMilliseconds);

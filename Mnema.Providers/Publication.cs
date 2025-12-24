@@ -31,6 +31,7 @@ internal partial class Publication(
     private readonly IFileSystem _fileSystem = scope.ServiceProvider.GetRequiredService<IFileSystem>();
     private readonly ISettingsService _settingsService = scope.ServiceProvider.GetRequiredService<ISettingsService>();
     private readonly ApplicationConfiguration _configuration = scope.ServiceProvider.GetRequiredService<ApplicationConfiguration>();
+    private readonly IMessageService _messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
 
     private CancellationTokenSource _tokenSource = new ();
     
@@ -85,7 +86,7 @@ internal partial class Publication(
         Size = _userSelectedIds.Count > 0 ? $"{_userSelectedIds.Count} Chapters" : $"{_queuedChapters.Count} Chapters",
         Downloading = State == ContentState.Downloading,
         Progress = Math.Floor(_speedTracker?.Progress() ?? 0),
-        Estimated = 0,
+        Estimated = _speedTracker?.EstimatedTimeRemaining() ?? 0,
         SpeedType = SpeedType.Images,
         Speed = Math.Floor(_speedTracker?.Speed() ?? 0),
         DownloadDir = DownloadDir,

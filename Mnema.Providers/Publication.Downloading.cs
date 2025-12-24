@@ -111,6 +111,7 @@ internal partial class Publication
         _logger.LogInformation("Downloaded all chapters in {Elapsed}ms", sw.ElapsedMilliseconds);
 
         State = ContentState.Cleanup;
+        await _messageService.StateUpdate(Request.UserId, Id, ContentState.Cleanup);
 
         await _publicationManager.StopDownload(StopRequest(false));
     }
@@ -122,8 +123,12 @@ internal partial class Publication
             try
             {
                 var filePath = await _extensions.DownloadCallback(ioWork, _tokenSource.Token);
-                
+
                 _logger.LogTrace("Wrote {FilePath} / {Idx} to disk", filePath, ioWork.Idx);
+            }
+            catch (TaskCanceledException)
+            {
+                /* Ignored */
             }
             catch (Exception ex)
             {
@@ -149,6 +154,7 @@ internal partial class Publication
             }
 
             await DownloadChapter(channel, chapter);
+            await _messageService.UpdateContent(Request.UserId, DownloadInfo);
         }
         
         channel.Writer.Complete();
@@ -234,6 +240,7 @@ internal partial class Publication
     {
         var failedTasks = new List<DownloadWork>();
         var client = _httpClientFactory.CreateClient(provider.ToString());
+        var counter = 0;
 
         await foreach (var task in ctx.Reader.ReadAllAsync(_tokenSource.Token))
         {
@@ -249,6 +256,7 @@ internal partial class Publication
                 continue;
             }
 
+            counter++;
             var url = isRetry && !string.IsNullOrEmpty(task.Url.FallbackUrl) ? task.Url.FallbackUrl : task.Url.Url;
 
             _logger.LogTrace("Processing task {Idx} with URL {Url}", task.Idx, url);
@@ -267,6 +275,11 @@ internal partial class Publication
                 
                 _logger.LogWarning(ex, "Task {Idx} on {Url} has failed failed for the first time, retrying later", task.Idx, url);
                 failedTasks.Add(task);
+            }
+
+            if (counter % 5 == 0)
+            {
+                await _messageService.UpdateContent(Request.UserId, DownloadInfo);
             }
         }
 

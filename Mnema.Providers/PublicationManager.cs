@@ -1,14 +1,12 @@
 using System.Collections.Concurrent;
 using System.IO.Abstractions;
 using System.Threading.Channels;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
 using Mnema.Models.Internal;
 
@@ -55,6 +53,9 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
 
     public async Task Download(DownloadRequestDto request)
     {
+        using var scope = _scopeFactory.CreateScope();
+        var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
+        
         if (_content.ContainsKey(request.Id))
         {
             throw new MnemaException("Content already exists");
@@ -67,6 +68,8 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
             throw new MnemaException("Failed to add content");
         }
 
+        await messageService.AddContent(request.UserId, publication.DownloadInfo);
+
         try
         {
             await AddToLoadingQueueAsync(publication);
@@ -74,6 +77,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         catch
         {
             _content.TryRemove(publication.Id, out _);
+            await messageService.DeleteContent(request.UserId, publication.Id);
             throw;
         }
     }
@@ -265,6 +269,11 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
             _logger.LogDebug("Starting download for {Id} - {Title}", publication.Id, publication.Title);
 
             await publication.DownloadContentAsync(CancellationTokenSource.CreateLinkedTokenSource(_cts.Token));
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogTrace("Download for {Id} - {Title} was caught in a cancel", publication.Id, publication.Title);
+            
         }
         catch (Exception ex)
         {

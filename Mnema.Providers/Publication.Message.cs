@@ -102,19 +102,21 @@ internal partial class Publication
         }
     }
 
-    private Task<MessageDto> FilterContent(MessageDto message)
+    private async Task<MessageDto> FilterContent(MessageDto message)
     {
         if (State != ContentState.Ready && State != ContentState.Waiting)
             throw new MnemaException($"Cannot filter content while in the {State} state");
 
         _userSelectedIds = message.Data.Deserialize<List<string>>() ?? [];
+
+        await _messageService.SizeUpdate(Request.UserId, Id, DownloadInfo.Size);
         
-        return Task.FromResult(new MessageDto
+        return new MessageDto
         {
             Provider = provider,
             ContentId = Id,
             Type = MessageType.FilterContent,
-        });
+        };
     }
 
     private async Task<MessageDto> StartDownload()
