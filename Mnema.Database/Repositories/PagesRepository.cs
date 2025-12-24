@@ -27,9 +27,13 @@ public class PagesRepository(MnemaDataContext ctx, IMapper mapper): IPagesReposi
         return ctx.Pages.FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public Task<int> GetHighestSort()
+    public async Task<int> GetHighestSort()
     {
-        return ctx.Pages.MaxAsync(p => p.SortValue);
+        var result = await ctx.Pages
+            .Select(p => (int?)p.SortValue)
+            .MaxAsync();
+    
+        return result ?? 0;
     }
 
     public Task DeletePage(Guid id)

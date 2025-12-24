@@ -7,6 +7,7 @@ using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 using Mnema.Providers.Extensions;
@@ -42,7 +43,7 @@ public class MangadexRepository: IRepository
             .AddRange("publicationDemographic", request.Modifiers.GetStrings("publicationDemographic"))
             .AddRange("includedTags", includeTags)
             .SetQueryParam("includedTagsMode", request.Modifiers.GetStringOrDefault("includedTagsMode", "AND"))
-            .AddRange("excludeTags", excludeTags)
+            .AddRange("excludedTags", excludeTags)
             .SetQueryParam("excludedTagsMode", request.Modifiers.GetStringOrDefault("excludedTagsMode", "OR"))
             .AddPagination(pagination)
             .AddIncludes();
@@ -50,6 +51,7 @@ public class MangadexRepository: IRepository
         var result = await Client.GetCachedAsync<SearchResponse>(url.ToString(), _cache, cancellationToken);
         if (result.IsErr)
         {
+            _logger.LogError(result.Error, "Failed to retrieve search info with url {Url}", url);
             throw new MnemaException("Failed to search for series", result.Error);
         }
 
@@ -237,6 +239,120 @@ public class MangadexRepository: IRepository
 
             return new DownloadUrl(preferredUrl, fallbackUrl);
         }).ToList();
+    }
+
+    public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new DownloadMetadata([
+            new DownloadMetadataDefinition
+            {
+                Key = RequestConstants.LanguageKey,
+                FormType = FormType.Dropdown,
+                DefaultOption = "en",
+                Options = [
+                    new KeyValue("en", "English"),
+                    new KeyValue("zh", "Simplified Chinese"),
+                    new KeyValue("zh-hk", "Traditional Chinese"),
+                    new KeyValue("es", "Castilian Spanish"),
+                    new KeyValue("fr", "French"),
+                    new KeyValue("ja", "Japanese")
+                ],
+            },
+            new DownloadMetadataDefinition
+            {
+                Key = RequestConstants.ScanlationGroupKey,
+                Advanced = true,
+                FormType = FormType.Text,
+            },
+            new DownloadMetadataDefinition
+            {
+                Key = RequestConstants.DownloadOneShotKey,
+                FormType = FormType.Switch,
+            },
+            new DownloadMetadataDefinition
+            {
+                Key = RequestConstants.IncludeCover,
+                FormType = FormType.Switch,
+                DefaultOption = "true",
+            },
+            new DownloadMetadataDefinition
+            {
+                Key = RequestConstants.UpdateCover,
+                Advanced = true,
+                FormType = FormType.Switch,
+            },
+            new DownloadMetadataDefinition
+            {
+                Key = RequestConstants.TitleOverride,
+                Advanced = true,
+                FormType = FormType.Text,
+            },
+            new DownloadMetadataDefinition
+            {
+                Key = RequestConstants.AllowNonMatchingScanlationGroupKey,
+                Advanced = true,
+                FormType = FormType.Switch,
+                DefaultOption = "true",
+            }
+        ]));
+    }
+
+    public async Task<List<ModifierDto>> Modifiers(CancellationToken cancellationToken)
+    {
+        return [
+            new ModifierDto
+            {
+                Title = "Status",
+                Type = ModifierType.Multi,
+                Key = "status",
+                Values = [
+                    ModifierValueDto.Option("cancelled", "Cancelled"),
+                    ModifierValueDto.Option("completed", "Completed"),
+                    ModifierValueDto.Option("hiatus", "Hiatus"),
+                    ModifierValueDto.Option("ongoing", "Ongoing"),
+                ],
+            },
+            new ModifierDto
+            {
+                Title = "Content Rating",
+                Type = ModifierType.Multi,
+                Key = "contentRating",
+                Values = [
+                    ModifierValueDto.Option("safe", "Safe"),
+                    ModifierValueDto.Option("suggestive", "Suggestive"),
+                    ModifierValueDto.Option("erotica", "Erotica"),
+                    ModifierValueDto.Option("pornographic", "Mature"),
+                ],
+            },
+            new ModifierDto
+            {
+                Title = "Include Tags",
+                Type = ModifierType.Multi,
+                Key = "includeTags",
+                Values = (await _tagMap).Select(t => ModifierValueDto.Option(t.Key, t.Key)).ToList(),
+            },
+            new ModifierDto
+            {
+                Title = "Exclude Tags",
+                Type = ModifierType.Multi,
+                Key = "excludeTags",
+                Values = (await _tagMap).Select(t => ModifierValueDto.Option(t.Key, t.Key)).ToList(),
+            },
+            new ModifierDto
+            {
+                Title = "Tags inclusion mode",
+                Type = ModifierType.DropDown,
+                Key = "includeTagsMode",
+                Values = [ModifierValueDto.DefaultValue("AND", "And"), ModifierValueDto.Option("OR", "Or")]
+            },
+            new ModifierDto
+            {
+                Title = "Tags exlusion mode",
+                Type = ModifierType.DropDown,
+                Key = "excludeTagsMode",
+                Values = [ModifierValueDto.Option("AND", "And"), ModifierValueDto.DefaultValue("OR", "Or")]
+            },
+        ];
     }
 
     private async Task<IList<string>> MapTags(IEnumerable<string> tags, bool skipNotFound)

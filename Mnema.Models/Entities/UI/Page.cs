@@ -1,4 +1,3 @@
-using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
 
@@ -11,8 +10,7 @@ public class Page
     public required string Title { get; set; }
     public string Icon { get; set; } = string.Empty;
     public required int SortValue { get; set; }
-    public IList<Provider> Providers { get; set; } = [];
-    public IList<ModifierDto> Modifiers { get; set; } = [];
+    public required Provider Provider { get; set; }
     public IList<string> Dirs { get; set; } = [];
     public string CustomRootDir { get; set; } = string.Empty;
     

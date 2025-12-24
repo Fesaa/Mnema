@@ -1,6 +1,6 @@
 {
   "application": {
-    "name": "Media-Provider"
+    "name": "Mnema"
   },
 
   "common": {
@@ -160,41 +160,19 @@
     "close": "{{common.close}}",
     "general": "General",
     "modifiers": "Modifiers",
-    "wiki": "Pages form the central way to search and download content with Media-Provider, each page will be a tab in the navigation bar. And allow you to search content from at least one provider. You'll be able to adjust on which things you can filter while downloading. For more information see the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://fesaa.github.io/Media-Provider/\">wiki</a>. ",
-    "wiki-modifiers": "Modifiers are an import part of the search experience, you can configure them to help you narrow down results, apart from name. Each provider has different modifiers it can use to narrow down your search. See the wiki for more information. Read the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://fesaa.github.io/Media-Provider/\">wiki</a> carefully to ensure you use the correct keys for the modifiers. Modifiers are always configured with a list of key-value pairs. The key is what the provider will use to search, while the display name is what will be shown on your screen.",
+    "wiki": "Pages form the central way to search and download content with {{application.name}}, each page will be a tab in the navigation bar. And allow you to search content from at least one provider. You'll be able to adjust on which things you can filter while downloading. For more information see the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://fesaa.github.io/Mnema/\">wiki</a>. ",
+    "wiki-modifiers": "Modifiers are an import part of the search experience, you can configure them to help you narrow down results, apart from name. Each provider has different modifiers it can use to narrow down your search. See the wiki for more information. Read the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://fesaa.github.io/Mnema/\">wiki</a> carefully to ensure you use the correct keys for the modifiers. Modifiers are always configured with a list of key-value pairs. The key is what the provider will use to search, while the display name is what will be shown on your screen.",
 
     "title-label": "Title",
     "title-tooltip": "The title displayed in the navigation bar",
     "icon-label": "Icon",
     "icon-tooltip": "Optional icon displayed in the navigation bar",
+    "provider-label": "Provider",
+    "provider-tooltip": "Which provider to search to use this page",
     "custom-root-dir-label": "Root directory",
     "custom-root-dir-tooltip": "Base directory to start the dir picker in",
     "dirs-label": "Directories",
-    "dirs-tooltip": "Optional list of directories to pick from",
-
-    "delete-modifier": "Are you sure you want to delete {{title}}?"
-  },
-
-  "edit-page-modifier-modal": {
-    "title": "Edit modifier {{title}}",
-    "cancel": "{{common.cancel}}",
-    "save": "{{common.save}}",
-    "close": "{{common.close}}",
-
-    "title-label": "Title",
-    "title-tooltip": "The name of the modifier, displayed in the page form",
-    "value-label": "Value",
-    "key-label": "Key",
-    "key-tooltip": "The key as defined on the wiki, if this is incorrect the modifier will not do anything",
-    "type-label": "Type",
-    "type-tooltip": "Which input type to use",
-    "default": "Default",
-    "values-label": "Values"
-  },
-  "modifier-type-pipe": {
-    "multi": "Multi select",
-    "dropdown": "Dropdown",
-    "switch": "Switch"
+    "dirs-tooltip": "Optional list of directories to pick from"
   },
 
   "shared": {

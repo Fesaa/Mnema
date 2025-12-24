@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
+using Mnema.API.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
@@ -8,7 +9,7 @@ using Mnema.Server.Configuration;
 
 namespace Mnema.Server.Controllers;
 
-public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOfWork, IPagesService pagesService): BaseApiController
+public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOfWork, IPagesService pagesService, IServiceProvider serviceProvider): BaseApiController
 {
 
     /// <summary>
@@ -20,14 +21,33 @@ public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOf
     {
         var pages = await unitOfWork.PagesRepository.GetPageDtosForUser(UserId);
         
+        foreach (var page in pages)
+        {
+            var repository = serviceProvider.GetKeyedService<IRepository>(page.Provider);
+            if (repository == null)
+            {
+                logger.LogWarning("Page {Guid} with provider {Provider} could not be enriched", page.Id, page.Provider);
+                page.Metadata = new DownloadMetadata([]);
+                page.Modifiers = [];
+                continue;
+            }
+
+            page.Metadata = await repository.DownloadMetadata(HttpContext.RequestAborted);
+            page.Modifiers = await repository.Modifiers(HttpContext.RequestAborted);
+        }
+        
         return Ok(pages);
     }
 
     [HttpGet("download-metadata")]
     [ResponseCache(CacheProfileName = CacheProfiles.OneHour, VaryByHeader = "providers")]
-    public async Task<IActionResult> DownloadMetadata([FromQuery] Provider providers)
+    public async Task<ActionResult<DownloadMetadata>> DownloadMetadata([FromQuery] Provider provider)
     {
-        return Ok();
+        var repository = serviceProvider.GetKeyedService<IRepository>(provider);
+        if (repository == null)
+            return NotFound();
+        
+        return Ok(await repository.DownloadMetadata(HttpContext.RequestAborted));
     }
 
     [HttpPost("new")]

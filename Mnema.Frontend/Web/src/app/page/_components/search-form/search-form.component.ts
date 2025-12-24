@@ -2,7 +2,7 @@ import {Component, computed, effect, input, output, signal} from '@angular/core'
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 
 import {SearchRequest} from "../../../_models/search";
-import {Modifier, ModifierType, ModifierValue} from "../../../_models/page";
+import {Modifier, ModifierType, ModifierValue, Provider} from "../../../_models/page";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {TypeaheadComponent, TypeaheadSettings} from "../../../type-ahead/typeahead.component";
 import {of} from "rxjs";
@@ -17,6 +17,7 @@ import {of} from "rxjs";
 export class SearchFormComponent {
 
   title = input.required<string>();
+  provider = input.required<Provider>();
   modifiers = input<Modifier[]>([]);
   loading = input<boolean>(false);
 
@@ -126,7 +127,7 @@ export class SearchFormComponent {
     });
 
     const searchRequest: SearchRequest = {
-      provider: [],
+      provider: this.provider(),
       query: formValue.query,
       modifiers: Object.keys(modifiersToSend).length > 0 ? modifiersToSend :{}
     };

@@ -11,46 +11,7 @@ public class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork): I
 
     public async Task UpdatePage(PageDto dto)
     {
-        List<ModifierDto> modifiers = [];
-
-        var idx = 0;
-        foreach (var modifier in dto.Modifiers)
-        {
-            modifier.Sort = idx++;
-    
-            switch (modifier.Type)
-            {
-                case ModifierType.DropDown:
-                    // Ensure only one modifier value has the default state
-                    var foundDefault = false;
-                    foreach (var value in modifier.Values)
-                    {
-                        if (foundDefault)
-                        {
-                            value.Default = false;
-                        }
-                        foundDefault = foundDefault || value.Default;
-                    }
-                    break;
-            
-                case ModifierType.Multi:
-                    break;
-            
-                case ModifierType.Switch:
-                    // Switch modifiers do not have preset values
-                    modifier.Values = [];
-                    break;
-            
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            modifiers.Add(modifier);
-        }
-        
-        
-        
-        var page = await unitOfWork.PagesRepository.GetPageById(dto.Id);
+        var page = dto.Id.Equals(Guid.Empty) ? null : await unitOfWork.PagesRepository.GetPageById(dto.Id);
         var maxSortValue = await unitOfWork.PagesRepository.GetHighestSort();
 
         var newPage = page == null;
@@ -59,12 +20,11 @@ public class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork): I
         {
             Title = dto.Title,
             SortValue = maxSortValue + 1,
+            Provider = dto.Provider,
         };
 
         page.Icon = dto.Icon;
-        page.Providers = dto.Providers;
         page.CustomRootDir = dto.CustomRootDir;
-        page.Modifiers = modifiers;
 
         if (newPage)
         {

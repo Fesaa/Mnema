@@ -11,7 +11,7 @@ import {DefaultModalOptions} from "../../../_models/default-modal-options";
 import {UpdateBadgeDirective} from "../../../_directives/update-badge.directive";
 
 interface Option {
-  id: number,
+  id: string,
   title: string,
   action?: () => void,
   version?: string,
@@ -47,7 +47,7 @@ export class SuggestionDashboardComponent {
     }
 
     options.push({
-      id: -1,
+      id: '',
       title: translate('dashboard.manual-add.title'),
       action: this.manualAdd.bind(this),
       version: "0.3.6",

@@ -8,6 +8,10 @@ export class ProviderNamePipe implements PipeTransform {
 
   transform(value: Provider): string {
     switch (value) {
+      case Provider.NYAA:
+        return "Nyaa";
+      case Provider.MANGADEX:
+        return "Mangadex";
       case Provider.DYNASTY:
         return "Dynasty";
       case Provider.WEBTOON:

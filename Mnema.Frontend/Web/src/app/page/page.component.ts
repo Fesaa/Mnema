@@ -42,8 +42,17 @@ export class PageComponent implements OnInit {
   private readonly providerNamePipe = inject(ProviderNamePipe);
 
   page = signal<Page | undefined>(undefined);
+
   providers = signal<Provider[]>([]);
-  metadata = signal<Map<Provider, DownloadMetadata>>(new Map());
+  canSub = computed(() => {
+    const page = this.page();
+    const providers = this.providers();
+    if (!page) return false;
+
+    return providers.includes(page.provider);
+  });
+
+  metadata = computed(() => this.page()?.metadata);
 
   loading = signal(false);
   showForm = signal(true);
@@ -56,16 +65,6 @@ export class PageComponent implements OnInit {
     console.log("new search request")
     return (pn, pz) => this.contentService.search(req, pn, pz);
   });
-
-
-  constructor() {
-    effect(() => {
-      const page = this.page();
-      if (!page) return;
-
-      this.loadMetadata(page);
-    });
-  }
 
   ngOnInit(): void {
     this.navService.pageIndex$.subscribe(index => {
@@ -82,10 +81,6 @@ export class PageComponent implements OnInit {
     })
   }
 
-  getDownloadMetadata(provider: Provider) {
-    return this.metadata().get(provider) ?? {definitions: []}
-  }
-
   search(req: SearchRequest) {
     if (this.loading()) {
       return;
@@ -93,25 +88,8 @@ export class PageComponent implements OnInit {
 
     this.showForm.set(false);
 
-    req.provider = (this.page()?.providers[0] ?? 0) as any as number[];
+    req.provider = this.page()!.provider;
 
     this.searchRequest.set(req);
-  }
-
-  private loadMetadata(page: Page) {
-    for (const provider of page.providers) {
-      this.pageService.metadata(provider).subscribe({
-        next: metadata => {
-          this.metadata.update(m => {
-            m.set(provider, metadata);
-            return m;
-          })
-        },
-        error: error => {
-          this.toastService.errorLoco("page.toasts.metadata-failed",
-            {provider: this.providerNamePipe.transform(provider)}, {msg: error.error.message});
-        }
-      })
-    }
   }
 }

@@ -43,10 +43,6 @@ public sealed class MnemaDataContext: DbContext
             .ComplexCollection(p => p.TagMappings, b => b.ToJson());
 
         builder.Entity<Page>()
-            .ComplexCollection(p => p.Modifiers, b => b.ToJson());
-        builder.Entity<Page>()
-            .PrimitiveCollection(p => p.Providers);
-        builder.Entity<Page>()
             .PrimitiveCollection(p => p.Dirs);
         builder.Entity<Page>()
             .HasMany(p => p.Users);

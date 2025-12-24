@@ -15,7 +15,7 @@ import {NotificationService} from "../_services/notification.service";
 import {EventType, SignalRService} from "../_services/signal-r.service";
 import {TranslocoService} from "@jsverse/transloco";
 import {Role, User} from "../_models/user";
-import {Page} from "../_models/page";
+import {Page, Provider} from "../_models/page";
 import {AsyncPipe, TitleCasePipe} from "@angular/common";
 import {animate, style, transition, trigger} from "@angular/animations";
 import {catchError, filter, fromEvent, of, take, tap, timeout} from "rxjs";
@@ -157,13 +157,14 @@ export class NavHeaderComponent implements OnInit {
     this.pageItems.set([
       {
         title: this.transLoco.translate("nav-bar.home"),
-        id: -1,
+        id: "",
         icon: "fa-home",
         dirs: [],
         customRootDir: '',
         modifiers: [],
-        providers: [],
+        provider: Provider.MANGADEX,
         sortValue: -100,
+        metadata: {definitions: []},
       },
       ...pages
     ]);

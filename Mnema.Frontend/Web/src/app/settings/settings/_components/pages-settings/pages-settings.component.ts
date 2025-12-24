@@ -1,5 +1,5 @@
-import {Component, computed, effect, inject, OnInit, signal} from '@angular/core';
-import {Page} from "../../../../_models/page";
+import {Component, computed, effect, inject, signal} from '@angular/core';
+import {Page, Provider} from "../../../../_models/page";
 import {PageService} from "../../../../_services/page.service";
 import {RouterLink} from "@angular/router";
 import {dropAnimation} from "../../../../_animations/drop-animation";
@@ -46,12 +46,11 @@ export class PagesSettingsComponent {
   edit(page: Page | null) {
     const [modal, component] = this.modalService.open(EditPageModalComponent, DefaultModalOptions);
     component.page.set(page ?? {
-      id: -1,
+      id: "",
       customRootDir: '',
       title: '',
       dirs: [],
-      providers: [],
-      modifiers: [],
+      provider: Provider.BATO,
       icon: '',
       sortValue: 0,
     });

@@ -1,10 +1,11 @@
 export type Page = {
-  id: number;
+  id: string;
   sortValue: number;
   title: string;
   icon: string;
-  providers: Provider[];
-  modifiers: Modifier[];
+  provider: Provider;
+  modifiers?: Modifier[];
+  metadata?: DownloadMetadata,
   dirs: string[];
   customRootDir: string;
 }

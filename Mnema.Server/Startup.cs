@@ -51,6 +51,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 .AddCacheProfile(CacheProfiles.OneHour, TimeSpan.FromHours(1))
                 .AddCacheProfile(CacheProfiles.OneDay, TimeSpan.FromDays(1))
                 .AddCacheProfile(CacheProfiles.OneWeek, TimeSpan.FromDays(7));
+        }).AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new EmptyStringToGuidConverter());
         });
         services.AddEndpointsApiExplorer();
         services.AddRateLimiter();

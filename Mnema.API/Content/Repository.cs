@@ -1,5 +1,6 @@
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.UI;
 using Mnema.Models.Publication;
 
 namespace Mnema.API.Content;
@@ -36,5 +37,18 @@ public interface IRepository
     /// <returns></returns>
     /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside our control fails</exception>
     Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Get <see cref="DownloadMetadata"/> for the provider
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken);
+    /// <summary>
+    /// Get all <see cref="ModifierDto"/>s avaible for search for the provider
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<ModifierDto>> Modifiers(CancellationToken cancellationToken);
 
 }

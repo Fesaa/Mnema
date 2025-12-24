@@ -4,7 +4,8 @@
     <div [class.hidden]="!showForm()" class="mx-2">
       <app-search-form
         [title]="page()!.title"
-        [modifiers]="page()!.modifiers"
+        [provider]="page()!.provider"
+        [modifiers]="page()!.modifiers ?? []"
         (searchSubmitted)="search($event)"
       />
     </div>
@@ -28,7 +29,7 @@
           <ng-template #items let-results>
             <div class="results-grid">
               @for (res of results; track res.id) {
-                <app-search-result [metadata]="getDownloadMetadata(res.Provider)" [page]="page()!"
+                <app-search-result [metadata]="metadata()!" [page]="page()!"
                                    [searchResult]="res" [providers]="providers()" [@fadeAnimation]></app-search-result>
               }
             </div>

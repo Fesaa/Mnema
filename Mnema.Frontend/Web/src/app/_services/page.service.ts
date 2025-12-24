@@ -37,7 +37,7 @@ export class PageService {
     }));
   }
 
-  getPage(id: number): Observable<Page> {
+  getPage(id: string): Observable<Page> {
     const page = this.pages().find(p => p.id === id);
     if (page) {
       return of(page);
@@ -46,7 +46,7 @@ export class PageService {
     return this.httpClient.get<Page>(this.baseUrl + id)
   }
 
-  removePage(pageId: number) {
+  removePage(pageId: string) {
     return this.httpClient.delete(this.baseUrl + pageId).pipe(
       tap(() => {
         this._pages.update(x => x.filter(p => p.id !== pageId))
@@ -78,7 +78,7 @@ export class PageService {
     );
   }
 
-  orderPages(order: number[]) {
+  orderPages(order: string[]) {
     return this.httpClient.post(this.baseUrl + 'order', order);
   }
 

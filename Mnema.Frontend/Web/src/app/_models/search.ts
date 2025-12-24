@@ -1,7 +1,7 @@
 import {Provider} from "./page";
 
 export type SearchRequest = {
-  provider: Provider[];
+  provider: Provider;
   query: string;
   modifiers?: { [key: string]: string[] };
 }

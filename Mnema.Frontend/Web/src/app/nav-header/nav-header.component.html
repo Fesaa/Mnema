@@ -11,8 +11,8 @@
             <a
               class="nav-link"
               [class.selected]="navService.pageIndex() === page.id"
-              [routerLink]="page.id === -1 ? '/home' : '/page'"
-              [queryParams]="page.id === -1 ? {} : { index: page.id }"
+              [routerLink]="page.id === '' ? '/home' : '/page'"
+              [queryParams]="page.id === '' ? {} : { index: page.id }"
             >
               @if (page.icon) {
                 <i class="fa {{ page.icon }}"></i>
@@ -79,8 +79,8 @@
           @for (page of pageItems(); track page.id) {
             <a
               class="nav-link"
-              [routerLink]="page.id === -1 ? '/home' : '/page'"
-              [queryParams]="page.id === -1 ? {} : { index: page.id }"
+              [routerLink]="page.id === '' ? '/home' : '/page'"
+              [queryParams]="page.id === '' ? {} : { index: page.id }"
               (click)="toggleMobileMenu()"
             >
               @if (page.icon) {

@@ -6,7 +6,7 @@ riderModule.iml
 .idea
 wwwroot
 *.log
-downloads
-content
+./downloads
+./content
 appsettings.Development.json
 .DSStore_

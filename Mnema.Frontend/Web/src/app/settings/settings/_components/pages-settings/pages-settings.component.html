@@ -1,4 +1,4 @@
-@if (pages().length > 0 && user()) {
+@if (user()) {
   <div class="mt-4" *transloco="let t; prefix: 'settings.pages'">
 
     <h2 class="h2 fw-bold mt-4 mb-3">{{ t('title') }}</h2>
@@ -60,6 +60,22 @@
             <i class="fa fa-trash"></i>
           </button>
         </td>
+      </ng-template>
+
+      <ng-template #empty>
+        <tr>
+          <td colspan="4" class="py-5">
+            <div class="d-flex flex-column align-items-center text-center gap-3 text-muted">
+              <h5 class="mb-1">
+                {{t('empty.title')}}
+              </h5>
+
+              <p class="mb-0" [innerHtml]="t('empty.description')">
+              </p>
+
+            </div>
+          </td>
+        </tr>
       </ng-template>
     </app-table>
   </div>
