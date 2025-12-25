@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Fizzler.Systems.HtmlAgilityPack;
 using Flurl;
 using HtmlAgilityPack;
@@ -22,6 +24,11 @@ public class DynastyRepository(
     IHttpClientFactory httpClientFactory)
     : IRepository
 {
+    
+    private const string ChapterReleaseDateFormat = "MMM d, yyyy";
+    private const string SeriesReleaseDateFormat = "MMM d \\'yy";
+    
+    private static readonly Regex ChapterTitleRegex = new (@"Chapter\s+([\d.]+)(?::\s*(.+))?", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
     
     private HttpClient Client => httpClientFactory.CreateClient(nameof(Provider.Dynasty));
     
@@ -75,9 +82,174 @@ public class DynastyRepository(
         return new PagedList<SearchResult>(results, 20 * lastPage, currentPage - 1, 20);
     }
 
-    public Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
+    public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var result = await Client.GetCachedStringAsync(request.Id, cache, cancellationToken: cancellationToken);
+        if (result.IsErr)
+        {
+            logger.LogError(result.Error, "Failed to retrieve series info with url {Url} ", request.Id);
+            throw new MnemaException("Failed to retrieve series info", result.Error);
+        }
+        
+        var document = result.Unwrap().ToHtmlDocument();
+
+        if (request.Id.StartsWith("/series/"))
+        {
+            return ParseSeriesPage(document, request);
+        }
+
+        return ParseChapterPageAsSeries(document, request);
+
+    }
+
+    private Series ParseSeriesPage(HtmlDocument document, DownloadRequestDto request)
+    {
+        var coverUrl = document.DocumentNode.QuerySelector(".thumbnail")?.GetAttributeValue("src", string.Empty);
+        var tags = document.DocumentNode.QuerySelectorAll(".tag-tags a")
+            .Where(node => node.GetAttributeValue("href", string.Empty).StartsWith("/tags/"))
+            .Select(node => new Tag(node.InnerText))
+            .ToList();
+        var people = document.DocumentNode.QuerySelectorAll(".tag-title a")
+            .Where(node => node.GetAttributeValue("href", string.Empty).StartsWith("/authors/"))
+            .Select(node => new Person
+            {
+                Name = node.InnerText,
+                Roles = [PersonRole.Writer]
+            })
+            .ToList();
+        
+        
+        return new Series
+        {
+            Id = request.Id,
+            Title = document.DocumentNode.QuerySelector(".tag-title b").InnerText,
+            LocalizedSeries = document.DocumentNode.QuerySelector(".aliases b")?.InnerText,
+            Summary = document.DocumentNode.QuerySelector(".description p")?.InnerText ?? string.Empty,
+            CoverUrl = string.IsNullOrEmpty(coverUrl) ? string.Empty : $"{Client.BaseAddress?.ToString().TrimEnd('/')}{coverUrl}",
+            RefUrl =  $"{Client.BaseAddress?.ToString().TrimEnd('/')}{request.Id}",
+            Status = ParseStatus(document.DocumentNode.QuerySelectorAll(".tag-title small")?.LastOrDefault()?.InnerText.RemovePrefix("— ")),
+            Tags = tags,
+            People = people,
+            Links = [],
+            Chapters = ParseChapters(document.DocumentNode.QuerySelector(".chapter-list")),
+        };
+    }
+
+    private static List<Chapter> ParseChapters(HtmlNode parent)
+    {
+        List<Chapter> chapters = [];
+        var currentVolume = "";
+        
+        foreach (var child in parent.Children())
+        {
+            if (child.Name == "dt")
+            {
+                if (child.InnerText.Contains("Volume"))
+                {
+                    currentVolume = child.InnerText.RemovePrefix("Volume").Trim();
+                }
+                continue;
+            }
+
+            if (child.Name != "dd")
+            {
+                continue;
+            }
+
+            var titleNode = child.QuerySelector(".name");
+            
+            var tags = child.QuerySelectorAll(".label")
+                .Where(node => node.GetAttributeValue("href", string.Empty).StartsWith("/tags/"))
+                .Select(node => new Tag(node.InnerText))
+                .ToList();
+            var (chapter, title) = ParseChapterAndTitle(titleNode.InnerText);
+            
+            chapters.Add(new Chapter
+            {
+                Id = titleNode.GetAttributeValue("href", string.Empty).RemovePrefix("/chapters/"),
+                Title = title,
+                VolumeMarker = currentVolume,
+                ChapterMarker = chapter,
+                Tags = tags,
+                People = [],
+                TranslationGroups = [],
+                ReleaseDate = child.QuerySelector("small")?.InnerText.RemovePrefix("released").AsDateTime(SeriesReleaseDateFormat),
+            });
+        }
+
+        return chapters;
+
+        (string Chapter, string Title) ParseChapterAndTitle(string chapterText)
+        {
+            var matches = ChapterTitleRegex.Match(chapterText);
+            if (matches is { Success: true, Groups.Count: 3 })
+            {
+                return (matches.Groups[1].Value, matches.Groups[2].Value);
+            }
+
+            return (string.Empty, chapterText);
+        }
+    }
+
+    private Series ParseChapterPageAsSeries(HtmlDocument document, DownloadRequestDto request)
+    {
+        var title = document.DocumentNode.QuerySelector("#chapter-title b").InnerText;
+        var tags = document.DocumentNode.QuerySelectorAll("#chapter-details .tags a")
+            .Where(node => node.GetAttributeValue("href", string.Empty).StartsWith("/tags/"))
+            .Select(node => new Tag(node.InnerText))
+            .ToList();
+        var people = document.DocumentNode.QuerySelectorAll("#chapter-title a")
+            .Where(node => node.GetAttributeValue("href", string.Empty).StartsWith("/authors/"))
+            .Select(node => new Person
+            {
+                Name = node.InnerText,
+                Roles = [PersonRole.Writer]
+            })
+            .ToList();
+        var releaseDate = document.DocumentNode.QuerySelector("#chapter-details .released")?.InnerText
+            .Replace("  ", " ") // Dynasty sometimes has double spaces for some reason. Remove them 
+            .AsDateTime(ChapterReleaseDateFormat);
+
+        return new Series
+        {
+            Id = request.Id,
+            Title = title,
+            LocalizedSeries = document.DocumentNode.QuerySelector(".aliases b")?.InnerText,
+            RefUrl = $"{Client.BaseAddress?.ToString().TrimEnd('/')}{request.Id}",
+            Summary = string.Empty,
+            Status = ParseStatus(document.DocumentNode.QuerySelectorAll(".tag-title small")?.LastOrDefault()?.InnerText.RemovePrefix("— ")),
+            Year = releaseDate?.Year,
+            Tags = tags,
+            People = people,
+            Links = [],
+            Chapters = [
+                new Chapter
+                {
+                    Id = request.Id,
+                    Title = title,
+                    RefUrl = $"{Client.BaseAddress?.ToString()}{request.Id}",
+                    VolumeMarker = string.Empty,
+                    ChapterMarker = string.Empty,
+                    Tags = tags,
+                    People = people,
+                    TranslationGroups = document.DocumentNode.QuerySelectorAll(".scanlators a").Select(node => node.InnerText.Trim()).ToList(),
+                    ReleaseDate = releaseDate,
+                }
+            ],
+        };
+    }
+
+    private static PublicationStatus ParseStatus(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            return PublicationStatus.Unknown;
+
+        return status switch
+        {
+            "Completed" => PublicationStatus.Completed,
+            "Ongoing" => PublicationStatus.Ongoing,
+            _ => PublicationStatus.Unknown,
+        };
     }
 
     public Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)

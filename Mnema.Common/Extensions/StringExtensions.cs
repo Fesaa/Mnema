@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Mnema.Common.Extensions;
@@ -66,6 +67,11 @@ public static class StringExtensions
             }
 
             return 0;
+        }
+
+        public DateTime? AsDateTime(string format)
+        {
+            return DateTime.TryParseExact(s.Trim(), format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result) ? result : null;
         }
     }
     

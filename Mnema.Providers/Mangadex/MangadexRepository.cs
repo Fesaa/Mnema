@@ -69,7 +69,7 @@ public class MangadexRepository: IRepository
             Size = searchResult.Attributes.Size(),
             Tags = [],
             Url = searchResult.RefUrl,
-            ImageUrl = searchResult.CoverUrl(),
+            ImageUrl = searchResult.CoverUrl() ?? string.Empty,
         });
 
         return new PagedList<SearchResult>(items, response.Total, response.Offset / response.Limit, response.Limit);

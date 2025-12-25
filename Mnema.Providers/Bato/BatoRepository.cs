@@ -114,7 +114,7 @@ public class BatoRepository: IRepository
                 Id = id,
                 Name = title ?? "Unknown",
                 Provider = Provider.Bato,
-                ImageUrl = imageUrl,
+                ImageUrl = imageUrl ?? string.Empty,
                 Url = $"{Client.BaseAddress?.ToString()}title/{id}",
                 Size = size,
                 Tags = tags ?? [],
