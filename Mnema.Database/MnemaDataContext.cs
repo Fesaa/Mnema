@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Mnema.Database.Extensions;
@@ -9,7 +10,7 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Database;
 
-public sealed class MnemaDataContext: DbContext
+public sealed class MnemaDataContext: DbContext, IDataProtectionKeyContext
 {
 
     public MnemaDataContext(DbContextOptions options): base(options)
@@ -24,6 +25,7 @@ public sealed class MnemaDataContext: DbContext
     public DbSet<Subscription> Subscriptions { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<ServerSetting> ServerSettings { get; set; }
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
