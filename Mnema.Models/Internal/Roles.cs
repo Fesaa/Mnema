@@ -20,6 +20,10 @@ public static class Roles
     /// If the user is allowed to access the HangFire dashboard
     /// </summary>
     public const string HangFire = nameof(HangFire);
+    /// <summary>
+    /// If the user is allowed to create directories
+    /// </summary>
+    public const string CreateDirectory = nameof(CreateDirectory);
 
     public static ImmutableArray<string> AllRoles =
     [
@@ -27,5 +31,6 @@ public static class Roles
         ManageSettings,
         Subscriptions,
         HangFire,
+        CreateDirectory
     ];
 }

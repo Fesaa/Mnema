@@ -85,7 +85,9 @@ public static class OpenIdConnectServiceExtensions
         services.AddAuthorizationBuilder()
             .AddPolicy(Roles.Subscriptions)
             .AddPolicy(Roles.ManageSettings)
-            .AddPolicy(Roles.ManagePages);
+            .AddPolicy(Roles.ManagePages)
+            .AddPolicy(Roles.HangFire)
+            .AddPolicy(Roles.CreateDirectory);
 
         return services;
     }
