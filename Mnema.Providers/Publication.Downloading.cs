@@ -145,25 +145,35 @@ internal partial class Publication
     private async Task ProcessDownloads(Channel<IoWork> channel)
     {
         var sw = Stopwatch.StartNew();
-        
-        foreach (var chapterId in _queuedChapters)
+
+        try
         {
-            if (_tokenSource.Token.IsCancellationRequested) break;
-            
-            var chapter = Series!.Chapters.FirstOrDefault(c => c.Id == chapterId);
-            if (chapter == null)
+            foreach (var chapterId in _queuedChapters)
             {
-                _logger.LogWarning("Not downloading chapter with id {Id}, no matching info found", chapterId);
-                continue;
+                if (_tokenSource.Token.IsCancellationRequested) break;
+
+                var chapter = Series!.Chapters.FirstOrDefault(c => c.Id == chapterId);
+                if (chapter == null)
+                {
+                    _logger.LogWarning("Not downloading chapter with id {Id}, no matching info found", chapterId);
+                    continue;
+                }
+
+                await DownloadChapter(channel, chapter);
+                await _messageService.UpdateContent(Request.UserId, DownloadInfo);
             }
 
-            await DownloadChapter(channel, chapter);
-            await _messageService.UpdateContent(Request.UserId, DownloadInfo);
+            _logger.LogDebug("All content has been downloaded in {Elapsed}ms, waiting for I/O to complete",
+                sw.ElapsedMilliseconds);
         }
-        
-        channel.Writer.Complete();
-
-        _logger.LogDebug("All content has been downloaded in {Elapsed}ms, waiting for I/O to complete", sw.ElapsedMilliseconds);
+        catch (Exception ex)
+        {
+            channel.Writer.TryComplete(ex);
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
+        }
     }
 
     private async Task DownloadChapter(Channel<IoWork> channel, Chapter chapter)

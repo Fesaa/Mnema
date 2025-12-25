@@ -331,12 +331,12 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         _cts.Dispose();
     }
 
-    private Task AddNotification(Notification notification, IUnitOfWork? unitOfWork = null)
+    private async Task AddNotification(Notification notification, IUnitOfWork? unitOfWork = null)
     {
         using var scope = _scopeFactory.CreateScope();
         unitOfWork ??= scope.ServiceProvider.GetRequiredService<IUnitOfWork>(); 
         
         unitOfWork.NotificationRepository.AddNotification(notification);
-        return unitOfWork.CommitAsync();
+        await unitOfWork.CommitAsync();
     } 
 }
