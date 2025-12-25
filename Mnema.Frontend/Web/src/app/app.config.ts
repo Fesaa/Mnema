@@ -18,7 +18,6 @@ import {ProviderNamePipe} from "./_pipes/provider-name.pipe";
 import {SubscriptionExternalUrlPipe} from "./_pipes/subscription-external-url.pipe";
 import {provideTransloco} from "@jsverse/transloco";
 import {TranslocoLoaderImpl} from "./_services/transloco-loader";
-import {provideOAuthClient} from "angular-oauth2-oidc";
 import {AccountService} from './_services/account.service';
 import {NavService} from "./_services/nav.service";
 import {catchError, filter, firstValueFrom, Observable, of, switchMap, tap, timeout} from "rxjs";
@@ -61,7 +60,6 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({eventCoalescing: true}),
     provideRouter(routes),
 
-    provideOAuthClient(),
     provideHttpClient(withInterceptors([errorHandlerInterceptor])),
 
     provideToastr(),

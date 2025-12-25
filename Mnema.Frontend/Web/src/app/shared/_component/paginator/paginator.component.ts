@@ -9,7 +9,7 @@ import {
   TemplateRef
 } from '@angular/core';
 import {NgTemplateOutlet} from "@angular/common";
-import {isNumber, TranslocoDirective} from "@jsverse/transloco";
+import {TranslocoDirective} from "@jsverse/transloco";
 import {EMPTY_PAGE, PagedList} from "../../../_models/paged-list";
 import {Observable} from "rxjs";
 import {ToastService} from "../../../_services/toast.service";
@@ -108,7 +108,9 @@ export class PaginatorComponent<T> {
     });
   }
 
-  goToPage(page: number): void {
+  goToPage(page: number | string): void {
+    if (typeof page === 'string') return;
+
     if (page >= 1 && page <= this.totalPages()) {
       this.loadPage(page);
     }
@@ -121,7 +123,4 @@ export class PaginatorComponent<T> {
   prevPage(): void {
     this.goToPage(this.currentPage() - 1);
   }
-
-
-  protected readonly isNumber = isNumber;
 }
