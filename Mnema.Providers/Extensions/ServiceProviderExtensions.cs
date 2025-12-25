@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Providers.Bato;
+using Mnema.Providers.Dynasty;
 using Mnema.Providers.Mangadex;
 
 namespace Mnema.Providers.Extensions;
@@ -37,7 +38,14 @@ public static class ServiceProviderExtensions
         #region Dynasty
 
         services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Dynasty);
+        services.AddKeyedScoped<IRepository, DynastyRepository>(Provider.Dynasty);
         services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Dynasty);
+        services.AddHttpClient(nameof(Provider.Dynasty), client =>
+        {
+            client.BaseAddress = new Uri("https://dynasty-scans.com/");
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.DefaultRequestHeaders.Add("User-Agent", "Mnema");
+        });
 
         #endregion
 
