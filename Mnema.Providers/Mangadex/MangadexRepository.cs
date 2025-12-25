@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using Flurl;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
@@ -14,7 +13,7 @@ using Mnema.Providers.Extensions;
 
 namespace Mnema.Providers.Mangadex;
 
-public class MangadexRepository: IRepository
+internal class MangadexRepository: IRepository
 {
 
     private readonly AsyncLazy<List<ModifierValueDto>> _tagOptions;

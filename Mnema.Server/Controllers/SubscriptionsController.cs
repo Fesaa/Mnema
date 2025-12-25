@@ -14,7 +14,7 @@ public class SubscriptionsController(ILogger<SubscriptionsController> logger, IU
 {
 
     [HttpGet("providers")]
-    public async Task<ActionResult<IList<Provider>>> GetProviders()
+    public ActionResult<IList<Provider>> GetProviders()
     {
         return Ok(ISubscriptionService.SubscriptionProviders);
     }

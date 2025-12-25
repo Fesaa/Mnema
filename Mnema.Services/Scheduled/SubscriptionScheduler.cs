@@ -92,6 +92,7 @@ public class SubscriptionScheduler(ILogger<SubscriptionScheduler> logger, IServi
     {
         var cron = $"0 {hour} * * *";
 
+        logger.LogDebug("Registering subscription task with cron {cron}", cron);
         recurringJobManager.AddOrUpdate<SubscriptionScheduler>(JobId, j => j.RunDaily(), cron,
             new RecurringJobOptions
             {

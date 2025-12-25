@@ -21,7 +21,7 @@ namespace Mnema.Providers.Bato;
 internal sealed record BatoMapping([property: JsonPropertyName("file")] string File, [property: JsonPropertyName("text")]  string Text);
 internal sealed record BatoSearchOptions(List<ModifierValueDto> Genres, List<ModifierValueDto> ReleaseStatus);
 
-public class BatoRepository: IRepository
+internal class BatoRepository: IRepository
 {
 
     private static readonly Regex ChapterUrlRegex = new(@"https://[^""]+?\.webp", RegexOptions.Compiled,  TimeSpan.FromSeconds(5));

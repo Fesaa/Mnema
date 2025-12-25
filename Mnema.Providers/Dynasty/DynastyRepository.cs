@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Fizzler.Systems.HtmlAgilityPack;
 using Flurl;
@@ -18,7 +19,9 @@ using Mnema.Providers.Extensions;
 
 namespace Mnema.Providers.Dynasty;
 
-public class DynastyRepository(
+internal sealed record DynastyImage(string image);
+
+internal class DynastyRepository(
     ILogger<BatoRepository> logger,
     IDistributedCache cache,
     IHttpClientFactory httpClientFactory)
@@ -27,6 +30,7 @@ public class DynastyRepository(
     
     private const string ChapterReleaseDateFormat = "MMM d, yyyy";
     private const string SeriesReleaseDateFormat = "MMM d \\'yy";
+    private const int JsonOffset = 2;
     
     private static readonly Regex ChapterTitleRegex = new (@"Chapter\s+([\d.]+)(?::\s*(.+))?", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
     
@@ -252,9 +256,38 @@ public class DynastyRepository(
         };
     }
 
-    public Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var result = await Client.GetCachedStringAsync(chapter.Id, cache, cancellationToken: cancellationToken);
+        if (result.IsErr)
+        {
+            logger.LogError(result.Error, "Failed to retrieve chapter urls for {Id}", chapter.Id);
+            throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}", result.Error);
+        }
+
+        var document = result.Unwrap().ToHtmlDocument();
+
+        var scriptNode = document.DocumentNode.QuerySelectorAll("script")
+            .FirstOrDefault(node => node.InnerText.Contains("var pages"));
+        if (scriptNode == null)
+        {
+            logger.LogError("Failed to retrieve chapter urls for {Id}, no matching script found", chapter.Id);
+            throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}, no matching script found");
+        }
+
+        var start = scriptNode.InnerText.IndexOf("[{", StringComparison.InvariantCulture);
+        var end = scriptNode.InnerText.LastIndexOf("}]", StringComparison.InvariantCulture);
+        if (start == -1 || end == -1)
+        {
+            logger.LogError("Failed to retrieve chapter urls for {ChapterId}, could not find json data", chapter.Id);
+            throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}, could not find json data");
+        }
+
+        var jsonData = scriptNode.InnerText[start..(end + JsonOffset)];
+
+        return JsonSerializer.Deserialize<List<DynastyImage>>(jsonData)?
+            .Select(i => new DownloadUrl(i.image, i.image))
+            .ToList() ?? [];
     }
 
     public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
