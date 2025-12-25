@@ -57,6 +57,16 @@ public static class StringExtensions
 
             return s[other.Length..];
         }
+
+        public int AsInt()
+        {
+            if (int.TryParse(s, out var result))
+            {
+                return result;
+            }
+
+            return 0;
+        }
     }
     
 }

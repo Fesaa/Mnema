@@ -1,4 +1,6 @@
+using System.Net;
 using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 
 namespace Mnema.Providers.Extensions;
 
@@ -10,6 +12,19 @@ internal static class StringExtensions
     private static readonly Regex ImportRegex = new("""import\s*\{[^}]*\}\s*from\s*["'](?<path>\./[^"']+)["']""", RegexOptions, TimeSpan.FromMilliseconds(200));
     private static readonly Regex ObjectRegex = new(@"const\s+\w+\s*=\s*(\{.*?\})\s*;", RegexOptions, TimeSpan.FromMilliseconds(200));
     private static readonly Regex JsObjectReplacerRegex = new(@"(?<=\{|,)\s*(\w+)\s*:", RegexOptions, TimeSpan.FromMilliseconds(200));
+
+    extension(string html)
+    {
+        internal HtmlDocument ToHtmlDocument()
+        {
+            var cleaned = WebUtility.HtmlDecode(html);
+            
+            var doc = new HtmlDocument();
+            doc.LoadHtml(cleaned);
+            
+            return doc;
+        }
+    }
     
     extension(string js)
     {

@@ -25,6 +25,7 @@ internal class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork):
 
         page.Icon = dto.Icon;
         page.CustomRootDir = dto.CustomRootDir;
+        page.Provider = dto.Provider;
 
         if (newPage)
         {

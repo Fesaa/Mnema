@@ -36,7 +36,7 @@ public class BatoRepository: IRepository
 
     private static readonly Dictionary<string, List<PersonRole>> RoleMappings = new()
     {
-        ["(Story&amp;Art)"] = [PersonRole.Writer, PersonRole.Colorist],
+        ["(Story&Art)"] = [PersonRole.Writer, PersonRole.Colorist],
         ["(Story)"] = [PersonRole.Writer],
         ["(Art)"] = [PersonRole.Colorist],
     };
@@ -73,7 +73,7 @@ public class BatoRepository: IRepository
             .SetQueryParamIf(genreQuery != "|", "genres", genreQuery)
             .SetQueryParamIf(!string.IsNullOrEmpty(status), "status", status)
             .SetQueryParamIf(!string.IsNullOrEmpty(upload), "upload", upload)
-            .SetQueryParam("page", Math.Max(1, pagination.PageNumber)); // Bato is 1 indexed
+            .SetQueryParam("page", pagination.PageNumber + 1); // Bato is 1 indexed
         
         var result = await Client.GetCachedStringAsync(url.ToString(), _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
@@ -82,10 +82,7 @@ public class BatoRepository: IRepository
             throw new MnemaException("Failed to search for series", result.Error);
         }
 
-        var html = result.Unwrap();
-        
-        var document = new HtmlDocument();
-        document.LoadHtml(html);
+        var document = result.Unwrap().ToHtmlDocument();
 
         var seriesNodes = document.DocumentNode.QuerySelectorAll("div.border-b-base-200");
         if (seriesNodes == null)
@@ -132,13 +129,13 @@ public class BatoRepository: IRepository
         var paginatorNode = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[4]");
         if (paginatorNode == null)
         {
-            return new PagedList<SearchResult>(items, items.Count, 1, 1);
+            return new PagedList<SearchResult>(items, items.Count, 1, items.Count);
         }
-        
-        var lastPage = int.TryParse(paginatorNode.QuerySelectorAll("a").Last().InnerText, out var lastPageNumber) ? lastPageNumber : 0;
-        var currentPage = int.TryParse(paginatorNode.QuerySelector("a.btn-accent").InnerText, out var pageNumber) ? pageNumber : 0;
 
-        return new PagedList<SearchResult>(items, items.Count + (lastPage - 1) * 36, currentPage, 36);
+        var lastPage = paginatorNode.QuerySelectorAll("a").Last().InnerText.AsInt();
+        var currentPage = paginatorNode.QuerySelector("a.btn-accent").InnerText.AsInt();
+
+        return new PagedList<SearchResult>(items, lastPage * 36, currentPage - 1, 36);
     }
 
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
@@ -146,12 +143,11 @@ public class BatoRepository: IRepository
         var result = await Client.GetCachedStringAsync($"/title/{request.Id}", _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            _logger.LogError(result.Error, "Failed to retrieve chapter urls for chapter {Id}", request.Id);
-            throw new MnemaException("Failed to retrieve chapter urls", result.Error);
+            _logger.LogError(result.Error, "Failed to retrieve series info for {Id}", request.Id);
+            throw new MnemaException("Failed to series info", result.Error);
         }
         
-        var document = new HtmlDocument();
-        document.LoadHtml(result.Unwrap());
+        var document = result.Unwrap().ToHtmlDocument();
 
         var titleNode = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[1]/h3/a");
         if (titleNode == null)
@@ -413,8 +409,7 @@ public class BatoRepository: IRepository
             return new BatoSearchOptions([], []);
         }
 
-        var document = new HtmlDocument();
-        document.LoadHtml(html);
+        var document = html.ToHtmlDocument();
 
         var astroIsland = document.DocumentNode.SelectSingleNode("//astro-island[contains(@component-url, 'ClientTools')]");
         var clientTools = astroIsland.GetAttributeValue("component-url", string.Empty);

@@ -1,10 +1,13 @@
 import {
   Component,
   computed,
-  ContentChild, effect, EventEmitter,
+  ContentChild,
+  effect,
+  EventEmitter,
   inject,
-  input, linkedSignal,
-  OnInit, Output,
+  input,
+  linkedSignal,
+  Output,
   signal,
   TemplateRef
 } from '@angular/core';
@@ -40,11 +43,13 @@ export class PaginatorComponent<T> {
 
   pagedList = signal<PagedList<T>>(EMPTY_PAGE);
   totalPages = computed(() => this.pagedList().totalPages);
+
   currentPage = computed(() => this.pagedList().currentPage);
+  currentPageDisplay = computed(() => this.currentPage() + 1);
 
   visiblePages = computed(() => {
     const total = this.totalPages();
-    const current = this.currentPage();
+    const current = this.currentPageDisplay(); // Use 1-based for display calculations
     const maxVisible = 10;
 
     if (total <= maxVisible) {
@@ -52,7 +57,6 @@ export class PaginatorComponent<T> {
     }
 
     const pages: (number | string)[] = [];
-
     pages.push(1);
 
     const sidePages = Math.floor((maxVisible - 2) / 2);
@@ -118,23 +122,32 @@ export class PaginatorComponent<T> {
         this.toastService.successLoco(successKey, {}, { amount: pagedList.totalCount});
       }
 
-      this.pagedList.set(pagedList)
+      this.pagedList.set(pagedList);
     });
   }
 
-  goToPage(page: number | string): void {
-    if (typeof page === 'string') return;
+  // Accept 1-based page number from UI, convert to 0-based for backend
+  goToPage(pageDisplay: number | string): void {
+    if (typeof pageDisplay === 'string') return;
 
-    if (page >= 1 && page <= this.totalPages()) {
-      this.loadPage(page);
+    const pageZeroBased = pageDisplay - 1;
+
+    if (pageZeroBased >= 0 && pageZeroBased < this.totalPages()) {
+      this.loadPage(pageZeroBased);
     }
   }
 
   nextPage(): void {
-    this.goToPage(this.currentPage() + 1);
+    const nextPage = this.currentPage() + 1;
+    if (nextPage < this.totalPages()) {
+      this.loadPage(nextPage);
+    }
   }
 
   prevPage(): void {
-    this.goToPage(this.currentPage() - 1);
+    const prevPage = this.currentPage() - 1;
+    if (prevPage >= 0) {
+      this.loadPage(prevPage);
+    }
   }
 }

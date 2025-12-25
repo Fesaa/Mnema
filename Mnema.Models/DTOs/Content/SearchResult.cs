@@ -12,5 +12,5 @@ public sealed record SearchResult
     public string? Size { get; set; }
     public IList<string> Tags { get; set; } = [];
     public string? Url { get; set; }
-    public string? ImageUrl { get; set; }
+    public string ImageUrl { get; set; } = string.Empty;
 }

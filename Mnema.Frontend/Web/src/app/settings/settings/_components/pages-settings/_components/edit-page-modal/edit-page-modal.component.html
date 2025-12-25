@@ -50,7 +50,7 @@
               <app-settings-item [title]="t('provider-label')" [tooltip]="t('provider-tooltip')" [control]="control">
                 <ng-template #view>{{ control.value | providerName }}</ng-template>
                 <ng-template #edit>
-                  <select class="form-select">
+                  <select class="form-select" formControlName="provider">
                     @for (provider of AllProviders; track provider) {
                       <option [ngValue]="provider">{{ provider | providerName }}</option>
                     }
