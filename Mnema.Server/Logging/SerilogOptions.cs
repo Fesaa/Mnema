@@ -24,11 +24,14 @@ public static class SerilogOptions
 
     private static bool ShouldIncludeLogStatement(LogEvent e)
     {
-        var isRequestLoggingMiddleware = e.Properties.ContainsKey("SourceContext") &&
-                                         e.Properties["SourceContext"].ToString().Replace("\"", string.Empty) ==
-                                         "Serilog.AspNetCore.RequestLoggingMiddleware";
+        var sourceContext = e.Properties.TryGetValue("SourceContext", out var property) ?
+                            property.ToString().Replace("\"", string.Empty) : string.Empty;
 
-        if (!isRequestLoggingMiddleware) return true;
+        if (sourceContext == "LuckyPennySoftware.AutoMapper.License")
+            return false;
+
+        if (sourceContext != "Serilog.AspNetCore.RequestLoggingMiddleware")
+            return true;
 
         return LogLevelSwitch.MinimumLevel <= LogEventLevel.Information;
     }

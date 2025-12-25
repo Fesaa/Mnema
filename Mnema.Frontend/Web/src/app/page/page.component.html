@@ -25,7 +25,12 @@
       @let pageLoaderValue = pageLoader();
 
       @if (pageLoaderValue) {
-        <app-paginator [pageLoader]="pageLoaderValue" [successKey]="'page.toasts.search-success'" [noResultsKey]="'page.toasts.no-results'">
+        <app-paginator
+          [pageLoader]="pageLoaderValue"
+          [successKey]="'page.toasts.search-success'"
+          [noResultsKey]="'page.toasts.no-results'"
+          (noResults)="showForm.set(true)"
+        >
           <ng-template #items let-results>
             <div class="results-grid">
               @for (res of results; track res.id) {

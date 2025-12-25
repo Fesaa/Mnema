@@ -9,7 +9,7 @@ import {
   TemplateRef
 } from '@angular/core';
 import {NgTemplateOutlet} from "@angular/common";
-import {isNumber, TranslocoDirective} from "@jsverse/transloco";
+import {TranslocoDirective} from "@jsverse/transloco";
 import {EMPTY_PAGE, PagedList} from "../../../_models/paged-list";
 import {Observable} from "rxjs";
 import {ToastService} from "../../../_services/toast.service";
@@ -55,8 +55,20 @@ export class PaginatorComponent<T> {
 
     pages.push(1);
 
-    let start = Math.max(2, current - 1);
-    let end = Math.min(total - 1, current + 1);
+    const sidePages = Math.floor((maxVisible - 2) / 2);
+
+    let start = Math.max(2, current - sidePages);
+    let end = Math.min(total - 1, current + sidePages);
+
+    if (current <= sidePages + 2) {
+      end = Math.min(total - 1, maxVisible - 1);
+      start = 2;
+    }
+
+    if (current >= total - sidePages - 1) {
+      start = Math.max(2, total - maxVisible + 2);
+      end = total - 1;
+    }
 
     if (start > 2) {
       pages.push('...');
@@ -80,6 +92,7 @@ export class PaginatorComponent<T> {
   items = linkedSignal(() => this.pagedList().items);
 
   @Output() currentItems = new EventEmitter<T[]>();
+  @Output() noResults = new EventEmitter<void>();
 
   constructor() {
     effect(() => {
@@ -100,6 +113,7 @@ export class PaginatorComponent<T> {
 
       if (pagedList.totalCount === 0 && noResultKey) {
         this.toastService.errorLoco(noResultKey);
+        this.noResults.emit();
       } else if (pagedList.totalCount > 0 && successKey && pagedList.currentPage === 0) {
         this.toastService.successLoco(successKey, {}, { amount: pagedList.totalCount});
       }
@@ -108,7 +122,9 @@ export class PaginatorComponent<T> {
     });
   }
 
-  goToPage(page: number): void {
+  goToPage(page: number | string): void {
+    if (typeof page === 'string') return;
+
     if (page >= 1 && page <= this.totalPages()) {
       this.loadPage(page);
     }
@@ -121,7 +137,4 @@ export class PaginatorComponent<T> {
   prevPage(): void {
     this.goToPage(this.currentPage() - 1);
   }
-
-
-  protected readonly isNumber = isNumber;
 }

@@ -118,7 +118,10 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             services.AddDistributedMemoryCache();
         }
 
-        services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
+        var autoMapperLicense = configuration.GetValue<string>("AutoMapperLicense");
+        services.AddAutoMapper(cfg => cfg.LicenseKey = autoMapperLicense,
+            typeof(AutoMapperProfiles).Assembly);
+
         services.AddMnemaPostgresDatabase(configuration, env.IsDevelopment());
         services.AddDatabaseServices();
         services.AddAndConfigureHangFire(configuration);

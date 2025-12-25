@@ -22,10 +22,10 @@
 
       <div class="pagination-numbers">
         @for (pageItem of visiblePages(); track $index) {
-          @if (isNumber(pageItem)) {
+          @if (pageItem != '...') {
             <button
               class="pagination-btn pagination-btn-number"
-              [class.active]="currentPage === pageItem"
+              [class.active]="currentPage + 1 === pageItem"
               (click)="goToPage(pageItem)">
               {{ pageItem }}
             </button>
