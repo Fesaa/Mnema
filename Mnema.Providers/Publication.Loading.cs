@@ -18,6 +18,7 @@ internal partial class Publication
         var sw = Stopwatch.StartNew();
         
         State = ContentState.Loading;
+        await _messageService.StateUpdate(Request.UserId, Id, ContentState.Loading);
         
         var preferences = await _unitOfWork.UserRepository.GetPreferences(Request.UserId);
         if (preferences == null)

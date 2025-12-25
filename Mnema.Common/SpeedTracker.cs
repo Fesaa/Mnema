@@ -132,7 +132,13 @@ public class SpeedTracker(int maxItem)
 
         lock (_lock)
         {
-            return (maxItem - _cur) / Speed();
+            var speed = Speed();
+            if (speed == 0)
+            {
+                return 0;
+            }
+            
+            return (maxItem - _cur) / speed;
         }
     }
 }

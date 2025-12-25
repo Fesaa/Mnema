@@ -138,7 +138,7 @@ export class DashboardComponent implements OnInit {
         item.progress = event.progress;
         item.estimated = event.estimated;
         item.speed = event.speed;
-        item.speed_type = event.speed_type;
+        item.speedType = event.speed_type;
         // Sometimes the updateState seems to get out of sync, if content is sending progress updates, it's downloading
         item.contentState = ContentState.Downloading;
       }

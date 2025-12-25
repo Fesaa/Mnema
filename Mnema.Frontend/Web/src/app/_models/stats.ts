@@ -10,7 +10,7 @@ export type InfoStat = {
   downloading: boolean;
   progress: number;
   estimated?: number;
-  speed_type: SpeedType;
+  speedType: SpeedType;
   speed: number;
   downloadDir: string;
 }

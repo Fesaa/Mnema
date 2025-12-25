@@ -108,6 +108,8 @@ internal partial class Publication
         var workers = Enumerable.Range(0, maxImages * 2).Select(_ => IoWorker(ioChannel)).ToList();
         workers.Add(ProcessDownloads(ioChannel));
 
+        _ = Task.Run(SignalRUpdateLoop, _tokenSource.Token);
+        
         await Task.WhenAll(workers);
         
         _logger.LogInformation("Downloaded all chapters in {Elapsed}ms", sw.ElapsedMilliseconds);
@@ -242,7 +244,6 @@ internal partial class Publication
     {
         var failedTasks = new List<DownloadWork>();
         var client = _httpClientFactory.CreateClient(provider.ToString());
-        var counter = 0;
 
         await foreach (var task in ctx.Reader.ReadAllAsync(_tokenSource.Token))
         {
@@ -258,7 +259,6 @@ internal partial class Publication
                 continue;
             }
 
-            counter++;
             var url = isRetry && !string.IsNullOrEmpty(task.Url.FallbackUrl) ? task.Url.FallbackUrl : task.Url.Url;
 
             _logger.LogTrace("Processing task {Idx} with URL {Url}", task.Idx, url);
@@ -277,11 +277,6 @@ internal partial class Publication
                 
                 _logger.LogWarning(ex, "Task {Idx} on {Url} has failed failed for the first time, retrying later", task.Idx, url);
                 failedTasks.Add(task);
-            }
-
-            if (counter % 5 == 0)
-            {
-                await _messageService.UpdateContent(Request.UserId, DownloadInfo);
             }
         }
 
@@ -304,6 +299,23 @@ internal partial class Publication
         channel.Writer.Complete();
         
         return channel;
+    }
+
+    private async Task SignalRUpdateLoop()
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+
+        try
+        {
+            while (await timer.WaitForNextTickAsync(_tokenSource.Token))
+            {
+                await _messageService.UpdateContent(Request.UserId, DownloadInfo);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            /* Ignored */
+        }
     }
     
 }
