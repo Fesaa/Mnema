@@ -92,6 +92,7 @@ export class PaginatorComponent<T> {
   items = linkedSignal(() => this.pagedList().items);
 
   @Output() currentItems = new EventEmitter<T[]>();
+  @Output() noResults = new EventEmitter<void>();
 
   constructor() {
     effect(() => {
@@ -112,6 +113,7 @@ export class PaginatorComponent<T> {
 
       if (pagedList.totalCount === 0 && noResultKey) {
         this.toastService.errorLoco(noResultKey);
+        this.noResults.emit();
       } else if (pagedList.totalCount > 0 && successKey && pagedList.currentPage === 0) {
         this.toastService.successLoco(successKey, {}, { amount: pagedList.totalCount});
       }

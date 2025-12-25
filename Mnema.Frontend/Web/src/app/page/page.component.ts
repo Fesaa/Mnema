@@ -62,7 +62,6 @@ export class PageComponent implements OnInit {
     const req = this.searchRequest();
     if (!req) return null;
 
-    console.log("new search request")
     return (pn, pz) => this.contentService.search(req, pn, pz);
   });
 
