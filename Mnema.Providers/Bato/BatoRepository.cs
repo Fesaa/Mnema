@@ -143,7 +143,6 @@ internal class BatoRepository: IRepository
         var result = await Client.GetCachedStringAsync($"/title/{request.Id}", _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            _logger.LogError(result.Error, "Failed to retrieve series info for {Id}", request.Id);
             throw new MnemaException("Failed to series info", result.Error);
         }
         
@@ -299,7 +298,6 @@ internal class BatoRepository: IRepository
         var result = await Client.GetCachedStringAsync($"/title/{chapter.Id}", _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            _logger.LogError(result.Error, "Failed to retrieve chapter urls for chapter {Id}", chapter.Id);
             throw new MnemaException("Failed to retrieve chapter urls", result.Error);
         }
         

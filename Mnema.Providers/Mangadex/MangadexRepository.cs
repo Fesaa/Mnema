@@ -46,14 +46,12 @@ internal class MangadexRepository: IRepository
         var result = await Client.GetCachedAsync<SearchResponse>(url.ToString(), _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            _logger.LogError(result.Error, "Failed to retrieve search info with url {Url}", url);
             throw new MnemaException("Failed to search for series", result.Error);
         }
 
         var response = result.Unwrap();
         if (response.Data == null)
         {
-            _logger.LogError("Response contained null data, did something go wrong?");
             return PagedList<SearchResult>.Empty();
         }
         
@@ -82,7 +80,6 @@ internal class MangadexRepository: IRepository
         var result = await Client.GetCachedAsync<MangaResponse>(url.ToString(), _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            _logger.LogError(result.Error, "Failed to retrieve information for manga {Id} - {Url}", id, url);
             throw new MnemaException($"Failed to retrieve information for manga {id}", result.Error);
         }
 
@@ -144,7 +141,6 @@ internal class MangadexRepository: IRepository
         var result = await Client.GetCachedAsync<ChaptersResponse>(url, _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            _logger.LogError(result.Error, "Failed to retrieve chapter information for manga {Id} with offset {OffSet} - {Url}", id, offSet, url);
             throw new MnemaException($"Failed to retrieve chapter information for manga {id} with offset {offSet}", result.Error);
         }
 
@@ -218,7 +214,6 @@ internal class MangadexRepository: IRepository
         var result = await Client.GetCachedAsync<ChapterImagesResponse>(url, _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            _logger.LogError(result.Error, "Failed to retrieve chapter images for {Id}", chapter.Id);
             throw new MnemaException("Failed to retrieve chapter images", result.Error);
         }
 
@@ -378,7 +373,6 @@ internal class MangadexRepository: IRepository
         var result = await Client.GetCachedAsync<CoverResponse>(url, _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            _logger.LogError(result.Error, "Failed to load cover images for {Id}", id);
             throw new MnemaException($"Failed to load cover images for {id}", result.Error);
         }
 

@@ -48,7 +48,6 @@ internal class DynastyRepository(
         var result = await Client.GetCachedStringAsync(url.ToString(), cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            logger.LogError(result.Error, "Failed to retrieve search results with url {Url} ", url);
             throw new MnemaException("Failed to search for series", result.Error);
         }
 
@@ -91,7 +90,6 @@ internal class DynastyRepository(
         var result = await Client.GetCachedStringAsync(request.Id, cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            logger.LogError(result.Error, "Failed to retrieve series info with url {Url} ", request.Id);
             throw new MnemaException("Failed to retrieve series info", result.Error);
         }
         
@@ -261,7 +259,6 @@ internal class DynastyRepository(
         var result = await Client.GetCachedStringAsync(chapter.Id, cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            logger.LogError(result.Error, "Failed to retrieve chapter urls for {Id}", chapter.Id);
             throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}", result.Error);
         }
 
@@ -271,7 +268,6 @@ internal class DynastyRepository(
             .FirstOrDefault(node => node.InnerText.Contains("var pages"));
         if (scriptNode == null)
         {
-            logger.LogError("Failed to retrieve chapter urls for {Id}, no matching script found", chapter.Id);
             throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}, no matching script found");
         }
 
@@ -279,7 +275,6 @@ internal class DynastyRepository(
         var end = scriptNode.InnerText.LastIndexOf("}]", StringComparison.InvariantCulture);
         if (start == -1 || end == -1)
         {
-            logger.LogError("Failed to retrieve chapter urls for {ChapterId}, could not find json data", chapter.Id);
             throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}, could not find json data");
         }
 
