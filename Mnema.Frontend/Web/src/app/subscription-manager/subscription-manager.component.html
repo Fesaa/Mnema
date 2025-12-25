@@ -1,0 +1,112 @@
+<div class="mx-4 mx-md-5" *transloco="let t; prefix: 'subscriptions'">
+
+  <div class="d-flex justify-content-between mb-3">
+    <div>
+      <input class="form-control" type="text" [placeholder]="t('filter')" (input)="updateFilter($event)">
+    </div>
+
+    <button class="btn btn-secondary" (click)="runAll()" [disabled]="hasRanAll() || !hasAny()">
+      {{ t('actions.run-all') }}
+    </button>
+  </div>
+
+  <app-table
+    [pageLoader]="pageLoader()"
+    (currentItems)="hasAny.set($event.length > 0)"
+    [trackByIdFunc]="trackBy"
+  >
+    <ng-template #header>
+      <tr>
+        <th class="table-header-cell">{{ t('title') }}</th>
+        <th class="table-header-cell">{{ t('next-exec') }}</th>
+        <th class="table-header-cell">{{ t('last') }}</th>
+        <th class="table-header-cell">{{ t('frequency') }}</th>
+        <th class="table-header-cell">{{ t('actions.label') }}</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #cell let-sub>
+      <th class="table-cell">
+        <a
+          [href]="sub.contentId | subscriptionExternalUrl:sub.provider"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ sub.title }}
+        </a>
+      </th>
+
+      <th class="table-cell">{{ sub.nextExecution | utcToLocalTime: 'short' }}</th>
+
+      <th class="table-cell">
+        <app-badge
+          [colour]="sub.lastRunSuccess ? 'primary' : 'error'"
+          [ngbTooltip]="(sub.lastRun | date: 'yyyy-MM-dd HH:mm:ss') ?? t('unknown')"
+        >
+          {{ sub.lastRunSuccess ? t('success') : t('failing') }}
+        </app-badge>
+      </th>
+
+      <th class="table-cell">
+        <app-badge [colour]="getSeverity(sub)">
+          {{ sub.refreshFrequency | refreshFrequency }}
+        </app-badge>
+      </th>
+
+      <th class="table-cell">
+        <div class="d-flex flex-column flex-md-row gap-2 my-2 justify-content-center align-items-center">
+
+          <button
+            type="button"
+            class="btn btn-primary btn-small"
+            [ngbTooltip]="t('actions.edit')"
+            (click)="edit(sub)"
+          >
+            <i class="fa fa-pencil"></i>
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-secondary btn-small"
+            (click)="runOnce(sub)"
+            [ngbTooltip]="t('actions.run-once')"
+          >
+            <i class="fa fa-download"></i>
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-danger btn-small"
+            (click)="delete(sub)"
+            [ngbTooltip]="t('actions.delete')"
+          >
+            <i class="fa fa-trash"></i>
+          </button>
+
+        </div>
+      </th>
+    </ng-template>
+
+    <ng-template #empty>
+      <tr>
+        <td colspan="5" class="py-5">
+          <div class="d-flex flex-column align-items-center text-center gap-3 text-muted">
+
+            <div style="font-size: 3rem;">
+              🔔✨
+            </div>
+
+            <h5 class="mb-1">
+              {{t('empty.title')}}
+            </h5>
+
+            <p class="mb-0" [innerHtml]="t('empty.description')">
+            </p>
+
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+  </app-table>
+</div>

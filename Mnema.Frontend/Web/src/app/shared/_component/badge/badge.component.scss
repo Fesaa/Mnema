@@ -1,0 +1,27 @@
+.badge {
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-light);
+  border-radius: 12px;
+  user-select: none;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.badge--primary {
+  background-color: var(--primary-color);
+}
+
+.badge--secondary {
+  background-color: var(--secondary-color);
+}
+
+.badge--error {
+  background-color: var(--error-color);
+}
+
+.badge--warning {
+  background-color: var(--warning-color);
+}

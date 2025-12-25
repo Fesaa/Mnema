@@ -1,0 +1,116 @@
+<div class="mx-4 mx-md-5 mb-5" *transloco="let t; prefix:'notifications'">
+
+  <div class="d-flex flex-row justify-content-end gap-3 mb-4">
+
+    <button type="button" class="btn btn-warning" (click)="readSelected()">
+      {{ t('actions.read-selected') }}
+    </button>
+
+    <button type="button" class="btn btn-error" (click)="deleteSelected()">
+      {{ t('actions.delete-selected') }}
+    </button>
+
+  </div>
+
+  <app-table
+    [pageLoader]="pageLoader()"
+    [trackByIdFunc]="trackBy"
+    [noHoverColour]="true"
+    *transloco="let t; prefix:'notifications.table'"
+    (currentItems)="onItemsChange($event)"
+  >
+
+    <ng-template #header>
+      <tr>
+        <th class="table-header-cell">{{ t('time') }}</th>
+        <th class="table-header-cell">{{ t('title') }}</th>
+        <th class="table-header-cell">{{ t('summary') }}</th>
+        <th class="table-header-cell">
+          <div class="d-flex justify-content-between align-items-center">
+            <span>{{ t('actions.label') }}</span>
+            <input class="form-check-input" type="checkbox" [checked]="allSelected()" (click)="toggleAll()">
+          </div>
+        </th>
+      </tr>
+    </ng-template>
+
+    <ng-template #cell let-notification>
+      <td class="table-cell">{{ notification.createdUtc | utcToLocalTime:'shortDate' }}</td>
+      <td class="table-cell"><div [innerHtml]="notification.title"></div></td>
+      <td class="table-cell"><div [innerHtml]="notification.summary"></div></td>
+      <td class="table-cell">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+
+          <div class="d-flex flex-column flex-md-row gap-3 my-2">
+            @if (notification.read) {
+              <button
+                type="button"
+                class="btn btn-primary btn-small"
+                (click)="markUnRead(notification)"
+                [ngbTooltip]="t('actions.mark-unread')"
+                aria-label="Mark unread"
+              >
+                <span class="fa fa-circle-check"></span>
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="btn btn-warning btn-small"
+                (click)="markRead(notification)"
+                [ngbTooltip]="t('actions.mark-read')"
+                aria-label="Mark read"
+              >
+                <span class="fa fa-circle"></span>
+              </button>
+            }
+
+            <button
+              type="button"
+              class="btn btn-secondary btn-small"
+              (click)="show(notification)"
+              [ngbTooltip]="t('extra-info')"
+              aria-label="Show info"
+            >
+              <span class="fa fa-circle-info"></span>
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-error btn-small"
+              (click)="delete(notification)"
+              aria-label="Delete notification"
+            >
+              <span class="fa fa-trash"></span>
+            </button>
+          </div>
+
+          <input class="form-check-input" type="checkbox" [checked]="tracker.lookup().has(notification.id)" (click)="toggleSelect(notification)">
+
+        </div>
+      </td>
+    </ng-template>
+
+    <ng-template #empty>
+      <tr>
+        <td colspan="4" class="py-5">
+          <div class="d-flex flex-column align-items-center text-center gap-3 text-muted">
+
+            <div style="font-size: 3rem;">
+              🗒️✨
+            </div>
+
+            <h5 class="mb-1">
+              {{t('empty.title')}}
+            </h5>
+
+            <p class="mb-0" [innerHtml]="t('empty.description')">
+            </p>
+
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+  </app-table>
+
+</div>

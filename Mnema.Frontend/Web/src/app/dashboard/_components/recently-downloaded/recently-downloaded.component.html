@@ -1,0 +1,29 @@
+<div class="recently-downloaded-container" *transloco="let t; prefix:'recently-downloaded'">
+  @for (download of downloads(); track download.id) {
+    <div
+      class="download-item"
+      (click)="show(download)"
+    >
+      <div class="download-header">
+        <h6 class="download-title">
+          {{ download.title }}
+        </h6>
+
+        <div class="download-actions">
+          <app-badge>
+            <span class="p-2">{{ download.createdUtc.toString() | utcToLocalTime }}</span>
+          </app-badge>
+          <button
+            type="button"
+            class="btn btn-primary btn-small"
+            (click)="markRead(download); $event.stopPropagation();"
+          >
+            <i class="fa fa-x"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="download-summary" [innerHtml]="download.summary | safeHtml"></div>
+    </div>
+  }
+</div>

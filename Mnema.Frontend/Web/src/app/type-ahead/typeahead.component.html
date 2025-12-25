@@ -1,0 +1,123 @@
+<div class="typeahead-container" [class.disabled]="disabled()" [class.locked]="locked()" *transloco="let t; prefix: 'typeahead'">
+
+  @if (settings().id && labelTemplate) {
+    <label [for]="settings().id" class="typeahead-label">
+      <ng-container *ngTemplateOutlet="labelTemplate"></ng-container>
+    </label>
+  }
+
+  <div class="input-container" [class.focused]="hasFocus()" [class.has-selections]="hasSelections()">
+    @if (settings().multiple && selectedItems().length > 0) {
+      <div class="selected-badges">
+        @for (item of selectedItems(); track trackByIdentityFn()($index, item)) {
+          <div class="badge" [class.disabled]="disabled()">
+            @if (badgeTemplate) {
+              <ng-container *ngTemplateOutlet="badgeTemplate; context: { $implicit: item, index: $index }"></ng-container>
+            } @else {
+              <span>{{ getDisplayText(item) }}</span>
+            }
+            @if (!disabled()) {
+              <button
+                type="button"
+                class="badge-remove"
+                (click)="removeItem(item)"
+                [attr.aria-label]="t('aria.removeItem', { value: getDisplayText(item) })">
+                <span class="fa fa-xmark"></span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <div class="input-wrapper">
+      <input
+        #input
+        type="text"
+        class="typeahead-input"
+        [id]="settings().id"
+        [disabled]="disabled() || locked()"
+        [formControl]="searchControl"
+        [placeholder]="t('placeholder')"
+        (focus)="onFocus()"
+        (blur)="onBlur()"
+        (keydown)="onKeyDown($event)"
+        [attr.aria-expanded]="showDropdown()"
+        [attr.aria-haspopup]="true"
+        [attr.aria-autocomplete]="'list'"
+        role="combobox">
+
+      @if (settings().showLocked) {
+        <button
+          type="button"
+          class="lock-button"
+          (click)="toggleLocked()"
+          [attr.aria-label]="locked() ? t('aria.unlock') : t('aria.lock')">
+          @if (locked()) {
+            <span class="fas fa-lock"></span>
+          } @else {
+            <span class="fas fa-unlock"></span>
+          }
+        </button>
+      }
+
+      @if (showClearButton()) {
+        <button
+          type="button"
+          class="clear-button"
+          (click)="clearSelection()"
+          [attr.aria-label]="t('aria.clear')">
+          <span class="fas fa-xmark"></span>
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (showDropdown()) {
+    <div class="dropdown-container" role="listbox" [attr.aria-label]="t('aria.results')">
+
+      @if (filteredOptions().length === 0 && searchControl.value && searchControl.value.length >= settings().minCharacters) {
+        <div class="dropdown-item no-results">
+          @if (settings().addIfNonExisting && showAddItem()) {
+            <button
+              type="button"
+              class="add-item-button"
+              (click)="addNewItem()"
+              role="option">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              {{ t('button.add', { value: searchControl.value }) }}
+            </button>
+          } @else {
+            <span>{{ t('text.noResults') }}</span>
+          }
+        </div>
+      }
+
+      @if (filteredOptions().length > 0) {
+        @for (option of filteredOptions(); track trackByIdentityFn()($index, option)) {
+          <button
+            type="button"
+            class="dropdown-item option-item"
+            [class.selected]="isSelected(option)"
+            [class.highlighted]="highlightedIndex() === $index"
+            (click)="selectOption(option)"
+            (mouseenter)="highlightedIndex.set($index)"
+            role="option"
+            [attr.aria-selected]="isSelected(option)">
+            @if (optionTemplate) {
+              <ng-container *ngTemplateOutlet="optionTemplate; context: { $implicit: option, index: $index, selected: isSelected(option) }"></ng-container>
+            } @else {
+              <span>{{ getDisplayText(option) }}</span>
+            }
+            @if (isSelected(option)) {
+              <span class="fa fa-check"></span>
+            }
+          </button>
+        }
+      }
+    </div>
+  }
+</div>

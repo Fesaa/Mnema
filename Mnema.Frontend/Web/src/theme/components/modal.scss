@@ -1,0 +1,53 @@
+.modal-header .btn-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: rgba(26, 43, 26, 0.1);
+  opacity: 1;
+  transition: all 0.3s ease;
+  position: relative;
+
+  /* Remove default background image */
+  background-image: none;
+
+  &:hover {
+    background-color: var(--surface-hover);
+    transform: scale(1.1);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3);
+  }
+
+  /* Custom X icon */
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 2px;
+    background-color: var(--text-primary);
+    transition: all 0.3s ease;
+  }
+
+  &::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  &::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  &:hover::before,
+  &:hover::after {
+    background-color: var(--secondary-color-light);
+  }
+}
+
+.scrollable-modal {
+  max-height: calc(var(--vh) * 100 - 198px);
+  overflow: auto;
+}

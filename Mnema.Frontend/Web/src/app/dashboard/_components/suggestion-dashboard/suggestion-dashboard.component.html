@@ -1,0 +1,38 @@
+<div [@dropDown] class="d-flex flex-column align-items-center justify-content-center" *transloco="let t; prefix:'dashboard'">
+  <div class="d-flex flex-column align-items-center justify-content-center">
+    <h1 class="h3 fw-bold text-dark dropdown-item">
+      {{ t('no-content.title') }}
+    </h1>
+
+    <p class="dropdown-item">
+      {{ t('no-content.p') }}
+    </p>
+  </div>
+
+  <ul class="d-flex flex-column align-items-start justify-content-start gap-2 mt-2 list-unstyled">
+    @for (option of options(); track $index) {
+      <li class="d-flex align-items-center text-center gap-2" appUpdateBadge [versions]="option.version ?? ''">
+        <i class="fa fa-angles-right"></i>
+
+        @if (option.action) {
+          <a (click)="option.action()">
+            {{ option.title }}
+          </a>
+        } @else {
+          <a
+            [routerLink]="['/page']"
+            [queryParams]="{ index: option.id }"
+          >
+            {{ option.title }}
+          </a>
+        }
+      </li>
+    } @empty {
+      <li class="d-flex align-items-center text-center gap-2">
+        <button class="btn btn-primary" (click)="loadDefault()">
+          {{ t('load-default') }}
+        </button>
+      </li>
+    }
+  </ul>
+</div>

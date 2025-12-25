@@ -1,0 +1,65 @@
+using Microsoft.Extensions.DependencyInjection;
+using Mnema.API.Content;
+using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.User;
+
+namespace Mnema.Providers.Mangadex;
+
+internal class LoadVolumesHook: IPreDownloadHook
+{
+
+    public async Task PreDownloadHook(Publication publication, IServiceScope scope, CancellationToken cancellationToken)
+    {
+        if (publication.Series == null)
+        {
+            return;
+        }
+
+        var mangadexRepository = (MangadexRepository) scope.ServiceProvider.GetRequiredKeyedService<IRepository>(Provider.Mangadex);
+
+        var coverImages = await mangadexRepository.GetCoverImages(publication.Series.Id, cancellationToken);
+
+        var lang = publication.Request.GetStringOrDefault(RequestConstants.LanguageKey, "en");
+
+        var firstCover = coverImages.Data.FirstOrDefault(LangFilter) ?? coverImages.Data.FirstOrDefault();
+        var lastCover = coverImages.Data.LastOrDefault(LangFilter) ?? coverImages.Data.LastOrDefault();
+
+        var coversByVolume = coverImages.Data
+            .GroupBy(c => c.Attributes.Volume)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        foreach (var chapter in publication.Series.Chapters)
+        {
+            if (!string.IsNullOrEmpty(chapter.VolumeMarker) && coversByVolume.TryGetValue(chapter.VolumeMarker, out var covers))
+            {
+                var cover = covers.FirstOrDefault(LangFilter) ?? covers.FirstOrDefault();
+                if (cover != null)
+                {
+                    chapter.CoverUrl = cover.Url(publication.Series.Id);
+                    continue;
+                }
+            }
+
+            switch (publication.Preferences.CoverFallbackMethod)
+            {
+                case CoverFallbackMethod.First:
+                    chapter.CoverUrl = firstCover?.Url(publication.Series.Id);
+                    break;
+                case CoverFallbackMethod.Last:
+                    chapter.CoverUrl = lastCover?.Url(publication.Series.Id);
+                    break;
+                case CoverFallbackMethod.None:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(publication.Preferences.CoverFallbackMethod));
+            }
+        }
+
+        return;
+
+        bool LangFilter(CoverData data)
+        {
+            return data.Attributes.Locale == lang;
+        }
+    }
+}

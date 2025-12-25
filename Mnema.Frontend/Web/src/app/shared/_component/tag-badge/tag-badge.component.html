@@ -1,0 +1,4 @@
+<div class="tag-badge {{fillStyle}}" [ngClass]="{'selectable-cursor': selectionMode === TagBadgeCursor.Selectable,
+'not-allowed-cursor': selectionMode === TagBadgeCursor.NotAllowed, 'clickable-cursor': selectionMode === TagBadgeCursor.Clickable}">
+    <ng-content></ng-content>
+</div>

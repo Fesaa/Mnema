@@ -1,0 +1,20 @@
+<app-settings-item
+  [control]="control()"
+  [title]="title()"
+  [tooltip]="tooltip()"
+  [labelId]="labelId()"
+  [canEdit]="canEdit()"
+  [showEdit]="false"
+  [isEditMode]="true"
+  [toggleOnViewClick]="toggleOnViewClick()"
+>
+
+  <ng-template #view>
+    <ng-container [ngTemplateOutlet]="valueSwitchRef"></ng-container>
+  </ng-template>
+
+  <ng-template #edit>
+    <ng-container [ngTemplateOutlet]="valueSwitchRef"></ng-container>
+  </ng-template>
+
+</app-settings-item>

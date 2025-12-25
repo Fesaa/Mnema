@@ -1,0 +1,39 @@
+
+<app-paginator [pageLoader]="finalPageLoader()" [successKey]="null" [noResultsKey]="null" (currentItems)="currentItems.emit($event)">
+
+  <ng-template #items let-items>
+    <div class="table-container">
+      <div class="table-wrapper">
+        <table class="custom-table">
+          <thead class="table-header">
+          <ng-container [ngTemplateOutlet]="headerTemplate"></ng-container>
+          </thead>
+
+          @if (dragAble()) {
+            <tbody cdkDropList [cdkDropListData]="items" (cdkDropListDropped)="onDrop.emit($event)" class="table-body" id="drag-and-drop-table">
+              @for (item of items; track trackByIdFunc()($index, item); let index = $index; let last = $last; let first = $first) {
+                <tr class="table-row" cdkDrag [cdkDragData]="item">
+                  <ng-container [ngTemplateOutlet]="cellTemplate" [ngTemplateOutletContext]="{ $implicit: item, idx: index, last: last, first: first }"></ng-container>
+                </tr>
+              }
+            </tbody>
+          } @else {
+            <tbody class="table-body">
+              @for (item of items; track trackByIdFunc()($index, item); let index = $index; let last = $last; let first = $first) {
+                <tr class="table-row" [class.no-hover]="noHoverColour()">
+                  <ng-container [ngTemplateOutlet]="cellTemplate" [ngTemplateOutletContext]="{ $implicit: item, idx: index, last: last, first: first }"></ng-container>
+                </tr>
+              }
+            </tbody>
+          }
+
+          @if (items.length === 0) {
+            <ng-container [ngTemplateOutlet]="emptyTemplate"></ng-container>
+          }
+
+        </table>
+      </div>
+    </div>
+  </ng-template>
+
+</app-paginator>

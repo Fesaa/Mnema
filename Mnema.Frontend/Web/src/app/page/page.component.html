@@ -1,0 +1,41 @@
+@if (page() !== undefined) {
+  <div class="" *transloco="let t;prefix:'page'">
+
+    <div [class.hidden]="!showForm()" class="mx-2">
+      <app-search-form
+        [title]="page()!.title"
+        [provider]="page()!.provider"
+        [modifiers]="page()!.modifiers ?? []"
+        (searchSubmitted)="search($event)"
+      />
+    </div>
+
+    @if (!showForm()) {
+      <div class="d-flex justify-content-center align-items-center">
+        <button class="btn btn-secondary" (click)="showForm.set(true)">{{t('search')}}</button>
+      </div>
+    }
+
+    <section id="search-results" class="d-flex flex-column gap-2 pt-5 d-mx-5">
+
+      @if (loading()) {
+        <app-loading-spinner size="large"></app-loading-spinner>
+      }
+
+      @let pageLoaderValue = pageLoader();
+
+      @if (pageLoaderValue) {
+        <app-paginator [pageLoader]="pageLoaderValue" [successKey]="'page.toasts.search-success'" [noResultsKey]="'page.toasts.no-results'">
+          <ng-template #items let-results>
+            <div class="results-grid">
+              @for (res of results; track res.id) {
+                <app-search-result [metadata]="metadata()!" [page]="page()!"
+                                   [searchResult]="res" [providers]="providers()" [@fadeAnimation]></app-search-result>
+              }
+            </div>
+          </ng-template>
+        </app-paginator>
+      }
+    </section>
+  </div>
+}

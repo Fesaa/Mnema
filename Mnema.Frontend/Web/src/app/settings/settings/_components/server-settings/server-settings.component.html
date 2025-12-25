@@ -1,0 +1,92 @@
+<div class="d-flex w-100 flex-grow-1 flex-column" *transloco="let t; prefix: 'settings.server'">
+  @if (settingsForm !== undefined && config() !== undefined) {
+    <form [formGroup]="settingsForm" class="w-100 px-2" (ngSubmit)="save()">
+      <div class="d-flex flex-column align-items-center gap-4">
+
+        <div class="w-100">
+          <h2 class="h2 fw-bold mt-4 mb-4">{{ t('title') }}</h2>
+
+          <div class="d-flex flex-column gap-3">
+            @if (getFormControl('rootDir'); as rootDir) {
+              <app-settings-item [control]="rootDir" [title]="t('root-dir')">
+                <ng-template #view>{{ rootDir.value }}</ng-template>
+                <ng-template #edit>
+                  <input
+                    type="text"
+                    class="form-control"
+                    formControlName="rootDir"
+                  />
+                </ng-template>
+              </app-settings-item>
+            }
+
+            @if (settingsForm.get('subscriptionRefreshHour'); as control) {
+              <app-settings-item [control]="control" [title]="t('sub-refresh.label')" [tooltip]="t('sub-refresh.tooltip')">
+                <ng-template #view>{{control.value}}</ng-template>
+                <ng-template #edit>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="subscriptionRefreshHour"
+                    formControlName="subscriptionRefreshHour"
+                    [min]="0"
+                    [max]="23"
+                  />
+                </ng-template>
+              </app-settings-item>
+            }
+          </div>
+        </div>
+
+        <div class="w-100">
+          <hr class="border mt-5" />
+          <h2 class="h2 fw-bold mt-4 mb-4">{{ t('downloader') }}</h2>
+
+          <div class="d-flex flex-column gap-3">
+            @if (getFormControl('maxConcurrentTorrents'); as control) {
+              <app-settings-item
+                [control]="control"
+                [title]="t('max-torrents.label')"
+                [tooltip]="t('max-torrents.subTitle')"
+              >
+                <ng-template #view>{{ control.value }}</ng-template>
+
+                <ng-template #edit>
+                  <input
+                    type="number"
+                    class="form-control"
+                    formControlName="maxConcurrentTorrents"
+                  />
+                </ng-template>
+              </app-settings-item>
+            }
+
+            @if (getFormControl('maxConcurrentImages'); as control) {
+              <app-settings-item
+                [control]="control"
+                [title]="t('max-images.label')"
+                [tooltip]="t('max-images.subTitle')"
+              >
+                <ng-template #view>{{ control.value }}</ng-template>
+
+                <ng-template #edit>
+                  <input
+                    type="number"
+                    class="form-control"
+                    formControlName="maxConcurrentImages"
+                  />
+                </ng-template>
+              </app-settings-item>
+            }
+
+
+          </div>
+        </div>
+
+        <div class="d-flex w-100 justify-content-center justify-content-md-end mt-4">
+          <button type="submit" class="btn btn-primary">{{ t('save') }}</button>
+        </div>
+      </div>
+    </form>
+  }
+</div>

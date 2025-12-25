@@ -1,0 +1,129 @@
+.search-card {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #f0f0f0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-image {
+  height: 300px; /* Fixed height for image area */
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.card-overlay {
+  background: rgba(0, 0, 0, 0.55);
+  padding: 0.75rem 1rem;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  min-height: 60px; /* Fixed height for title area */
+  display: flex;
+  align-items: center;
+}
+
+.card-title-group {
+  width: 100%;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  line-height: 1.4;
+  color: var(--text-light) !important; // Wrapped in a element, need to make sure it doesn't override
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.2s ease;
+  display: block;
+  width: 100%;
+}
+
+.card-title:hover {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+/* Size badge in top left */
+.card-size-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+}
+
+.card-size {
+  font-size: 0.85rem;
+  color: white;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* New section for info outside the image */
+.card-info {
+  padding: 0.75rem 1rem;
+  background: white;
+  min-height: 40px; /* Minimum height to maintain consistency */
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.card-tag {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  color: #555;
+  white-space: nowrap;
+}
+
+.card-actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.icon-btn {
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.icon-btn .pi {
+  font-size: 1.25rem;
+}

@@ -1,0 +1,20 @@
+@use 'bootstrap/scss/bootstrap';
+
+@use './theme/themes/default.scss';
+@use './theme/shared.scss';
+
+@use './theme/components/table.scss';
+@use './theme/components/input.scss';
+@use './theme/components/modal.scss';
+
+@import 'bootstrap/scss/functions';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/mixins';
+@import 'ngx-toastr/toastr';
+@import 'ngx-toastr/toastr-bs5-alert';
+
+body {
+  font-family: 'Spectral', serif;
+  background-color: var(--background-color);
+  color: var(--body-text-color);
+}

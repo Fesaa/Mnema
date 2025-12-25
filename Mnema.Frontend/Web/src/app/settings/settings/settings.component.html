@@ -1,0 +1,59 @@
+<div class="settings-container" *transloco="let t; prefix: 'settings'">
+
+  <header class="settings-header">
+    <h1>{{ t('settings') }}</h1>
+    <button
+      class="mobile-toggle"
+      type="button"
+      aria-controls="settings-menu"
+      (click)="toggleMobile()"
+    >
+      <i class="fas fa-sliders text-primary" aria-hidden="true"></i>
+    </button>
+  </header>
+
+  <main class="settings-main">
+
+    <nav
+      id="settings-menu"
+      class="settings-sidebar"
+      [class.open]="showMobileConfig()"
+      #mobileConfig
+    >
+      @for (setting of visibleSettings(); track setting.id) {
+        <button
+          type="button"
+          class="settings-btn"
+          [class.active]="selected() === setting.id"
+          (click)="setSettings(setting.id)"
+          [attr.aria-current]="selected() === setting.id ? 'page' : null"
+        >
+          <span [class]="setting.icon + ' icon'" aria-hidden="true"></span>
+          <span>{{ setting.title }}</span>
+        </button>
+      }
+    </nav>
+
+    <section class="settings-content" role="region" aria-live="polite">
+
+      @defer (when selected() === SettingsID.Preferences; prefetch on idle) {
+        @if (selected() === SettingsID.Preferences && canSee(SettingsID.Preferences)) {
+          <app-preference-settings></app-preference-settings>
+        }
+      }
+
+      @defer (when selected() === SettingsID.Pages; prefetch on idle) {
+        @if (selected() === SettingsID.Pages && canSee(SettingsID.Pages)) {
+          <app-pages-settings></app-pages-settings>
+        }
+      }
+
+      @defer (when selected() === SettingsID.Server; prefetch on idle) {
+        @if (selected() === SettingsID.Server && canSee(SettingsID.Server)) {
+          <app-server-settings></app-server-settings>
+        }
+      }
+    </section>
+
+  </main>
+</div>

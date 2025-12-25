@@ -1,23 +1,18 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.Database.Repositories;
 
 namespace Mnema.Database;
 
-public interface IUnitOfWork
-{
-
-    ISubscriptionRepository SubscriptionRepository { get; }
-    
-    Task<bool> CommitAsync();
-    bool HasChanges();
-    Task<bool> RollbackAsync();
-}
-
 public class UnitOfWork(ILogger<UnitOfWork> logger, MnemaDataContext ctx, IMapper mapper): IUnitOfWork
 {
 
-    public ISubscriptionRepository SubscriptionRepository { get; init; } = new SubscriptionRepository(ctx, mapper);
+    public ISubscriptionRepository SubscriptionRepository { get; } = new SubscriptionRepository(ctx, mapper);
+    public IPagesRepository PagesRepository { get; } = new PagesRepository(ctx, mapper);
+    public IUserRepository UserRepository { get; } = new UserRepository(ctx, mapper);
+    public ISettingsRepository SettingsRepository { get; } = new SettingsRepository(ctx, mapper);
+    public INotificationRepository NotificationRepository { get; } = new NotificationRepository(ctx, mapper);
     
     public async Task<bool> CommitAsync()
     {

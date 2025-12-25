@@ -1,0 +1,94 @@
+.settings-row {
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+
+.setting-title {
+  flex: 1;
+}
+
+.section-title {
+  font-family: 'Spectral', serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0;
+  letter-spacing: 0.025em;
+}
+
+.reset-label {
+  all: unset;
+  font-family: 'Spectral', serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: 0.025em;
+  cursor: pointer;
+}
+
+.text-muted {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-family: 'Spectral', serif;
+
+  a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--secondary-color-light);
+    }
+  }
+}
+
+.view-value {
+  color: var(--secondary-color);
+  font-family: 'Spectral', serif;
+  cursor: pointer;
+}
+
+.non-selectable {
+  cursor: default;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.edit-btn {
+  background: transparent;
+  border: 1px solid var(--surface-border);
+  color: var(--text-primary);
+  font-family: 'Spectral', serif;
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.025em;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--surface-hover);
+    border-color: var(--secondary-color);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px var(--shadow-light);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px var(--shadow-light);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-alignment {
+  padding-bottom: 0.375rem;
+  padding-top: 0.375rem;
+}

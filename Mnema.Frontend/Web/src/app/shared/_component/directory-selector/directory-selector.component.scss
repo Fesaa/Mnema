@@ -1,0 +1,173 @@
+.directory-item {
+  transition: all 0.2s ease;
+  border-color: var(--surface-border) !important;
+  background-color: var(--surface-card) !important;
+
+  &:hover {
+    background-color: var(--surface-hover) !important;
+    border-color: var(--primary-color-lighter) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px var(--shadow-light);
+  }
+}
+
+.directory-nav-item {
+  cursor: pointer;
+  color: var(--primary-color) !important;
+
+  &:hover {
+    text-decoration: underline !important;
+    color: var(--primary-color-light) !important;
+  }
+
+  &:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+.copy-btn {
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--secondary-color-lighter);
+    color: var(--secondary-color) !important;
+  }
+
+  &:focus {
+    outline: 2px solid var(--secondary-color);
+    outline-offset: 2px;
+  }
+}
+
+
+// Header styling
+.h4 {
+  color: var(--text-primary);
+  font-family: 'Spectral', serif;
+  font-weight: 600;
+}
+
+.font-monospace {
+  background-color: var(--background-accent);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: var(--text-accent);
+  border: 1px solid var(--surface-border);
+}
+
+// Icon colors
+.fa-folder {
+  color: var(--primary-color) !important;
+}
+
+.fa-file {
+  color: var(--text-secondary) !important;
+}
+
+.fa-folder-open {
+  color: var(--text-secondary) !important;
+}
+
+// Empty state styling
+.opacity-50 {
+  opacity: 0.5;
+}
+
+
+.btn-outline-primary {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+
+  &:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+
+  &:disabled {
+    border-color: var(--surface-border);
+    color: var(--text-secondary);
+    opacity: 0.6;
+  }
+}
+
+.border-top {
+  border-color: var(--surface-border) !important;
+}
+
+.border {
+  border-color: var(--surface-border) !important;
+}
+
+.bg-light {
+  background-color: var(--surface-card) !important;
+}
+
+@media (max-width: 576px) {
+  .directory-item {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .h4 {
+    font-size: 1.1rem;
+  }
+
+  .font-monospace {
+    font-size: 0.8em;
+    padding: 1px 4px;
+  }
+
+  // Stack buttons on small screens
+  .d-flex.justify-content-end.gap-2 {
+    flex-direction: column-reverse;
+    gap: 0.5rem !important;
+
+    .btn {
+      width: 100%;
+    }
+  }
+}
+
+// Dark mode support (if implemented)
+@media (prefers-color-scheme: dark) {
+  .directory-item {
+    background-color: var(--surface-card) !important;
+    border-color: var(--surface-border) !important;
+    color: var(--text-light) !important;
+  }
+
+  .form-control {
+    background-color: var(--background-secondary);
+    border-color: var(--surface-border);
+    color: var(--text-light);
+
+    &::placeholder {
+      color: var(--text-secondary);
+    }
+  }
+
+  .h4 {
+    color: var(--text-light);
+  }
+}
+
+// Animation
+.directory-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

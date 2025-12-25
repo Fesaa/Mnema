@@ -2,9 +2,11 @@
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Mnema.API;
 using Mnema.Database;
 using Mnema.Server.Logging;
 using Serilog;
+using Serilog.Templates;
 
 namespace Mnema.Server;
 
@@ -14,7 +16,7 @@ public class Program
     {
         Console.OutputEncoding = Encoding.UTF8;
         Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console()
+            .WriteTo.Console(new ExpressionTemplate(SerilogOptions.OutputTemplate))
             .MinimumLevel
             .Information()
             .CreateBootstrapLogger();
@@ -38,12 +40,16 @@ public class Program
 
                     logger.LogInformation("Database has been migrated, starting Mnema");   
                 }
+
+                await context.SeedDatabase();
             }
             catch (Exception ex)
             {
                 logger.LogCritical(ex, "An exception occured while migrating the database. Mnema will not start");
                 return;
             }
+
+            await scope.ServiceProvider.GetRequiredService<JobsBootstrapper>().Boostrap();
             
             await host.RunAsync();
         }
@@ -59,9 +65,9 @@ public class Program
 
     private static IHostBuilder CreateHostBuilder(string[] args)
         => Host.CreateDefaultBuilder(args)
-            .UseSerilog((_, _, config) =>
+            .UseSerilog((context, _, config) =>
             {
-                SerilogOptions.CreateConfig(config);
+                SerilogOptions.CreateConfig(context, config);
             })
             .ConfigureAppConfiguration((ctx, conf) =>
             {

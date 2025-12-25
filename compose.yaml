@@ -1,0 +1,22 @@
+services:
+  database:
+    image: postgres:17.7-alpine
+    volumes:
+      - database:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - "POSTGRES_DB=mnema"
+      - "POSTGRES_USER=mnema"
+      - "POSTGRES_PASSWORD=mnema"
+  redis:
+    image: redis:latest
+    volumes:
+      - redis:/data
+    ports:
+      - "6379:6379"
+
+
+volumes:
+  database:
+  redis:

@@ -1,0 +1,11 @@
+<div class="loading-spinner" [class.centered]="centered()">
+  <div class="spinner"
+       [class]="'spinner-' + size() + ' spinner-' + colour()"
+       role="status"
+       aria-label="Loading">
+  </div>
+
+  @if (message()) {
+    <p class="loading-message">{{ message() }}</p>
+  }
+</div>

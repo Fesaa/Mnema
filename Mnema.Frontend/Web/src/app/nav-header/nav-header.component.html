@@ -1,0 +1,97 @@
+@if (navService.showNav$ | async) {
+  <div class="nav-wrapper">
+    <nav class="nav-header">
+      <div class="nav-left">
+        <button class="hamburger" (click)="toggleMobileMenu()">
+          &#9776;
+        </button>
+
+        <div class="nav-links desktop-only">
+          @for (page of pageItems(); track page.id) {
+            <a
+              class="nav-link"
+              [class.selected]="navService.pageIndex() === page.id"
+              [routerLink]="page.id === '' ? '/home' : '/page'"
+              [queryParams]="page.id === '' ? {} : { index: page.id }"
+            >
+              @if (page.icon) {
+                <i class="fa {{ page.icon }}"></i>
+              }
+              <span>{{ page.title }}</span>
+            </a>
+          }
+        </div>
+      </div>
+
+      <div class="nav-right">
+        @if (notifications() > 0) {
+          <span routerLink="/notifications" class="notification-badge clickable" [class]="severity()">
+            {{ notifications() }}
+          </span>
+        }
+
+        <div class="dropdown">
+          @if (currentUser()) {
+            <button class="account-toggle btn btn-secondary" (click)="toggleAccountDropdown()">
+              {{ currentUser()?.name | titlecase }}
+            </button>
+
+            @if (isAccountDropdownOpen()) {
+              <ul class="account-dropdown" @dropdownAnimation>
+                @for (item of visibleAccountItems(); track item.label) {
+                  <li>
+                    @if (item.routerLink) {
+                      <a
+                        [routerLink]="item.routerLink"
+                        (click)="isAccountDropdownOpen.set(false)"
+                      >
+                        @if (item.icon) {
+                          <i class="fa {{ item.icon }}"></i>
+                        }
+                        {{ item.label }}
+                      </a>
+                    } @else if (item.command) {
+                      <a
+                        (click)="item.command(); isAccountDropdownOpen.set(false)"
+                      >
+                        @if (item.icon) {
+                          <i class="fa {{ item.icon }}"></i>
+                        }
+                        {{ item.label }}
+                      </a>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+
+          }
+        </div>
+      </div>
+    </nav>
+
+    @if (isMobileMenuOpen()) {
+      <div class="mobile-drawer" @drawerAnimation #mobileDrawer>
+        <div class="drawer-header">
+          <button (click)="toggleMobileMenu()">✕</button>
+        </div>
+        <div class="drawer-links">
+          @for (page of pageItems(); track page.id) {
+            <a
+              class="nav-link"
+              [routerLink]="page.id === '' ? '/home' : '/page'"
+              [queryParams]="page.id === '' ? {} : { index: page.id }"
+              (click)="toggleMobileMenu()"
+            >
+              @if (page.icon) {
+                <i class="fa {{ page.icon }}"></i>
+              }
+              {{ page.title }}
+            </a>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+}
