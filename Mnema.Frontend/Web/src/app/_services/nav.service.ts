@@ -15,19 +15,19 @@ export class NavService {
   private showNavSource = new ReplaySubject<Boolean>(1);
   public showNav$ = this.showNavSource.asObservable();
 
-  private pageIndexSource = new ReplaySubject<string | null>(1);
-  public pageIndex$ = this.pageIndexSource.asObservable();
-  public readonly pageIndex = toSignal(this.pageIndex$);
+  private pageIdSource = new ReplaySubject<string | null>(1);
+  public pageId$ = this.pageIdSource.asObservable();
+  public readonly pageIndex = toSignal(this.pageId$);
 
   constructor(private route: ActivatedRoute) {
     this.showNavSource.next(false);
 
     this.route.queryParams.subscribe(params => {
-      const index = params['index'];
-      if (index) {
-        this.pageIndexSource.next(index);
+      const id = params['id'];
+      if (id) {
+        this.pageIdSource.next(id);
       } else {
-        this.pageIndexSource.next(null);
+        this.pageIdSource.next(null);
       }
     })
   }

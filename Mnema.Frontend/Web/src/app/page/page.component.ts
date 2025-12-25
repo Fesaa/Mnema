@@ -54,7 +54,7 @@ export class PageComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.navService.pageIndex$.subscribe(index => {
+    this.navService.pageId$.subscribe(index => {
       if (!index) return;
 
       this.pageService.getPage(index).subscribe(page => {
