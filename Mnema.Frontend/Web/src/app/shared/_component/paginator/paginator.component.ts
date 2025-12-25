@@ -55,8 +55,20 @@ export class PaginatorComponent<T> {
 
     pages.push(1);
 
-    let start = Math.max(2, current - 1);
-    let end = Math.min(total - 1, current + 1);
+    const sidePages = Math.floor((maxVisible - 2) / 2);
+
+    let start = Math.max(2, current - sidePages);
+    let end = Math.min(total - 1, current + sidePages);
+
+    if (current <= sidePages + 2) {
+      end = Math.min(total - 1, maxVisible - 1);
+      start = 2;
+    }
+
+    if (current >= total - sidePages - 1) {
+      start = Math.max(2, total - maxVisible + 2);
+      end = total - 1;
+    }
 
     if (start > 2) {
       pages.push('...');
