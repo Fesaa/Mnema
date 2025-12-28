@@ -31,7 +31,7 @@ internal class BatoRepository: IRepository
     private static readonly List<Regex> VolumeChapterRegexes =
     [
         new(@"(?:(?:Volume|Vol\.?) ?(\d+)\s+)?(?:Chapter|Ch\.?) ([\d\.]+)", RegexOptions.Compiled,  TimeSpan.FromSeconds(5)),
-        new(@"(?:\[S(\d+)] ?)?Episode ([\d\.]+)", RegexOptions.Compiled,  TimeSpan.FromSeconds(5)),
+        new(@"(?:\[S(\d+)] ?)?(?:Episode|Ep\.) ([\d\.]+)", RegexOptions.Compiled,  TimeSpan.FromSeconds(5)),
     ];
 
     private static readonly Dictionary<string, List<PersonRole>> RoleMappings = new()
