@@ -52,8 +52,7 @@ export class SearchResultComponent implements OnInit{
       provider: this.searchResult().provider,
       refreshFrequency: RefreshFrequency.Week,
       title: this.searchResult().name,
-      baseDir: this.page().dirs[0],
-      lastDownloadDir: '',
+      baseDir: this.page().customRootDir,
       lastRun: null!,
       lastRunSuccess: null!,
       nextRun: null!,
@@ -73,13 +72,12 @@ export class SearchResultComponent implements OnInit{
     if (!metadata) return
 
     const page = this.page();
-    const defaultDir = (page.dirs.length === 0 ? '' : page.dirs[0]) || page.customRootDir;
+    const defaultDir = page.customRootDir;
 
     const [_, component] = this.modalService.open(DownloadModalComponent, DefaultModalOptions);
     component.metadata.set(metadata);
     component.defaultDir.set(defaultDir);
     component.rootDir.set(page.customRootDir);
-    component.dirs.set(page.dirs);
     component.info.set(this.searchResult());
   }
 

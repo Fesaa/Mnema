@@ -159,7 +159,6 @@ export class NavHeaderComponent implements OnInit {
         title: this.transLoco.translate("nav-bar.home"),
         id: "",
         icon: "fa-home",
-        dirs: [],
         customRootDir: '',
         modifiers: [],
         provider: Provider.MANGADEX,

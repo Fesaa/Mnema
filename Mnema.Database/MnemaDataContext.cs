@@ -45,8 +45,6 @@ public sealed class MnemaDataContext: DbContext, IDataProtectionKeyContext
             .ComplexCollection(p => p.TagMappings, b => b.ToJson());
 
         builder.Entity<Page>()
-            .PrimitiveCollection(p => p.Dirs);
-        builder.Entity<Page>()
             .HasMany(p => p.Users);
 
         builder.Entity<MnemaUser>()

@@ -10,7 +10,6 @@ public class PageDto
     public required int SortValue { get; set; }
     public required Provider Provider { get; set; }
     public IList<ModifierDto>? Modifiers { get; set; }
-    public required IList<string> Dirs { get; set; }
     public string CustomRootDir { get; set; } = string.Empty;
     
     public DownloadMetadata? Metadata { get; set; }

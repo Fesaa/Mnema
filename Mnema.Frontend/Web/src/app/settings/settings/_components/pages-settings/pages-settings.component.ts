@@ -49,7 +49,6 @@ export class PagesSettingsComponent {
       id: "",
       customRootDir: '',
       title: '',
-      dirs: [],
       provider: Provider.BATO,
       icon: '',
       sortValue: 0,

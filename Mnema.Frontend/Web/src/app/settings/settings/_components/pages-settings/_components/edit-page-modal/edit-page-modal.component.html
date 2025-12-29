@@ -79,28 +79,6 @@
             }
           </div>
 
-          <div class="col-md-12 col-sm-12 pt-2">
-            @if (pageForm.get('dirs'); as control) {
-              <app-settings-item [control]="control" [title]="t('dirs-label')" [tooltip]="t('dirs-tooltip')">
-                <ng-template #view>
-                  <div class="d-flex">
-                    @for (dir of break(control.value); track $index) {
-                      <div class="me-2"><app-badge>{{dir}}</app-badge></div>
-                    } @empty {
-                      {{null | defaultValue}}
-                    }
-                  </div>
-                </ng-template>
-                <ng-template #edit>
-                  <div class="d-flex">
-                    <button class="btn btn-primary me-2" (click)="addDir()"><i class="fa fa-folder-plus"></i></button>
-                    <input type="text" formControlName="dirs" class="form-control">
-                  </div>
-                </ng-template>
-              </app-settings-item>
-            }
-          </div>
-
         </div>
 
       </form>

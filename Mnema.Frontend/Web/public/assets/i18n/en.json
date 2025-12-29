@@ -108,7 +108,8 @@
     "save": "{{common.save}}",
     "create": "Subscribe",
     "general": "General",
-    "extra": "Extra",
+    "options": "Options",
+    "advanced": "Advanced",
 
     "title-label": "Title",
     "title-tooltip": "This title is only visual and does not effect the underlying download",

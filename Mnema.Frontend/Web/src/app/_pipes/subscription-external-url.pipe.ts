@@ -16,7 +16,7 @@ export class SubscriptionExternalUrlPipe implements PipeTransform {
       case Provider.DYNASTY:
         return "https://dynasty-scans.com/" + contentId;
       case Provider.BATO:
-        return "https://bato.to/title/" + contentId;
+        return "https://jto.to/title/" + contentId;
       case Provider.MANGABUDDY:
         return "https://mangabuddy.com" + contentId;
       default:

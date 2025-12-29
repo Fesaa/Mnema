@@ -20,7 +20,6 @@ import {ToastService} from "../../../../../../_services/toast.service";
     SafeHtmlPipe,
     SettingsItemComponent,
     DefaultValuePipe,
-    BadgeComponent,
     ProviderNamePipe
   ],
   templateUrl: './edit-page-modal.component.html',
@@ -48,7 +47,6 @@ export class EditPageModalComponent implements OnInit {
     this.pageForm.addControl('icon', new FormControl(page.icon, []));
     this.pageForm.addControl('customRootDir', new FormControl(page.customRootDir, []));
     this.pageForm.addControl('provider', new FormControl(page.provider, []));
-    this.pageForm.addControl('dirs', new FormControl(page.dirs.join(','), []));
   }
 
 
@@ -57,16 +55,6 @@ export class EditPageModalComponent implements OnInit {
     if (dir) {
       (this.pageForm.get('customRootDir') as unknown as FormControl<string>)?.setValue(dir);
     }
-  }
-
-  async addDir() {
-    const dir = await this.modalService.getDirectory('', {showFiles: false, create: true});
-    const dirs = this.break(this.pageForm.get('dirs')?.value as any || '');
-
-    if (!dir || dirs.includes(dir)) return;
-
-    dirs.push(dir);
-    (this.pageForm.get('dirs') as unknown as FormControl<string>)?.setValue(dirs.join(','));
   }
 
   break(s: string) {
@@ -84,9 +72,7 @@ export class EditPageModalComponent implements OnInit {
 
     const page = this.pageForm.value as any;
     page.id = this.page().id;
-    page.dirs = this.break(page.dirs);
     page.sortValue = this.page().sortValue;
-
 
     const action$ = this.page().id === ""
       ? this.pageService.new(page)

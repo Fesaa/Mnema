@@ -42,7 +42,6 @@ export class DownloadModalComponent implements OnInit {
   info = model.required<SearchInfo>();
   defaultDir = model.required<string>();
   rootDir = model.required<string>();
-  dirs = model<string[]>([]);
   metadata = model.required<DownloadMetadata>();
 
   generalDef = computed(() =>

@@ -6,7 +6,6 @@ export type Page = {
   provider: Provider;
   modifiers?: Modifier[];
   metadata?: DownloadMetadata,
-  dirs: string[];
   customRootDir: string;
 }
 

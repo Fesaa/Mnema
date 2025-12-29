@@ -7,7 +7,6 @@ export type Subscription = {
   refreshFrequency: RefreshFrequency;
   title: string;
   baseDir: string;
-  lastDownloadDir: string;
   lastRun: Date;
   lastRunSuccess: boolean;
   nextRun: Date;
