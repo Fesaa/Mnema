@@ -106,7 +106,7 @@ export class NavHeaderComponent implements OnInit {
       this.transLoco.events$.pipe(
         filter(e => e.type === "translationLoadSuccess"),
         take(1),
-        timeout(1000),
+        timeout(3000),
         catchError(() => of(null)),
         tap(() => {
           this.loadPages();
@@ -117,9 +117,6 @@ export class NavHeaderComponent implements OnInit {
       this.notificationService.amount().subscribe(amount => {
         this.notifications.set(amount);
       });
-    });
-    effect(() => {
-      this.loadPages(); // Calls the pages effect
     });
   }
 
@@ -133,7 +130,8 @@ export class NavHeaderComponent implements OnInit {
 
     this.signalR.events$.subscribe(event => {
       if (event.type === EventType.NotificationAdd) {
-        this.notifications.update(n => n + 1);
+        const amount: number = event.data.amount;
+        this.notifications.update(n => n + amount);
       }
       if (event.type === EventType.NotificationRead) {
         const amount: number = event.data.amount;

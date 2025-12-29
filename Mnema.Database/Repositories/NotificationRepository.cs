@@ -21,7 +21,7 @@ public class NotificationRepository(MnemaDataContext ctx, IMapper mapper): INoti
             .AsPagedList(pagination);
     }
 
-    public Task MarkNotificationsAsRead(Guid userId, IEnumerable<Guid> ids)
+    public Task<int> MarkNotificationsAsRead(Guid userId, IEnumerable<Guid> ids)
     {
         return ctx.Notifications
             .Where(n => n.UserId == userId && ids.Contains(n.Id))
@@ -29,7 +29,7 @@ public class NotificationRepository(MnemaDataContext ctx, IMapper mapper): INoti
                 => n.SetProperty(p => p.Read, true));
     }
 
-    public Task MarkNotificationsAsUnRead(Guid userId, IEnumerable<Guid> ids)
+    public Task<int> MarkNotificationsAsUnRead(Guid userId, IEnumerable<Guid> ids)
     {
         return ctx.Notifications
             .Where(n => n.UserId == userId && ids.Contains(n.Id))

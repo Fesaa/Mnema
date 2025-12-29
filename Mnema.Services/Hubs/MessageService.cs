@@ -53,6 +53,22 @@ internal class MessageService(IHubContext<MessageHub> ctx): IMessageService
         });
     }
 
+    public async Task NotificationAdded(Guid userId, int amount)
+    {
+        await SendToUser(userId, nameof(MessageEventType.NotificationAdd), new
+        {
+            Amount = amount
+        });
+    }
+
+    public async Task NotificationRemoved(Guid userId, int amount)
+    {
+        await SendToUser(userId, nameof(MessageEventType.NotificationRead), new
+        {
+            Amount = amount
+        });
+    }
+
     public async Task Notify(Guid userId, NotificationDto notification)
     {
         await SendToUser(userId, nameof(MessageEventType.Notification), notification);

@@ -12,8 +12,8 @@ export enum EventType {
   AddContent = "AddContent",
   DeleteContent = "DeleteContent",
   Notification = "Notification",
-  NotificationRead= "NotificationRead",
-  NotificationAdd= "NotificationAdd",
+  NotificationRead = "NotificationRead",
+  NotificationAdd = "NotificationAdd",
 }
 
 export interface Event<T> {
@@ -59,56 +59,63 @@ export class SignalRService {
       this.eventsSource.next({
         type: EventType.ContentSizeUpdate,
         data: message
-      })
-    })
+      });
+    });
 
     this.hubConnection.on(EventType.ContentProgressUpdate, (message) => {
       this.eventsSource.next({
         type: EventType.ContentProgressUpdate,
         data: message,
       });
-    })
+    });
 
     this.hubConnection.on(EventType.AddContent, (message) => {
       this.eventsSource.next({
         type: EventType.AddContent,
         data: message
-      })
-    })
+      });
+    });
 
     this.hubConnection.on(EventType.DeleteContent, (message) => {
       this.eventsSource.next({
         type: EventType.DeleteContent,
         data: message
-      })
-    })
+      });
+    });
 
     this.hubConnection.on(EventType.ContentStateUpdate, (message) => {
       this.eventsSource.next({
         type: EventType.ContentStateUpdate,
         data: message
-      })
-    })
+      });
+    });
 
     this.hubConnection.on(EventType.Notification, (message) => {
       this.eventsSource.next({
         type: EventType.Notification,
         data: message
-      })
-    })
+      });
+    });
+
+    this.hubConnection.on(EventType.NotificationAdd, (message) => {
+      this.eventsSource.next({
+        type: EventType.NotificationAdd,
+        data: message
+      });
+    });
 
     this.hubConnection.on(EventType.NotificationRead, (message) => {
       this.eventsSource.next({
         type: EventType.NotificationRead,
         data: message
-      })
-    })
+      });
+    });
 
     this.hubConnection.on(EventType.ContentInfoUpdate, (message) => {
       this.eventsSource.next({
         type: EventType.ContentInfoUpdate,
         data: message
-      })
-    })
+      });
+    });
   }
 }

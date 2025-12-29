@@ -9,8 +9,8 @@ public interface INotificationRepository
 
     Task<PagedList<NotificationDto>> GetNotificationsForUser(Guid userId, bool? read, PaginationParams pagination);
 
-    Task MarkNotificationsAsRead(Guid userId, IEnumerable<Guid> ids);
-    Task MarkNotificationsAsUnRead(Guid userId, IEnumerable<Guid> ids);
+    Task<int> MarkNotificationsAsRead(Guid userId, IEnumerable<Guid> ids);
+    Task<int> MarkNotificationsAsUnRead(Guid userId, IEnumerable<Guid> ids);
     Task DeleteNotifications(Guid userId, IEnumerable<Guid> ids);
     Task<int> UnReadNotifications(Guid userId);
 
