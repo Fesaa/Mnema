@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Services.Scheduled;
@@ -16,18 +17,28 @@ public class SubscriptionScheduler(ILogger<SubscriptionScheduler> logger, IServi
     public async Task EnsureScheduledAsync()
     {
         using var scope = scopeFactory.CreateScope();
-        var settings = await scope.ServiceProvider
+        var refreshHour = await scope.ServiceProvider
             .GetRequiredService<ISettingsService>()
-            .GetSettingsAsync();
+            .GetSettingsAsync<int>(ServerSettingKey.SubscriptionRefreshHour);
 
-        await RescheduleAsync(settings.SubscriptionRefreshHour);
+        await RescheduleAsync(refreshHour);
     }
 
-    public Task RescheduleAsync(int hour)
+    public async Task RescheduleAsync(int hour)
     {
+        logger.LogDebug("Updating subscription task with hour {hour}", hour);
+        using var scope = scopeFactory.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        
+        var subs = await unitOfWork.SubscriptionRepository.GetAllSubscriptions();
+        foreach (var subscription in subs)
+        {
+            subscription.NextRun = subscription.NextRunTime(hour);
+        }
+        
+        await unitOfWork.CommitAsync();
+        
         Register(hour);
-
-        return Task.CompletedTask;
     }
 
     public async Task RunDaily()
@@ -35,7 +46,10 @@ public class SubscriptionScheduler(ILogger<SubscriptionScheduler> logger, IServi
         using var scope = scopeFactory.CreateScope();
         
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
+        var subHour = await scope.ServiceProvider
+            .GetRequiredService<ISettingsService>()
+            .GetSettingsAsync<int>(ServerSettingKey.SubscriptionRefreshHour);
+            
         var subs = await unitOfWork.SubscriptionRepository.GetAllSubscriptions();
 
         var now = DateTime.Now;
@@ -47,6 +61,8 @@ public class SubscriptionScheduler(ILogger<SubscriptionScheduler> logger, IServi
             if (nextExec.Date != now.Date)
                 continue;
 
+            subscription.NextRun = subscription.NextRunTime(subHour);
+            
             try
             {
                 using var subScope = scopeFactory.CreateScope();

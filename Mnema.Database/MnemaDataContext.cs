@@ -55,6 +55,9 @@ public sealed class MnemaDataContext: DbContext, IDataProtectionKeyContext
             .HasJsonConversion(new DownloadMetadataDto())
             .HasColumnType("TEXT")
             .HasDefaultValue(new DownloadMetadataDto());
+        builder.Entity<Subscription>()
+            .Property(s => s.RefreshFrequency)
+            .HasDefaultValue(RefreshFrequency.Day);
 
     }
     

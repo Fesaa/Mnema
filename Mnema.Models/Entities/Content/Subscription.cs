@@ -46,4 +46,84 @@ public class Subscription
     /// </summary>
     public int NoDownloadsRuns { get; set; }
     
+    /// <summary>
+    /// How often to check for updates
+    /// </summary>
+    public RefreshFrequency RefreshFrequency { get; set; }
+    
+    private static DateTime NormalizeLocalHourToUtc(DateTime utcNow, int hour)
+    {
+        var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, TimeZoneInfo.Local);
+
+        var localTarget = new DateTime(
+            localNow.Year,
+            localNow.Month,
+            localNow.Day,
+            hour,
+            0,
+            0,
+            DateTimeKind.Unspecified
+        );
+
+        return TimeZoneInfo.ConvertTimeToUtc(localTarget, TimeZoneInfo.Local);
+    }
+
+
+    public DateTime NextRunTime(int hour)
+    {
+        var nowUtc = DateTime.UtcNow;
+        var diff = nowUtc - LastRun; // LastRun MUST be UTC
+
+        DateTime nextUtc;
+
+        if (diff > RefreshFrequency.AsTimeSpan())
+        {
+            nextUtc = NormalizeLocalHourToUtc(nowUtc, hour);
+
+            if (nextUtc <= nowUtc)
+            {
+                nextUtc = NormalizeLocalHourToUtc(nowUtc.AddDays(1), hour);
+            }
+
+            return nextUtc;
+        }
+
+        nextUtc = nowUtc.Add(RefreshFrequency.AsTimeSpan() - diff);
+        nextUtc = NormalizeLocalHourToUtc(nextUtc, hour);
+
+        if (nextUtc <= nowUtc)
+        {
+            nextUtc = NormalizeLocalHourToUtc(nextUtc.AddDays(1), hour);
+        }
+
+        return nextUtc;
+    }
+
+    
+}
+
+public enum RefreshFrequency
+{
+    Day = 2,
+    Week = 3,
+    Month = 4,
+}
+
+public static class SubscriptionExtensions
+{
+    public static TimeSpan AsTimeSpan(this RefreshFrequency refreshFrequency)
+    {
+        return refreshFrequency switch
+        {
+            RefreshFrequency.Day => TimeSpan.FromDays(1),
+            RefreshFrequency.Week => TimeSpan.FromDays(7),
+            RefreshFrequency.Month => TimeSpan.FromDays(30),
+            _ => throw new ArgumentOutOfRangeException(nameof(refreshFrequency), refreshFrequency, null)
+        };
+    }
+
+    public static DateTime NormalizeToHour(this DateTime date, int hour)
+    {
+        return DateOnly.FromDateTime(date).ToDateTime(TimeOnly.FromTimeSpan(TimeSpan.FromHours(hour)), DateTimeKind.Local);
+    }
 }
