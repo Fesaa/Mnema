@@ -14,7 +14,7 @@ import {TableComponent} from "../shared/_component/table/table.component";
 import {BadgeComponent} from "../shared/_component/badge/badge.component";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {ModalService} from "../_services/modal.service";
-import {debounceTime, distinctUntilChanged, forkJoin, map, switchMap, tap} from "rxjs";
+import {catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, tap} from "rxjs";
 import {EditSubscriptionModalComponent} from "./_components/edit-subscription-modal/edit-subscription-modal.component";
 import {DefaultModalOptions} from "../_models/default-modal-options";
 import {PageService} from "../_services/page.service";
@@ -79,28 +79,14 @@ export class SubscriptionManagerComponent implements OnInit {
         switchMap(providers => {
           const loaders$ = providers.map(
             p => this.pageService.metadata(p).pipe(
-              map(m => [p, m] as [Provider, DownloadMetadata])
+              map(m => [p, m] as [Provider, DownloadMetadata]),
+              catchError(err => of([p, {definitions: []}] as [Provider, DownloadMetadata]))
             ));
 
           return forkJoin(loaders$);
         }),
         tap(metadata => this.metadata.set(new Map(metadata)))
       ).subscribe();
-  }
-
-  runAll() {
-    if (this.hasRanAll()) return;
-
-    this.hasRanAll.set(true);
-    this.subscriptionService.runAll().subscribe({
-      next: (result) => {
-        this.toastService.successLoco("subscriptions.actions.run-all-success")
-      },
-      error: (error) => {
-        console.error(error);
-        this.toastService.genericError(error);
-      }
-    })
   }
 
   runOnce(sub: Subscription) {

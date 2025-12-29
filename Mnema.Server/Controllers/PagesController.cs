@@ -40,7 +40,7 @@ public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOf
     }
 
     [HttpGet("download-metadata")]
-    [ResponseCache(CacheProfileName = CacheProfiles.OneHour, VaryByHeader = "providers")]
+    [ResponseCache(CacheProfileName = CacheProfiles.OneHour, VaryByQueryKeys = ["provider"])]
     public async Task<ActionResult<DownloadMetadata>> DownloadMetadata([FromQuery] Provider provider)
     {
         var repository = serviceProvider.GetKeyedService<IRepository>(provider);
