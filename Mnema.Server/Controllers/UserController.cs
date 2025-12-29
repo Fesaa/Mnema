@@ -11,7 +11,7 @@ public class UserController(ILogger<UserController> logger, IUnitOfWork unitOfWo
     public async Task<ActionResult<UserDto>> GetCurrentUser()
     {
 
-        var user = await unitOfWork.UserRepository.GetUserById(UserId);
+        var user = await unitOfWork.UserRepository.GetUserByIdOrDefault(UserId);
         if (user == null) return NotFound();
 
         return Ok(new UserDto

@@ -60,12 +60,6 @@ public class SubscriptionsController(ILogger<SubscriptionsController> logger, IU
         return Ok();
     }
 
-    [HttpPost("run-all")]
-    public async Task<IActionResult> RunAll([FromQuery] bool allUsers = false)
-    {
-        throw new NotImplementedException();
-    }
-
     [HttpDelete("{subscriptionId:guid}")]
     public async Task<IActionResult> DeleteSubscription(Guid subscriptionId)
     {

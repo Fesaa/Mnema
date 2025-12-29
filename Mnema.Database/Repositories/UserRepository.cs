@@ -40,6 +40,13 @@ public class UserRepository(MnemaDataContext ctx, IMapper mapper): IUserReposito
         return await GetUserById(id);
     }
 
+    public Task<MnemaUser?> GetUserByIdOrDefault(Guid id, UserIncludes includes = UserIncludes.Preferences)
+    {
+        return ctx.Users
+            .Includes(includes)
+            .FirstOrDefaultAsync(u => u.Id == id);
+    }
+
     public Task<UserPreferences?> GetPreferences(Guid id)
     {
         return ctx.UserPreferences.Where(p => p.UserId == id).FirstOrDefaultAsync();
