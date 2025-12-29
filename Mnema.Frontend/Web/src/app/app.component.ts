@@ -5,6 +5,7 @@ import {Title} from "@angular/platform-browser";
 import {Event, EventType, SignalRService} from "./_services/signal-r.service";
 import {Notification, NotificationColour} from "./_models/notifications";
 import {ToastrService} from "ngx-toastr";
+import {UtilityService} from "./_services/utility.service";
 
 @Component({
   selector: 'app-root',
@@ -18,6 +19,7 @@ export class AppComponent implements OnInit {
   private readonly toastr = inject(ToastrService);
   private readonly titleService = inject(Title);
   private readonly signalR = inject(SignalRService);
+  private readonly utilityService = inject(UtilityService);
 
   constructor() {
     this.titleService.setTitle(this.title);
@@ -67,5 +69,6 @@ export class AppComponent implements OnInit {
     // Sets a CSS variable for the actual device viewport height. Needed for mobile dev.
     const vh = window.innerHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${vh}px`);
+    this.utilityService.updateBreakPoint();
   }
 }

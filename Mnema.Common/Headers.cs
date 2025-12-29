@@ -1,6 +1,6 @@
 namespace Mnema.Common;
 
-public class Headers
+public static class Headers
 {
     public const string RobotsTag = "X-Robots-Tag";
 }

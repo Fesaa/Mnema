@@ -3,7 +3,7 @@ import {
   Component,
   computed,
   ContentChild, effect,
-  EventEmitter,
+  EventEmitter, inject,
   input,
   OnInit,
   Output,
@@ -14,6 +14,7 @@ import {NgTemplateOutlet} from '@angular/common';
 import {CdkDrag, CdkDragDrop, CdkDropList} from '@angular/cdk/drag-drop';
 import {PageLoader, PaginatorComponent} from "../paginator/paginator.component";
 import {of} from "rxjs";
+import {Breakpoint, UtilityService} from "../../../_services/utility.service";
 
 
 @Component({
@@ -30,9 +31,12 @@ import {of} from "rxjs";
 })
 export class TableComponent<T> {
 
+  protected readonly utilityService = inject(UtilityService);
+
   @ContentChild('header') headerTemplate!: TemplateRef<any>;
   @ContentChild('cell') cellTemplate!: TemplateRef<any>;
   @ContentChild('empty') emptyTemplate!: TemplateRef<any>;
+  @ContentChild('mobile') mobileTemplate!: TemplateRef<any>;
 
   trackByIdFunc = input.required<(index: number, value: T) => string>();
   pageLoader = input<PageLoader<T>>();
@@ -43,6 +47,7 @@ export class TableComponent<T> {
   @Output() onDrop = new EventEmitter<CdkDragDrop<T[]>>();
 
   noHoverColour = input(false);
+  noMobileCards = input(false);
 
   finalPageLoader = computed<PageLoader<T>>(() => {
     const pageLoader = this.pageLoader();
@@ -68,4 +73,5 @@ export class TableComponent<T> {
   });
 
   @Output() currentItems = new EventEmitter<T[]>();
+  protected readonly Breakpoint = Breakpoint;
 }
