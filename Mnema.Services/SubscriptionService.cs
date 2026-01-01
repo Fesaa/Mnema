@@ -54,6 +54,9 @@ internal class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfW
         unitOfWork.SubscriptionRepository.Add(sub);
 
         await unitOfWork.CommitAsync();
+
+        // Start subscription after subscribing
+        await RunOnce(userId, sub.Id);
     }
 
     public async Task RunOnce(Guid userId, Guid subId)
