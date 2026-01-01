@@ -19,6 +19,7 @@
     [noMobileCards]="true"
     *transloco="let t; prefix:'notifications.table'"
     (currentItems)="onItemsChange($event)"
+    [reloader]="pageReloader"
   >
 
     <ng-template #header>

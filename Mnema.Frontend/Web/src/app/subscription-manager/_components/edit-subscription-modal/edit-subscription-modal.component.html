@@ -4,7 +4,7 @@
 
     <div class="modal-header">
       <h5 class="modal-title fw-semibold">
-        @if (subscription().id === -1) {
+        @if (subscription().id === '') {
           {{t('new-sub-title', {name: subscription().title})}}
         } @else {
           {{t('title', {name: subscription().title})}}
@@ -164,7 +164,7 @@
         {{t('cancel')}}
       </button>
       <button type="button" class="btn btn-primary" (click)="save()">
-        <span>{{ subscription().id === -1 ? t('create') : t('save')}}</span>
+        <span>{{ subscription().id === '' ? t('create') : t('save')}}</span>
       </button>
     </div>
 

@@ -2,7 +2,7 @@ import {Provider} from "./page";
 import {DownloadRequestMetadata} from "./search";
 
 export type Subscription = {
-  id: number;
+  id: string;
   contentId: string;
   refreshFrequency: RefreshFrequency;
   title: string;

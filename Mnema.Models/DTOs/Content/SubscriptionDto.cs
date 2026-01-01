@@ -5,7 +5,7 @@ namespace Mnema.Models.DTOs.Content;
 public class SubscriptionDto
 {
     /// <inheritdoc cref="Subscription.Id"/>
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } = Guid.Empty;
     /// <inheritdoc cref="Subscription.UserId"/>
     public Guid UserId { get; set; }
     

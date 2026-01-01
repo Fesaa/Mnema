@@ -10,6 +10,7 @@
     [pageLoader]="pageLoader()"
     (currentItems)="hasAny.set($event.length > 0)"
     [trackByIdFunc]="trackBy"
+    [reloader]="pageReloader"
   >
     <ng-template #mobile let-sub>
       <div class="card mobile-card">

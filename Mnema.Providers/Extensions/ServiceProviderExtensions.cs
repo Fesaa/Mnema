@@ -15,6 +15,11 @@ public static class ServiceProviderExtensions
 
     public static IServiceCollection AddProviders(this IServiceCollection services)
     {
+        #region Nyaa
+
+        services.AddKeyedSingleton<IContentManager, NoOpContentManager>(Provider.Nyaa);
+
+        #endregion
 
         #region Mangadex
 

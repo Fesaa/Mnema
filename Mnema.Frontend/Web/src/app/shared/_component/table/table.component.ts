@@ -41,6 +41,7 @@ export class TableComponent<T> {
   trackByIdFunc = input.required<(index: number, value: T) => string>();
   pageLoader = input<PageLoader<T>>();
   items = input<Array<T>>();
+  reloader = input<EventEmitter<void>>(new EventEmitter());
 
   dragAble = input(false);
   dragTableId = input<string>();
