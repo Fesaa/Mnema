@@ -304,9 +304,8 @@ internal class BatoRepository: IRepository
         {
             throw new MnemaException("Failed to retrieve chapter urls", result.Error);
         }
-        
-        var document = new HtmlDocument();
-        document.LoadHtml(result.Unwrap());
+
+        var document = result.Unwrap().ToHtmlDocument();
 
         var astroIsland = document.DocumentNode.SelectSingleNode("/html/body/div/astro-island[1]");
         if (astroIsland == null)

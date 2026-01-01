@@ -112,7 +112,8 @@ internal partial class Publication
         
         await Task.WhenAll(workers);
         
-        _logger.LogInformation("Downloaded all chapters in {Elapsed}ms", sw.ElapsedMilliseconds);
+        _logger.LogInformation("Downloaded all chapters in {Elapsed}ms for {Title} - {Id}",
+            sw.ElapsedMilliseconds, Title, Id);
 
         State = ContentState.Cleanup;
         await _messageService.StateUpdate(Request.UserId, Id, ContentState.Cleanup);
