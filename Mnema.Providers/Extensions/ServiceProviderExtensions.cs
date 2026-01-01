@@ -1,9 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Models.Entities.Content;
 using Mnema.Providers.Bato;
 using Mnema.Providers.Dynasty;
 using Mnema.Providers.Mangadex;
+using Mnema.Providers.Webtoon;
 
 namespace Mnema.Providers.Extensions;
 
@@ -23,7 +26,7 @@ public static class ServiceProviderExtensions
         {
             client.BaseAddress = new Uri("https://api.mangadex.org");
             client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add("User-Agent", "Mnema");
+            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
         });
 
         #endregion
@@ -31,7 +34,15 @@ public static class ServiceProviderExtensions
         #region Webtoons
 
         services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Webtoons);
+        services.AddKeyedScoped<IRepository, WebtoonRepository>(Provider.Webtoons);
         services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Webtoons);
+        services.AddHttpClient(nameof(Provider.Webtoons), client =>
+        {
+            client.BaseAddress = new Uri("https://www.webtoons.com");
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
+            client.DefaultRequestHeaders.Add(HeaderNames.Referer, "https://www.webtoons.com/");
+        });
 
         #endregion
 
@@ -44,7 +55,7 @@ public static class ServiceProviderExtensions
         {
             client.BaseAddress = new Uri("https://dynasty-scans.com/");
             client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add("User-Agent", "Mnema");
+            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
         });
 
         #endregion
@@ -58,7 +69,7 @@ public static class ServiceProviderExtensions
         {
             client.BaseAddress = new Uri("https://jto.to");
             client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add("User-Agent", "Mnema");
+            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
         });
 
         #endregion

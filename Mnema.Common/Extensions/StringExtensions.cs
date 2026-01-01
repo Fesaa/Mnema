@@ -58,6 +58,15 @@ public static class StringExtensions
 
             return s[other.Length..];
         }
+        
+        public string RemoveSuffix(string other)
+        {
+            if (string.IsNullOrEmpty(other) || s.Length < other.Length) return s;
+
+            if (!s.EndsWith(other)) return s;
+
+            return s[..(s.Length - other.Length)];
+        }
 
         public int AsInt()
         {

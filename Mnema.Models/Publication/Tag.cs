@@ -16,4 +16,11 @@ public sealed record Tag
         Id = value;
         Value = value;
     }
+    
+    public Tag(string value, bool isMarkedAsGenre)
+    {
+        Id = value;
+        Value = value;
+        IsMarkedAsGenre = isMarkedAsGenre;
+    }
 }
