@@ -43,4 +43,4 @@ COPY --from=dotnet-stage /Mnema/publish /app
 
 EXPOSE 8080
 
-CMD [ "/app/Mnema.Server" ]
+CMD [ "/app/Mnema" ]
