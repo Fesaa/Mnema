@@ -36,6 +36,10 @@ RUN dotnet publish Mnema.Server/Mnema.Server.csproj -c Release -o /Mnema/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libkrb5-3 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY --from=npm-stage /Mnema/dist/web/browser/ /Mnema/wwwroot

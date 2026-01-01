@@ -48,7 +48,7 @@ public class OpenIdConnectEventHelper: OpenIdConnectEvents
         
         if (!_isDevelopment && !string.IsNullOrEmpty(ctx.ProtocolMessage.RedirectUri))
         {
-            ctx.ProtocolMessage.PostLogoutRedirectUri = ctx.ProtocolMessage.PostLogoutRedirectUri.Replace("http://", "https://");
+            ctx.ProtocolMessage.RedirectUri = ctx.ProtocolMessage.RedirectUri.Replace("http://", "https://");
         }
 
         return Task.CompletedTask; 
