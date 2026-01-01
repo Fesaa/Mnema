@@ -1,4 +1,4 @@
-import {Component, computed, effect, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, effect, EventEmitter, inject, OnInit, signal} from '@angular/core';
 import {NavService} from "../_services/nav.service";
 import {SubscriptionService} from '../_services/subscription.service';
 import {RefreshFrequency, Subscription} from "../_models/subscription";
@@ -50,7 +50,6 @@ export class SubscriptionManagerComponent implements OnInit {
 
   metadata = signal<Map<Provider, DownloadMetadata>>(new Map());
   allowedProviders = signal<Provider[]>([]);
-  hasRanAll = signal(false);
   hasAny = signal(false);
 
   pageLoader = computed(() => {
@@ -69,6 +68,8 @@ export class SubscriptionManagerComponent implements OnInit {
     takeUntilDestroyed(),
     distinctUntilChanged(),
   ), { initialValue: { filterText: '' } });
+
+  pageReloader = new EventEmitter<void>();
 
   ngOnInit(): void {
     this.navService.setNavVisibility(true);
@@ -112,14 +113,12 @@ export class SubscriptionManagerComponent implements OnInit {
     }
 
 
-    this.subscriptionService.delete(sub.id).subscribe({
-      next: () => {
+    this.subscriptionService.delete(sub.id).pipe(
+      tap(() => {
         this.toastService.successLoco("subscriptions.toasts.delete.success", {name: sub.title});
-      },
-      error: err => {
-        this.toastService.errorLoco("subscriptions.toasts.delete.error", {name: sub.title}, {msg: err.error.message});
-      }
-    })
+        this.pageReloader.emit();
+      })
+    ).subscribe();
   }
 
   getSeverity(sub: Subscription): "primary" | "secondary" | "error" | "warning" {

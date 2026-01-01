@@ -1,4 +1,4 @@
-import {Component, computed, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, EventEmitter, inject, OnInit, signal} from '@angular/core';
 import {NotificationService} from "../_services/notification.service";
 import {Notification} from "../_models/notifications";
 import {ToastService} from "../_services/toast.service";
@@ -43,6 +43,8 @@ export class NotificationsComponent implements OnInit {
       return this.notificationService.all(pn, ps);
     }
   });
+
+  pageReloader = new EventEmitter<void>();
 
   ngOnInit(): void {
     this.navService.setNavVisibility(true);
@@ -109,7 +111,10 @@ export class NotificationsComponent implements OnInit {
       return;
     }
 
-    this.notificationService.deleteMany(this.tracker.ids()).subscribe(() => this.tracker.reset());
+    this.notificationService.deleteMany(this.tracker.ids()).subscribe(() => {
+      this.tracker.reset();
+      this.pageReloader.emit();
+    });
   }
 
   async delete(notification: Notification) {
@@ -119,7 +124,7 @@ export class NotificationsComponent implements OnInit {
       return;
     }
 
-    this.notificationService.deleteNotification(notification.id).subscribe();
+    this.notificationService.deleteNotification(notification.id).subscribe(() => this.pageReloader.emit());
   }
 
   trackBy(idx: number, notification: Notification): string {
