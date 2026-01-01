@@ -20,6 +20,7 @@ internal class UserService(ILogger<UserService> logger, IUnitOfWork unitOfWork):
         pref.ConvertToGenreList = dto.ConvertToGenreList.DistinctBy(g => g.ToNormalized()).ToList();
         pref.AgeRatingMappings = dto.AgeRatingMappings.DistinctBy(arm => arm.Tag.ToNormalized()).ToList();
         pref.TagMappings = dto.TagMappings.DistinctBy(tm => tm.DestinationTag.ToNormalized() + tm.OriginTag.ToNormalized()).ToList();
+        pref.PinSubscriptionTitles = dto.PinSubscriptionTitles;
 
         unitOfWork.UserRepository.Update(pref);
 

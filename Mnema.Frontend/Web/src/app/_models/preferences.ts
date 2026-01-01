@@ -1,6 +1,7 @@
 export type Preferences = {
   imageFormat: ImageFormat;
   coverFallbackMethod: CoverFallbackMethod,
+  pinSubscriptionTitles: boolean,
   convertToGenreList: string[],
   blackListedTags: string[],
   whiteListedTags: string[],
