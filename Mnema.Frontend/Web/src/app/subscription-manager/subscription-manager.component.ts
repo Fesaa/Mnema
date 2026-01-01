@@ -90,7 +90,7 @@ export class SubscriptionManagerComponent implements OnInit {
   }
 
   runOnce(sub: Subscription) {
-    if (sub.id == 0) {
+    if (sub.id === '') {
       return
     }
 
@@ -135,7 +135,7 @@ export class SubscriptionManagerComponent implements OnInit {
   }
 
   trackBy(idx: number, sub: Subscription) {
-    return `${sub.id}`
+    return sub.id
   }
 
   edit(sub: Subscription) {

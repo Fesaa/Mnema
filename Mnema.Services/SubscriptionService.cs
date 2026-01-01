@@ -4,11 +4,17 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services;
 
-internal class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfWork unitOfWork, IServiceScopeFactory scopeFactory): ISubscriptionService
+internal class SubscriptionService(
+    ILogger<SubscriptionService> logger,
+    IUnitOfWork unitOfWork,
+    IServiceScopeFactory scopeFactory,
+    ISettingsService settingsService
+    ): ISubscriptionService
 {
     
     public async Task UpdateSubscription(Guid userId, SubscriptionDto dto)
@@ -41,6 +47,8 @@ internal class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfW
     }
     public async Task CreateSubscription(Guid userId, SubscriptionDto dto)
     {
+        var hour = await settingsService.GetSettingsAsync<int>(ServerSettingKey.SubscriptionRefreshHour);
+        
         var sub = new Subscription
         {
             UserId = userId,
@@ -49,7 +57,12 @@ internal class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfW
             BaseDir = dto.BaseDir,
             Metadata = dto.Metadata,
             Provider = dto.Provider,
+            RefreshFrequency = dto.RefreshFrequency,
+            LastRun = DateTime.MinValue,
+            LastRunSuccess = true,
         };
+
+        sub.NextRun = sub.NextRunTime(hour);
         
         unitOfWork.SubscriptionRepository.Add(sub);
 

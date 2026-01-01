@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {environment} from "../../environments/environment";
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {Subscription} from "../_models/subscription";
@@ -11,24 +11,14 @@ import {PagedList} from "../_models/paged-list";
 })
 export class SubscriptionService {
 
-  baseUrl = environment.apiUrl + "subscriptions";
+  private readonly httpClient = inject(HttpClient);
+  private readonly baseUrl = environment.apiUrl + "subscriptions";
 
-  constructor(private httpClient: HttpClient) {
-  }
-
-  get(id: number): Observable<Subscription> {
-    return this.httpClient.get<Subscription>(`${this.baseUrl}/${id}`);
-  }
-
-  runOnce(id: number) {
+  runOnce(id: string) {
     return this.httpClient.post(`${this.baseUrl}/run-once/${id}`, {}, {responseType: 'text'})
   }
 
-  runAll() {
-    return this.httpClient.post(`${this.baseUrl}/run-all`, {});
-  }
-
-  delete(id: number) {
+  delete(id: string) {
     return this.httpClient.delete(`${this.baseUrl}/${id}`, {responseType: 'text'});
   }
 
