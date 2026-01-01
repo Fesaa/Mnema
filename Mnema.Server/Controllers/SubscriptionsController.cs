@@ -14,8 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 public class SubscriptionsController(
     ILogger<SubscriptionsController> logger,
     IUnitOfWork unitOfWork,
-    ISubscriptionService subscriptionService,
-    IDownloadService downloadService
+    ISubscriptionService subscriptionService
     ): BaseApiController
 {
 
@@ -47,19 +46,7 @@ public class SubscriptionsController(
     [HttpPost("run-once/{subscriptionId:guid}")]
     public async Task<IActionResult> RunOnce(Guid subscriptionId)
     {
-        var sub = await unitOfWork.SubscriptionRepository.GetSubscriptionDto(subscriptionId);
-        if (sub == null) return NotFound();
-
-        if (sub.UserId != UserId) return Forbid();
-
-        await downloadService.StartDownload(new DownloadRequestDto
-        {
-            Provider = sub.Provider,
-            Id = sub.ContentId,
-            BaseDir = sub.BaseDir,
-            TempTitle = sub.Title,
-            DownloadMetadata = sub.Metadata
-        });
+        await subscriptionService.RunOnce(UserId, subscriptionId);
         
         return Ok();
     }
