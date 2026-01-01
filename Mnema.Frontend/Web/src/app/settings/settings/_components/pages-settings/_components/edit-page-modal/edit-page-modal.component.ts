@@ -31,14 +31,11 @@ export class EditPageModalComponent implements OnInit {
   private readonly modalService = inject(ModalService);
   private readonly modal = inject(NgbActiveModal);
   private readonly pageService = inject(PageService);
-  private readonly providerNamePipe = inject(ProviderNamePipe);
   private readonly toastService = inject(ToastService);
 
   page = model.required<Page>();
 
   pageForm = new FormGroup({});
-
-  activeTab = 'general';
 
   ngOnInit(): void {
     const page = this.page();

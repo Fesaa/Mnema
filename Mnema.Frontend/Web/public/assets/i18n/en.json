@@ -569,6 +569,7 @@
       "title": "Server",
       "root-dir": "Root directory",
       "base-url": "Base Url",
+      "downloader": "Downloader",
       "sub-refresh": {
         "label": "Download subscriptions at",
         "tooltip": "The hour at which subscriptions should run"
@@ -576,6 +577,11 @@
       "max-images": {
         "label": "Max Images",
         "subTitle": "Amount of images(/chapter) downloaded at once, not shared between providers",
+        "tooltip": ""
+      },
+      "max-torrents": {
+        "label": "Max concurrent torrents",
+        "subTitle": "Amount of torrents downloading at once",
         "tooltip": ""
       },
       "save": "Save",

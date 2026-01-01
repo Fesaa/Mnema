@@ -12,6 +12,7 @@ import {TableComponent} from "../../../../shared/_component/table/table.componen
 import {ModalService} from "../../../../_services/modal.service";
 import {EditPageModalComponent} from "./_components/edit-page-modal/edit-page-modal.component";
 import {DefaultModalOptions} from "../../../../_models/default-modal-options";
+import {catchError, merge, of, switchMap, take, tap} from "rxjs";
 
 @Component({
   selector: 'app-pages-settings',
@@ -53,6 +54,12 @@ export class PagesSettingsComponent {
       icon: '',
       sortValue: 0,
     });
+
+
+    merge(modal.dismissed, modal.closed).pipe(
+      take(1),
+      switchMap(() => this.pageService.refreshPages()),
+    ).subscribe();
   }
 
   async remove(page: Page) {
@@ -62,15 +69,10 @@ export class PagesSettingsComponent {
       return;
     }
 
-    this.pageService.removePage(page.id).subscribe({
-      next: () => {
-        this.toastService.successLoco("settings.pages.toasts.delete.success", {}, {title: page.title});
-        this.pageService.refreshPages().subscribe();
-      },
-      error: (err) => {
-        this.toastService.genericError(err.error.message);
-      }
-    });
+    this.pageService.removePage(page.id).pipe(
+      tap(() => this.toastService.successLoco("settings.pages.toasts.delete.success", {}, {title: page.title})),
+      switchMap(() => this.pageService.refreshPages()),
+    ).subscribe();
   }
 
   drop($event: CdkDragDrop<any, any>) {
@@ -81,18 +83,17 @@ export class PagesSettingsComponent {
     moveItemInArray(pages, $event.previousIndex, $event.currentIndex);
     this.pages.set(pages);
 
-    this.pageService.orderPages(pages.map(p => p.id)).subscribe({
-      next: () => {
-        this.pageService.refreshPages().subscribe();
-      },
-      error: (err) => {
+    this.pageService.orderPages(pages.map(p => p.id)).pipe(
+      switchMap(() => this.pageService.refreshPages()),
+      catchError(err => {
         this.toastService.genericError(err.error.message);
         this.pages.set(copy);
-      }
-    });
+        return of(pages);
+      }),
+    ).subscribe();
   }
 
-  trackBy(idx: number, page: Page) {
+  trackBy(_: number, page: Page) {
     return `${page.id}`
   }
 }
