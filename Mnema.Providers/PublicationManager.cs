@@ -95,7 +95,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         }
 
         _logger.LogInformation("Removing content: {Id} - {Title}, DeleteFiles: {DeleteFiles}",
-            request.Id, publication.Title, request.DeleteFiles);
+            publication.Id, publication.Title, request.DeleteFiles);
 
         publication.Cancel();
 

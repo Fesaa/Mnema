@@ -54,8 +54,6 @@ internal class MangadexRepository: IRepository
         {
             return PagedList<SearchResult>.Empty();
         }
-        
-        _logger.LogDebug("Found {Amount} items out of {Total} for query {Query}", response.Data.Count, response.Total, request.Query);
 
         var items = response.Data.Select(searchResult => new SearchResult
         {

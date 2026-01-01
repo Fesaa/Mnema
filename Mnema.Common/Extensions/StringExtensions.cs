@@ -19,7 +19,11 @@ public static class StringExtensions
         {
             return string.IsNullOrEmpty(s) ? string.Empty : NormalizeRegex.Replace(s, string.Empty).Trim().ToLower();
         }
-        
+
+        public string CleanForLogging()
+        {
+            return string.IsNullOrEmpty(s) ? string.Empty : s.Replace("\n", string.Empty).Replace("\r", string.Empty);
+        }
 
         public string OrNonEmpty(params string[] other)
         {

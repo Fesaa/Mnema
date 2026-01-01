@@ -78,7 +78,6 @@ internal class BatoRepository: IRepository
         var result = await Client.GetCachedStringAsync(url.ToString(), _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            _logger.LogError(result.Error, "Failed to retrieve search info with url {Url}", url);
             throw new MnemaException("Failed to search for series", result.Error);
         }
 
@@ -135,7 +134,7 @@ internal class BatoRepository: IRepository
         var lastPage = paginatorNode.QuerySelectorAll("a").Last().InnerText.AsInt();
         var currentPage = paginatorNode.QuerySelector("a.btn-accent").InnerText.AsInt();
 
-        return new PagedList<SearchResult>(items, lastPage * 36, currentPage - 1, 36);
+        return new PagedList<SearchResult>(items, items.Count + (lastPage - 1) * 36, currentPage - 1, 36);
     }
 
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
