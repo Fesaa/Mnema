@@ -161,7 +161,7 @@
                     @if (agmFormGroup.get('ageRating'); as control) {
                       <select formControlName="ageRating" class="form-select form-control">
                         @for (opt of ComicInfoAgeRatings; track opt.value) {
-                          <option [value]="opt.value">{{opt.label}}</option>
+                          <option [ngValue]="opt.value">{{opt.label}}</option>
                         }
                       </select>
                     }
