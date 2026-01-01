@@ -239,6 +239,7 @@ internal partial class Publication
         }
 
         _logger.LogDebug("Some tasks failed to complete, retrying. Count: {Count}", failedTasks.Count);
+        _failedDownloadsTracker += failedTasks.Count;
 
         var retryChannel = Channel.CreateUnbounded<DownloadWork>();
         foreach (var task in failedTasks)

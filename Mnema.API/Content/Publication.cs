@@ -10,16 +10,8 @@ public interface IPublicationManager: IContentManager
 
 public interface IPublication: IContent
 {
-
-    IList<OnDiskContent> ExistingContent { get; }
-    IList<string> DownloadedPaths { get; }
-    IList<string> ToRemovePaths { get; }
-
-    Task FinalizeChapter(string src, string dest);
     Task LoadMetadataAsync(CancellationTokenSource source);
     Task DownloadContentAsync(CancellationTokenSource source);
-
-    Task<MessageDto> ProcessMessage(MessageDto message);
 
 }
 
