@@ -17,6 +17,12 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
+      - name: Get csproj Version
+        uses: kzrnm/get-net-sdk-project-versions-action@v2
+        id: get-version
+        with:
+          proj-path: Mnema.Server/Mnema.Server.csproj
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -33,3 +39,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/fesaa/mnema:latest
+            ghcr.io/fesaa/mnema:${{ steps.get-version.outputs.assembly-version }}
