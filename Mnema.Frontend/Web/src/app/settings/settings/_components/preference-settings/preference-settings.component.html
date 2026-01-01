@@ -48,6 +48,19 @@
                 </app-settings-item>
               }
 
+              <div class="col-md-12 col-sm-12 py-4">
+
+                @if (preferencesForm.get('pinSubscriptionTitles'); as control) {
+                  <app-settings-switch [control]="control" [title]="t('pin-subscription-titles')" [tooltip]="t('pin-subscription-titles-tooltip')">
+                    <ng-template #switch>
+                      <div class="form-switch form-check">
+                        <input class="form-check-input" type="checkbox" formControlName="pinSubscriptionTitles">
+                      </div>
+                    </ng-template>
+                  </app-settings-switch>
+                }
+              </div>
+
             </div>
           </ng-template>
         </li>
@@ -161,7 +174,7 @@
                     @if (agmFormGroup.get('ageRating'); as control) {
                       <select formControlName="ageRating" class="form-select form-control">
                         @for (opt of ComicInfoAgeRatings; track opt.value) {
-                          <option [value]="opt.value">{{opt.label}}</option>
+                          <option [ngValue]="opt.value">{{opt.label}}</option>
                         }
                       </select>
                     }

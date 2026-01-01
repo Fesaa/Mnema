@@ -11,4 +11,5 @@ public class UserPreferencesDto
     public required IList<string> WhiteListedTags { get; set; }
     public required IList<AgeRatingMappingDto> AgeRatingMappings { get; set; }
     public required IList<TagMappingDto> TagMappings { get; set; }
+    public bool PinSubscriptionTitles { get; set; }
 }

@@ -58,6 +58,8 @@ internal class DynastyRepository(
         {
             return PagedList<SearchResult>.Empty();
         }
+
+        var baseUrl = Client.BaseAddress?.ToString().TrimEnd('/');
         
         var results = resultNodes.Select(node =>
         {
@@ -69,7 +71,7 @@ internal class DynastyRepository(
                 Name = nameNode.InnerText,
                 Provider = Provider.Dynasty,
                 Tags = node.QuerySelectorAll(".tags a.label").Select(x => x.InnerText).ToList(),
-                Url = $"{Client.BaseAddress?.ToString()}{nameNode.GetAttributeValue("href", string.Empty)}",
+                Url = $"{baseUrl}{nameNode.GetAttributeValue("href", string.Empty)}",
             };
         }).ToList();
 
@@ -256,7 +258,7 @@ internal class DynastyRepository(
 
     public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
     {
-        var result = await Client.GetCachedStringAsync(chapter.Id, cache, cancellationToken: cancellationToken);
+        var result = await Client.GetCachedStringAsync($"chapters/{chapter.Id}", cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
             throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}", result.Error);

@@ -36,7 +36,8 @@ import {ImageFormatPipe} from "../../../../_pipes/image-format.pipe";
     NgbNavOutlet,
     NgbNavContent,
     NgbNavLink,
-    ImageFormatPipe
+    ImageFormatPipe,
+    SettingsSwitchComponent
   ],
   templateUrl: './preference-settings.component.html',
   styleUrl: './preference-settings.component.scss'
@@ -61,7 +62,8 @@ export class PreferenceSettingsComponent implements OnInit {
 
       this.preferencesForm = this.fb.group({
         imageFormat: new FormControl(preferences.imageFormat),
-        coverFallbackMethod: [preferences.coverFallbackMethod],
+        coverFallbackMethod: new FormControl(preferences.coverFallbackMethod),
+        pinSubscriptionTitles: new FormControl(preferences.pinSubscriptionTitles),
         blackList: new FormControl(preferences.blackListedTags.join(',')),
         whiteList: new FormControl(preferences.whiteListedTags.join(',')),
         genreList: new FormControl(preferences.convertToGenreList.join(',')),

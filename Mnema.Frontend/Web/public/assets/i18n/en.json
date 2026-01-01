@@ -546,6 +546,8 @@
       "imageFormat-label": "Image conversion",
       "imageFormat-tooltip": "In which format should downloaded images be saved",
       "cover-fallback-method": "Cover to use as fallback",
+      "pin-subscription-titles": "Pin subscription titles",
+      "pin-subscription-titles-tooltip": "Force subscription titles to have a title override, to ensure consistency when the source updates",
       "configure": "Configure",
       "save": "Save",
       "toasts": {
