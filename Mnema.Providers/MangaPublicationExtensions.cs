@@ -36,7 +36,7 @@ internal partial class MangaPublicationExtensions: IPublicationExtensions
     
     public async Task<string> DownloadCallback(IoWork ioWork, CancellationToken cancellationToken)
     {
-        var fileType = Path.GetExtension(ioWork.Url);
+        var fileType = Path.GetExtension(new Uri(ioWork.Url).AbsolutePath);
 
         var fileCounter = $"{ioWork.Idx}".PadLeft(4, '0');
         var filePath = Path.Join(ioWork.FilePath, $"page {fileCounter}{fileType}");
