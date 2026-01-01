@@ -5,7 +5,7 @@ using Mnema.Models.DTOs.User;
 
 namespace Mnema.Server.Controllers;
 
-public class NotificationsController(IUnitOfWork unitOfWork): BaseApiController
+public class NotificationsController(IUnitOfWork unitOfWork, IMessageService messageService): BaseApiController
 {
 
     [HttpGet("all")]
@@ -39,7 +39,12 @@ public class NotificationsController(IUnitOfWork unitOfWork): BaseApiController
     [HttpPost("{notificationId:guid}/read")]
     public async Task<IActionResult> ReadNotification(Guid notificationId)
     {
-        await unitOfWork.NotificationRepository.MarkNotificationsAsRead(UserId, [notificationId]);
+        var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsRead(UserId, [notificationId]);
+        
+        if (changes > 0)
+        {
+            await messageService.NotificationRemoved(UserId, changes);
+        }
 
         return Ok();
     }
@@ -47,7 +52,12 @@ public class NotificationsController(IUnitOfWork unitOfWork): BaseApiController
     [HttpPost("{notificationId:guid}/unread")]
     public async Task<IActionResult> UnReadNotification(Guid notificationId)
     {
-        await unitOfWork.NotificationRepository.MarkNotificationsAsUnRead(UserId, [notificationId]);
+        var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsUnRead(UserId, [notificationId]);
+
+        if (changes > 0)
+        {
+            await messageService.NotificationAdded(UserId, changes);
+        }
 
         return Ok();
     }
@@ -63,7 +73,12 @@ public class NotificationsController(IUnitOfWork unitOfWork): BaseApiController
     [HttpPost("many/read")]
     public async Task<IActionResult> ReadMany([FromBody] Guid[] ids)
     {
-        await unitOfWork.NotificationRepository.MarkNotificationsAsRead(UserId, ids);
+        var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsRead(UserId, ids);
+
+        if (changes > 0)
+        {
+            await messageService.NotificationRemoved(UserId, changes);
+        }
 
         return Ok();
     }
@@ -71,7 +86,12 @@ public class NotificationsController(IUnitOfWork unitOfWork): BaseApiController
     [HttpPost("many/unread")]
     public async Task<IActionResult> UnReadMany([FromBody] Guid[] ids)
     {
-        await unitOfWork.NotificationRepository.MarkNotificationsAsRead(UserId, ids);
+        var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsRead(UserId, ids);
+        
+        if (changes > 0)
+        {
+            await messageService.NotificationAdded(UserId, changes);
+        }
 
         return Ok();
     }

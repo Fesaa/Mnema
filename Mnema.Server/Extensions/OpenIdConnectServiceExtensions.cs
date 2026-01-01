@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Mnema.Common.Exceptions;
+using Mnema.Database;
 using Mnema.Models.Internal;
 using Mnema.Server.Helpers;
 
@@ -20,6 +22,10 @@ public static class OpenIdConnectServiceExtensions
         {
             throw new MnemaException("No valid OpenIDConnect configuration found");
         }
+
+        services.AddDataProtection()
+            .PersistKeysToDbContext<MnemaDataContext>()
+            .SetApplicationName("Mnema");
         
         services.AddSingleton<ConfigurationManager<OpenIdConnectConfiguration>>(_ =>
         {

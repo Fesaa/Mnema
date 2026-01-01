@@ -14,12 +14,14 @@ import {TableComponent} from "../shared/_component/table/table.component";
 import {BadgeComponent} from "../shared/_component/badge/badge.component";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {ModalService} from "../_services/modal.service";
-import {forkJoin, map, switchMap, tap} from "rxjs";
+import {catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, tap} from "rxjs";
 import {EditSubscriptionModalComponent} from "./_components/edit-subscription-modal/edit-subscription-modal.component";
 import {DefaultModalOptions} from "../_models/default-modal-options";
 import {PageService} from "../_services/page.service";
 import {ProviderNamePipe} from "../_pipes/provider-name.pipe";
 import {UtilityService} from "../_services/utility.service";
+import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
+import {takeUntilDestroyed, toSignal} from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-subscription-manager',
@@ -32,6 +34,7 @@ import {UtilityService} from "../_services/utility.service";
     TableComponent,
     BadgeComponent,
     NgbTooltip,
+    ReactiveFormsModule,
   ],
   templateUrl: './subscription-manager.component.html',
   styleUrl: './subscription-manager.component.scss',
@@ -48,16 +51,24 @@ export class SubscriptionManagerComponent implements OnInit {
   metadata = signal<Map<Provider, DownloadMetadata>>(new Map());
   allowedProviders = signal<Provider[]>([]);
   hasRanAll = signal(false);
-  filterText = signal('');
   hasAny = signal(false);
 
   pageLoader = computed(() => {
-    const query = this.filterText();
+    const filter = this.filter();
 
     return (pn: number, ps: number) => {
-      return this.subscriptionService.all(query, pn, ps);
+      return this.subscriptionService.all(filter.filterText ?? '', pn, ps);
     }
   });
+
+  filterForm = new FormGroup({
+    filterText: new FormControl(''),
+  });
+  filter = toSignal(this.filterForm.valueChanges.pipe(
+    debounceTime(400),
+    takeUntilDestroyed(),
+    distinctUntilChanged(),
+  ), { initialValue: { filterText: '' } });
 
   ngOnInit(): void {
     this.navService.setNavVisibility(true);
@@ -68,33 +79,14 @@ export class SubscriptionManagerComponent implements OnInit {
         switchMap(providers => {
           const loaders$ = providers.map(
             p => this.pageService.metadata(p).pipe(
-              map(m => [p, m] as [Provider, DownloadMetadata])
+              map(m => [p, m] as [Provider, DownloadMetadata]),
+              catchError(err => of([p, {definitions: []}] as [Provider, DownloadMetadata]))
             ));
 
           return forkJoin(loaders$);
         }),
         tap(metadata => this.metadata.set(new Map(metadata)))
       ).subscribe();
-  }
-
-  updateFilter(event: Event) {
-    const target = event.target as HTMLInputElement;
-    this.filterText.set(target.value);
-  }
-
-  runAll() {
-    if (this.hasRanAll()) return;
-
-    this.hasRanAll.set(true);
-    this.subscriptionService.runAll().subscribe({
-      next: (result) => {
-        this.toastService.successLoco("subscriptions.actions.run-all-success")
-      },
-      error: (error) => {
-        console.error(error);
-        this.toastService.genericError(error);
-      }
-    })
   }
 
   runOnce(sub: Subscription) {
@@ -139,6 +131,7 @@ export class SubscriptionManagerComponent implements OnInit {
       case RefreshFrequency.Month:
         return "error"
     }
+    return "secondary";
   }
 
   trackBy(idx: number, sub: Subscription) {

@@ -2,14 +2,19 @@ using Mnema.API;
 
 namespace Mnema.Server;
 
-public class JobsBootstrapper(
-    ISubscriptionScheduler subscriptionScheduler
-    )
+public class JobsBootstrapper(IServiceScopeFactory scopeFactory): IHostedService
 {
 
-    public async Task Boostrap()
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await subscriptionScheduler.EnsureScheduledAsync();
+        using var scope = scopeFactory.CreateScope();
+        
+        var subscriptionSchedular = scope.ServiceProvider.GetRequiredService<ISubscriptionScheduler>();
+        await subscriptionSchedular.EnsureScheduledAsync();
     }
-    
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 }

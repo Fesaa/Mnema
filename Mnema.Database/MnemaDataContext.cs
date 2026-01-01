@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Mnema.Database.Extensions;
@@ -9,7 +10,7 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Database;
 
-public sealed class MnemaDataContext: DbContext
+public sealed class MnemaDataContext: DbContext, IDataProtectionKeyContext
 {
 
     public MnemaDataContext(DbContextOptions options): base(options)
@@ -24,6 +25,7 @@ public sealed class MnemaDataContext: DbContext
     public DbSet<Subscription> Subscriptions { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<ServerSetting> ServerSettings { get; set; }
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -43,8 +45,6 @@ public sealed class MnemaDataContext: DbContext
             .ComplexCollection(p => p.TagMappings, b => b.ToJson());
 
         builder.Entity<Page>()
-            .PrimitiveCollection(p => p.Dirs);
-        builder.Entity<Page>()
             .HasMany(p => p.Users);
 
         builder.Entity<MnemaUser>()
@@ -55,6 +55,9 @@ public sealed class MnemaDataContext: DbContext
             .HasJsonConversion(new DownloadMetadataDto())
             .HasColumnType("TEXT")
             .HasDefaultValue(new DownloadMetadataDto());
+        builder.Entity<Subscription>()
+            .Property(s => s.RefreshFrequency)
+            .HasDefaultValue(RefreshFrequency.Day);
 
     }
     

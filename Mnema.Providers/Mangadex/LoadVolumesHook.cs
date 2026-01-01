@@ -14,6 +14,9 @@ internal class LoadVolumesHook: IPreDownloadHook
         {
             return;
         }
+        
+        // Reset cover pointing to proxy
+        publication.Series.CoverUrl = string.Empty;
 
         var mangadexRepository = (MangadexRepository) scope.ServiceProvider.GetRequiredKeyedService<IRepository>(Provider.Mangadex);
 

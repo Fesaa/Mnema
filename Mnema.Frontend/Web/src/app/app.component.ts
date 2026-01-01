@@ -1,10 +1,14 @@
-import {Component, HostListener, inject, OnInit} from '@angular/core';
+import {Component, DestroyRef, HostListener, inject, OnInit} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {NavHeaderComponent} from "./nav-header/nav-header.component";
 import {Title} from "@angular/platform-browser";
 import {Event, EventType, SignalRService} from "./_services/signal-r.service";
 import {Notification, NotificationColour} from "./_models/notifications";
 import {ToastrService} from "ngx-toastr";
+import {UtilityService} from "./_services/utility.service";
+import {translate, TranslocoService} from "@jsverse/transloco";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {filter, tap} from "rxjs";
 
 @Component({
   selector: 'app-root',
@@ -13,17 +17,20 @@ import {ToastrService} from "ngx-toastr";
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit {
-  title = 'Media Provider';
 
   private readonly toastr = inject(ToastrService);
   private readonly titleService = inject(Title);
   private readonly signalR = inject(SignalRService);
+  private readonly utilityService = inject(UtilityService);
+  private readonly translocoService = inject(TranslocoService);
+  private readonly destroyRef$ = inject(DestroyRef);
 
-  constructor() {
-    this.titleService.setTitle(this.title);
-  }
+  ngOnInit() {
+    this.translocoService.events$.pipe(
+      takeUntilDestroyed(this.destroyRef$),
+      tap(() => this.titleService.setTitle(translate('application.name')))
+    ).subscribe();
 
-  ngOnInit(): void {
     this.updateVh();
 
     this.signalR.events$.subscribe(event => {
@@ -67,5 +74,6 @@ export class AppComponent implements OnInit {
     // Sets a CSS variable for the actual device viewport height. Needed for mobile dev.
     const vh = window.innerHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${vh}px`);
+    this.utilityService.updateBreakPoint();
   }
 }

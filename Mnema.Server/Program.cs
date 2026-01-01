@@ -48,8 +48,6 @@ public class Program
                 logger.LogCritical(ex, "An exception occured while migrating the database. Mnema will not start");
                 return;
             }
-
-            await scope.ServiceProvider.GetRequiredService<JobsBootstrapper>().Boostrap();
             
             await host.RunAsync();
         }

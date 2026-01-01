@@ -14,6 +14,7 @@
       (onDrop)="drop($event)"
       [items]="pages()"
       [trackByIdFunc]="trackBy"
+      [noMobileCards]="true"
     >
       <ng-template #header>
         <tr>
@@ -36,7 +37,7 @@
         <td class="table-cell">
           <a
             [routerLink]="'/page'"
-            [queryParams]="{ index: item.ID }"
+            [queryParams]="{ id: item.id }"
             class="hover:cursor-pointer"
           >
             {{ item.title }}

@@ -33,6 +33,7 @@ internal class SubscriptionService(ILogger<SubscriptionService> logger, IUnitOfW
         sub.Provider = dto.Provider;
         sub.Metadata = dto.Metadata;
         sub.NoDownloadsRuns = 0;
+        sub.RefreshFrequency = dto.RefreshFrequency;
         
         unitOfWork.SubscriptionRepository.Update(sub);
 

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Mnema.API;
+using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
@@ -10,11 +11,16 @@ namespace Mnema.Server.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
 [Authorize(Roles.Subscriptions)]
-public class SubscriptionsController(ILogger<SubscriptionsController> logger, IUnitOfWork unitOfWork, ISubscriptionService subscriptionService): BaseApiController
+public class SubscriptionsController(
+    ILogger<SubscriptionsController> logger,
+    IUnitOfWork unitOfWork,
+    ISubscriptionService subscriptionService,
+    IDownloadService downloadService
+    ): BaseApiController
 {
 
     [HttpGet("providers")]
-    public async Task<ActionResult<IList<Provider>>> GetProviders()
+    public ActionResult<IList<Provider>> GetProviders()
     {
         return Ok(ISubscriptionService.SubscriptionProviders);
     }
@@ -41,7 +47,21 @@ public class SubscriptionsController(ILogger<SubscriptionsController> logger, IU
     [HttpPost("run-once/{subscriptionId:guid}")]
     public async Task<IActionResult> RunOnce(Guid subscriptionId)
     {
-        throw new NotImplementedException();
+        var sub = await unitOfWork.SubscriptionRepository.GetSubscriptionDto(subscriptionId);
+        if (sub == null) return NotFound();
+
+        if (sub.UserId != UserId) return Forbid();
+
+        await downloadService.StartDownload(new DownloadRequestDto
+        {
+            Provider = sub.Provider,
+            Id = sub.ContentId,
+            BaseDir = sub.BaseDir,
+            TempTitle = sub.Title,
+            DownloadMetadata = sub.Metadata
+        });
+        
+        return Ok();
     }
 
     [HttpPost("update")]
@@ -58,12 +78,6 @@ public class SubscriptionsController(ILogger<SubscriptionsController> logger, IU
         await subscriptionService.CreateSubscription(UserId, createDto);
 
         return Ok();
-    }
-
-    [HttpPost("run-all")]
-    public async Task<IActionResult> RunAll([FromQuery] bool allUsers = false)
-    {
-        throw new NotImplementedException();
     }
 
     [HttpDelete("{subscriptionId:guid}")]

@@ -21,7 +21,7 @@ namespace Mnema.Providers.Bato;
 internal sealed record BatoMapping([property: JsonPropertyName("file")] string File, [property: JsonPropertyName("text")]  string Text);
 internal sealed record BatoSearchOptions(List<ModifierValueDto> Genres, List<ModifierValueDto> ReleaseStatus);
 
-public class BatoRepository: IRepository
+internal class BatoRepository: IRepository
 {
 
     private static readonly Regex ChapterUrlRegex = new(@"https://[^""]+?\.webp", RegexOptions.Compiled,  TimeSpan.FromSeconds(5));
@@ -31,12 +31,12 @@ public class BatoRepository: IRepository
     private static readonly List<Regex> VolumeChapterRegexes =
     [
         new(@"(?:(?:Volume|Vol\.?) ?(\d+)\s+)?(?:Chapter|Ch\.?) ([\d\.]+)", RegexOptions.Compiled,  TimeSpan.FromSeconds(5)),
-        new(@"(?:\[S(\d+)] ?)?Episode ([\d\.]+)", RegexOptions.Compiled,  TimeSpan.FromSeconds(5)),
+        new(@"(?:\[S(\d+)] ?)?(?:Episode|Ep\.) ([\d\.]+)", RegexOptions.Compiled,  TimeSpan.FromSeconds(5)),
     ];
 
     private static readonly Dictionary<string, List<PersonRole>> RoleMappings = new()
     {
-        ["(Story&amp;Art)"] = [PersonRole.Writer, PersonRole.Colorist],
+        ["(Story&Art)"] = [PersonRole.Writer, PersonRole.Colorist],
         ["(Story)"] = [PersonRole.Writer],
         ["(Art)"] = [PersonRole.Colorist],
     };
@@ -73,19 +73,15 @@ public class BatoRepository: IRepository
             .SetQueryParamIf(genreQuery != "|", "genres", genreQuery)
             .SetQueryParamIf(!string.IsNullOrEmpty(status), "status", status)
             .SetQueryParamIf(!string.IsNullOrEmpty(upload), "upload", upload)
-            .SetQueryParam("page", Math.Max(1, pagination.PageNumber)); // Bato is 1 indexed
+            .SetQueryParam("page", pagination.PageNumber + 1); // Bato is 1 indexed
         
         var result = await Client.GetCachedStringAsync(url.ToString(), _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            _logger.LogError(result.Error, "Failed to retrieve search info with url {Url}", url);
             throw new MnemaException("Failed to search for series", result.Error);
         }
 
-        var html = result.Unwrap();
-        
-        var document = new HtmlDocument();
-        document.LoadHtml(html);
+        var document = result.Unwrap().ToHtmlDocument();
 
         var seriesNodes = document.DocumentNode.QuerySelectorAll("div.border-b-base-200");
         if (seriesNodes == null)
@@ -117,7 +113,7 @@ public class BatoRepository: IRepository
                 Id = id,
                 Name = title ?? "Unknown",
                 Provider = Provider.Bato,
-                ImageUrl = imageUrl,
+                ImageUrl = imageUrl ?? string.Empty,
                 Url = $"{Client.BaseAddress?.ToString()}title/{id}",
                 Size = size,
                 Tags = tags ?? [],
@@ -132,13 +128,13 @@ public class BatoRepository: IRepository
         var paginatorNode = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[4]");
         if (paginatorNode == null)
         {
-            return new PagedList<SearchResult>(items, items.Count, 1, 1);
+            return new PagedList<SearchResult>(items, items.Count, 1, items.Count);
         }
-        
-        var lastPage = int.TryParse(paginatorNode.QuerySelectorAll("a").Last().InnerText, out var lastPageNumber) ? lastPageNumber : 0;
-        var currentPage = int.TryParse(paginatorNode.QuerySelector("a.btn-accent").InnerText, out var pageNumber) ? pageNumber : 0;
 
-        return new PagedList<SearchResult>(items, items.Count + (lastPage - 1) * 36, currentPage, 36);
+        var lastPage = paginatorNode.QuerySelectorAll("a").Last().InnerText.AsInt();
+        var currentPage = paginatorNode.QuerySelector("a.btn-accent").InnerText.AsInt();
+
+        return new PagedList<SearchResult>(items, items.Count + (lastPage - 1) * 36, currentPage - 1, 36);
     }
 
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
@@ -146,12 +142,10 @@ public class BatoRepository: IRepository
         var result = await Client.GetCachedStringAsync($"/title/{request.Id}", _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            _logger.LogError(result.Error, "Failed to retrieve chapter urls for chapter {Id}", request.Id);
-            throw new MnemaException("Failed to retrieve chapter urls", result.Error);
+            throw new MnemaException("Failed to series info", result.Error);
         }
         
-        var document = new HtmlDocument();
-        document.LoadHtml(result.Unwrap());
+        var document = result.Unwrap().ToHtmlDocument();
 
         var titleNode = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[1]/h3/a");
         if (titleNode == null)
@@ -191,6 +185,8 @@ public class BatoRepository: IRepository
         return new Series
         {
             Id = request.Id,
+            CoverUrl = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[1]/div[1]/img")
+                .GetAttributeValue("src", string.Empty),
             RefUrl = $"{Client.BaseAddress?.ToString()}title/{request.Id}",
             Title = CleanTitleRegex.Replace(title, string.Empty).Trim(),
             Summary = summary,
@@ -198,7 +194,10 @@ public class BatoRepository: IRepository
             TranslationStatus = TranslatePublicationStatus(translationStatusNode?.InnerText),
             Tags = genres,
             People = people,
-            Links = [],
+            Links = document.DocumentNode.QuerySelectorAll("div.mt-5.space-y-3 div.limit-html a")
+                .Select(node => node.InnerText)
+                .Where(x => !string.IsNullOrEmpty(x))
+                .ToList(),
             Chapters = chapterNodes?.Select(ParseChapter).ToList() ?? [],
         };
 
@@ -207,7 +206,7 @@ public class BatoRepository: IRepository
             if (string.IsNullOrEmpty(publicationStatus))
                 return null;
 
-            return publicationStatus switch
+            return publicationStatus.ToLower() switch
             {
                 "pending" => PublicationStatus.Unknown,
                 "ongoing" => PublicationStatus.Ongoing,
@@ -226,7 +225,7 @@ public class BatoRepository: IRepository
             var chapterTitle = ParseTitle(linkNode.InnerText);
             if (string.IsNullOrEmpty(chapterTitle))
             {
-                chapterTitle = node.QuerySelector("div > span.opacity-80")?.FirstChild?.InnerText.RemovePrefix(":").Trim();
+                chapterTitle = node.QuerySelector("div > span.opacity-80")?.InnerText.RemovePrefix(":").Trim();
             }
 
             // OneShot
@@ -303,7 +302,6 @@ public class BatoRepository: IRepository
         var result = await Client.GetCachedStringAsync($"/title/{chapter.Id}", _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
         {
-            _logger.LogError(result.Error, "Failed to retrieve chapter urls for chapter {Id}", chapter.Id);
             throw new MnemaException("Failed to retrieve chapter urls", result.Error);
         }
         
@@ -413,8 +411,7 @@ public class BatoRepository: IRepository
             return new BatoSearchOptions([], []);
         }
 
-        var document = new HtmlDocument();
-        document.LoadHtml(html);
+        var document = html.ToHtmlDocument();
 
         var astroIsland = document.DocumentNode.SelectSingleNode("//astro-island[contains(@component-url, 'ClientTools')]");
         var clientTools = astroIsland.GetAttributeValue("component-url", string.Empty);

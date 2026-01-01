@@ -1,13 +1,9 @@
 <div class="mx-4 mx-md-5" *transloco="let t; prefix: 'subscriptions'">
 
-  <div class="d-flex justify-content-between mb-3">
-    <div>
-      <input class="form-control" type="text" [placeholder]="t('filter')" (input)="updateFilter($event)">
-    </div>
-
-    <button class="btn btn-secondary" (click)="runAll()" [disabled]="hasRanAll() || !hasAny()">
-      {{ t('actions.run-all') }}
-    </button>
+  <div class="d-flex flex-grow-1 flex-md-grow-0 justify-content-md-between mb-3">
+    <form [formGroup]="filterForm">
+      <input class="form-control" type="text" [placeholder]="t('filter')" formControlName="filterText">
+    </form>
   </div>
 
   <app-table
@@ -15,6 +11,80 @@
     (currentItems)="hasAny.set($event.length > 0)"
     [trackByIdFunc]="trackBy"
   >
+    <ng-template #mobile let-sub>
+      <div class="card mobile-card">
+        <div class="card-header">
+          <a
+            class="card-title"
+            [href]="sub.contentId | subscriptionExternalUrl:sub.provider"
+            target="_blank"
+            rel="noopener noreferrer"
+            >
+            {{ sub.title }}
+          </a>
+        </div>
+
+        <div class="card-body">
+          <div class="card-row">
+            <span class="card-label">{{ t('next-exec') }}</span>
+            <span class="card-value">{{ sub.nextRun | utcToLocalTime: 'short' }}</span>
+          </div>
+
+          <div class="card-row">
+            <span class="card-label">{{ t('last') }}</span>
+            <span class="card-value">
+          <app-badge
+            [colour]="sub.lastRunSuccess ? 'primary' : 'error'"
+            [ngbTooltip]="(sub.lastRun | date: 'yyyy-MM-dd HH:mm:ss') ?? t('unknown')"
+          >
+            {{ sub.lastRunSuccess ? t('success') : t('failing') }}
+          </app-badge>
+        </span>
+          </div>
+
+          <div class="card-row">
+            <span class="card-label">{{ t('frequency') }}</span>
+            <span class="card-value">
+          <app-badge [colour]="getSeverity(sub)">
+            {{ sub.refreshFrequency | refreshFrequency }}
+          </app-badge>
+        </span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="card-actions">
+            <button
+              type="button"
+              class="btn btn-primary btn-small"
+              [ngbTooltip]="t('actions.edit')"
+              (click)="edit(sub)"
+            >
+              <i class="fa fa-pencil"></i>
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-secondary btn-small"
+              (click)="runOnce(sub)"
+              [ngbTooltip]="t('actions.run-once')"
+            >
+              <i class="fa fa-download"></i>
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-danger btn-small"
+              (click)="delete(sub)"
+              [ngbTooltip]="t('actions.delete')"
+            >
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+
     <ng-template #header>
       <tr>
         <th class="table-header-cell">{{ t('title') }}</th>
@@ -36,7 +106,7 @@
         </a>
       </th>
 
-      <th class="table-cell">{{ sub.nextExecution | utcToLocalTime: 'short' }}</th>
+      <th class="table-cell">{{ sub.nextRun | utcToLocalTime: 'short' }}</th>
 
       <th class="table-cell">
         <app-badge

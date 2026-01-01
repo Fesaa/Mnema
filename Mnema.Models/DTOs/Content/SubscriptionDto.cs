@@ -30,4 +30,7 @@ public class SubscriptionDto
     
     /// <inheritdoc cref="Subscription.NoDownloadsRuns"/>
     public int NoDownloadsRuns { get; set; }
+    
+    /// <inheritdoc cref="Subscription.RefreshFrequency"/>
+    public RefreshFrequency RefreshFrequency { get; set; }
 }

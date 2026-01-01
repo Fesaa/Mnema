@@ -40,7 +40,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddScoped<IFileSystem, FileSystem>();
         services.AddSingleton<IFileSystem, FileSystem>();
-        services.AddScoped<JobsBootstrapper>();
+        services.AddHostedService<JobsBootstrapper>();
 
         services.AddSignalR();
         services.AddControllers(options =>

@@ -28,6 +28,10 @@ public interface IContent
     DownloadInfo DownloadInfo { get; }
 
     Task Cancel();
+    
+    Task Cleanup();
+    
+    Task<MessageDto> ProcessMessage(MessageDto message);
 }
 
 /// <summary>

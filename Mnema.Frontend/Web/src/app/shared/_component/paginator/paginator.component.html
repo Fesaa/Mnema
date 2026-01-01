@@ -1,21 +1,18 @@
-
 <ng-container [ngTemplateOutlet]="itemsTemplate" [ngTemplateOutletContext]="{$implicit: items()}">
 </ng-container>
-
-@let currentPage = pagedList().currentPage;
 
 @if (totalPages() > 1) {
   <div class="pagination-container" *transloco="let t; prefix: 'paginator'">
     <div class="pagination-info">
       <span class="pagination-text">
-        {{t('pages', {currentPage: currentPage, totalPages: totalPages()})}}
+        {{t('pages', {currentPage: currentPageDisplay(), totalPages: totalPages()})}}
       </span>
     </div>
 
     <div class="pagination-controls">
       <button
         class="pagination-btn pagination-btn-prev"
-        [disabled]="currentPage === 1"
+        [disabled]="currentPage() === 0"
         (click)="prevPage()">
         {{t('prev')}}
       </button>
@@ -25,7 +22,7 @@
           @if (pageItem != '...') {
             <button
               class="pagination-btn pagination-btn-number"
-              [class.active]="currentPage + 1 === pageItem"
+              [class.active]="currentPageDisplay() === pageItem"
               (click)="goToPage(pageItem)">
               {{ pageItem }}
             </button>
@@ -37,7 +34,7 @@
 
       <button
         class="pagination-btn pagination-btn-next"
-        [disabled]="currentPage === totalPages()"
+        [disabled]="currentPage() === totalPages() - 1"
         (click)="nextPage()">
         {{t('next')}}
       </button>

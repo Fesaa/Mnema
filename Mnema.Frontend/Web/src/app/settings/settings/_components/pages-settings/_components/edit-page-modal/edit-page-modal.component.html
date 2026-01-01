@@ -50,7 +50,7 @@
               <app-settings-item [title]="t('provider-label')" [tooltip]="t('provider-tooltip')" [control]="control">
                 <ng-template #view>{{ control.value | providerName }}</ng-template>
                 <ng-template #edit>
-                  <select class="form-select">
+                  <select class="form-select" formControlName="provider">
                     @for (provider of AllProviders; track provider) {
                       <option [ngValue]="provider">{{ provider | providerName }}</option>
                     }
@@ -73,28 +73,6 @@
                   <div class="d-flex">
                     <button class="btn btn-primary me-2" (click)="pickCustomRootDir()"><i class="fa fa-folder"></i></button>
                     <input type="text" formControlName="customRootDir" class="form-control">
-                  </div>
-                </ng-template>
-              </app-settings-item>
-            }
-          </div>
-
-          <div class="col-md-12 col-sm-12 pt-2">
-            @if (pageForm.get('dirs'); as control) {
-              <app-settings-item [control]="control" [title]="t('dirs-label')" [tooltip]="t('dirs-tooltip')">
-                <ng-template #view>
-                  <div class="d-flex">
-                    @for (dir of break(control.value); track $index) {
-                      <div class="me-2"><app-badge>{{dir}}</app-badge></div>
-                    } @empty {
-                      {{null | defaultValue}}
-                    }
-                  </div>
-                </ng-template>
-                <ng-template #edit>
-                  <div class="d-flex">
-                    <button class="btn btn-primary me-2" (click)="addDir()"><i class="fa fa-folder-plus"></i></button>
-                    <input type="text" formControlName="dirs" class="form-control">
                   </div>
                 </ng-template>
               </app-settings-item>

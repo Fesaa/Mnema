@@ -36,17 +36,7 @@
                             <i class="fa fa-folder"></i>
                           </button>
 
-                          @if (control.value && !dirs().includes(control.value)) { <!-- Custom dir selected -->
-                            <input formControlName="dir" id="dir" class="form-control flex-grow-1">
-                          } @else if (dirs().length > 0) { <!-- Page has options configured -->
-                            <select class="form-select" formControlName="dir">
-                              @for (dir of dirs(); track $index) {
-                                <option [value]="dir">{{ dir }}</option>
-                              }
-                            </select>
-                          } @else {
-                            <input formControlName="dir" id="dir" class="form-control flex-grow-1">
-                          }
+                          <input formControlName="dir" id="dir" class="form-control flex-grow-1">
                         </div>
                       </ng-template>
                     </app-settings-item>

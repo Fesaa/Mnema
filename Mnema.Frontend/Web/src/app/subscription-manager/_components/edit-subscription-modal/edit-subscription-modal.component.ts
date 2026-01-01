@@ -12,6 +12,7 @@ import {ProviderNamePipe} from "../../../_pipes/provider-name.pipe";
 import {RefreshFrequencyPipe} from "../../../_pipes/refresh-frequency.pipe";
 import {SubscriptionExternalUrlPipe} from "../../../_pipes/subscription-external-url.pipe";
 import {SubscriptionService} from "../../../_services/subscription.service";
+import {NgTemplateOutlet} from "@angular/common";
 
 @Component({
   selector: 'app-edit-subscription-modal',
@@ -26,7 +27,8 @@ import {SubscriptionService} from "../../../_services/subscription.service";
     NgbNavItem,
     NgbNavOutlet,
     ProviderNamePipe,
-    RefreshFrequencyPipe
+    RefreshFrequencyPipe,
+    NgTemplateOutlet
   ],
   templateUrl: './edit-subscription-modal.component.html',
   styleUrl: './edit-subscription-modal.component.scss',
@@ -44,7 +46,7 @@ export class EditSubscriptionModalComponent implements OnInit {
   providers = model.required<Provider[]>();
   metadata = model.required<DownloadMetadata>();
 
-  activeTab: 'general' | 'extra' = 'general';
+  activeTab: 'general' | 'options' | 'advanced' = 'general';
 
   subscriptionForm = new FormGroup({});
 
@@ -52,13 +54,12 @@ export class EditSubscriptionModalComponent implements OnInit {
     const subscription = this.subscription();
     const metadata = this.metadata();
 
-    this.subscriptionForm.addControl("ID", new FormControl(subscription.id));
+    this.subscriptionForm.addControl("id", new FormControl(subscription.id));
     this.subscriptionForm.addControl('provider', new FormControl(subscription.provider));
     this.subscriptionForm.addControl('contentId', new FormControl(subscription.contentId));
     this.subscriptionForm.addControl('refreshFrequency', new FormControl(subscription.refreshFrequency));
     this.subscriptionForm.addControl('title', new FormControl(subscription.title));
     this.subscriptionForm.addControl('baseDir', new FormControl(subscription.baseDir));
-    this.subscriptionForm.addControl('lastDownloadDir', new FormControl(subscription.lastDownloadDir));
 
     const metadataFormGroup = new FormGroup<any>({
       startImmediately: new FormControl(subscription.metadata.startImmediately),
@@ -105,7 +106,7 @@ export class EditSubscriptionModalComponent implements OnInit {
     });
 
     if (dir) {
-      (this.subscriptionForm.get('info.baseDir') as unknown as FormControl<string>)?.setValue(dir);
+      (this.subscriptionForm.get('baseDir') as unknown as FormControl<string>)?.setValue(dir);
     }
   }
 

@@ -1,0 +1,30 @@
+name: Build and Test PR
+
+on:
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  build:
+    name: Build and Test PR
+    runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker:20.10.16
+        options: --privileged
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal

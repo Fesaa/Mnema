@@ -1,5 +1,6 @@
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.User;
+using Mnema.Models.Entities.User;
 
 namespace Mnema.API;
 
@@ -27,6 +28,8 @@ public interface IMessageService
     Task UpdateContent(Guid userId, DownloadInfo info);
     Task DeleteContent(Guid userId, string contentId);
 
+    Task NotificationAdded(Guid userId, int amount);
+    Task NotificationRemoved(Guid userId, int amount);
     Task Notify(Guid userId, NotificationDto notification);
 
 }

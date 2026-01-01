@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Threading.RateLimiting;
+using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
@@ -8,6 +10,7 @@ using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
 using Mnema.Models.Internal;
@@ -32,6 +35,7 @@ internal partial class Publication(
     private readonly ISettingsService _settingsService = scope.ServiceProvider.GetRequiredService<ISettingsService>();
     private readonly ApplicationConfiguration _configuration = scope.ServiceProvider.GetRequiredService<ApplicationConfiguration>();
     private readonly IMessageService _messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
+    private readonly IMapper _mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
 
     private CancellationTokenSource _tokenSource = new ();
     
@@ -61,9 +65,82 @@ internal partial class Publication(
     /// </summary>
     public IList<string> ToRemovePaths { get; private set; } = [];
 
-    public Task FinalizeChapter(string src, string dest)
+    public async Task Cleanup()
     {
-        return _extensions.Cleanup(src, dest);
+        if (DownloadedPaths.Count == 0)
+        {
+            _logger.LogDebug("No newly downloaded items for {Id} - {Title}", Id, Title);
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+        
+        foreach (var path in ToRemovePaths)
+        {
+            _logger.LogTrace("Removing old chapter on {Path}", path);
+            
+            try
+            {
+                _fileSystem.File.Delete(_fileSystem.Path.Join(_configuration.BaseDir, path));
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "Failed to delete old file {File}", path);
+            }
+        }
+
+        var baseDir = _fileSystem.Path.Join(_configuration.BaseDir, DownloadDir);
+        if (!_fileSystem.Directory.Exists(baseDir))
+        {
+            _logger.LogDebug("Base directory {Dir} does not exist, creating", baseDir);
+            _fileSystem.Directory.CreateDirectory(baseDir);
+        }
+        
+        foreach (var path in DownloadedPaths)
+        {
+            _logger.LogTrace("Finalizing chapter {Path}", path);
+
+            try
+            {
+                var src = _fileSystem.Path.Join(_configuration.DownloadDir, path);
+                var dest = _fileSystem.Path.Join(_configuration.BaseDir, path);
+
+                await _extensions.Cleanup(src, dest);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An exception occured finishing up a chapter at {Path}", path);
+            }
+        }
+        
+        _logger.LogDebug("Cleanup up {Id} - {Title} in {Elapsed}ms, removed {Deleted} old files, added {New} new files",
+            Id, Title, sw.ElapsedMilliseconds, ToRemovePaths.Count, DownloadedPaths.Count);
+
+        await CleanupNotifications();
+    }
+
+    private async Task CleanupNotifications()
+    {
+        if (!Request.IsSubscription)
+            return;
+        
+        if (DownloadedPaths.Count == 0)
+            return;
+
+        var notification = new Notification
+        {
+            Title = "Download completed",
+            UserId = Request.UserId,
+            Summary =
+                $"<a class=\"hover:pointer hover:underline\" href=\"%s\" target=\"_blank\">{DownloadInfo.RefUrl}</a> finished downloading {DownloadedPaths.Count} item(s). {_failedDownloadsTracker} failed on the first try.",
+            Colour = NotificationColour.Primary,
+        };
+        
+        _unitOfWork.NotificationRepository.AddNotification(notification);
+        await _unitOfWork.CommitAsync();
+        
+        var dto = _mapper.Map<NotificationDto>(notification);
+        await _messageService.Notify(Request.UserId, dto);
     }
 
     /// <summary>

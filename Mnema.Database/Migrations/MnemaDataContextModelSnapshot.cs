@@ -23,6 +23,25 @@ namespace Mnema.Database.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.Content.Subscription", b =>
                 {
                     b.Property<Guid>("Id")
@@ -57,6 +76,11 @@ namespace Mnema.Database.Migrations
 
                     b.Property<int>("Provider")
                         .HasColumnType("integer");
+
+                    b.Property<int>("RefreshFrequency")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(2);
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -95,10 +119,6 @@ namespace Mnema.Database.Migrations
                     b.Property<string>("CustomRootDir")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.PrimitiveCollection<string[]>("Dirs")
-                        .IsRequired()
-                        .HasColumnType("text[]");
 
                     b.Property<string>("Icon")
                         .IsRequired()

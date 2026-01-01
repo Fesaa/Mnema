@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Mnema.Common.Extensions;
@@ -18,7 +19,11 @@ public static class StringExtensions
         {
             return string.IsNullOrEmpty(s) ? string.Empty : NormalizeRegex.Replace(s, string.Empty).Trim().ToLower();
         }
-        
+
+        public string CleanForLogging()
+        {
+            return string.IsNullOrEmpty(s) ? string.Empty : s.Replace("\n", string.Empty).Replace("\r", string.Empty);
+        }
 
         public string OrNonEmpty(params string[] other)
         {
@@ -56,6 +61,30 @@ public static class StringExtensions
             if (!s.StartsWith(other)) return s;
 
             return s[other.Length..];
+        }
+        
+        public string RemoveSuffix(string other)
+        {
+            if (string.IsNullOrEmpty(other) || s.Length < other.Length) return s;
+
+            if (!s.EndsWith(other)) return s;
+
+            return s[..(s.Length - other.Length)];
+        }
+
+        public int AsInt()
+        {
+            if (int.TryParse(s, out var result))
+            {
+                return result;
+            }
+
+            return 0;
+        }
+
+        public DateTime? AsDateTime(string format)
+        {
+            return DateTime.TryParseExact(s.Trim(), format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result) ? result : null;
         }
     }
     

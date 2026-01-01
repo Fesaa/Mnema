@@ -12,7 +12,7 @@
               class="nav-link"
               [class.selected]="navService.pageIndex() === page.id"
               [routerLink]="page.id === '' ? '/home' : '/page'"
-              [queryParams]="page.id === '' ? {} : { index: page.id }"
+              [queryParams]="page.id === '' ? {} : { id: page.id }"
             >
               @if (page.icon) {
                 <i class="fa {{ page.icon }}"></i>
