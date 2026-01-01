@@ -61,6 +61,7 @@ public class SubscriptionScheduler(ILogger<SubscriptionScheduler> logger, IServi
             if (nextExec.Date != now.Date)
                 continue;
 
+            subscription.LastRun = DateTime.UtcNow;
             subscription.NextRun = subscription.NextRunTime(subHour);
             
             try
@@ -77,9 +78,9 @@ public class SubscriptionScheduler(ILogger<SubscriptionScheduler> logger, IServi
                     TempTitle = subscription.Title,
                     DownloadMetadata = subscription.Metadata,
                     UserId = subscription.UserId,
+                    SubscriptionId = subscription.Id,
                 });
 
-                subscription.LastRun = DateTime.UtcNow;
                 subscription.LastRunSuccess = true;
             }
             catch (Exception ex)
