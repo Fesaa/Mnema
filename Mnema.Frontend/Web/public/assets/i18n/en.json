@@ -191,6 +191,7 @@
     "back": "back",
     "next": "next",
     "dots": "...",
+    "unknown": "Unknown",
     "toasts": {
       "generic-error": {
         "title": "An error occurred",
@@ -375,7 +376,8 @@
     "search-result": {
       "download": "{{shared.download}}: {{name}}",
       "add-as-sub": "Add as a subscription",
-      "sub-header": "Subscribe to: {{name}}"
+      "sub-header": "Subscribe to: {{name}}",
+      "info": "Info"
     },
     "toasts": {
       "search-success": {
@@ -401,6 +403,56 @@
     "button-reset": "Reset",
     "button-search": "Search",
     "button-searching": "Searching..."
+  },
+
+  "series-info-modal": {
+    "title": "Series Information - {{name}}",
+    "close": "Close",
+    "localized-title": "Localized Title",
+    "summary": "Summary",
+    "tags-genres": "Tags & Genres",
+    "credits": "Credits",
+    "external-links": "External Links",
+    "source-page": "Source Page",
+    "recent-chapters": "Recent Chapters",
+    "volumes": "Volumes",
+    "chapters": "Chapters",
+    "no-data": "No series information available",
+
+    "status": {
+      "0": "Ongoing",
+      "1": "Completed",
+      "2": "Paused",
+      "3": "Cancelled",
+      "4": "Unknown"
+    },
+
+    "translation-status": {
+      "0": "Translation: Ongoing",
+      "1": "Translation: Completed",
+      "2": "Translation: Paused",
+      "3": "Translation: Cancelled",
+      "4": "Translation: Unknown"
+    },
+
+    "age-rating": {
+      "0": "Unknown",
+      "1": "Everyone",
+      "2": "Teen",
+      "3": "Teen Plus",
+      "4": "Mature",
+      "5": "Adults Only"
+    },
+
+    "role": {
+      "0": "Writer",
+      "1": "Penciller",
+      "2": "Inker",
+      "3": "Colorist",
+      "4": "Letterer",
+      "5": "Cover Artist",
+      "6": "Editor"
+    }
   },
 
   "settings": {
@@ -521,55 +573,10 @@
         "label": "Download subscriptions at",
         "tooltip": "The hour at which subscriptions should run"
       },
-      "cache": {
-        "label": "Cache type",
-        "subTitle": "Redis allows requests to be cached between restarts",
-        "tooltip": "",
-        "memory": "In-memory",
-        "redis": "Redis"
-      },
-      "redis-address": "Redis address",
-      "downloader": "Downloader",
-      "max-torrents": {
-        "label": "Max torrents",
-        "subTitle": "Global max torrents",
-        "tooltip": ""
-      },
       "max-images": {
         "label": "Max Images",
         "subTitle": "Amount of images(/chapter) downloaded at once, not shared between providers",
         "tooltip": ""
-      },
-      "oidc": {
-        "title": "OpenID Connect",
-        "authority": {
-          "label": "Authority",
-          "subTitle": "Must have the discovery endpoint accessible",
-          "tooltip": ""
-        },
-        "clientId": {
-          "label": "ClientID",
-          "subTitle": "Can be anything",
-          "toolTip": ""
-        },
-        "disablePasswordLogin": {
-          "label": "Disable password login",
-          "subTitle": "",
-          "toolTip": ""
-        },
-        "autoLogin": {
-          "label": "Auto redirect to your OIDC login page",
-          "subTitle": "",
-          "toolTip": ""
-        },
-        "clientSecret": {
-          "label": "Client secret",
-          "subTitle": "Once set, won't display the actual value"
-        },
-        "redirectUrl": {
-          "label": "Redirect URL",
-          "subTitle": "Set to your host /oidc/callback"
-        }
       },
       "save": "Save",
       "toasts": {

@@ -14,6 +14,7 @@ import {
   EditSubscriptionModalComponent
 } from "../../../subscription-manager/_components/edit-subscription-modal/edit-subscription-modal.component";
 import {RefreshFrequency, Subscription} from "../../../_models/subscription";
+import {SeriesInfoComponent} from "../series-info/series-info.component";
 
 @Component({
   selector: 'app-search-result',
@@ -79,6 +80,12 @@ export class SearchResultComponent implements OnInit{
     component.defaultDir.set(defaultDir);
     component.rootDir.set(page.customRootDir);
     component.info.set(this.searchResult());
+  }
+
+  loadInfo() {
+    const [_, component] = this.modalService.open(SeriesInfoComponent, DefaultModalOptions);
+    component.provider.set(this.searchResult().provider);
+    component.seriesId.set(this.searchResult().id);
   }
 
   loadImage() {

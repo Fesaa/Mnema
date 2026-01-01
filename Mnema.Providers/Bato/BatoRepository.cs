@@ -186,6 +186,8 @@ internal class BatoRepository: IRepository
         return new Series
         {
             Id = request.Id,
+            CoverUrl = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[1]/div[1]/img")
+                .GetAttributeValue("src", string.Empty),
             RefUrl = $"{Client.BaseAddress?.ToString()}title/{request.Id}",
             Title = CleanTitleRegex.Replace(title, string.Empty).Trim(),
             Summary = summary,
@@ -193,7 +195,10 @@ internal class BatoRepository: IRepository
             TranslationStatus = TranslatePublicationStatus(translationStatusNode?.InnerText),
             Tags = genres,
             People = people,
-            Links = [],
+            Links = document.DocumentNode.QuerySelectorAll("div.mt-5.space-y-3 div.limit-html a")
+                .Select(node => node.InnerText)
+                .Where(x => !string.IsNullOrEmpty(x))
+                .ToList(),
             Chapters = chapterNodes?.Select(ParseChapter).ToList() ?? [],
         };
 
@@ -202,7 +207,7 @@ internal class BatoRepository: IRepository
             if (string.IsNullOrEmpty(publicationStatus))
                 return null;
 
-            return publicationStatus switch
+            return publicationStatus.ToLower() switch
             {
                 "pending" => PublicationStatus.Unknown,
                 "ongoing" => PublicationStatus.Ongoing,
@@ -221,7 +226,7 @@ internal class BatoRepository: IRepository
             var chapterTitle = ParseTitle(linkNode.InnerText);
             if (string.IsNullOrEmpty(chapterTitle))
             {
-                chapterTitle = node.QuerySelector("div > span.opacity-80")?.FirstChild?.InnerText.RemovePrefix(":").Trim();
+                chapterTitle = node.QuerySelector("div > span.opacity-80")?.InnerText.RemovePrefix(":").Trim();
             }
 
             // OneShot

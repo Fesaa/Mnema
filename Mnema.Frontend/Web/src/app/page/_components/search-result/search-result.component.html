@@ -14,6 +14,15 @@
     }
 
     <div class="card-actions">
+
+      <button
+        (click)="loadInfo()"
+        class="icon-btn"
+        [ngbTooltip]="t('info')"
+      >
+        <span class="fa fa-info"></span>
+      </button>
+
       <button
         (click)="download()"
         class="icon-btn"

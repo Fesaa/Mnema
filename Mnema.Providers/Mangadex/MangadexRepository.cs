@@ -117,6 +117,7 @@ internal class MangadexRepository: IRepository
         {
             Id = id,
             RefUrl = manga.RefUrl,
+            CoverUrl = manga.CoverUrl(),
             Title = manga.Attributes.LangTitle(language),
             Summary = manga.Attributes.Description.GetValueOrDefault(language, string.Empty),
             Status = manga.Attributes.Status.AsPublicationStatus(),
