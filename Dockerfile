@@ -42,7 +42,7 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY --from=npm-stage /Mnema/dist/web/browser/ /Mnema/wwwroot
+COPY --from=npm-stage /Mnema/dist/web/browser/ /app/wwwroot
 COPY --from=dotnet-stage /Mnema/publish /app
 
 EXPOSE 8080
