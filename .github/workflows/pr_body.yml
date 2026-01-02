@@ -1,0 +1,83 @@
+name: Generate PR Body
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  generate-pr-body:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate PR Body
+        uses: actions/github-script@v7
+        with:
+          # language=javascript
+          script: |
+            const { owner, repo } = context.repo;
+            const pr_number = context.payload.pull_request.number;
+            const base_sha = context.payload.pull_request.base.sha;
+            const head_sha = context.payload.pull_request.head.sha;
+            
+            const { data: comparison } = await github.rest.repos.compareCommits({
+              owner,
+              repo,
+              base: base_sha,
+              head: head_sha
+            });
+            
+            const commits = comparison.commits;
+
+            const groups = {
+              'Added': [],
+              'Changed': [],
+              'Fixed': []
+            };
+            
+            commits.forEach(commit => {
+              const message = commit.commit.message.split('\n')[0];
+            
+              for (const prefix of Object.keys(groups)) {
+                if (message.startsWith(prefix)) {
+                  const content = message.substring(prefix.length).replace(/^:\s*/, '').trim();
+                  if (content) {
+                    groups[prefix].push(content);
+                  }
+                  break;
+                }
+              }
+            });
+            
+            let body = '';
+            
+            for (const [prefix, items] of Object.entries(groups)) {
+              if (items.length > 0) {
+                body += `**${prefix}**\n`;
+                items.forEach(item => {
+                  body += `* ${prefix}: ${item}\n`;
+                });
+                body += '\n';
+              }
+            }
+            
+            if (!body) {
+              core.info('No commits found with prefixes: Added, Changed, Fixed');
+            } else {
+              // Update PR body
+              await github.rest.pulls.update({
+                  owner,
+                  repo,
+                  pull_number: pr_number,
+                  body: body
+              });
+              
+              core.info('PR body updated successfully');
+            }
