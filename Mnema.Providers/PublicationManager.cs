@@ -99,11 +99,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
 
         publication.Cancel();
 
-        if (publication.State != ContentState.Cancel)
-        {
-            Task.Run(() => CleanupAfterDownload(publication, request.DeleteFiles));
-        }
-
+        Task.Run(() => CleanupAfterDownload(publication, request.DeleteFiles));
         
         return Task.CompletedTask;
     }

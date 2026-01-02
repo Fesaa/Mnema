@@ -18,12 +18,15 @@ internal partial class PublicationManager
         
         try
         {
-            if (!skipSaving)
+            if (publication.State != ContentState.Cancel)
             {
-                await publication.Cleanup();
-            }
+                if (!skipSaving)
+                {
+                    await publication.Cleanup();
+                }
 
-            await DeleteFiles(publication);
+                await DeleteFiles(publication);
+            }
         }
         catch (Exception ex)
         {
