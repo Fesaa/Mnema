@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Flurl;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,25 @@ namespace Mnema.Providers.Mangadex;
 
 internal class MangadexRepository: IRepository
 {
+
+    private static readonly ConcurrentDictionary<string, string> LinkFormats =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["al"]    = "https://anilist.co/manga/{0}",
+            ["ap"]    = "https://www.anime-planet.com/manga/{0}",
+            ["bw"]    = "https://bookwalker.jp/{0}",
+            ["mu"]    = "https://www.mangaupdates.com/series.html?id={0}",
+            ["nu"]    = "https://www.novelupdates.com/series/{0}",
+            ["kt"]    = "https://kitsu.io/api/edge/manga/{0}",
+            ["mal"]   = "https://myanimelist.net/manga/{0}",
+
+            ["amz"]   = "{0}",
+            ["ebj"]   = "{0}",
+            ["cdj"]   = "{0}",
+            ["raw"]   = "{0}",
+            ["engtl"] = "{0}",
+        };
+
 
     private readonly AsyncLazy<List<ModifierValueDto>> _tagOptions;
     private readonly ILogger<MangadexRepository> _logger;
@@ -123,7 +143,10 @@ internal class MangadexRepository: IRepository
             Year = manga.Attributes.Year,
             HighestChapterNumber = manga.Attributes.HighestChapter,
             HighestVolumeNumber = manga.Attributes.HighestVolume,
-            Links = [],
+            Links = manga.Attributes.Links
+                .Select(kv => LinkFormats.TryGetValue(kv.Key, out var format) ? string.Format(format, kv.Value) : string.Empty)
+                .Where(x => !string.IsNullOrEmpty(x))
+                .ToList(),
             Tags = tags,
             People = manga.People,
             Chapters = filteredChapters,
