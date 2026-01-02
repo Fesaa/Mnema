@@ -229,7 +229,7 @@ internal class DynastyRepository(
             Chapters = [
                 new Chapter
                 {
-                    Id = request.Id,
+                    Id = request.Id.RemovePrefix("/chapters/"),
                     Title = title,
                     RefUrl = $"{Client.BaseAddress?.ToString()}{request.Id}",
                     VolumeMarker = string.Empty,
