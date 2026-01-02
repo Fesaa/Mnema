@@ -39,6 +39,13 @@ public interface IRepository
     Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Retrieve all recently updated series
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken);
+
+    /// <summary>
     /// Get <see cref="DownloadMetadata"/> for the provider
     /// </summary>
     /// <param name="cancellationToken"></param>

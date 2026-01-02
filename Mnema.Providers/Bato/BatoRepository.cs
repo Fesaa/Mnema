@@ -325,6 +325,22 @@ internal class BatoRepository: IRepository
             .ToList();
     }
 
+    public async Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken)
+    {
+        var result = await Client.GetCachedStringAsync("v3x",  _cache, cancellationToken: cancellationToken);
+        if (result.IsErr)
+            throw new MnemaException("Failed to retrieve recently updated chapters", result.Error);
+
+        var document = result.Unwrap().ToHtmlDocument();
+
+        return document.DocumentNode.QuerySelectorAll("div.flex.border-b.border-b-base-200.pb-5 > div > a:first-child")
+            .Select(node => node.GetAttributeValue("href", string.Empty))
+            .Where(x => !string.IsNullOrEmpty(x))
+            .Select(x => x.RemovePrefix("/title/"))
+            .Distinct()
+            .ToList();
+    }
+
     public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
     {
         return Task.FromResult(new DownloadMetadata([

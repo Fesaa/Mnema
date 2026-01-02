@@ -253,6 +253,27 @@ internal class MangadexRepository: IRepository
         }).ToList();
     }
 
+    public async Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken)
+    {
+        var url = "chapter"
+            .SetQueryParam("limit", 32)
+            .SetQueryParam("offset", 0)
+            .AddAllContentRatings()
+            .SetQueryParam("order[readableAt]", "desc");
+
+        var result = await Client.GetCachedAsync<ChaptersResponse>(url, _cache, cancellationToken: cancellationToken);
+        if (result.IsErr)
+            throw new MnemaException("Failed to load recently updated chapters", result.Error);
+
+        return result.Unwrap()
+            .Data
+            .Select(chapter => chapter.RelationShips.FirstOrDefault(r => r.Type == "manga"))
+            .WhereNotNull()
+            .Select(r => r.Id)
+            .Distinct()
+            .ToList();
+    }
+
     public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
     {
         return Task.FromResult(new DownloadMetadata([
