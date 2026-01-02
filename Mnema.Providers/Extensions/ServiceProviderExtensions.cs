@@ -19,6 +19,7 @@ public static class ServiceProviderExtensions
     {
 
         services.AddScoped<IMetadataService, MetadataService>();
+        services.AddScoped<IScannerService, ScannerService>();
         
         #region Nyaa
 
