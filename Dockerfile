@@ -40,11 +40,11 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends libkrb5-3 \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+WORKDIR /Mnema
 
-COPY --from=npm-stage /Mnema/dist/web/browser/ /app/wwwroot
-COPY --from=dotnet-stage /Mnema/publish /app
+COPY --from=npm-stage /Mnema/dist/web/browser/ /Mnema/wwwroot
+COPY --from=dotnet-stage /Mnema/publish /Mnema
 
 EXPOSE 8080
 
-CMD [ "/app/Mnema" ]
+CMD [ "/Mnema/Mnema" ]
