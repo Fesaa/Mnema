@@ -19,6 +19,16 @@ public class ContentController(ISearchService searchService, IDownloadService do
         return searchService.Search(searchRequest, pagination, HttpContext.RequestAborted);
     }
 
+    [HttpGet("recently-updated")]
+    public async Task<ActionResult<IList<string>>> GetRecentlyUpdated([FromQuery] Provider provider)
+    {
+        var repository = serviceProvider.GetKeyedService<IRepository>(provider);
+        if (repository == null)
+            return NotFound();
+
+        return Ok(await repository.GetRecentlyUpdated(HttpContext.RequestAborted));
+    }
+
     [HttpGet("series-info")]
     public async Task<ActionResult<Series>> GetSeriesInfo([FromQuery] Provider provider, [FromQuery] string id)
     {

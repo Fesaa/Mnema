@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
@@ -9,6 +11,9 @@ namespace Mnema.Providers;
 
 internal partial class Publication 
 {
+    
+    private readonly IScannerService _scannerService = scope.ServiceProvider.GetRequiredService<IScannerService>();
+    
     public async Task LoadMetadataAsync(CancellationTokenSource source)
     {
         _tokenSource = source;
@@ -24,6 +29,7 @@ internal partial class Publication
         if (preferences == null)
         {
             _logger.LogWarning("Failed to load user preferences for {UserId}, stopping downloading", Request.UserId);
+            State = ContentState.Cancel;
             await Cancel();
             return;
         }
@@ -36,7 +42,8 @@ internal partial class Publication
         }
         catch (MnemaException e)
         {
-            _logger.LogError(e, "An error occured while loading series info");
+            _logger.LogError(e, "An error occured while loading series info for {Id}", Id);
+            State = ContentState.Cancel;
             await Cancel();
             return;
         }
@@ -62,8 +69,8 @@ internal partial class Publication
         if (_queuedChapters.Count == 0 && (Request.DownloadMetadata.StartImmediately || Request.IsSubscription))
         {
             _logger.LogDebug("No chapters to download for {Title}, stopping download", Title);
-            State = ContentState.Waiting;
-            await _publicationManager.StopDownload(StopRequest(false));
+            State = ContentState.Cancel;
+            await Cancel();
             return;
         }
 
@@ -80,7 +87,7 @@ internal partial class Publication
 
         var sw = Stopwatch.StartNew();
         
-        ExistingContent = ParseDirectoryForContent(DownloadDir, cancellationToken);
+        ExistingContent = _scannerService.ScanDirectoryAsync(_extensions.ParseOnDiskFile, DownloadDir, cancellationToken);
 
         _queuedChapters = Series!.Chapters.Where(ShouldDownloadChapter).Select(c => c.Id).ToList();
         
@@ -88,45 +95,6 @@ internal partial class Publication
         {
             _logger.LogWarning("Checking for existing content took a long time: {Elapsed}s", sw.Elapsed.Seconds);
         }
-    }
-
-    private List<OnDiskContent> ParseDirectoryForContent(string path, CancellationToken cancellationToken)
-    {
-        var fullPath = Path.Join(_configuration.BaseDir, path);
-        if (!_fileSystem.Directory.Exists(fullPath)) return [];
-
-
-        var contents = new List<OnDiskContent>();
-        
-        foreach (var entry in _fileSystem.Directory.EnumerateFileSystemEntries(fullPath))
-        {
-            if (cancellationToken.IsCancellationRequested) return [];
-
-            if (_fileSystem.Directory.Exists(entry))
-            {
-                contents.AddRange(ParseDirectoryForContent(entry, cancellationToken));
-                continue;
-            }
-
-            var content = _extensions.ParseOnDiskFile(entry);
-            if (content == null)
-            {
-                _logger.LogTrace("Ignoring {FileName} on disk", entry);
-                continue;
-            }
-            
-            _logger.LogTrace("Adding {FileName} to on disk content. (Vol. {Volume} Ch. {Chapter})", entry, content.Volume, content.Chapter);
-            
-            contents.Add(new OnDiskContent
-            {
-                Name = Path.GetFileNameWithoutExtension(entry),
-                Path = entry,
-                Volume = content.Volume,
-                Chapter = content.Chapter,
-            });
-        }
-
-        return contents;
     }
 
     private bool ShouldDownloadChapter(Chapter chapter)

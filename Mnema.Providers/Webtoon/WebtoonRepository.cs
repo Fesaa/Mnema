@@ -189,6 +189,11 @@ internal class WebtoonRepository(
             .ToList();
     }
 
+    public Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken)
+    {
+        return Task.FromResult<IList<string>>([]);
+    }
+
     public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
     {
         return Task.FromResult(new DownloadMetadata([

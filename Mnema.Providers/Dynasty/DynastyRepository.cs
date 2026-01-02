@@ -229,7 +229,7 @@ internal class DynastyRepository(
             Chapters = [
                 new Chapter
                 {
-                    Id = request.Id,
+                    Id = request.Id.RemovePrefix("/chapters/"),
                     Title = title,
                     RefUrl = $"{Client.BaseAddress?.ToString()}{request.Id}",
                     VolumeMarker = string.Empty,
@@ -285,6 +285,27 @@ internal class DynastyRepository(
         return JsonSerializer.Deserialize<List<DynastyImage>>(jsonData)?
             .Select(i => new DownloadUrl(i.image, i.image))
             .ToList() ?? [];
+    }
+
+    public async Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken)
+    {
+        var result = await Client.GetCachedStringAsync(string.Empty, cache, cancellationToken: cancellationToken);
+        if (result.IsErr)
+            throw new MnemaException($"Failed to retrieve recently updated chapters", result.Error);
+
+        var document = result.Unwrap().ToHtmlDocument();
+
+        return document.DocumentNode.QuerySelectorAll(".chapter")
+            .Select(node => node.GetAttributeValue("href", string.Empty))
+            .Where(x => !string.IsNullOrEmpty(x))
+            .Select(x =>
+            {
+                // Chapter belonging to a series end in _chXXX, transform into the series id 
+                var idx = x.LastIndexOf("_ch", StringComparison.InvariantCulture);
+                return idx < 0 ? x : x[..idx].Replace("chapters", "series");
+            })
+            .Distinct()
+            .ToList();
     }
 
     public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)

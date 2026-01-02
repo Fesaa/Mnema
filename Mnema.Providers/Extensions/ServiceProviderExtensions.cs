@@ -1,11 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.Entities.Content;
 using Mnema.Providers.Bato;
 using Mnema.Providers.Dynasty;
 using Mnema.Providers.Mangadex;
+using Mnema.Providers.Services;
 using Mnema.Providers.Webtoon;
 
 namespace Mnema.Providers.Extensions;
@@ -15,6 +17,10 @@ public static class ServiceProviderExtensions
 
     public static IServiceCollection AddProviders(this IServiceCollection services)
     {
+
+        services.AddScoped<IMetadataService, MetadataService>();
+        services.AddScoped<IScannerService, ScannerService>();
+        
         #region Nyaa
 
         services.AddKeyedSingleton<IContentManager, NoOpContentManager>(Provider.Nyaa);

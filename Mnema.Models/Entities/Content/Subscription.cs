@@ -99,7 +99,18 @@ public class Subscription
         return nextUtc;
     }
 
-    
+    public DownloadRequestDto AsDownloadRequestDto() => new DownloadRequestDto
+    {
+        Provider = Provider,
+        Id = ContentId,
+        BaseDir = BaseDir,
+        TempTitle = Title,
+        DownloadMetadata = Metadata,
+        UserId = UserId,
+        SubscriptionId = Id,
+    };
+
+
 }
 
 public enum RefreshFrequency
