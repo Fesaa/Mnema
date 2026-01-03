@@ -99,7 +99,11 @@ internal class ExternalConnectionService(
                 {
                     Key = "name",
                     Field = "name",
-                    Type = FormType.Text
+                    Type = FormType.Text,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .WithMinLength(1)
+                        .Build(),
                 },
                 new FormControlDefinition
                 {

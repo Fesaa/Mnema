@@ -284,10 +284,10 @@ internal class DiscordExternalConnectionService(
                 Key = WebhookKey,
                 Type = FormType.Text,
                 ForceSingle = true,
-                Validators = new GenericBag<object>()
-                {
-                  ["minLenght"] = [1],  
-                },
+                Validators = new FormValidatorsBuilder()
+                    .WithRequired()
+                    .WithMin(1)
+                    .Build(),
             },
             new FormControlDefinition
             {

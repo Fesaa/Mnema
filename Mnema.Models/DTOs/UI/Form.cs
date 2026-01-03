@@ -75,3 +75,49 @@ public enum ValueType
     Integer = 2,
     String = 3,
 }
+
+public sealed class FormValidatorsBuilder: Builder<GenericBag<object>>
+{
+    private readonly GenericBag<object> _validators = new();
+
+    public FormValidatorsBuilder WithMinLength(int minLength)
+    {
+        _validators.SetValue("minLength", minLength);
+        return this;
+    }
+
+    public FormValidatorsBuilder WithMaxLength(int maxLength)
+    {
+        _validators.SetValue("maxLength", maxLength);
+        return this;
+    }
+
+    public FormValidatorsBuilder WithRequired()
+    {
+        _validators.SetValue("required");
+        return this;
+    }
+
+    public FormValidatorsBuilder WithMin(int min)
+    {
+        _validators.SetValue("min", min);
+        return this;
+    }
+
+    public FormValidatorsBuilder WithMax(int max)
+    {
+        _validators.SetValue("max", max);
+        return this;
+    }
+
+    public FormValidatorsBuilder WithPattern(string pattern)
+    {
+        _validators.SetValue("pattern", pattern);
+        return this;
+    }
+
+    public override GenericBag<object> Build()
+    {
+        return _validators;
+    }
+}

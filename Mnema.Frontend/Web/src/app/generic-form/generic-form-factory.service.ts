@@ -102,6 +102,12 @@ export class GenericFormFactoryService {
         return Validators.minLength(args[0]);
       case "maxLength":
         return Validators.maxLength(args[0]);
+      case "min":
+        return Validators.min(args[0]);
+      case "max":
+        return Validators.max(args[0]);
+      case "pattern":
+        return Validators.pattern(args[0]);
     }
 
     return null;

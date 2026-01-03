@@ -12,7 +12,8 @@
     "update": "Update",
     "confirm": "Confirm",
     "actions": "Actions",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "selected": "Selected"
   },
 
   "paginator": {
