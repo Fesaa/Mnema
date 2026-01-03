@@ -1,5 +1,7 @@
 using Hangfire;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
@@ -9,7 +11,12 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Services.Scheduled;
 
-public class SubscriptionScheduler(ILogger<SubscriptionScheduler> logger, IServiceScopeFactory scopeFactory, IRecurringJobManagerV2 recurringJobManager): ISubscriptionScheduler
+public class SubscriptionScheduler(
+    ILogger<SubscriptionScheduler> logger,
+    IServiceScopeFactory scopeFactory,
+    IRecurringJobManagerV2 recurringJobManager,
+    IWebHostEnvironment environment
+    ): ISubscriptionScheduler
 {
 
     private const string JobId = "subscriptions.daily";
@@ -188,7 +195,15 @@ public class SubscriptionScheduler(ILogger<SubscriptionScheduler> logger, IServi
         cron = "*/15 * * * *";
 
         logger.LogDebug("Registering subscription watcher task with cron {cron}", cron);
-        recurringJobManager.AddOrUpdate<SubscriptionScheduler>(WatcherJobId, j => j.RunWatcher(),
-            cron, RecurringJobOptions);
+        if (environment.IsDevelopment())
+        {
+            recurringJobManager.RemoveIfExists(WatcherJobId);
+        }
+        else
+        {
+            recurringJobManager.AddOrUpdate<SubscriptionScheduler>(WatcherJobId,
+                j => j.RunWatcher(),
+                cron, RecurringJobOptions);
+        }
     }
 }
