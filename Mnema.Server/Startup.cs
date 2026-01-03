@@ -159,6 +159,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         app.UseHangfireDashboard("/hangfire", new DashboardOptions
         {
             Authorization = [new HangfireDashboardAuthorizationFilter()],
+            FaviconPath = "favicon.ico",
+            DefaultRecordsPerPage = 10,
         });
 
         app.UseStaticFiles(new StaticFileOptions
