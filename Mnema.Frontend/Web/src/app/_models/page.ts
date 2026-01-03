@@ -1,3 +1,5 @@
+import {FormControlDefinition} from "../generic-form/form";
+
 export type Page = {
   id: string;
   sortValue: number;
@@ -24,23 +26,3 @@ export type DownloadMetadata = {
   definitions: FormControlDefinition[];
 }
 
-export type FormControlDefinition = {
-  key: string;
-  advanced: boolean;
-  type: FormType;
-  defaultOption: string;
-  options: FormControlOption[];
-}
-
-export type FormControlOption = {
-  key: string;
-  value: string;
-  default: boolean;
-}
-
-export enum FormType {
-  SWITCH,
-  DROPDOWN,
-  MULTI,
-  TEXT
-}

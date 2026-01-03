@@ -1,0 +1,38 @@
+
+
+<ng-container *transloco="let t; prefix : translationKey()">
+
+  <div class="modal-container">
+
+    <div class="modal-header">
+      <span class="modal-title">{{t('title')}}</span>
+      <button type="button" class="btn-close" [attr.aria-label]="t('close')" (click)="close()">
+      </button>
+    </div>
+
+    <div class="modal-body scrollable-modal">
+
+      <app-generic-form
+        [double]="double()"
+        [formDefinition]="formDefinition()"
+        [initialValue]="initialValue()"
+        [nullable]="nullable()"
+        (formGroupTracker)="formGroup.set($event)"
+        />
+
+    </div>
+
+    <div class="modal-footer">
+      @let formGroupValue = formGroup();
+
+      <button class="btn btn-secondary" (click)="close()">
+        {{t(('close'))}}
+      </button>
+      <button class="btn btn-primary" (click)="save()" [disabled]="!(formGroupValue && formGroupValue.valid)">
+        {{t('save')}}
+      </button>
+    </div>
+
+  </div>
+
+</ng-container>

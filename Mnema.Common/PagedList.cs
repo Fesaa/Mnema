@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Mnema.Common;
 
 public class PagedList<T>(IEnumerable<T> items, int count, int pageNumber, int pageSize)

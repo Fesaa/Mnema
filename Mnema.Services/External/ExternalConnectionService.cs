@@ -2,14 +2,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.External;
+using Mnema.Common;
+using Mnema.Common.Exceptions;
+using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.External;
+using ValueType = Mnema.Models.DTOs.UI.ValueType;
 
 namespace Mnema.Services.External;
 
 internal class ExternalConnectionService(
     ILogger<ExternalConnectionService> logger,
-    IServiceScopeFactory scopeFactory
+    IServiceScopeFactory scopeFactory,
+    IUnitOfWork unitOfWork,
+    IServiceProvider serviceProvider
     ): IExternalConnectionService
 {
     public void CommunicateDownloadStarted(DownloadInfo info)
@@ -30,6 +37,79 @@ internal class ExternalConnectionService(
                 => service.CommunicateDownloadFailure(connection, info, ex));
     }
 
+    public async Task UpdateConnection(ExternalConnectionDto dto, CancellationToken cancellationToken)
+    {
+        var connection = await unitOfWork.ExternalConnectionRepository.GetConnectionById(dto.Id, cancellationToken) ??
+                         new ExternalConnection { Type = dto.Type, Metadata = new MetadataBag() };
+
+        connection.Name = dto.Name;
+        connection.FollowedEvents = dto.FollowedEvents;
+        
+        var service = serviceProvider.GetKeyedService<IExternalConnectionHandlerService>(connection.Type);
+        if (service == null)
+        {
+            logger.LogWarning(
+                "Could not find external connection service {ExternalConnectionType}, while one was configured",
+                connection.Type.ToString());
+            throw new NotFoundException();
+        }
+
+        var controls = await service.GetConfigurationFormControls(cancellationToken);
+        foreach (var control in controls)
+        {
+            connection.Metadata[control.Key] = dto.Metadata.GetStrings(control.Key).ToList();
+        }
+
+        if (connection.Id.Equals(Guid.Empty))
+        {
+            unitOfWork.ExternalConnectionRepository.Add(connection);   
+        }
+        else
+        {
+            unitOfWork.ExternalConnectionRepository.Update(connection);
+        }
+
+        await unitOfWork.CommitAsync();
+    }
+
+    public async Task<FormDefinition> GetForm(ExternalConnectionType type, CancellationToken cancellationToken)
+    {
+        var service = serviceProvider.GetKeyedService<IExternalConnectionHandlerService>(type);
+        if (service == null)
+        {
+            logger.LogWarning(
+                "Could not find external connection service {ExternalConnectionType}, while one was configured",
+                type.ToString());
+            throw new NotFoundException();
+        }
+        
+        var controls = await service.GetConfigurationFormControls(cancellationToken);
+
+        return new FormDefinition
+        {
+            Key = $"settings.external-connections.{type}",
+            Controls = [
+                ..controls,
+                new FormControlDefinition
+                {
+                    Key = "name",
+                    Field = "name",
+                    Type = FormType.Text
+                },
+                new FormControlDefinition
+                {
+                    Key = "followed-events",
+                    Field = "followedEvents",
+                    Type = FormType.MultiSelect,
+                    ValueType = ValueType.Integer,
+                    Options = Enum.GetValues<ExternalConnectionEvent>()
+                        .Select(@event => new FormControlOption($"event.{@event}", @event))
+                        .ToList(),
+                },
+            ]
+        };
+    }
+
     private void DoForAll(ExternalConnectionEvent @event, Func<IExternalConnectionHandlerService, ExternalConnection, Task> consumer)
     {
         Task.Run(async () =>
@@ -37,9 +117,9 @@ internal class ExternalConnectionService(
             try
             {
                 using var scope = scopeFactory.CreateScope();
-                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                var scopedUnitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-                var connections = await unitOfWork.ExternalConnectionRepository
+                var connections = await scopedUnitOfWork.ExternalConnectionRepository
                     .GetAllConnections(CancellationToken.None);
 
                 List<Task> tasks = [];

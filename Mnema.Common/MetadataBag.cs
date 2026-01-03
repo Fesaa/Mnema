@@ -1,13 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Mnema.Common;
 
-public class MetadataBag: Dictionary<string, IList<string>>
+public class MetadataBag : GenericBag<string>
 {
-
-    public void SetValue(string key, params string[] value)
-    {
-        Add(key, value.ToList());
-    }
-
     public IEnumerable<string> GetStrings(string key)
     {
         return TryGetValue(key, out var list) ? list : [];
@@ -37,5 +35,13 @@ public class MetadataBag: Dictionary<string, IList<string>>
         
         return string.IsNullOrEmpty(value) ? fallback : value.Equals("true", StringComparison.InvariantCultureIgnoreCase);
     }
-    
+};
+
+public class GenericBag<T>: Dictionary<string, IList<T>>
+{
+
+    public void SetValue(string key, params T[] value)
+    {
+        Add(key, value.ToList());
+    }
 }

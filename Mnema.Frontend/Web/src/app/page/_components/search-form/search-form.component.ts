@@ -2,10 +2,11 @@ import {Component, computed, effect, input, output, signal} from '@angular/core'
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 
 import {SearchRequest} from "../../../_models/search";
-import {FormControlDefinition, FormControlOption, FormType, Provider} from "../../../_models/page";
+import {Provider} from "../../../_models/page";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {TypeaheadComponent, TypeaheadSettings} from "../../../type-ahead/typeahead.component";
 import {of} from "rxjs";
+import {FormControlDefinition, FormControlOption, FormType} from "../../../generic-form/form";
 
 @Component({
   selector: 'app-search-form',

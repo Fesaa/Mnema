@@ -1,3 +1,5 @@
+using System;
+
 namespace Mnema.Common;
 
 public readonly struct Result<TValue, TException>

@@ -36,7 +36,6 @@
         type="text"
         class="typeahead-input"
         [id]="settings().id"
-        [disabled]="disabled() || locked()"
         [formControl]="searchControl"
         [placeholder]="t('placeholder')"
         (focus)="onFocus()"

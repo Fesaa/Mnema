@@ -600,71 +600,46 @@
         }
       }
     },
-    "users": {
-      "title": "Users",
-      "name": "Name",
-      "actions": {
-        "label": "Actions",
-        "api-key": {
-          "regen": "Regenerate ApiKey",
-          "copy": "Copy ApiKey"
-        },
-        "edit": "Edit user",
-        "delete": "Delete user",
-        "reset-password": "Reset password",
-        "new": "New User"
+    "external-connections": {
+      "title": "External Connections",
+      "header": {
+        "name": "Name",
+        "type": "Type",
+        "events": "Events",
+        "actions": "Actions"
       },
-      "username": "{{shared.username}}",
-      "permissions": "Permissions",
-      "cancel": "{{shared.cancel}}",
-      "save": "Save",
-      "confirm-delete": "Are you sure you want to delete {{name}}?",
-      "confirm-reset-api-key": "Are you sure you want to reset your ApiKey?",
-      "confirm-reset-password": "Are you sure you want to reset {{name}}'s password?",
-      "toasts": {
-        "updated": {
-          "success": {
-            "title": "Updated user {{name}}",
-            "summary": ""
-          },
-          "error": {
-            "title": "Failed to update {{name}}",
-            "summary": "{{msg}}"
-          }
-        },
-        "reset-api-key": {
-          "success": {
-            "title": "Reset your Api Key",
-            "summary": "Key has been copied to clipboard"
-          },
-          "error": {
-            "title": "Unable to refresh api key",
-            "summary": "{{msg}}"
-          }
-        },
-        "delete": {
-          "success": {
-            "title": "{{name}} has been deleted",
-            "summary": ""
-          },
-          "error": {
-            "title": "Failed to delete {{name}}",
-            "summary": "{{msg}}"
-          }
-        },
-        "reset-password": {
-          "success": {
-            "title": "Reset generated",
-            "summary": "The reset link has been copied to your clipboard. A copy may be found in your server logs"
-          },
-          "error": {
-            "title": "Failed to generate reset link",
-            "summary": "{{msg}}"
-          }
-        },
-        "empty-name": {
-          "title": "Not creating user",
-          "summary": "Name cannot be empty"
+      "empty": {
+        "title": "Nothing here yet",
+        "description": "You don’t have any external connections set up yet"
+      },
+      "shared": {
+        "event": {
+          "DownloadStarted": "Download Started",
+          "DownloadFinished": "Download Finished",
+          "DownloadFailure": "Download Failure"
+        }
+      },
+      "edit": {
+        "select-type-title": "Pick your connection type",
+        "title": "Edit External Connection",
+        "close": "{{common.close}}",
+        "save": "{{common.save}}"
+      },
+      "Discord": {
+        "name-title": "Name",
+        "name-tooltip": "Your custom name for this connection",
+        "webhook-title": "Webhook",
+        "webhook-tooltip": "Full Webhook URL copied from Discord",
+        "username-title": "Username",
+        "username-tooltip": "Optional custom username",
+        "avatar-title": "Avatar URL",
+        "avatar-tooltip": "Optional custom avatar",
+        "followed-events-title": "Followed Events",
+        "followed-events-tooltip": "Events to act on",
+        "event": {
+          "DownloadStarted": "{{settings.external-connections.shared.event.DownloadStarted}}",
+          "DownloadFinished": "{{settings.external-connections.shared.event.DownloadFinished}}",
+          "DownloadFailure": "{{settings.external-connections.shared.event.DownloadFailure}}"
         }
       }
     }

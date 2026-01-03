@@ -93,7 +93,8 @@ public static class OpenIdConnectServiceExtensions
             .AddPolicy(Roles.ManageSettings)
             .AddPolicy(Roles.ManagePages)
             .AddPolicy(Roles.HangFire)
-            .AddPolicy(Roles.CreateDirectory);
+            .AddPolicy(Roles.CreateDirectory)
+            .AddPolicy(Roles.ManageExternalConnections);
 
         return services;
     }

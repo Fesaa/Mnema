@@ -2,6 +2,8 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Mnema.API.External;
+using Mnema.Common;
+using Mnema.Database.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities.External;
 
@@ -15,11 +17,26 @@ public class ExternalConnectionRepository(MnemaDataContext ctx, IMapper mapper):
             .ToListAsync(cancellationToken);
     }
 
-    public Task<List<ExternalConnectionDto>> GetAllConnectionDtos(CancellationToken cancellationToken)
+    public Task<PagedList<ExternalConnectionDto>> GetAllConnectionDtos(PaginationParams pagintation, CancellationToken cancellationToken)
     {
         return ctx.ExternalConnections
             .ProjectTo<ExternalConnectionDto>(mapper.ConfigurationProvider)
-            .ToListAsync(cancellationToken);
+            .OrderBy(c => c.Name)
+            .AsPagedList(pagintation, cancellationToken);
+    }
+
+    public Task<ExternalConnection?> GetConnectionById(Guid connectionId, CancellationToken cancellationToken)
+    {
+        return ctx.ExternalConnections
+            .Where(c => c.Id == connectionId)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public Task DeleteConnectionById(Guid connectionId, CancellationToken cancellationToken)
+    {
+        return ctx.ExternalConnections
+            .Where(c => c.Id == connectionId)
+            .ExecuteDeleteAsync(cancellationToken);
     }
 
     public void Add(ExternalConnection connection)

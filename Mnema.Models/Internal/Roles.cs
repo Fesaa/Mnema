@@ -24,6 +24,7 @@ public static class Roles
     /// If the user is allowed to create directories
     /// </summary>
     public const string CreateDirectory = nameof(CreateDirectory);
+    public const string ManageExternalConnections = nameof(ManageExternalConnections);
 
     public static ImmutableArray<string> AllRoles =
     [
@@ -31,6 +32,7 @@ public static class Roles
         ManageSettings,
         Subscriptions,
         HangFire,
-        CreateDirectory
+        CreateDirectory,
+        ManageExternalConnections
     ];
 }

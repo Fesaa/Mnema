@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, computed, inject, model, OnInit} from '@angular/core';
-import {DownloadMetadata, FormControlDefinition, FormType, Page} from "../../../_models/page";
+import {DownloadMetadata, Page} from "../../../_models/page";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {NgbActiveModal, NgbNav, NgbNavContent, NgbNavItem, NgbNavLink, NgbNavOutlet} from "@ng-bootstrap/ng-bootstrap";
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
@@ -12,6 +12,7 @@ import {DefaultValuePipe} from "../../../_pipes/default-value.pipe";
 import {ContentService} from "../../../_services/content.service";
 import {ToastService} from "../../../_services/toast.service";
 import {SettingsSwitchComponent} from "../../../shared/form/settings-switch/settings-switch.component";
+import {FormControlDefinition, FormType} from "../../../generic-form/form";
 
 @Component({
   selector: 'app-download-modal',

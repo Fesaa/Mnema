@@ -1,0 +1,18 @@
+.clickable:hover:not(.disabled) {
+  background-color: var(--list-group-hover-bg-color, var(--primary-color));
+}
+
+.disabled:hover {
+  cursor: not-allowed;
+}
+
+.pill {
+  font-size: .8rem;
+  background-color: var(--card-bg-color);
+  border-radius: 0.375rem;
+  color: var(--badge-text-color);
+
+  &.active {
+    background-color : var(--primary-color);
+  }
+}

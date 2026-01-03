@@ -1,3 +1,5 @@
+using System;
+
 namespace Mnema.Common.Extensions;
 
 public static class FloatExtensions

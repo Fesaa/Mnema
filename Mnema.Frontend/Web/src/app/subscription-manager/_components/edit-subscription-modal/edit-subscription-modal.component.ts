@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, inject, model, OnInit} from '@angular/core';
 import {RefreshFrequencies, Subscription} from "../../../_models/subscription";
-import {DownloadMetadata, FormControlDefinition, FormType, Provider} from "../../../_models/page";
+import {DownloadMetadata, Provider} from "../../../_models/page";
 import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {ToastService} from "../../../_services/toast.service";
 import {ModalService} from "../../../_services/modal.service";
@@ -13,6 +13,7 @@ import {RefreshFrequencyPipe} from "../../../_pipes/refresh-frequency.pipe";
 import {SubscriptionExternalUrlPipe} from "../../../_pipes/subscription-external-url.pipe";
 import {SubscriptionService} from "../../../_services/subscription.service";
 import {NgTemplateOutlet} from "@angular/common";
+import {FormControlDefinition, FormType} from "../../../generic-form/form";
 
 @Component({
   selector: 'app-edit-subscription-modal',

@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Mnema.API.External;
+using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
@@ -270,13 +271,18 @@ internal class DiscordExternalConnectionService(
     }
     
 
-    public Task<List<FormControlDefinition>> GetConfigurationForm(CancellationToken cancellationToken)
+    public Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
     {
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
                 Key = WebhookKey,
-                Type = FormType.Text
+                Type = FormType.Text,
+                ForceSingle = true,
+                Validators = new GenericBag<object>()
+                {
+                  ["minLenght"] = [1],  
+                },
             },
             new FormControlDefinition
             {

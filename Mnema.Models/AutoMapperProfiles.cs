@@ -1,8 +1,10 @@
 using AutoMapper;
+using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.External;
 using Mnema.Models.Entities.UI;
 using Mnema.Models.Entities.User;
 
@@ -18,6 +20,7 @@ public class AutoMapperProfiles: Profile
         CreateMap<MnemaUser, UserDto>();
         CreateMap<Notification, NotificationDto>();
         CreateMap<UserPreferences, UserPreferencesDto>();
+        CreateMap<ExternalConnection, ExternalConnectionDto>();
     }
     
 }

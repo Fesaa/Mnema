@@ -1,7 +1,7 @@
 import {inject, Injectable, TemplateRef, Type} from '@angular/core';
 import {NgbModal, NgbModalOptions, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import {DefaultModalOptions} from '../_models/default-modal-options';
-import {firstValueFrom} from 'rxjs';
+import {filter, firstValueFrom, from, map, take, takeUntil} from 'rxjs';
 import {ConfirmModalComponent} from "../shared/_component/confirm-modal/confirm-modal.component";
 import {DirectorySelectorComponent} from "../shared/_component/directory-selector/directory-selector.component";
 
@@ -16,6 +16,14 @@ export class ModalService {
   open<T>(content: Type<T>, options?: NgbModalOptions): [NgbModalRef, T]  {
     const modal = this.modal.open(content, options);
     return [modal, modal.componentInstance as T]
+  }
+
+  onClose$<T>(modal: NgbModalRef) {
+    return modal.closed.pipe(
+      takeUntil(modal.dismissed),
+      take(1),
+      map(obj => obj as T)
+    );
   }
 
   hasOpenModals() {
@@ -60,16 +68,23 @@ export class ModalService {
   }
 
   confirm(options: {
-    question?: string;
+    question: string;
     title?: string;
     bodyTemplate?: TemplateRef<unknown>;
     templateData?: unknown;
   }) {
+    return firstValueFrom(this.confirm$(options))
+  }
+
+  confirm$(options: {
+    question: string;
+    title?: string;
+    bodyTemplate?: TemplateRef<unknown>;
+    templateData?: unknown;
+  }, onlyEmitTrue: boolean = false) {
     const [_, component] = this.open(ConfirmModalComponent, DefaultModalOptions);
 
-    if (options.question) {
-      component.question.set(options.question);
-    }
+    component.question.set(options.question);
 
     if (options.title) {
       component.title.set(options.title);
@@ -83,7 +98,7 @@ export class ModalService {
       component.templateData.set(options.templateData);
     }
 
-    return firstValueFrom(component.result$);
+    return component.result$.pipe(filter(b => !onlyEmitTrue || b), take(1));
   }
 
 
