@@ -35,5 +35,16 @@
     @if (tooltip(); as subtitle) {
       <div class="text-muted mt-2" [innerHTML]="subtitle | safeHtml"></div>
     }
+
+    @if (shouldShowErrors()) {
+      <div class="mt-2">
+        @for (error of errors; track error.key) {
+          <div class="text-danger small">
+            {{ t('input.errors.' + error.key, error.value) }}
+          </div>
+        }
+      </div>
+    }
+
   </div>
 </ng-container>

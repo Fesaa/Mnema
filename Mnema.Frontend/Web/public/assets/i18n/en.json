@@ -741,11 +741,12 @@
     "errors": {
       "required": "This field is required.",
       "email": "Please enter a valid email address.",
-      "minlength": "Minimum length is {{ error.value.requiredLength }} characters.",
-      "maxlength": "Maximum length is {{ error.value.requiredLength }} characters.",
-      "min": "Minimum value is {{ error.value.min }}.",
-      "max": "Maximum value is {{ error.value.max }}.",
-      "sameAs": "Value must be the same as {{error.value.other}}"
+      "minlength": "Minimum length is {{ requiredLength }} characters.",
+      "maxlength": "Maximum length is {{ requiredLength }} characters.",
+      "min": "Minimum value is {{ min }}.",
+      "max": "Maximum value is {{ max }}.",
+      "sameAs": "Value must be the same as {{ other }}",
+      "startsWith": "Must start with {{ prefix }}"
     }
   },
 

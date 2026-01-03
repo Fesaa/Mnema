@@ -3,6 +3,7 @@ import {FormBuilder, FormGroup, NonNullableFormBuilder, ValidatorFn, Validators}
 import {FormControlDefinition, FormControlOption, FormPipe, FormType, ValueType} from "./form";
 import {TypeaheadSettings} from "../type-ahead/typeahead.component";
 import {of} from "rxjs";
+import {MnemaValidators} from "../shared/validators";
 export type GenericBag = { [key: string]: any[] };
 
 export const GENERIC_METADATA_FIELD = "metadata";
@@ -108,6 +109,8 @@ export class GenericFormFactoryService {
         return Validators.max(args[0]);
       case "pattern":
         return Validators.pattern(args[0]);
+      case "startsWith":
+        return MnemaValidators.startsWith(args[0]);
     }
 
     return null;

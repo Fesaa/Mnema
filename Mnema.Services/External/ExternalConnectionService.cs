@@ -94,7 +94,6 @@ internal class ExternalConnectionService(
         {
             Key = $"settings.external-connections.{type}",
             Controls = [
-                ..controls,
                 new FormControlDefinition
                 {
                     Key = "name",
@@ -115,6 +114,7 @@ internal class ExternalConnectionService(
                         .Select(@event => new FormControlOption($"event.{@event}", @event))
                         .ToList(),
                 },
+                ..controls,
             ]
         };
     }

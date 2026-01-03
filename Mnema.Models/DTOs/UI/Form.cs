@@ -116,6 +116,12 @@ public sealed class FormValidatorsBuilder: Builder<GenericBag<object>>
         return this;
     }
 
+    public FormValidatorsBuilder WithStartsWith(string prefix)
+    {
+        _validators.SetValue("startsWith", prefix);
+        return this;
+    }
+
     public override GenericBag<object> Build()
     {
         return _validators;

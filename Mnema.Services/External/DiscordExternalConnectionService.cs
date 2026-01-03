@@ -285,8 +285,7 @@ internal class DiscordExternalConnectionService(
                 Type = FormType.Text,
                 ForceSingle = true,
                 Validators = new FormValidatorsBuilder()
-                    .WithRequired()
-                    .WithMin(1)
+                    .WithStartsWith("https://discord.com/api/webhooks/")
                     .Build(),
             },
             new FormControlDefinition
