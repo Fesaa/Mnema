@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <ImplicitUsings>disable</ImplicitUsings>
         <AssemblyVersion>0.0.1</AssemblyVersion>
         <AssemblyName>Mnema</AssemblyName>
     </PropertyGroup>

@@ -1,3 +1,4 @@
+using System;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.User;
 

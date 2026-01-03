@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
 

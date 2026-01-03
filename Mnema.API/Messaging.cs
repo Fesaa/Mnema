@@ -1,6 +1,7 @@
+using System;
+using System.Threading.Tasks;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.User;
-using Mnema.Models.Entities.User;
 
 namespace Mnema.API;
 

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Mnema.Common;
 
 namespace Mnema.Models.Entities.External;

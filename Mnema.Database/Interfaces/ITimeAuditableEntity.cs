@@ -1,3 +1,5 @@
+using System;
+
 namespace Mnema.Database.Interfaces;
 
 public interface ITimeAuditableEntity

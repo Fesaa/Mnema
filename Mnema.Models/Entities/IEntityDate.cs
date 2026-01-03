@@ -1,3 +1,5 @@
+using System;
+
 namespace Mnema.Models.Entities;
 
 public interface IEntityDate

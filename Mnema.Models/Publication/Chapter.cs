@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Mnema.Models.Publication;
 
 public sealed record Chapter

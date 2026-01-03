@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.Models.DTOs.Content;

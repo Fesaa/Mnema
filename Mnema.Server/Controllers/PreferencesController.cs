@@ -1,5 +1,7 @@
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Models.DTOs.User;
 

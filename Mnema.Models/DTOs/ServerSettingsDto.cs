@@ -1,3 +1,5 @@
+using System;
+
 namespace Mnema.Models.DTOs;
 
 public class ServerSettingsDto

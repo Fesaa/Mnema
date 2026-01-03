@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Flurl;
 
 namespace Mnema.Providers.Extensions;

@@ -1,3 +1,4 @@
+using System.Linq;
 using Mnema.API;
 using Mnema.Models.Entities.User;
 using Microsoft.EntityFrameworkCore;
