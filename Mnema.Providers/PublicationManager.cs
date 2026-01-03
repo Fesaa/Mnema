@@ -94,8 +94,9 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
             throw new ForbiddenException();
         }
 
-        _logger.LogInformation("Removing content: {Id} - {Title}, DeleteFiles: {DeleteFiles}",
-            publication.Id, publication.Title, request.DeleteFiles);
+        if (publication.State != ContentState.Cancel)
+            _logger.LogInformation("Removing content: {Id} - {Title}, DeleteFiles: {DeleteFiles}",
+                publication.Id, publication.Title, request.DeleteFiles);
 
         publication.Cancel();
 
@@ -238,7 +239,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
     {
         try
         {
-            _logger.LogDebug("Starting load info for {Id} - {Title}", publication.Id, publication.Title);
+            _logger.LogTrace("Starting load info for {Id} - {Title}", publication.Id, publication.Title);
 
             await publication.LoadMetadataAsync(CancellationTokenSource.CreateLinkedTokenSource(_cts.Token));
 

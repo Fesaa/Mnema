@@ -83,7 +83,7 @@ internal partial class Publication
 
     private void FilterAlreadyDownloadedContent(CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Checking disk for content: {DownloadDir}", DownloadDir);
+        _logger.LogTrace("Checking disk for content: {DownloadDir}", DownloadDir);
 
         var sw = Stopwatch.StartNew();
         
