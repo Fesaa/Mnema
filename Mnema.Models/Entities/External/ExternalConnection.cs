@@ -24,7 +24,7 @@ public enum ExternalConnectionEvent
     /// <summary>
     /// Fired when Content starts to download, after metadata has loaded and something new will start
     /// </summary>
-    ContentDownloadStarted = 0,
+    DownloadStarted = 0,
     /// <summary>
     /// Fired when Content has finished cleaning itself up
     /// </summary>

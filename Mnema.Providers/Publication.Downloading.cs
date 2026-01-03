@@ -90,6 +90,8 @@ internal partial class Publication
             _queuedChapters.Count, ToRemovePaths.Count, provider.ToString(), DownloadDir);
 
         _speedTracker = new SpeedTracker(_queuedChapters.Count);
+        
+        _externalConnectionService.CommunicateDownloadStarted(DownloadInfo);
 
         var sw = Stopwatch.StartNew();
 

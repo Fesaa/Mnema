@@ -1,7 +1,5 @@
 
-using Mnema.API.Content;
-
-namespace Mnema.API;
+namespace Mnema.API.Content;
 
 public interface IScannerService
 {

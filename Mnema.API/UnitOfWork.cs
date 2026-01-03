@@ -1,3 +1,5 @@
+using Mnema.API.External;
+
 namespace Mnema.API;
 
 public interface IUnitOfWork
@@ -8,6 +10,7 @@ public interface IUnitOfWork
     IUserRepository UserRepository { get; }
     ISettingsRepository SettingsRepository { get; }
     INotificationRepository NotificationRepository { get; }
+    IExternalConnectionRepository ExternalConnectionRepository { get; }
     
     Task<bool> CommitAsync();
     bool HasChanges();

@@ -28,7 +28,7 @@ public interface ISubscriptionRepository
 public interface ISubscriptionService
 {
 
-    public static ImmutableArray<Provider> SubscriptionProviders = [
+    public static readonly ImmutableArray<Provider> SubscriptionProviders = [
         Provider.Bato, Provider.Dynasty, Provider.MangaBuddy,
         Provider.Mangadex, Provider.Webtoons,
     ];

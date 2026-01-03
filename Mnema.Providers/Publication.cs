@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.API.External;
 using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
@@ -36,6 +37,7 @@ internal partial class Publication(
     private readonly ApplicationConfiguration _configuration = scope.ServiceProvider.GetRequiredService<ApplicationConfiguration>();
     private readonly IMessageService _messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
     private readonly IMapper _mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
+    private readonly IExternalConnectionService _externalConnectionService =  scope.ServiceProvider.GetRequiredService<IExternalConnectionService>();
 
     private CancellationTokenSource _tokenSource = new ();
     
@@ -55,15 +57,15 @@ internal partial class Publication(
     /// <summary>
     /// List of directory paths pointing to chapters we've downloaded this run 
     /// </summary>
-    public IList<string> DownloadedPaths { get; } = [];
+    private IList<string> DownloadedPaths { get; } = [];
     /// <summary>
     /// List of paths pointing to chapters already on disk before this run
     /// </summary>
-    public IList<OnDiskContent> ExistingContent { get; private set; } = [];
+    private IList<OnDiskContent> ExistingContent { get; set; } = [];
     /// <summary>
     /// List of paths pointing to chapters that got replaced this run
     /// </summary>
-    public IList<string> ToRemovePaths { get; private set; } = [];
+    private IList<string> ToRemovePaths { get; set; } = [];
 
     public async Task Cleanup()
     {
@@ -121,6 +123,8 @@ internal partial class Publication(
 
     private async Task CleanupNotifications()
     {
+        _externalConnectionService.CommunicateDownloadFinished(DownloadInfo);
+        
         if (!Request.IsSubscription)
             return;
         

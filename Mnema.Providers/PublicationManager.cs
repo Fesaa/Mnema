@@ -267,7 +267,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
     {
         try
         {
-            _logger.LogDebug("Starting download for {Id} - {Title}", publication.Id, publication.Title);
+            _logger.LogTrace("Starting download for {Id} - {Title}", publication.Id, publication.Title);
 
             await publication.DownloadContentAsync(CancellationTokenSource.CreateLinkedTokenSource(_cts.Token));
         }

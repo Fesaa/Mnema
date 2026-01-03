@@ -3,7 +3,7 @@ using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities.User;
 using Mnema.Models.Publication;
 
-namespace Mnema.API;
+namespace Mnema.API.Content;
 
 public interface IMetadataService
 {
