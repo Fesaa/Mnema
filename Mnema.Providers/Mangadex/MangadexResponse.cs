@@ -31,14 +31,14 @@ internal sealed record MangaData: Identifiable
 
     public string RefUrl => $"https://mangadex.org/title/{Id}/";
     
-    public string? CoverUrl()
+    public string? CoverUrl(bool proxy = true)
     {
         var cover = RelationShips.FirstOrDefault(r => r.Type == "cover_art");
         if (cover == null) return null;
 
         if (cover.Attributes.TryGetValue("fileName", out var fileName) && fileName.ValueKind == JsonValueKind.String)
         {
-            return $"proxy/mangadex/covers/{Id}/{fileName}.256.jpg";
+            return proxy ? $"proxy/mangadex/covers/{Id}/{fileName}.256.jpg" : $"https://mangadex.org/covers/{Id}/{fileName}.256.jpg";
         }
 
         return null;

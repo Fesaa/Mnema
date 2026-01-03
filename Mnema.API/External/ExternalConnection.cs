@@ -25,6 +25,7 @@ public interface IExternalConnectionHandlerService
     /// <returns></returns>
     /// <remarks>Throws <see cref="NotImplementedException"/> when called on a non-keyed implementation</remarks>
     Task<List<FormControlDefinition>> GetConfigurationForm(CancellationToken cancellationToken);
+    List<ExternalConnectionEvent> SupportedEvents { get; }
 }
 
 public interface IExternalConnectionRepository

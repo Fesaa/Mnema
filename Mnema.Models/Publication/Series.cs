@@ -8,6 +8,7 @@ public sealed record Series
     public required string Summary { get; set; }
     
     public string? CoverUrl { get; set; }
+    public string? NonProxiedCoverUrl { get; set; }
     public string? RefUrl { get; set; }
     
     public required PublicationStatus Status { get; set; }

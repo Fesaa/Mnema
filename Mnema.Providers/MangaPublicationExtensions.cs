@@ -34,6 +34,8 @@ internal partial class MangaPublicationExtensions: IPublicationExtensions
     
     public async Task<string> DownloadCallback(IoWork ioWork, CancellationToken cancellationToken)
     {
+        if (cancellationToken.IsCancellationRequested) return string.Empty;
+        
         var fileType = Path.GetExtension(new Uri(ioWork.Url).AbsolutePath);
 
         var fileCounter = $"{ioWork.Idx}".PadLeft(4, '0');
@@ -97,6 +99,9 @@ internal partial class MangaPublicationExtensions: IPublicationExtensions
 
     public async Task Cleanup(string src, string dest)
     {
+        if (File.Exists(dest))
+            File.Delete(dest);
+        
         await ZipFile.CreateFromDirectoryAsync(src, dest + ".cbz",
             CompressionLevel.SmallestSize, includeBaseDirectory: false);
 

@@ -7,7 +7,7 @@ using Mnema.Models.Entities.External;
 
 namespace Mnema.Services.External;
 
-public class ExternalConnectionService(
+internal class ExternalConnectionService(
     ILogger<ExternalConnectionService> logger,
     IServiceScopeFactory scopeFactory
     ): IExternalConnectionService
@@ -56,6 +56,8 @@ public class ExternalConnectionService(
                             connection.Type.ToString());
                         continue;
                     }
+
+                    if (!service.SupportedEvents.Contains(@event)) continue;
 
                     tasks.Add(Task.Run(async () =>
                     {

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.API.External;
+using Mnema.Models.Entities.External;
 using Mnema.Services.External;
 using Mnema.Services.Hubs;
 using Mnema.Services.Scheduled;
@@ -31,7 +32,7 @@ public static class ServiceProviderExtensions
         #region External Connection
 
         services.AddScoped<IExternalConnectionService, ExternalConnectionService>();
-        services.AddScoped<IExternalConnectionHandlerService, DiscordExternalConnectionService>();
+        services.AddKeyedScoped<IExternalConnectionHandlerService, DiscordExternalConnectionService>(ExternalConnectionType.Discord);
 
         #endregion
 

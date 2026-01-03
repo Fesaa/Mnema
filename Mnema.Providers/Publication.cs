@@ -123,20 +123,22 @@ internal partial class Publication(
 
     private async Task CleanupNotifications()
     {
-        _externalConnectionService.CommunicateDownloadFinished(DownloadInfo);
-        
         if (!Request.IsSubscription)
             return;
+     
+        _externalConnectionService.CommunicateDownloadFinished(DownloadInfo);
         
         if (DownloadedPaths.Count == 0)
             return;
 
+        var info = DownloadInfo;
+        
         var notification = new Notification
         {
             Title = "Download completed",
             UserId = Request.UserId,
             Summary =
-                $"<a class=\"hover:pointer hover:underline\" href=\"%s\" target=\"_blank\">{DownloadInfo.RefUrl}</a> finished downloading {DownloadedPaths.Count} item(s). {_failedDownloadsTracker} failed on the first try.",
+                $"<a class=\"hover:pointer hover:underline\" href=\"{info.RefUrl}\" target=\"_blank\">{Title}</a> finished downloading {DownloadedPaths.Count} item(s). {_failedDownloadsTracker} failed on the first try.",
             Colour = NotificationColour.Primary,
         };
         
@@ -152,8 +154,8 @@ internal partial class Publication(
     /// </summary>
     private List<string> _userSelectedIds = [];
 
-    private int _failedDownloadsTracker = 0;
-    private SpeedTracker? _speedTracker = null;
+    private int _failedDownloadsTracker;
+    private SpeedTracker? _speedTracker;
 
     public ContentState State { get; private set; } = ContentState.Queued;
 
@@ -163,6 +165,8 @@ internal partial class Publication(
         Id = Id,
         ContentState = State,
         Name = Title,
+        Description = Series?.Summary,
+        ImageUrl = Series?.NonProxiedCoverUrl ?? Series?.CoverUrl,
         RefUrl = Series?.RefUrl,
         Size = _userSelectedIds.Count > 0 ? $"{_userSelectedIds.Count} Chapters" : $"{_queuedChapters.Count} Chapters",
         Downloading = State == ContentState.Downloading,

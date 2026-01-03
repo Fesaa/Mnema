@@ -8,6 +8,8 @@ public sealed record DownloadInfo
     public required string Id { get; init; }
     public required ContentState ContentState { get; init; }
     public required string Name { get; init; }
+    public required string? Description { get; init; }
+    public required string? ImageUrl { get; init; }
     public required string? RefUrl { get; init; }
     public required string Size { get; init; }
     public required bool Downloading { get; init; }

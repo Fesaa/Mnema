@@ -91,7 +91,8 @@ internal partial class Publication
 
         _speedTracker = new SpeedTracker(_queuedChapters.Count);
         
-        _externalConnectionService.CommunicateDownloadStarted(DownloadInfo);
+        if (Request.IsSubscription)
+            _externalConnectionService.CommunicateDownloadStarted(DownloadInfo);
 
         var sw = Stopwatch.StartNew();
 

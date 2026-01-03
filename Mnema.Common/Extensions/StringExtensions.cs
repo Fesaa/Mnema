@@ -49,6 +49,15 @@ public static class StringExtensions
 
             return parts[0].PadLeft(n, '0') + "." + parts[1];
         }
+
+        public string Limit(int n)
+        {
+            if (string.IsNullOrEmpty(s)) return string.Empty;
+            
+            if (s.Length < n) return s;
+            
+            return s[(n-3)..] + "...";
+        }
         
     }
 
