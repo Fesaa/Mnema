@@ -2,7 +2,7 @@ import {Component, computed, effect, input, output, signal} from '@angular/core'
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 
 import {SearchRequest} from "../../../_models/search";
-import {Modifier, ModifierType, ModifierValue, Provider} from "../../../_models/page";
+import {FormControlDefinition, FormControlOption, FormType, Provider} from "../../../_models/page";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {TypeaheadComponent, TypeaheadSettings} from "../../../type-ahead/typeahead.component";
 import {of} from "rxjs";
@@ -18,7 +18,7 @@ export class SearchFormComponent {
 
   title = input.required<string>();
   provider = input.required<Provider>();
-  modifiers = input<Modifier[]>([]);
+  modifiers = input<FormControlDefinition[]>([]);
   loading = input<boolean>(false);
 
   hasModifiers = computed(() => this.modifiers().length > 0);
@@ -54,29 +54,29 @@ export class SearchFormComponent {
     this.modifierSelections.set(defaultSelections);
   }
 
-  private getDefaultValues(modifier: Modifier): ModifierValue[] | ModifierValue | undefined {
-    const defaults = modifier.values
+  private getDefaultValues(modifier: FormControlDefinition): FormControlOption[] | FormControlOption | undefined {
+    const defaults = modifier.options
       .filter(value => value.default);
 
     if (defaults.length === 0) return undefined;
 
-    if (modifier.type === ModifierType.DROPDOWN) {
+    if (modifier.type === FormType.DROPDOWN) {
       return defaults[0];
     }
 
     return defaults;
   }
 
-  constructTypeaheadSettings(mod: Modifier): TypeaheadSettings<ModifierValue> {
-    const settings = new TypeaheadSettings<ModifierValue>();
+  constructTypeaheadSettings(mod: FormControlDefinition): TypeaheadSettings<FormControlOption> {
+    const settings = new TypeaheadSettings<FormControlOption>();
     settings.id = mod.key
-    settings.multiple = mod.type === ModifierType.MULTI;
+    settings.multiple = mod.type === FormType.MULTI;
     settings.minCharacters = 0;
 
     settings.fetchFn = (f) => {
-      if (mod.type === ModifierType.DROPDOWN) return of(mod.values);
+      if (mod.type === FormType.DROPDOWN) return of(mod.options);
 
-      const filtered = mod.values
+      const filtered = mod.options
         .filter(v => v.value.toLowerCase().includes(f.toLowerCase()));
 
       return of(filtered);
@@ -93,9 +93,9 @@ export class SearchFormComponent {
     return settings;
   }
 
-  onModifierSwitchChange(mod: Modifier, event: Event) {
+  onModifierSwitchChange(mod: FormControlDefinition, event: Event) {
     const selected = (event.target as HTMLInputElement).checked;
-    const value: ModifierValue = {
+    const value: FormControlOption = {
       key: selected ? 'true' : 'false',
       value: selected ? 'true' : 'false',
       default: false,
@@ -103,7 +103,7 @@ export class SearchFormComponent {
     this.onModifierSelection(mod, value);
   }
 
-  onModifierSelection(mod: Modifier, event: ModifierValue[] | ModifierValue) {
+  onModifierSelection(mod: FormControlDefinition, event: FormControlOption[] | FormControlOption) {
     this.modifierSelections.update(s => {
       s[mod.key] = Array.isArray(event) ? event.map(mv => mv.key) : [event.key];
       return s;
@@ -122,7 +122,7 @@ export class SearchFormComponent {
     this.modifiers().forEach(modifier => {
       const selections = modifierSelections[modifier.key] || [];
       if (selections.length > 0) {
-        modifiersToSend[modifier.key] = modifier.type === ModifierType.MULTI ? selections : [selections[0]];
+        modifiersToSend[modifier.key] = modifier.type === FormType.MULTI ? selections : [selections[0]];
       }
     });
 
@@ -135,8 +135,8 @@ export class SearchFormComponent {
     this.searchSubmitted.emit(searchRequest);
   }
 
-  trackModifier = (index: number, modifier: Modifier) => {
-    return `${this.title()}_${index}_${modifier.title}`
+  trackModifier = (index: number, modifier: FormControlDefinition) => {
+    return `${this.title()}_${index}_${modifier.key}`
   };
-  protected readonly ModifierType = ModifierType;
+  protected readonly FormType = FormType;
 }

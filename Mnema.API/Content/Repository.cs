@@ -56,6 +56,6 @@ public interface IRepository
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<ModifierDto>> Modifiers(CancellationToken cancellationToken);
+    Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken);
 
 }

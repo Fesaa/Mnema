@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, computed, inject, model, OnInit} from '@angular/core';
-import {DownloadMetadata, DownloadMetadataDefinition, DownloadMetadataFormType, Page} from "../../../_models/page";
+import {DownloadMetadata, FormControlDefinition, FormType, Page} from "../../../_models/page";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {NgbActiveModal, NgbNav, NgbNavContent, NgbNavItem, NgbNavLink, NgbNavOutlet} from "@ng-bootstrap/ng-bootstrap";
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
@@ -75,19 +75,19 @@ export class DownloadModalComponent implements OnInit {
     this.downloadForm.addControl('downloadMetadata', downloadMetadata);
   }
 
-  private getDefaultValue(def: DownloadMetadataDefinition) {
-    switch (def.formType) {
-      case DownloadMetadataFormType.SWITCH:
+  private getDefaultValue(def: FormControlDefinition) {
+    switch (def.type) {
+      case FormType.SWITCH:
         return Boolean(def.defaultOption);
-      case DownloadMetadataFormType.TEXT:
+      case FormType.TEXT:
         return def.defaultOption;
-      case DownloadMetadataFormType.DROPDOWN:
+      case FormType.DROPDOWN:
         return def.defaultOption;
     }
     return null;
   }
 
-  getValue(def: DownloadMetadataDefinition, key: string) {
+  getValue(def: FormControlDefinition, key: string) {
     if (!def.options) return key;
 
     const opt = def.options.find(d => d.key === key);
@@ -153,5 +153,5 @@ export class DownloadModalComponent implements OnInit {
 
   }
 
-  protected readonly DownloadMetadataFormType = DownloadMetadataFormType;
+  protected readonly DownloadMetadataFormType = FormType;
 }

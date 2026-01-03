@@ -36,7 +36,7 @@ internal class MangadexRepository: IRepository
         };
 
 
-    private readonly AsyncLazy<List<ModifierValueDto>> _tagOptions;
+    private readonly AsyncLazy<List<FormControlOption>> _tagOptions;
     private readonly ILogger<MangadexRepository> _logger;
     private readonly IDistributedCache _cache;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -47,7 +47,7 @@ internal class MangadexRepository: IRepository
         _logger = logger;
         _cache = cache;
         _httpClientFactory = httpClientFactory;
-        _tagOptions = new AsyncLazy<List<ModifierValueDto>>(LoadTagOptions);
+        _tagOptions = new AsyncLazy<List<FormControlOption>>(LoadTagOptions);
     }
 
     public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken)
@@ -277,118 +277,112 @@ internal class MangadexRepository: IRepository
     public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
     {
         return Task.FromResult(new DownloadMetadata([
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.LanguageKey,
-                FormType = FormType.Dropdown,
+                Type = FormType.DropDown,
                 DefaultOption = "en",
                 Options = [
-                    new KeyValue("en", "English"),
-                    new KeyValue("zh", "Simplified Chinese"),
-                    new KeyValue("zh-hk", "Traditional Chinese"),
-                    new KeyValue("es", "Castilian Spanish"),
-                    new KeyValue("fr", "French"),
-                    new KeyValue("ja", "Japanese")
+                    new FormControlOption("en", "English"),
+                    new FormControlOption("zh", "Simplified Chinese"),
+                    new FormControlOption("zh-hk", "Traditional Chinese"),
+                    new FormControlOption("es", "Castilian Spanish"),
+                    new FormControlOption("fr", "French"),
+                    new FormControlOption("ja", "Japanese")
                 ],
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.ScanlationGroupKey,
                 Advanced = true,
-                FormType = FormType.Text,
+                Type = FormType.Text,
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.DownloadOneShotKey,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.IncludeCover,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
                 DefaultOption = "true",
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.UpdateCover,
                 Advanced = true,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.TitleOverride,
                 Advanced = true,
-                FormType = FormType.Text,
+                Type = FormType.Text,
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.AllowNonMatchingScanlationGroupKey,
                 Advanced = true,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
                 DefaultOption = "true",
             }
         ]));
     }
 
-    public async Task<List<ModifierDto>> Modifiers(CancellationToken cancellationToken)
+    public async Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
     {
         return [
-            new ModifierDto
+            new FormControlDefinition
             {
-                Title = "Status",
-                Type = ModifierType.Multi,
+                Type = FormType.MultiSelect,
                 Key = "status",
-                Values = [
-                    ModifierValueDto.Option("cancelled", "Cancelled"),
-                    ModifierValueDto.Option("completed", "Completed"),
-                    ModifierValueDto.Option("hiatus", "Hiatus"),
-                    ModifierValueDto.Option("ongoing", "Ongoing"),
+                Options = [
+                    FormControlOption.Option("cancelled", "Cancelled"),
+                    FormControlOption.Option("completed", "Completed"),
+                    FormControlOption.Option("hiatus", "Hiatus"),
+                    FormControlOption.Option("ongoing", "Ongoing"),
                 ],
             },
-            new ModifierDto
+            new FormControlDefinition
             {
-                Title = "Content Rating",
-                Type = ModifierType.Multi,
+                Type = FormType.MultiSelect,
                 Key = "contentRating",
-                Values = [
-                    ModifierValueDto.Option("safe", "Safe"),
-                    ModifierValueDto.Option("suggestive", "Suggestive"),
-                    ModifierValueDto.Option("erotica", "Erotica"),
-                    ModifierValueDto.Option("pornographic", "Mature"),
+                Options = [
+                    FormControlOption.Option("safe", "Safe"),
+                    FormControlOption.Option("suggestive", "Suggestive"),
+                    FormControlOption.Option("erotica", "Erotica"),
+                    FormControlOption.Option("pornographic", "Mature"),
                 ],
             },
-            new ModifierDto
+            new FormControlDefinition
             {
-                Title = "Include Tags",
-                Type = ModifierType.Multi,
+                Type = FormType.DropDown,
                 Key = "includeTags",
-                Values = await _tagOptions,
+                Options = await _tagOptions,
             },
-            new ModifierDto
+            new FormControlDefinition
             {
-                Title = "Exclude Tags",
-                Type = ModifierType.Multi,
+                Type = FormType.MultiSelect,
                 Key = "excludeTags",
-                Values = await _tagOptions,
+                Options = await _tagOptions,
             },
-            new ModifierDto
+            new FormControlDefinition
             {
-                Title = "Tags inclusion mode",
-                Type = ModifierType.DropDown,
+                Type = FormType.DropDown,
                 Key = "includeTagsMode",
-                Values = [ModifierValueDto.DefaultValue("AND", "And"), ModifierValueDto.Option("OR", "Or")]
+                Options = [FormControlOption.DefaultValue("AND", "And"), FormControlOption.Option("OR", "Or")]
             },
-            new ModifierDto
+            new FormControlDefinition
             {
-                Title = "Tags exlusion mode",
-                Type = ModifierType.DropDown,
+                Type = FormType.DropDown,
                 Key = "excludeTagsMode",
-                Values = [ModifierValueDto.Option("AND", "And"), ModifierValueDto.DefaultValue("OR", "Or")]
+                Options = [FormControlOption.Option("AND", "And"), FormControlOption.DefaultValue("OR", "Or")]
             },
         ];
     }
     
-    private async Task<List<ModifierValueDto>> LoadTagOptions()
+    private async Task<List<FormControlOption>> LoadTagOptions()
     {
         var result = await Client.GetCachedAsync<TagResponse>("/manga/tag", _cache);
         if (result.IsErr)
@@ -397,12 +391,12 @@ internal class MangadexRepository: IRepository
             return [];
         }
 
-        List<ModifierValueDto> options = [];
+        List<FormControlOption> options = [];
         foreach (var tagData in result.Unwrap().Data)
         {
             if (tagData.Attributes.Name.TryGetValue("en", out var value))
             {
-                options.Add(ModifierValueDto.Option(tagData.Id, value));
+                options.Add(FormControlOption.Option(tagData.Id, value));
             }
         }
 

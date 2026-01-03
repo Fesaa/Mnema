@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, inject, model, OnInit} from '@angular/core';
 import {RefreshFrequencies, Subscription} from "../../../_models/subscription";
-import {DownloadMetadata, DownloadMetadataDefinition, DownloadMetadataFormType, Provider} from "../../../_models/page";
+import {DownloadMetadata, FormControlDefinition, FormType, Provider} from "../../../_models/page";
 import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {ToastService} from "../../../_services/toast.service";
 import {ModalService} from "../../../_services/modal.service";
@@ -72,22 +72,22 @@ export class EditSubscriptionModalComponent implements OnInit {
     this.subscriptionForm.addControl('metadata', metadataFormGroup);
   }
 
-  private getDefaultValue(sub: Subscription, def: DownloadMetadataDefinition) {
+  private getDefaultValue(sub: Subscription, def: FormControlDefinition) {
     const values = (sub.metadata.extra || {})[def.key]
     const value = (values && values.length > 0) ? values[0] : def.defaultOption;
 
-    switch (def.formType) {
-      case DownloadMetadataFormType.SWITCH:
+    switch (def.type) {
+      case FormType.SWITCH:
         return value.toLowerCase() === 'true';
-      case DownloadMetadataFormType.TEXT:
+      case FormType.TEXT:
         return value;
-      case DownloadMetadataFormType.DROPDOWN:
+      case FormType.DROPDOWN:
         return value;
     }
     return null;
   }
 
-  getValue(def: DownloadMetadataDefinition, key: string) {
+  getValue(def: FormControlDefinition, key: string) {
     if (!def.options) return key;
 
     const opt = def.options.find(d => d.key === key);
@@ -165,7 +165,7 @@ export class EditSubscriptionModalComponent implements OnInit {
     window.open(this.externalUrlPipe.transform(contentId, provider), '_blank', 'noopener noreferrer');
   }
 
-  protected readonly DownloadMetadataFormType = DownloadMetadataFormType;
+  protected readonly DownloadMetadataFormType = FormType;
   protected readonly RefreshFrequencies = RefreshFrequencies;
 
 }

@@ -311,47 +311,46 @@ internal class DynastyRepository(
     public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
     {
         return Task.FromResult(new DownloadMetadata([
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.DownloadOneShotKey,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.IncludeNotMatchedTagsKey,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
                 Advanced = true,
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.IncludeCover,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
                 DefaultOption = "true",
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.TitleOverride,
-                FormType = FormType.Text,
+                Type = FormType.Text,
                 Advanced = true,
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.SkipVolumeWithoutChapter,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
                 Advanced = true,
             },
         ]));
     }
 
-    public Task<List<ModifierDto>> Modifiers(CancellationToken cancellationToken)
+    public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<ModifierDto>>([
-            new ModifierDto
+        return Task.FromResult<List<FormControlDefinition>>([
+            new FormControlDefinition
             {
-                Title = "Allow Chapters",
-                Type = ModifierType.Switch,
+                Type = FormType.Switch,
                 Key = "AllowChapters",
-                Values = [],
+                Options = [],
             }
         ]);
     }

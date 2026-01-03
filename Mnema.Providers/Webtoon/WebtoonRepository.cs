@@ -22,13 +22,7 @@ internal class WebtoonRepository(
     IHttpClientFactory httpClientFactory)
     : IRepository
 {
-    private readonly ILogger<WebtoonRepository> _logger = logger;
     private HttpClient Client => httpClientFactory.CreateClient(nameof(Provider.Webtoons));
-
-    private static readonly DistributedCacheEntryOptions LongCacheEntryOptions = new()
-    {
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(7),
-    };
 
     public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken)
     {
@@ -101,7 +95,7 @@ internal class WebtoonRepository(
         for (var index = 1; pages.Count > index; index++)
         {
             var pageUrl = baseUrl + pages[index];
-            _logger.LogDebug("Fetching page {pageUrl}", pages[index]);
+            logger.LogDebug("Fetching page {pageUrl}", pages[index]);
             
             result = await Client.GetCachedStringAsync(pageUrl, cache, cancellationToken: cancellationToken);
             if (result.IsErr)
@@ -197,33 +191,32 @@ internal class WebtoonRepository(
     public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
     {
         return Task.FromResult(new DownloadMetadata([
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.IncludeCover,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
                 DefaultOption = "true",
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.TitleOverride,
-                FormType = FormType.Text,
+                Type = FormType.Text,
                 Advanced = true,
             }
         ]));
     }
 
-    public Task<List<ModifierDto>> Modifiers(CancellationToken cancellationToken)
+    public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        return  Task.FromResult(new List<ModifierDto>
+        return  Task.FromResult(new List<FormControlDefinition>
         {
             new()
             {
-                Title = "Search Type",
-                Type = ModifierType.DropDown,
+                Type = FormType.DropDown,
                 Key = "search_type",
-                Values = [
-                    ModifierValueDto.DefaultValue("originals", "Originals"),
-                    ModifierValueDto.Option("canvas", "Canvas"),
+                Options = [
+                    FormControlOption.DefaultValue("originals", "Originals"),
+                    FormControlOption.Option("canvas", "Canvas"),
                 ]
             },
         });

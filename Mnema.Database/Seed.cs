@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 using Mnema.Models.Entities;
 
 namespace Mnema.Database;
@@ -20,7 +21,7 @@ public static class Seed
     {
         foreach (var defaultServerSetting in DefaultServerSettings)
         {
-            var existing = ctx.ServerSettings.FirstOrDefault(s => s.Key == defaultServerSetting.Key);
+            var existing = await ctx.ServerSettings.FirstOrDefaultAsync(s => s.Key == defaultServerSetting.Key);
             if (existing == null)
             {
                 ctx.ServerSettings.Add(defaultServerSetting);

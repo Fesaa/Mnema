@@ -19,7 +19,7 @@ using Mnema.Providers.Extensions;
 namespace Mnema.Providers.Bato;
 
 internal sealed record BatoMapping([property: JsonPropertyName("file")] string File, [property: JsonPropertyName("text")]  string Text);
-internal sealed record BatoSearchOptions(List<ModifierValueDto> Genres, List<ModifierValueDto> ReleaseStatus);
+internal sealed record BatoSearchOptions(List<FormControlOption> Genres, List<FormControlOption> ReleaseStatus);
 
 internal class BatoRepository: IRepository
 {
@@ -344,77 +344,73 @@ internal class BatoRepository: IRepository
     public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
     {
         return Task.FromResult(new DownloadMetadata([
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.ScanlationGroupKey,
                 Advanced = true,
-                FormType = FormType.Text,
+                Type = FormType.Text,
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.DownloadOneShotKey,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.IncludeCover,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
                 DefaultOption = "true",
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.UpdateCover,
                 Advanced = true,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.TitleOverride,
                 Advanced = true,
-                FormType = FormType.Text,
+                Type = FormType.Text,
             },
-            new DownloadMetadataDefinition
+            new FormControlDefinition
             {
                 Key = RequestConstants.AllowNonMatchingScanlationGroupKey,
                 Advanced = true,
-                FormType = FormType.Switch,
+                Type = FormType.Switch,
                 DefaultOption = "true",
             }
         ]));
     }
 
-    public async Task<List<ModifierDto>> Modifiers(CancellationToken cancellationToken)
+    public async Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
     {
         var searchOptions = await _searchOptions;
 
         return [
-            new ModifierDto
+            new FormControlDefinition
             {
-                Title = "Included Genres",
-                Type = ModifierType.Multi,
+                Type = FormType.MultiSelect,
                 Key = "genres",
-                Values = searchOptions.Genres
+                Options = searchOptions.Genres
             },
-            new ModifierDto
+            new FormControlDefinition
             {
-                Title = "Exclude Genres",
-                Type = ModifierType.Multi,
+                Type = FormType.MultiSelect,
                 Key = "ignored_genres",
-                Values = searchOptions.Genres
+                Options = searchOptions.Genres
             },
-            new ModifierDto
+            new FormControlDefinition
             {
-                Title = "Publication status",
-                Type = ModifierType.DropDown,
+                Type = FormType.DropDown,
                 Key = "status",
-                Values = searchOptions.ReleaseStatus
+                Options = searchOptions.ReleaseStatus
             },
-            new ModifierDto
+            new FormControlDefinition
             {
-                Title = "Bato upload status",
-                Type = ModifierType.DropDown,
+                Type = FormType.DropDown,
                 Key = "upload",
-                Values = searchOptions.ReleaseStatus
+                Options = searchOptions.ReleaseStatus
             },
         ];
     }
@@ -483,8 +479,8 @@ internal class BatoRepository: IRepository
         }
 
         return new BatoSearchOptions(
-            genresOptions.Values.Select(si => ModifierValueDto.Option(si.File, si.Text)).ToList(),
-            releaseStatusOptions.Values.Select(si => ModifierValueDto.Option(si.File, si.Text)).ToList()
+            genresOptions.Values.Select(si => new FormControlOption(si.File, si.Text)).ToList(),
+            releaseStatusOptions.Values.Select(si => new FormControlOption(si.File, si.Text)).ToList()
             );
     }
 }
