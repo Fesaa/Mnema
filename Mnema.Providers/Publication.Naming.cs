@@ -64,7 +64,7 @@ internal partial class Publication
     {
         var fileName = $"{Title} {chapter.Title}".Trim();
 
-        if (!false) // TODO: Port config switches
+        if (false) // TODO: Port config switches
             fileName += " (OneShot)";
 
         var idx = 0;
