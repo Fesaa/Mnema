@@ -161,6 +161,7 @@ internal partial class Publication(
         ImageUrl = Series?.NonProxiedCoverUrl ?? Series?.CoverUrl,
         RefUrl = Series?.RefUrl,
         Size = _userSelectedIds.Count > 0 ? $"{_userSelectedIds.Count} Chapters" : $"{_queuedChapters.Count} Chapters",
+        TotalSize = $"{Series?.Chapters.Count ?? 0} Chapters",
         Downloading = State == ContentState.Downloading,
         Progress = Math.Floor(_speedTracker?.Progress() ?? 0),
         Estimated = _speedTracker?.EstimatedTimeRemaining() ?? 0,
