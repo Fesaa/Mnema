@@ -112,7 +112,7 @@ export class EditSubscriptionModalComponent implements OnInit {
   }
 
   close() {
-    this.modal.close();
+    this.modal.dismiss();
   }
 
   private packData() {

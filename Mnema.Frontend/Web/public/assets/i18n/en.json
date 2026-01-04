@@ -403,7 +403,18 @@
     "select-placeholder": "Select {{ title }}",
     "button-reset": "Reset",
     "button-search": "Search",
-    "button-searching": "Searching..."
+    "button-searching": "Searching...",
+    "status": "Status",
+    "contentRating": "Content Rating",
+    "includeTags": "Included Tags",
+    "excludeTags": "Excluded Tags",
+    "includeTagsMode": "Included Tags Mode",
+    "excludeTagsMode": "Excluded Tags Mode",
+    "AllowChapters": "Allow Chapters",
+    "genres": "Genres",
+    "ignored_genres": "Ignored Genres",
+    "upload": "Upload Status",
+    "search_type": "Search Type"
   },
 
   "series-info-modal": {

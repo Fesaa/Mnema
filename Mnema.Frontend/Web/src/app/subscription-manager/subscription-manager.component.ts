@@ -142,5 +142,9 @@ export class SubscriptionManagerComponent implements OnInit {
     component.subscription.set(sub);
     component.providers.set(this.allowedProviders());
     component.metadata.set(this.metadata().get(sub.provider) ?? {definitions: []});
+
+    this.modalService.onClose$(modal).pipe(
+      tap(() => this.pageReloader.emit())
+    ).subscribe();
   }
 }

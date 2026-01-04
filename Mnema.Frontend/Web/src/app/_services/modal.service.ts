@@ -18,10 +18,11 @@ export class ModalService {
     return [modal, modal.componentInstance as T]
   }
 
-  onClose$<T>(modal: NgbModalRef) {
+  onClose$<T>(modal: NgbModalRef, requireTruthyResponse: boolean = true) {
     return modal.closed.pipe(
       takeUntil(modal.dismissed),
       take(1),
+      filter(x => !requireTruthyResponse || !!x),
       map(obj => obj as T)
     );
   }
