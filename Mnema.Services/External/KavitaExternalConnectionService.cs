@@ -18,6 +18,7 @@ namespace Mnema.Services.External;
 
 internal sealed record ScanFolderDto
 {
+    public required string ApiKey { get; init; }
     public required string FolderPath { get; set; }
     public bool AbortOnNoSeriesMatch { get; set; } = true;
 }
@@ -50,6 +51,7 @@ internal class KavitaExternalConnectionService(
 
         var dto = new ScanFolderDto
         {
+            ApiKey = authKey,
             FolderPath = Path.Join(applicationConfiguration.BaseDir, info.DownloadDir),
             AbortOnNoSeriesMatch = true
         };
