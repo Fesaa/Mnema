@@ -99,7 +99,7 @@ internal partial class Publication(
     {
         if (DownloadedPaths.Count == 0)
         {
-            _logger.LogDebug("No newly downloaded items for {Id} - {Title}", Id, Title);
+            _logger.LogDebug("[{Title}/{Id}] No newly downloaded items", Title, Id);
             return;
         }
 
@@ -107,7 +107,7 @@ internal partial class Publication(
 
         foreach (var path in ToRemovePaths)
         {
-            _logger.LogTrace("Removing old chapter on {Path}", path);
+            _logger.LogTrace("[{Title}/{Id}] Removing old chapter on {Path}", Title, Id, path);
 
             try
             {
@@ -115,20 +115,20 @@ internal partial class Publication(
             }
             catch (IOException ex)
             {
-                _logger.LogError(ex, "Failed to delete old file {File}", path);
+                _logger.LogError(ex, "[{Title}/{Id}] Failed to delete old file {File}", Title, Id, path);
             }
         }
 
         var baseDir = _fileSystem.Path.Join(_configuration.BaseDir, DownloadDir);
         if (!_fileSystem.Directory.Exists(baseDir))
         {
-            _logger.LogDebug("Base directory {Dir} does not exist, creating", baseDir);
+            _logger.LogDebug("[{Title}/{Id}] Base directory {Dir} does not exist, creating", Title, Id, baseDir);
             _fileSystem.Directory.CreateDirectory(baseDir);
         }
 
         foreach (var path in DownloadedPaths)
         {
-            _logger.LogTrace("Finalizing chapter {Path}", path);
+            _logger.LogTrace("[{Title}/{Id}] Finalizing chapter {Path}", Title, Id, path);
 
             try
             {
@@ -139,12 +139,12 @@ internal partial class Publication(
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An exception occured finishing up a chapter at {Path}", path);
+                _logger.LogError(ex, "[{Title}/{Id}] An exception occured finishing up a chapter at {Path}", Title, Id, path);
             }
         }
 
-        _logger.LogDebug("Cleanup up {Id} - {Title} in {Elapsed}ms, removed {Deleted} old files, added {New} new files",
-            Id, Title, sw.ElapsedMilliseconds, ToRemovePaths.Count, DownloadedPaths.Count);
+        _logger.LogDebug("[{Title}/{Id}] Cleanup finished in {Elapsed}ms, removed {Deleted} old files, added {New} new files",
+            Title, Id, sw.ElapsedMilliseconds, ToRemovePaths.Count, DownloadedPaths.Count);
 
         await CleanupNotifications();
     }
@@ -180,7 +180,7 @@ internal partial class Publication(
 
     public async Task Cancel()
     {
-        _logger.LogTrace("Stopping download of {Id} - {Title}", Id, Title);
+        _logger.LogTrace("[{Title}/{Id}] Stopping download", Title, Id);
 
         await _tokenSource.CancelAsync();
 
@@ -192,7 +192,7 @@ internal partial class Publication(
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to remove download");
+            _logger.LogWarning(ex, "[{Title}/{Id}] Failed to remove download", Title, Id);
         }
     }
 

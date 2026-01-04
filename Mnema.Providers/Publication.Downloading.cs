@@ -39,8 +39,8 @@ internal partial class Publication
     {
         if (State != ContentState.Waiting && State != ContentState.Ready)
         {
-            _logger.LogWarning("Publication is not in a valid state ({State}) to start, ignoring request",
-                State.ToString());
+            _logger.LogWarning("[{Title}/{Id}] Publication is not in a valid state ({State}) to start, ignoring request",
+                Title, Id, State.ToString());
             return Task.CompletedTask;
         }
 
@@ -54,7 +54,7 @@ internal partial class Publication
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurring download {Title}/{Id}", Title, Id);
+            _logger.LogError(ex, "[{Title}/{Id}] An exception occurring download", Title, Id);
             return Cancel();
         }
     }
@@ -75,7 +75,7 @@ internal partial class Publication
 
             _queuedChapters = Series.Chapters.Select(c => c.Id).Where(_userSelectedIds.Contains).ToList();
 
-            _logger.LogDebug("Chapters filtered after user selection. Old: {Old}, New: {New}", initialSize,
+            _logger.LogDebug("[{Title}/{Id}] Chapters filtered after user selection. Old: {Old}, New: {New}", Title, Id, initialSize,
                 _queuedChapters.Count);
 
             if (ToRemovePaths.Count > 0)
@@ -92,8 +92,8 @@ internal partial class Publication
 
 
         _logger.LogInformation(
-            "Will be downloading {Chapters}, and removing {ToDelete} chapters from {Provider} into {Dir}",
-            _queuedChapters.Count, ToRemovePaths.Count, provider.ToString(), DownloadDir);
+            "[{Title}/{Id}] Will be downloading {Chapters}, and removing {ToDelete} chapters from {Provider} into {Dir}",
+            Title, Id, _queuedChapters.Count, ToRemovePaths.Count, provider.ToString(), DownloadDir);
 
         _speedTracker = new SpeedTracker(_queuedChapters.Count);
 
@@ -120,8 +120,8 @@ internal partial class Publication
 
         await Task.WhenAll(workers);
 
-        _logger.LogInformation("Downloaded all chapters in {Elapsed}ms for {Title} - {Id}",
-            sw.ElapsedMilliseconds, Title, Id);
+        _logger.LogInformation("[{Title}/{Id}] Downloaded all chapters in {Elapsed}ms",
+            Title, Id, sw.ElapsedMilliseconds);
 
         State = ContentState.Cleanup;
         await _messageService.StateUpdate(Request.UserId, Id, ContentState.Cleanup);
@@ -136,7 +136,7 @@ internal partial class Publication
             {
                 var filePath = await _extensions.DownloadCallback(ioWork, _tokenSource.Token);
 
-                _logger.LogTrace("Wrote {FilePath} / {Idx} to disk", filePath, ioWork.Idx);
+                _logger.LogTrace("[{Title}/{Id}] Wrote {FilePath} / {Idx} to disk", Title, Id, filePath, ioWork.Idx);
             }
             catch (TaskCanceledException)
             {
@@ -144,7 +144,7 @@ internal partial class Publication
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An exception occured while handling I/O");
+                _logger.LogError(ex, "[{Title}/{Id}] An exception occured while handling I/O", Title, Id);
                 await Cancel();
             }
     }
@@ -162,7 +162,7 @@ internal partial class Publication
                 var chapter = Series!.Chapters.FirstOrDefault(c => c.Id == chapterId);
                 if (chapter == null)
                 {
-                    _logger.LogWarning("Not downloading chapter with id {Id}, no matching info found", chapterId);
+                    _logger.LogWarning("[{Title}/{Id}] Not downloading chapter with id {ChapterId}, no matching info found", Title, Id, chapterId);
                     continue;
                 }
 
@@ -170,8 +170,8 @@ internal partial class Publication
                 await _messageService.UpdateContent(Request.UserId, DownloadInfo);
             }
 
-            _logger.LogDebug("All content has been downloaded in {Elapsed}ms, waiting for I/O to complete",
-                sw.ElapsedMilliseconds);
+            _logger.LogDebug("[{Title}/{Id}] All content has been downloaded in {Elapsed}ms, waiting for I/O to complete",
+                Title, Id, sw.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {
@@ -189,7 +189,7 @@ internal partial class Publication
 
         if (urls.Count == 0)
         {
-            _logger.LogWarning("Chapter has no urls to download. Unexpected? Report this!");
+            _logger.LogWarning("[{Title}/{Id}] Chapter has no urls to download. Unexpected? Report this!", Title, Id);
             return;
         }
 
@@ -205,11 +205,11 @@ internal partial class Publication
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "An exception occured while writing metadata");
+            _logger.LogWarning(ex, "[{Title}/{Id}] An exception occured while writing metadata", Title, Id);
         }
 
-        _logger.LogDebug("Starting download of chapter {ChapterMarker} with {Count} urls", chapter.ChapterMarker,
-            urls.Count);
+        _logger.LogTrace("[{Title}/{Id}] Starting download of chapter {ChapterMarker} with {Count} urls",
+            Title, Id, chapter.ChapterMarker, urls.Count);
 
         var sw = Stopwatch.StartNew();
 
@@ -225,8 +225,8 @@ internal partial class Publication
                 Chapter = chapter
             })));
 
-        _logger.LogDebug("Finished downloading chapter {Chapter} in {Elapsed}ms", chapter.ChapterMarker,
-            sw.ElapsedMilliseconds);
+        _logger.LogTrace("[{Title}/{Id}] Finished downloading chapter {Chapter} in {Elapsed}ms",
+            Title, Id, chapter.ChapterMarker, sw.ElapsedMilliseconds);
 
         if (urls.Count < 5) await Task.Delay(TimeSpan.FromSeconds(1));
 
@@ -240,7 +240,7 @@ internal partial class Publication
 
         if (failedTasks.Count == 0 || _tokenSource.Token.IsCancellationRequested) return;
 
-        _logger.LogDebug("Some tasks failed to complete, retrying. Count: {Count}", failedTasks.Count);
+        _logger.LogDebug("[{Title}/{Id}] Some tasks failed to complete, retrying. Count: {Count}", Title, Id, failedTasks.Count);
         _failedDownloadsTracker += failedTasks.Count;
 
         var retryChannel = Channel.CreateUnbounded<DownloadWork>();
@@ -262,13 +262,13 @@ internal partial class Publication
             using var lease = await _limiter.AcquireAsync(cancellationToken: _tokenSource.Token);
             if (!lease.IsAcquired)
             {
-                _logger.LogWarning("Failed to acquire rate limiter lease for {Url}", task.Url);
+                _logger.LogWarning("[{Title}/{Id}] Failed to acquire rate limiter lease for {Url}", Title, Id, task.Url);
                 continue;
             }
 
             var url = isRetry && !string.IsNullOrEmpty(task.Url.FallbackUrl) ? task.Url.FallbackUrl : task.Url.Url;
 
-            _logger.LogTrace("Processing task {Idx} with URL {Url}", task.Idx, url);
+            _logger.LogTrace("[{Title}/{Id}] Processing task {Idx} with URL {Url}", Title, Id, task.Idx, url);
 
             try
             {
@@ -282,8 +282,8 @@ internal partial class Publication
             {
                 if (isRetry) throw;
 
-                _logger.LogWarning(ex, "Task {Idx} on {Url} has failed failed for the first time, retrying later",
-                    task.Idx, url);
+                _logger.LogWarning(ex, "[{Title}/{Id}] Task {Idx} on {Url} has failed failed for the first time, retrying later",
+                    Title, Id, task.Idx, url);
                 failedTasks.Add(task);
             }
         }
@@ -298,7 +298,7 @@ internal partial class Publication
         var idx = 0;
         foreach (var url in urls)
             if (!channel.Writer.TryWrite(new DownloadWork(++idx, url)))
-                _logger.LogWarning("Failed to write {Url} to channel", url);
+                _logger.LogWarning("[{Title}/{Id}] Failed to write {Url} to channel", Title, Id, url);
 
         channel.Writer.Complete();
 

@@ -38,7 +38,7 @@ internal partial class Publication
 
         if (chapter.ChapterNumber() == null)
         {
-            _logger.LogWarning("Failed to parse chapter for {ChapterId} not padding", chapter.Id);
+            _logger.LogWarning("[{Title}/{Id}] Failed to parse chapter for {ChapterId} not padding", Title, Id, chapter.Id);
             return $"{fileName} Ch. {chapter.ChapterMarker}";
         }
 
@@ -75,7 +75,7 @@ internal partial class Publication
 
             if (idx >= 25)
             {
-                _logger.LogWarning("More than 25 oneshots with the same name, generating random number");
+                _logger.LogWarning("[{Title}/{Id}] More than 25 oneshots with the same name, generating random number", Title, Id);
                 finalFileName = $"{fileName} ({Random.Shared.Next()})";
                 break;
             }
