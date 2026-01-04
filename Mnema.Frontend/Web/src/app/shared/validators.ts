@@ -16,4 +16,18 @@ export class MnemaValidators {
     }
   }
 
+  static isUrl(control: AbstractControl) {
+    const value = control.value;
+    if (typeof value !== 'string')
+      return null;
+
+    try {
+      new URL(value);
+    } catch (e) {
+      return { 'isUrl': {}}
+    }
+
+    return null;
+  }
+
 }

@@ -603,6 +603,7 @@
     },
     "external-connections": {
       "title": "External Connections",
+      "no-events": "No events",
       "header": {
         "name": "Name",
         "type": "Type",
@@ -635,6 +636,21 @@
         "username-tooltip": "Optional custom username",
         "avatar-title": "Avatar URL",
         "avatar-tooltip": "Optional custom avatar",
+        "followed-events-title": "Followed Events",
+        "followed-events-tooltip": "Events to act on",
+        "event": {
+          "DownloadStarted": "{{settings.external-connections.shared.event.DownloadStarted}}",
+          "DownloadFinished": "{{settings.external-connections.shared.event.DownloadFinished}}",
+          "DownloadFailure": "{{settings.external-connections.shared.event.DownloadFailure}}"
+        }
+      },
+      "Kavita": {
+        "name-title": "Name",
+        "name-tooltip": "Your custom name for this connection",
+        "api-key-title": "Auth Key",
+        "api-key-tooltip": "Auth key generated from an Admin account",
+        "url-title": "Kavita URL",
+        "url-tooltip": "The URL pointing to your Kavita instance",
         "followed-events-title": "Followed Events",
         "followed-events-tooltip": "Events to act on",
         "event": {
@@ -740,13 +756,14 @@
   "input": {
     "errors": {
       "required": "This field is required.",
-      "email": "Please enter a valid email address.",
+      "email": "This field must be a valid email address.",
       "minlength": "Minimum length is {{ requiredLength }} characters.",
       "maxlength": "Maximum length is {{ requiredLength }} characters.",
       "min": "Minimum value is {{ min }}.",
       "max": "Maximum value is {{ max }}.",
       "sameAs": "Value must be the same as {{ other }}",
-      "startsWith": "Must start with {{ prefix }}"
+      "startsWith": "Must start with {{ prefix }}",
+      "isUrl": "This field must be a valid url."
     }
   },
 

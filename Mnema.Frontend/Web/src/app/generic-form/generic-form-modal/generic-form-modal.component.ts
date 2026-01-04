@@ -35,7 +35,7 @@ export class GenericFormModalComponent<T> {
   formGroup = signal<FormGroup | null>(null);
 
   close() {
-    this.modal.close();
+    this.modal.dismiss();
   }
 
   save() {

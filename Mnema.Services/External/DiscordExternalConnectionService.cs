@@ -164,12 +164,6 @@ internal class DiscordExternalConnectionService(
                 },
                 new DiscordEmbedField
                 {
-                    Name = "Average Speed",
-                    Value = $"{info.Speed:F2} {info.SpeedType}",
-                    Inline = true
-                },
-                new DiscordEmbedField
-                {
                     Name = "Location",
                     Value = $"`{info.DownloadDir}`",
                     Inline = false

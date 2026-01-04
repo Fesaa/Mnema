@@ -22,6 +22,8 @@ public interface IExternalConnectionService
 
 public interface IExternalConnectionHandlerService
 {
+    List<ExternalConnectionEvent> SupportedEvents { get; }
+
     Task CommunicateDownloadStarted(ExternalConnection connection, DownloadInfo info);
     Task CommunicateDownloadFinished(ExternalConnection connection, DownloadInfo info);
     Task CommunicateDownloadFailure(ExternalConnection connection, DownloadInfo info, Exception ex);
@@ -33,7 +35,6 @@ public interface IExternalConnectionHandlerService
     /// <returns></returns>
     /// <remarks>Throws <see cref="NotImplementedException"/> when called on a non-keyed implementation</remarks>
     Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken);
-    List<ExternalConnectionEvent> SupportedEvents { get; }
 }
 
 public interface IExternalConnectionRepository

@@ -53,6 +53,8 @@ export class GenericFormFactoryService {
     for (let key in obj[GENERIC_METADATA_FIELD]) {
       const val = obj[GENERIC_METADATA_FIELD][key];
       obj[GENERIC_METADATA_FIELD][key] = Array.isArray(val) ? val.map(v => v + '') : [val + ''];
+
+      delete obj[key];
     }
 
     return obj;
@@ -95,7 +97,6 @@ export class GenericFormFactoryService {
   }
 
   validator(key: string, args: any[]): ValidatorFn | null {
-    console.log("Creating validator", key, args);
     switch (key) {
       case "required":
         return Validators.required;
@@ -111,6 +112,8 @@ export class GenericFormFactoryService {
         return Validators.pattern(args[0]);
       case "startsWith":
         return MnemaValidators.startsWith(args[0]);
+      case 'isUrl':
+        return MnemaValidators.isUrl;
     }
 
     return null;

@@ -110,7 +110,7 @@ internal class ExternalConnectionService(
                     Field = "followedEvents",
                     Type = FormType.MultiSelect,
                     ValueType = ValueType.Integer,
-                    Options = Enum.GetValues<ExternalConnectionEvent>()
+                    Options = service.SupportedEvents
                         .Select(@event => new FormControlOption($"event.{@event}", @event))
                         .ToList(),
                 },

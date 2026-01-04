@@ -122,6 +122,12 @@ public sealed class FormValidatorsBuilder: Builder<GenericBag<object>>
         return this;
     }
 
+    public FormValidatorsBuilder WithIsUrl()
+    {
+        _validators.SetValue("isUrl");
+        return this;
+    }
+
     public override GenericBag<object> Build()
     {
         return _validators;

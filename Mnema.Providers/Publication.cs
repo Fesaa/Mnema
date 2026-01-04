@@ -129,10 +129,10 @@ internal partial class Publication(
 
     private async Task CleanupNotifications()
     {
+        _externalConnectionService.CommunicateDownloadFinished(DownloadInfo);
+
         if (!Request.IsSubscription)
             return;
-     
-        _externalConnectionService.CommunicateDownloadFinished(DownloadInfo);
         
         if (DownloadedPaths.Count == 0)
             return;

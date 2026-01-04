@@ -42,6 +42,6 @@ public class GenericBag<T>: Dictionary<string, IList<T>>
 
     public void SetValue(string key, params T[] value)
     {
-        Add(key, value.ToList());
+        TryAdd(key, value.ToList());
     }
 }
