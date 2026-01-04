@@ -123,6 +123,14 @@
 
     "tl-lang-title": "{{provider-metadata.tl-lang-title}}",
     "tl-lang-tooltip": "{{provider-metadata.tl-lang-tooltip}}",
+    "tl-lang": {
+      "en": "English",
+      "zh": "Chinese",
+      "zh-hk": "Traditional Chinese",
+      "es": "Spanish",
+      "fr": "French",
+      "ja": "Japanese"
+    },
     "scanlation_group-title": "{{provider-metadata.scanlation_group-title}}",
     "scanlation_group-tooltip": "{{provider-metadata.scanlation_group-tooltip}}",
     "download_one_shot-title": "{{provider-metadata.download_one_shot-title}}",
