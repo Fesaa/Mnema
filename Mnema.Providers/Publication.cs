@@ -207,13 +207,29 @@ internal partial class Publication(
 
         var info = DownloadInfo;
 
+        var summary =
+            $"<a class=\"hover:pointer hover:underline\" href=\"{info.RefUrl}\" target=\"_blank\">{Title}</a> finished downloading {DownloadedPaths.Count} item(s).";
+        if (_failedDownloadsTracker > 0)
+        {
+            summary += $"{_failedDownloadsTracker} failed on the first try.";
+        }
+
+        var body = $"<bold>{Title}</bold><br>";
+        foreach (var chapterId in _queuedChapters)
+        {
+            var chapter = Series!.Chapters.FirstOrDefault(c => c.Id == chapterId);
+            if (chapter == null) continue;
+
+            body += $"• {ChapterFileName(chapter)}\n";
+        }
+
         var notification = new Notification
         {
             Title = "Download completed",
             UserId = Request.UserId,
-            Summary =
-                $"<a class=\"hover:pointer hover:underline\" href=\"{info.RefUrl}\" target=\"_blank\">{Title}</a> finished downloading {DownloadedPaths.Count} item(s). {_failedDownloadsTracker} failed on the first try.",
-            Colour = NotificationColour.Primary
+            Summary = summary,
+            Body = body,
+            Colour = NotificationColour.Primary,
         };
 
         _unitOfWork.NotificationRepository.AddNotification(notification);
