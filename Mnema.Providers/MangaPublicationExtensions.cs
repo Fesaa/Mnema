@@ -15,13 +15,12 @@ namespace Mnema.Providers;
 internal interface IPublicationExtensions
 {
     OnDiskContent? ParseOnDiskFile(string fileName);
-    
-    string? ParseVolumeFromFile(OnDiskContent content);
-    
-    Task<string> DownloadCallback(IoWork ioWork, CancellationToken cancellationToken);
-    
-    Task Cleanup(string src, string dest);
 
+    string? ParseVolumeFromFile(OnDiskContent content);
+
+    Task<string> DownloadCallback(IoWork ioWork, CancellationToken cancellationToken);
+
+    Task Cleanup(string src, string dest);
 }
 
 internal interface IPreDownloadHook
@@ -29,18 +28,18 @@ internal interface IPreDownloadHook
     Task PreDownloadHook(Publication publication, IServiceScope scope, CancellationToken cancellationToken);
 }
 
-internal partial class MangaPublicationExtensions: IPublicationExtensions
+internal partial class MangaPublicationExtensions : IPublicationExtensions
 {
     private static readonly Regex ContentVolumeAndChapterRegex = MyContentVolumeAndChapterRegex();
-    
+
     private static readonly Regex ContentChapterRegex = MyContentChapterRegex();
-    
+
     private static readonly Regex ContentVolumeRegex = MyContentVolumeRegex();
-    
+
     public async Task<string> DownloadCallback(IoWork ioWork, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return string.Empty;
-        
+
         var fileType = Path.GetExtension(new Uri(ioWork.Url).AbsolutePath);
 
         var fileCounter = $"{ioWork.Idx}".PadLeft(4, '0');
@@ -59,56 +58,42 @@ internal partial class MangaPublicationExtensions: IPublicationExtensions
     {
         // Try volume and chapter
         var match = ContentVolumeAndChapterRegex.Match(fileName);
-        if (match is {Success: true, Groups.Count: 3})
-        {
+        if (match is { Success: true, Groups.Count: 3 })
             return new OnDiskContent
             {
                 Volume = TrimLeadingZero(match.Groups[1].Value),
                 Chapter = TrimLeadingZero(match.Groups[2].Value)
             };
-        }
 
         // Try volume only
         match = ContentVolumeRegex.Match(fileName);
-        if (match is {Success: true, Groups.Count: 2})
-        {
+        if (match is { Success: true, Groups.Count: 2 })
             return new OnDiskContent
             {
                 Volume = TrimLeadingZero(match.Groups[1].Value)
             };
-        }
 
         // Try chapter only
         match = ContentChapterRegex.Match(fileName);
-        if (match is {Success: true, Groups.Count: 2})
-        {
+        if (match is { Success: true, Groups.Count: 2 })
             return new OnDiskContent
             {
                 Chapter = TrimLeadingZero(match.Groups[1].Value)
             };
-        }
 
         // Fallback to simple ext check
-        if (Path.GetExtension(fileName).Equals(".cbz", StringComparison.OrdinalIgnoreCase))
-        {
-            return new OnDiskContent();
-        }
+        if (Path.GetExtension(fileName).Equals(".cbz", StringComparison.OrdinalIgnoreCase)) return new OnDiskContent();
 
         return null;
-    }
-    
-    private static string TrimLeadingZero(string value)
-    {
-        return string.IsNullOrEmpty(value) ? value : value.Trim().TrimStart('0');
     }
 
     public async Task Cleanup(string src, string dest)
     {
         if (File.Exists(dest))
             File.Delete(dest);
-        
+
         await ZipFile.CreateFromDirectoryAsync(src, dest + ".cbz",
-            CompressionLevel.SmallestSize, includeBaseDirectory: false);
+            CompressionLevel.SmallestSize, false);
 
         Directory.Delete(src, true);
     }
@@ -127,10 +112,17 @@ internal partial class MangaPublicationExtensions: IPublicationExtensions
         return comicInfo?.Volume;
     }
 
+    private static string TrimLeadingZero(string value)
+    {
+        return string.IsNullOrEmpty(value) ? value : value.Trim().TrimStart('0');
+    }
+
     [GeneratedRegex(@".* (?:Vol\. ([\d\.]+)) (?:Ch)\. ([\d\.]+)\.cbz", RegexOptions.Compiled)]
     private static partial Regex MyContentVolumeAndChapterRegex();
+
     [GeneratedRegex(@".* Ch\. ([\d\.]+)\.cbz", RegexOptions.Compiled)]
     private static partial Regex MyContentChapterRegex();
+
     [GeneratedRegex(@".* Vol\. ([\d\.]+)\.cbz", RegexOptions.Compiled)]
     private static partial Regex MyContentVolumeRegex();
 }

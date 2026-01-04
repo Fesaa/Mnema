@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Mnema.Common;
 using Mnema.Database.Extensions;
 using Mnema.Models.DTOs.Content;
@@ -13,21 +12,19 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Database;
 
-public sealed class MnemaDataContext(DbContextOptions options): DbContext(options), IDataProtectionKeyContext
+public sealed class MnemaDataContext(DbContextOptions options) : DbContext(options), IDataProtectionKeyContext
 {
-    
     public DbSet<MnemaUser> Users { get; set; }
     public DbSet<UserPreferences> UserPreferences { get; set; }
     public DbSet<Page> Pages { get; set; }
     public DbSet<Subscription> Subscriptions { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<ServerSetting> ServerSettings { get; set; }
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
     public DbSet<ExternalConnection> ExternalConnections { get; set; }
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-
         builder.Entity<UserPreferences>()
             .PrimitiveCollection(p => p.ConvertToGenreList)
             .HasDefaultValue(new List<string>());
@@ -65,6 +62,5 @@ public sealed class MnemaDataContext(DbContextOptions options): DbContext(option
         builder.Entity<ExternalConnection>()
             .PrimitiveCollection(c => c.FollowedEvents)
             .HasDefaultValue(new List<ExternalConnectionEvent>());
-
     }
 }

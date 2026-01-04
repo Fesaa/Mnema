@@ -8,21 +8,20 @@ using Mnema.Models.Entities.UI;
 
 namespace Mnema.Services;
 
-internal class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork): IPagesService
+internal class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork) : IPagesService
 {
-
     public async Task UpdatePage(PageDto dto)
     {
         var page = dto.Id.Equals(Guid.Empty) ? null : await unitOfWork.PagesRepository.GetPageById(dto.Id);
         var maxSortValue = await unitOfWork.PagesRepository.GetHighestSort();
 
         var newPage = page == null;
-        
+
         page ??= new Page
         {
             Title = dto.Title,
             SortValue = maxSortValue + 1,
-            Provider = dto.Provider,
+            Provider = dto.Provider
         };
 
         page.Icon = dto.Icon;
@@ -30,13 +29,9 @@ internal class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork):
         page.Provider = dto.Provider;
 
         if (newPage)
-        {
             unitOfWork.PagesRepository.Add(page);
-        }
         else
-        {
             unitOfWork.PagesRepository.Update(page);
-        }
 
         await unitOfWork.CommitAsync();
     }

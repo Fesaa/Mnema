@@ -8,9 +8,9 @@ namespace Mnema.Server.Extensions;
 
 public static class CacheExtensions
 {
+    private static readonly bool IsDevelopment =
+        Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Environments.Development;
 
-    private static readonly bool IsDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Environments.Development;
-    
     public static IDictionary<string, CacheProfile> AddCacheProfile(
         this IDictionary<string, CacheProfile> dictionary,
         string name,
@@ -20,8 +20,8 @@ public static class CacheExtensions
         // No client side caches during development
         dictionary.Add(name, new CacheProfile
         {
-            Duration = IsDevelopment ? 1 : (int) duration.TotalSeconds,
-            Location = location,
+            Duration = IsDevelopment ? 1 : (int)duration.TotalSeconds,
+            Location = location
         });
 
         return dictionary;
@@ -35,5 +35,4 @@ public static class CacheExtensions
         options.AddPolicy(name, b => b.Expire(duration));
         return options;
     }
-    
 }

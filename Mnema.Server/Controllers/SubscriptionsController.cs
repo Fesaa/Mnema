@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
-using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
@@ -12,16 +12,13 @@ using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
 
-using Microsoft.AspNetCore.Mvc;
-
 [Authorize(Roles.Subscriptions)]
 public class SubscriptionsController(
     ILogger<SubscriptionsController> logger,
     IUnitOfWork unitOfWork,
     ISubscriptionService subscriptionService
-    ): BaseApiController
+) : BaseApiController
 {
-
     [HttpGet("providers")]
     public ActionResult<IList<Provider>> GetProviders()
     {
@@ -29,10 +26,11 @@ public class SubscriptionsController(
     }
 
     [HttpGet("all")]
-    public async Task<ActionResult<PagedList<SubscriptionDto>>> GetAllSubscriptions([FromQuery] string query = "", [FromQuery] PaginationParams? paginationParams = null)
+    public async Task<ActionResult<PagedList<SubscriptionDto>>> GetAllSubscriptions([FromQuery] string query = "",
+        [FromQuery] PaginationParams? paginationParams = null)
     {
         paginationParams ??= PaginationParams.Default;
-        
+
         return Ok(await unitOfWork.SubscriptionRepository.GetSubscriptionDtosForUser(UserId, query, paginationParams));
     }
 
@@ -51,7 +49,7 @@ public class SubscriptionsController(
     public async Task<IActionResult> RunOnce(Guid subscriptionId)
     {
         await subscriptionService.RunOnce(UserId, subscriptionId);
-        
+
         return Ok();
     }
 
@@ -78,12 +76,11 @@ public class SubscriptionsController(
         if (sub == null) return NotFound();
 
         if (sub.UserId != UserId) return Forbid();
-        
+
         unitOfWork.SubscriptionRepository.Delete(sub);
 
         await unitOfWork.CommitAsync();
 
         return Ok();
     }
-    
 }

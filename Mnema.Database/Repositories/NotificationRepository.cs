@@ -13,10 +13,10 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Database.Repositories;
 
-public class NotificationRepository(MnemaDataContext ctx, IMapper mapper): INotificationRepository
+public class NotificationRepository(MnemaDataContext ctx, IMapper mapper) : INotificationRepository
 {
-
-    public Task<PagedList<NotificationDto>> GetNotificationsForUser(Guid userId, bool? read, PaginationParams pagination)
+    public Task<PagedList<NotificationDto>> GetNotificationsForUser(Guid userId, bool? read,
+        PaginationParams pagination)
     {
         return ctx.Notifications
             .Where(n => n.UserId == userId && (read == null || n.Read == read))

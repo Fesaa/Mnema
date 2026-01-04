@@ -17,9 +17,8 @@ public class IoController(
     ILogger<IoController> logger,
     ApplicationConfiguration applicationConfiguration,
     IFileSystem fileSystem
-    ): BaseApiController
+) : BaseApiController
 {
-
     [HttpPost("ls")]
     public ActionResult<List<ListDirEntryDto>> ListDir(ListDirRequestDto request)
     {
@@ -32,10 +31,7 @@ public class IoController(
             .Select(entry =>
             {
                 var isDirectory = Directory.Exists(entry);
-                if (!(isDirectory || request.ShowFiles))
-                {
-                    return null;
-                }
+                if (!(isDirectory || request.ShowFiles)) return null;
 
                 return new ListDirEntryDto(fileSystem.Path.GetFileName(entry), isDirectory);
             })
@@ -62,5 +58,4 @@ public class IoController(
 
         return Ok();
     }
-
 }

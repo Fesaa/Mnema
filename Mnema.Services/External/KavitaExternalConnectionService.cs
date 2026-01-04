@@ -26,7 +26,7 @@ internal class KavitaExternalConnectionService(
     ILogger<KavitaExternalConnectionService> logger,
     HttpClient httpClient,
     ApplicationConfiguration applicationConfiguration
-): IExternalConnectionHandlerService
+) : IExternalConnectionHandlerService
 {
     private const string ApiKey = "api-key";
     private const string UrlKey = "url";
@@ -51,7 +51,7 @@ internal class KavitaExternalConnectionService(
         var dto = new ScanFolderDto
         {
             FolderPath = Path.Join(applicationConfiguration.BaseDir, info.DownloadDir),
-            AbortOnNoSeriesMatch = true,
+            AbortOnNoSeriesMatch = true
         };
 
         var json = JsonSerializer.Serialize(dto);
@@ -81,7 +81,7 @@ internal class KavitaExternalConnectionService(
                     .WithRequired()
                     .WithMinLength(8)
                     .WithMaxLength(32)
-                    .Build(),
+                    .Build()
             },
             new FormControlDefinition
             {
@@ -89,9 +89,8 @@ internal class KavitaExternalConnectionService(
                 Type = FormType.Text,
                 Validators = new FormValidatorsBuilder()
                     .WithIsUrl()
-                    .Build(),
-            },
+                    .Build()
+            }
         ]);
     }
-
 }

@@ -8,9 +8,8 @@ using Mnema.Models.Entities;
 
 namespace Mnema.Database.Repositories;
 
-public class SettingsRepository(MnemaDataContext ctx, IMapper mapper): ISettingsRepository
+public class SettingsRepository(MnemaDataContext ctx, IMapper mapper) : ISettingsRepository
 {
-
     public void Update(ServerSetting settings)
     {
         ctx.Entry(settings).State = EntityState.Modified;

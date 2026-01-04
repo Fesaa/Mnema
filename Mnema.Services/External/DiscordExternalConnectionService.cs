@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mnema.API.External;
-using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
@@ -66,29 +65,29 @@ internal sealed record DiscordEmbedField
     public bool? Inline { get; set; }
 }
 
-
 internal class DiscordExternalConnectionService(
     ILogger<DiscordExternalConnectionService> logger,
     HttpClient httpClient
-    ): IExternalConnectionHandlerService
+) : IExternalConnectionHandlerService
 {
     private const string WebhookKey = "webhook";
     private const string UsernameKey = "username";
     private const string AvatarKey = "avatar";
-    
+
     private const int MaxDescriptionLength = 4096;
 
     private static readonly JsonSerializerOptions DiscordJsonSerializerOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    public List<ExternalConnectionEvent> SupportedEvents { get; } = [
+    public List<ExternalConnectionEvent> SupportedEvents { get; } =
+    [
         ExternalConnectionEvent.DownloadStarted,
         ExternalConnectionEvent.DownloadFinished,
-        ExternalConnectionEvent.DownloadFailure,
+        ExternalConnectionEvent.DownloadFailure
     ];
-    
+
     public Task CommunicateDownloadStarted(ExternalConnection connection, DownloadInfo info)
     {
         var embed = new DiscordEmbed
@@ -123,20 +122,15 @@ internal class DiscordExternalConnectionService(
                 Text = $"ID: {info.Id}"
             }
         };
-        
-        if (!string.IsNullOrEmpty(info.RefUrl))
-        {
-            embed.Url = info.RefUrl;
-        }
+
+        if (!string.IsNullOrEmpty(info.RefUrl)) embed.Url = info.RefUrl;
 
         if (!string.IsNullOrEmpty(info.ImageUrl))
-        {
             embed.Image = new DiscordEmbedImage
             {
-                Url = info.ImageUrl,
+                Url = info.ImageUrl
             };
-        }
-        
+
         return SendMessage(connection, [embed]);
     }
 
@@ -175,26 +169,21 @@ internal class DiscordExternalConnectionService(
             }
         };
 
-        if (!string.IsNullOrEmpty(info.RefUrl))
-        {
-            embed.Url = info.RefUrl;
-        }
-        
+        if (!string.IsNullOrEmpty(info.RefUrl)) embed.Url = info.RefUrl;
+
         if (!string.IsNullOrEmpty(info.ImageUrl))
-        {
             embed.Image = new DiscordEmbedImage
             {
-                Url = info.ImageUrl,
+                Url = info.ImageUrl
             };
-        }
-        
+
         return SendMessage(connection, [embed]);
     }
 
     public Task CommunicateDownloadFailure(ExternalConnection connection, DownloadInfo info, Exception ex)
     {
-        var progressText = info.Progress > 0 
-            ? $"{info.Progress:F1}% complete before failure" 
+        var progressText = info.Progress > 0
+            ? $"{info.Progress:F1}% complete before failure"
             : "Failed before download started";
 
         var embed = new DiscordEmbed
@@ -230,20 +219,41 @@ internal class DiscordExternalConnectionService(
             }
         };
 
-        if (!string.IsNullOrEmpty(info.RefUrl))
-        {
-            embed.Url = info.RefUrl;
-        }
-        
+        if (!string.IsNullOrEmpty(info.RefUrl)) embed.Url = info.RefUrl;
+
         if (!string.IsNullOrEmpty(info.ImageUrl))
-        {
             embed.Image = new DiscordEmbedImage
             {
-                Url = info.ImageUrl,
+                Url = info.ImageUrl
             };
-        }
-        
+
         return SendMessage(connection, [embed]);
+    }
+
+
+    public Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
+    {
+        return Task.FromResult<List<FormControlDefinition>>([
+            new FormControlDefinition
+            {
+                Key = WebhookKey,
+                Type = FormType.Text,
+                ForceSingle = true,
+                Validators = new FormValidatorsBuilder()
+                    .WithStartsWith("https://discord.com/api/webhooks/")
+                    .Build()
+            },
+            new FormControlDefinition
+            {
+                Key = UsernameKey,
+                Type = FormType.Text
+            },
+            new FormControlDefinition
+            {
+                Key = AvatarKey,
+                Type = FormType.Text
+            }
+        ]);
     }
 
     private async Task SendMessage(ExternalConnection connection, DiscordEmbed[] embeds)
@@ -259,39 +269,13 @@ internal class DiscordExternalConnectionService(
         {
             Username = connection.Metadata.GetString(UsernameKey),
             AvatarUrl = connection.Metadata.GetString(AvatarKey),
-            Embeds = embeds,
+            Embeds = embeds
         };
-        
+
         var json = JsonSerializer.Serialize(message, DiscordJsonSerializerOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        
+
         var response = await httpClient.PostAsync(url, content);
         response.EnsureSuccessStatusCode();
-    }
-    
-
-    public Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
-    {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
-            {
-                Key = WebhookKey,
-                Type = FormType.Text,
-                ForceSingle = true,
-                Validators = new FormValidatorsBuilder()
-                    .WithStartsWith("https://discord.com/api/webhooks/")
-                    .Build(),
-            },
-            new FormControlDefinition
-            {
-                Key = UsernameKey,
-                Type = FormType.Text
-            },
-            new FormControlDefinition
-            {
-                Key = AvatarKey,
-                Type = FormType.Text
-            }
-        ]);
     }
 }

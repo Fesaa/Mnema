@@ -18,12 +18,11 @@ public sealed record DownloadInfo
     public required SpeedType SpeedType { get; init; }
     public required double Speed { get; init; }
     public required string DownloadDir { get; init; }
-    
 }
 
 public enum SpeedType
 {
     Bytes = 0,
     Volumes = 1,
-    Images = 2,
+    Images = 2
 }

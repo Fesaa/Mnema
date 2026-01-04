@@ -20,18 +20,17 @@ public static class OpenIdConnectServiceExtensions
 {
     public const string OpenIdConnect = nameof(OpenIdConnect);
 
-    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         var openIdConnectConfig = configuration.GetSection(OpenIdConnect).Get<OpenIdConnectConfig>();
-        if (openIdConnectConfig is not {Valid: true})
-        {
+        if (openIdConnectConfig is not { Valid: true })
             throw new MnemaException("No valid OpenIDConnect configuration found");
-        }
 
         services.AddDataProtection()
             .PersistKeysToDbContext<MnemaDataContext>()
             .SetApplicationName("Mnema");
-        
+
         services.AddSingleton<ConfigurationManager<OpenIdConnectConfiguration>>(_ =>
         {
             var url = openIdConnectConfig.Authority + "/.well-known/openid-configuration";
@@ -47,10 +46,9 @@ public static class OpenIdConnectServiceExtensions
         services.AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
             .Configure<ITicketStore>((options, store) =>
             {
-                
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
-                
+
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
                 options.Cookie.MaxAge = TimeSpan.FromDays(30);
@@ -58,11 +56,8 @@ public static class OpenIdConnectServiceExtensions
 
                 options.LoginPath = "/Auth/login";
                 options.LogoutPath = "/Auth/logout";
-                
-                if (environment.IsDevelopment())
-                {
-                    options.Cookie.Domain = null;
-                }
+
+                if (environment.IsDevelopment()) options.Cookie.Domain = null;
 
                 options.Events = new CookieAuthenticationEventsHelper();
             });
@@ -75,7 +70,7 @@ public static class OpenIdConnectServiceExtensions
                 options.ClientId = openIdConnectConfig.ClientId;
                 options.ClientSecret = openIdConnectConfig.Secret;
                 options.RequireHttpsMetadata = options.Authority.StartsWith("https://");
-                
+
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.ResponseType = OpenIdConnectResponseType.Code;
                 options.CallbackPath = "/signin-oidc";
@@ -103,11 +98,10 @@ public static class OpenIdConnectServiceExtensions
 
         return services;
     }
-    
+
     private static AuthorizationBuilder AddPolicy(this AuthorizationBuilder builder, string roleName)
     {
-        return builder.AddPolicy(roleName, policy => 
+        return builder.AddPolicy(roleName, policy =>
             policy.RequireRole(roleName, roleName.ToLower(), roleName.ToUpper()));
     }
-    
 }

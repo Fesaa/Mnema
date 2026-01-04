@@ -22,7 +22,7 @@ internal class ExternalConnectionService(
     IServiceScopeFactory scopeFactory,
     IUnitOfWork unitOfWork,
     IServiceProvider serviceProvider
-    ): IExternalConnectionService
+) : IExternalConnectionService
 {
     public void CommunicateDownloadStarted(DownloadInfo info)
     {
@@ -33,13 +33,13 @@ internal class ExternalConnectionService(
     public void CommunicateDownloadFinished(DownloadInfo info)
     {
         DoForAll(ExternalConnectionEvent.DownloadFinished, (service, connection)
-                => service.CommunicateDownloadFinished(connection, info));
+            => service.CommunicateDownloadFinished(connection, info));
     }
 
     public void CommunicateDownloadFailure(DownloadInfo info, Exception ex)
     {
         DoForAll(ExternalConnectionEvent.DownloadFailure, (service, connection)
-                => service.CommunicateDownloadFailure(connection, info, ex));
+            => service.CommunicateDownloadFailure(connection, info, ex));
     }
 
     public async Task UpdateConnection(ExternalConnectionDto dto, CancellationToken cancellationToken)
@@ -49,7 +49,7 @@ internal class ExternalConnectionService(
 
         connection.Name = dto.Name;
         connection.FollowedEvents = dto.FollowedEvents;
-        
+
         var service = serviceProvider.GetKeyedService<IExternalConnectionHandlerService>(connection.Type);
         if (service == null)
         {
@@ -61,18 +61,12 @@ internal class ExternalConnectionService(
 
         var controls = await service.GetConfigurationFormControls(cancellationToken);
         foreach (var control in controls)
-        {
             connection.Metadata[control.Key] = dto.Metadata.GetStrings(control.Key).ToList();
-        }
 
         if (connection.Id.Equals(Guid.Empty))
-        {
-            unitOfWork.ExternalConnectionRepository.Add(connection);   
-        }
+            unitOfWork.ExternalConnectionRepository.Add(connection);
         else
-        {
             unitOfWork.ExternalConnectionRepository.Update(connection);
-        }
 
         await unitOfWork.CommitAsync();
     }
@@ -87,13 +81,14 @@ internal class ExternalConnectionService(
                 type.ToString());
             throw new NotFoundException();
         }
-        
+
         var controls = await service.GetConfigurationFormControls(cancellationToken);
 
         return new FormDefinition
         {
             Key = $"settings.external-connections.{type}",
-            Controls = [
+            Controls =
+            [
                 new FormControlDefinition
                 {
                     Key = "name",
@@ -102,7 +97,7 @@ internal class ExternalConnectionService(
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .WithMinLength(1)
-                        .Build(),
+                        .Build()
                 },
                 new FormControlDefinition
                 {
@@ -112,14 +107,15 @@ internal class ExternalConnectionService(
                     ValueType = ValueType.Integer,
                     Options = service.SupportedEvents
                         .Select(@event => new FormControlOption($"event.{@event}", @event))
-                        .ToList(),
+                        .ToList()
                 },
-                ..controls,
+                ..controls
             ]
         };
     }
 
-    private void DoForAll(ExternalConnectionEvent @event, Func<IExternalConnectionHandlerService, ExternalConnection, Task> consumer)
+    private void DoForAll(ExternalConnectionEvent @event,
+        Func<IExternalConnectionHandlerService, ExternalConnection, Task> consumer)
     {
         Task.Run(async () =>
         {
@@ -135,7 +131,6 @@ internal class ExternalConnectionService(
 
                 foreach (var connection in connections.Where(c => c.FollowedEvents.Contains(@event)))
                 {
-
                     var service =
                         scope.ServiceProvider.GetKeyedService<IExternalConnectionHandlerService>(connection.Type);
                     if (service == null)
@@ -168,7 +163,6 @@ internal class ExternalConnectionService(
             {
                 logger.LogError(ex, "An exception occured while communication with an external connection");
             }
-
         });
     }
 }

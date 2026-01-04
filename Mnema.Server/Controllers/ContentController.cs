@@ -12,9 +12,11 @@ using Mnema.Models.Publication;
 
 namespace Mnema.Server.Controllers;
 
-public class ContentController(ISearchService searchService, IDownloadService downloadService, IServiceProvider serviceProvider): BaseApiController
+public class ContentController(
+    ISearchService searchService,
+    IDownloadService downloadService,
+    IServiceProvider serviceProvider) : BaseApiController
 {
-
     [HttpPost("search")]
     public Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, [FromQuery] PaginationParams? pagination)
     {
@@ -46,14 +48,15 @@ public class ContentController(ISearchService searchService, IDownloadService do
             Id = id,
             BaseDir = string.Empty,
             TempTitle = string.Empty,
-            DownloadMetadata = new DownloadMetadataDto(),
+            DownloadMetadata = new DownloadMetadataDto()
         };
-        
+
         return Ok(await repository.SeriesInfo(request, HttpContext.RequestAborted));
     }
 
     [HttpGet("chapter-urls")]
-    public async Task<ActionResult<List<DownloadUrl>>> GetChapterUrls([FromQuery] Provider provider, [FromQuery] string id)
+    public async Task<ActionResult<List<DownloadUrl>>> GetChapterUrls([FromQuery] Provider provider,
+        [FromQuery] string id)
     {
         var repository = serviceProvider.GetKeyedService<IRepository>(provider);
         if (repository == null)
@@ -69,7 +72,7 @@ public class ContentController(ISearchService searchService, IDownloadService do
             People = [],
             TranslationGroups = []
         };
-        
+
         return Ok(await repository.ChapterUrls(chapter, HttpContext.RequestAborted));
     }
 
@@ -77,7 +80,7 @@ public class ContentController(ISearchService searchService, IDownloadService do
     public async Task<IActionResult> Download(DownloadRequestDto request)
     {
         request.UserId = UserId;
-        
+
         await downloadService.StartDownload(request);
 
         return Ok();
@@ -95,7 +98,7 @@ public class ContentController(ISearchService searchService, IDownloadService do
         request.UserId = UserId;
 
         await downloadService.CancelDownload(request);
-        
+
         return Ok();
     }
 
@@ -105,8 +108,7 @@ public class ContentController(ISearchService searchService, IDownloadService do
         var contentManager = serviceProvider.GetKeyedService<IContentManager>(message.Provider);
         if (contentManager == null)
             return NotFound();
-        
+
         return Ok(await contentManager.RelayMessage(message));
     }
-    
 }

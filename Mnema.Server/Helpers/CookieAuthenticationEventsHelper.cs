@@ -8,7 +8,7 @@ using Mnema.API;
 
 namespace Mnema.Server.Helpers;
 
-public class CookieAuthenticationEventsHelper: CookieAuthenticationEvents
+public class CookieAuthenticationEventsHelper : CookieAuthenticationEvents
 {
     public CookieAuthenticationEventsHelper()
     {
@@ -33,14 +33,10 @@ public class CookieAuthenticationEventsHelper: CookieAuthenticationEvents
     private static Task HandleOnRedirectToLogin(RedirectContext<CookieAuthenticationOptions> ctx)
     {
         if (ctx.Request.Path.StartsWithSegments("/api") || ctx.Request.Path.StartsWithSegments("/hubs"))
-        {
             ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        }
         else
-        {
             ctx.Response.Redirect($"/Auth/login?returnUrl={Uri.EscapeDataString(ctx.Request.Path)}");
-        }
-        
+
         return Task.CompletedTask;
     }
 }

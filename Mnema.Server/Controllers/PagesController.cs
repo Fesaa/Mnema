@@ -14,18 +14,21 @@ using Mnema.Server.Configuration;
 
 namespace Mnema.Server.Controllers;
 
-public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOfWork, IPagesService pagesService, IServiceProvider serviceProvider): BaseApiController
+public class PagesController(
+    ILogger<PagesController> logger,
+    IUnitOfWork unitOfWork,
+    IPagesService pagesService,
+    IServiceProvider serviceProvider) : BaseApiController
 {
-
     /// <summary>
-    /// Returns the pages the currently active user has access to
+    ///     Returns the pages the currently active user has access to
     /// </summary>
     /// <returns></returns>
     [HttpGet]
     public async Task<ActionResult<IList<PageDto>>> GetPages()
     {
         var pages = await unitOfWork.PagesRepository.GetPageDtosForUser(UserId);
-        
+
         foreach (var page in pages)
         {
             var repository = serviceProvider.GetKeyedService<IRepository>(page.Provider);
@@ -40,7 +43,7 @@ public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOf
             page.Metadata = await repository.DownloadMetadata(HttpContext.RequestAborted);
             page.Modifiers = await repository.Modifiers(HttpContext.RequestAborted);
         }
-        
+
         return Ok(pages);
     }
 
@@ -51,7 +54,7 @@ public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOf
         var repository = serviceProvider.GetKeyedService<IRepository>(provider);
         if (repository == null)
             return NotFound();
-        
+
         return Ok(await repository.DownloadMetadata(HttpContext.RequestAborted));
     }
 
@@ -89,5 +92,4 @@ public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOf
     {
         throw new NotImplementedException();
     }
-    
 }

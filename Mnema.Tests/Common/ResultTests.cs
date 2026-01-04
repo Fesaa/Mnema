@@ -5,8 +5,6 @@ namespace Mnema.Tests.Common;
 
 public class ResultTests
 {
-    private class TestException(string message) : Exception(message);
-
     [Fact]
     public void Ok_CreatesSuccessResult()
     {
@@ -51,7 +49,7 @@ public class ResultTests
     {
         var okResult = Result<int, TestException>.Ok(42);
         var errResult = Result<int, TestException>.Err(new TestException("fail"));
-        string output = "";
+        var output = "";
 
         okResult.Match(v => output = $"ok:{v}", e => output = $"err:{e.Message}");
         Assert.Equal("ok:42", output);
@@ -121,4 +119,6 @@ public class ResultTests
         Assert.True(mapped.IsOk);
         Assert.Equal(42, mapped.Unwrap());
     }
+
+    private class TestException(string message) : Exception(message);
 }

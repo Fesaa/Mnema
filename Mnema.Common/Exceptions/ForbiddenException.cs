@@ -2,4 +2,4 @@ using System;
 
 namespace Mnema.Common.Exceptions;
 
-public class ForbiddenException(): Exception("Forbidden");
+public class ForbiddenException() : Exception("Forbidden");

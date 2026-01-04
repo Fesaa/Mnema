@@ -24,15 +24,13 @@ internal partial class Publication
     private Task<MessageDto> ListContent()
     {
         if (Series == null || Series.Chapters.Count == 0)
-        {
             return Task.FromResult(new MessageDto
             {
                 Provider = provider,
                 ContentId = Id,
-                Type = MessageType.ListContent,
+                Type = MessageType.ListContent
             });
-        }
-        
+
         var data = Series.Chapters.GroupBy(c => c.VolumeMarker)
             .ToDictionary(g => g.Key, g => g.ToList());
 
@@ -42,41 +40,41 @@ internal partial class Publication
         var content = sortSlice.SelectMany(volume =>
         {
             var chapters = data[volume];
-            
-            if (string.IsNullOrEmpty(volume) && sortSlice.Count == 1)
-            {
-                return CreateChildren(chapters);
-            }
 
-            return [new ListContentData
-            {
-                Label = string.IsNullOrEmpty(volume) ? "No Volume" : $"Volume {volume}",
-                Children = CreateChildren(chapters),
-            }];
+            if (string.IsNullOrEmpty(volume) && sortSlice.Count == 1) return CreateChildren(chapters);
+
+            return
+            [
+                new ListContentData
+                {
+                    Label = string.IsNullOrEmpty(volume) ? "No Volume" : $"Volume {volume}",
+                    Children = CreateChildren(chapters)
+                }
+            ];
         });
 
-        return Task.FromResult(new MessageDto()
+        return Task.FromResult(new MessageDto
         {
             ContentId = Id,
             Provider = provider,
             Type = MessageType.ListContent,
-            Data = JsonSerializer.Serialize(content, new JsonSerializerOptions { PropertyNamingPolicy =  JsonNamingPolicy.CamelCase }), 
+            Data = JsonSerializer.Serialize(content,
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
         });
-        
+
         bool WillBeDownloaded(Chapter chapter)
         {
-            return _userSelectedIds.Count > 0 ? _userSelectedIds.Contains(chapter.Id) : _queuedChapters.Contains(chapter.Id);
+            return _userSelectedIds.Count > 0
+                ? _userSelectedIds.Contains(chapter.Id)
+                : _queuedChapters.Contains(chapter.Id);
         }
-        
+
         List<ListContentData> CreateChildren(List<Chapter> volumeChapters)
         {
             // Sort chapters
             volumeChapters.Sort((a, b) =>
             {
-                if (a.VolumeMarker != b.VolumeMarker)
-                {
-                    return (int)((b.VolumeNumber() ?? -1) - (a.VolumeNumber() ?? -1));
-                }
+                if (a.VolumeMarker != b.VolumeMarker) return (int)((b.VolumeNumber() ?? -1) - (a.VolumeNumber() ?? -1));
                 return (int)((b.ChapterNumber() ?? -1) - (a.ChapterNumber() ?? -1));
             });
 
@@ -92,13 +90,13 @@ internal partial class Publication
         {
             if (a == b)
                 return 0;
-            
+
             if (string.IsNullOrEmpty(a))
                 return 1;
-            
+
             if (string.IsNullOrEmpty(b))
                 return -1;
-            
+
             float.TryParse(a, out var aFloat);
             float.TryParse(b, out var bFloat);
             return aFloat.CompareTo(bFloat);
@@ -113,12 +111,12 @@ internal partial class Publication
         _userSelectedIds = message.Data.Deserialize<List<string>>() ?? [];
 
         await _messageService.SizeUpdate(Request.UserId, Id, DownloadInfo.Size);
-        
+
         return new MessageDto
         {
             Provider = provider,
             ContentId = Id,
-            Type = MessageType.FilterContent,
+            Type = MessageType.FilterContent
         };
     }
 
@@ -126,15 +124,14 @@ internal partial class Publication
     {
         if (State != ContentState.Waiting)
             throw new MnemaException($"Content cannot start while in the {State} state");
-        
+
         await _publicationManager.MoveToDownloadQueue(Id);
 
         return new MessageDto
         {
             Provider = provider,
             ContentId = Id,
-            Type = MessageType.StartDownload,
+            Type = MessageType.StartDownload
         };
     }
-    
 }

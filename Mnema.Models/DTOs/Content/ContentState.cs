@@ -8,8 +8,9 @@ public enum ContentState
     Ready = 3,
     Downloading = 4,
     Cleanup = 5,
+
     /// <summary>
-    /// A special internal state to indicate, the publication has cancelled itself and does not require cleanup
+    ///     A special internal state to indicate, the publication has cancelled itself and does not require cleanup
     /// </summary>
-    Cancel = 6,
+    Cancel = 6
 }

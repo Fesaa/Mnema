@@ -17,12 +17,13 @@ public interface ISettingsRepository
 public interface ISettingsService
 {
     /// <summary>
-    /// You will be required to specify the correct type, there is no compile time checks. Only run time!
+    ///     You will be required to specify the correct type, there is no compile time checks. Only run time!
     /// </summary>
     /// <param name="key"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     Task<T> GetSettingsAsync<T>(ServerSettingKey key);
+
     Task<ServerSettingsDto> GetSettingsAsync();
     Task SaveSettingsAsync(UpdateServerSettingsDto settings);
 }

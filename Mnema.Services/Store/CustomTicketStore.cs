@@ -7,7 +7,7 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace Mnema.Services.Store;
 
-public class CustomTicketStore(IDistributedCache cache, TicketSerializer ticketSerializer): ITicketStore
+public class CustomTicketStore(IDistributedCache cache, TicketSerializer ticketSerializer) : ITicketStore
 {
     public async Task<string> StoreAsync(AuthenticationTicket ticket)
     {
@@ -26,14 +26,10 @@ public class CustomTicketStore(IDistributedCache cache, TicketSerializer ticketS
         var options = new DistributedCacheEntryOptions();
         var expiresUtc = ticket.Properties.ExpiresUtc;
         if (expiresUtc.HasValue)
-        {
             options.AbsoluteExpiration = expiresUtc.Value;
-        }
         else
-        {
             options.SlidingExpiration = TimeSpan.FromDays(7);
-        }
-        
+
         var data = ticketSerializer.Serialize(ticket);
         await cache.SetAsync(key, data, options);
     }

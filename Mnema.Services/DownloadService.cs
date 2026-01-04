@@ -10,9 +10,8 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services;
 
-internal class DownloadService(ILogger<DownloadService> logger, IServiceScopeFactory scopeFactory): IDownloadService
+internal class DownloadService(ILogger<DownloadService> logger, IServiceScopeFactory scopeFactory) : IDownloadService
 {
-
     public Task StartDownload(DownloadRequestDto request)
     {
         using var scope = scopeFactory.CreateScope();
@@ -32,7 +31,7 @@ internal class DownloadService(ILogger<DownloadService> logger, IServiceScopeFac
     public async Task<IList<DownloadInfo>> GetCurrentContent(Guid userId)
     {
         var downloads = new List<DownloadInfo>();
-        
+
         using var scope = scopeFactory.CreateScope();
         foreach (var provider in Enum.GetValues<Provider>())
         {
@@ -44,7 +43,7 @@ internal class DownloadService(ILogger<DownloadService> logger, IServiceScopeFac
             }
 
             var content = await contentManager.GetAllContent();
-            
+
             downloads.AddRange(content
                 .Where(c => c.Request.UserId == userId)
                 .Select(c => c.DownloadInfo));

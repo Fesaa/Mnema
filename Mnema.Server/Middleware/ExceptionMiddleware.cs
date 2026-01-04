@@ -12,12 +12,11 @@ public record ApiException(int Status, string? Message = null, string? Details =
 
 public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
 {
-    
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
-    
+
     public async Task InvokeAsync(HttpContext context)
     {
         try
@@ -34,18 +33,16 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
                 UnauthorizedAccessException => HttpStatusCode.Unauthorized,
                 ForbiddenException => HttpStatusCode.Forbidden,
                 NotFoundException => HttpStatusCode.NotFound,
-                _ => HttpStatusCode.InternalServerError,
+                _ => HttpStatusCode.InternalServerError
             };
 
             if (statusCode == HttpStatusCode.InternalServerError)
-            {
                 logger.LogError(ex, "An exception occurred while handling an http request.");
-            }
-            
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int) statusCode;
 
-            var details = (context.User.Identity?.IsAuthenticated ?? false) ? ex.StackTrace : null;
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)statusCode;
+
+            var details = context.User.Identity?.IsAuthenticated ?? false ? ex.StackTrace : null;
 
             var response = new ApiException(context.Response.StatusCode, errorMessage, details);
             var json = JsonSerializer.Serialize(response, JsonSerializerOptions);
@@ -53,5 +50,4 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
             await context.Response.WriteAsync(json);
         }
     }
-    
 }

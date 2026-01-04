@@ -11,7 +11,7 @@ public interface IOpenIdConnectService
     public const string ExpiresAt = "expires_at";
     public const string CookieName = ".AspNetCore.Cookies";
     public const string PreferredUsername = "preferred_username";
-    
+
     Task RefreshCookieToken(CookieValidatePrincipalContext ctx);
 
     Task<ClaimsPrincipal> ParseIdToken(string idToken);

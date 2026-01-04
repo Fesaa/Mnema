@@ -5,8 +5,8 @@ namespace Mnema.Database.Extensions;
 
 public static class DataContextExtensions
 {
-    
-    public static PropertyBuilder<TProperty> HasJsonConversion<TProperty>(this PropertyBuilder<TProperty> builder, TProperty def)
+    public static PropertyBuilder<TProperty> HasJsonConversion<TProperty>(this PropertyBuilder<TProperty> builder,
+        TProperty def)
     {
         return builder.HasConversion(
             v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),

@@ -4,22 +4,23 @@ using System.Threading;
 namespace Mnema.Common;
 
 /// <summary>
-/// Tracks progress and speed for work items
+///     Tracks progress and speed for work items
 /// </summary>
 public class SpeedTracker(int maxItem)
 {
-    private readonly Lock _lock = new ();
-    private readonly Lock _intermediateLock = new ();
-
-    private DateTime LastCheck { get; set; } = DateTime.UtcNow;
-    private DateTime StartTime { get; set; } = DateTime.UtcNow;
+    private readonly Lock _intermediateLock = new();
+    private readonly Lock _lock = new();
 
     private int _cur;
+
     // For tracking intermediate progress of current work item
     private SpeedTracker? _intermediate;
 
+    private DateTime LastCheck { get; set; } = DateTime.UtcNow;
+    private DateTime StartTime { get; } = DateTime.UtcNow;
+
     /// <summary>
-    /// Records one instance of work is finished
+    ///     Records one instance of work is finished
     /// </summary>
     public void Increment()
     {
@@ -31,7 +32,7 @@ public class SpeedTracker(int maxItem)
     }
 
     /// <summary>
-    /// Increments the intermediate tracker if it exists
+    ///     Increments the intermediate tracker if it exists
     /// </summary>
     public void IncrementIntermediate()
     {
@@ -42,8 +43,8 @@ public class SpeedTracker(int maxItem)
     }
 
     /// <summary>
-    /// Returns the completion percentage (0-100)
-    /// If an intermediate tracker exists, includes its fractional progress
+    ///     Returns the completion percentage (0-100)
+    ///     If an intermediate tracker exists, includes its fractional progress
     /// </summary>
     public double Progress()
     {
@@ -53,44 +54,35 @@ public class SpeedTracker(int maxItem)
             cur = _cur;
         }
 
-        if (maxItem == 0)
-        {
-            return 0;
-        }
+        if (maxItem == 0) return 0;
 
         double progress = cur;
-        double intermediateProgress = 0.0;
+        var intermediateProgress = 0.0;
 
         // Add fractional progress from intermediate tracker
         lock (_intermediateLock)
         {
-            if (_intermediate != null)
-            {
-                intermediateProgress = _intermediate.Progress() / maxItem;
-            }
+            if (_intermediate != null) intermediateProgress = _intermediate.Progress() / maxItem;
         }
 
         return progress / maxItem * 100 + intermediateProgress;
     }
 
     /// <summary>
-    /// Returns items per second
+    ///     Returns items per second
     /// </summary>
     public double Speed()
     {
         lock (_lock)
         {
             var elapsed = (DateTime.UtcNow - StartTime).TotalSeconds;
-            if (elapsed == 0)
-            {
-                return 0;
-            }
+            if (elapsed == 0) return 0;
             return _cur / elapsed;
         }
     }
 
     /// <summary>
-    /// Returns the speed of the intermediate tracker if it exists
+    ///     Returns the speed of the intermediate tracker if it exists
     /// </summary>
     public double IntermediateSpeed()
     {
@@ -101,7 +93,7 @@ public class SpeedTracker(int maxItem)
     }
 
     /// <summary>
-    /// Sets the intermediate progress tracker for the current work item
+    ///     Sets the intermediate progress tracker for the current work item
     /// </summary>
     /// <param name="maxItem">Maximum items for the intermediate tracker</param>
     public void SetIntermediate(int maxItem)
@@ -113,7 +105,7 @@ public class SpeedTracker(int maxItem)
     }
 
     /// <summary>
-    /// Removes the intermediate tracker (call when work item completes)
+    ///     Removes the intermediate tracker (call when work item completes)
     /// </summary>
     public void ClearIntermediate()
     {
@@ -124,23 +116,17 @@ public class SpeedTracker(int maxItem)
     }
 
     /// <summary>
-    /// Calculates estimated time remaining in seconds
+    ///     Calculates estimated time remaining in seconds
     /// </summary>
     public double EstimatedTimeRemaining()
     {
-        if (_cur == 0)
-        {
-            return 0;
-        }
+        if (_cur == 0) return 0;
 
         lock (_lock)
         {
             var speed = Speed();
-            if (speed == 0)
-            {
-                return 0;
-            }
-            
+            if (speed == 0) return 0;
+
             return (maxItem - _cur) / speed;
         }
     }

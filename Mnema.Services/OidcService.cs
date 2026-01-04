@@ -16,32 +16,31 @@ using Mnema.Models.Internal;
 
 namespace Mnema.Services;
 
-
 internal class OpenIdConnectService(
     ILogger<OpenIdConnectService> logger,
     ConfigurationManager<OpenIdConnectConfiguration> oidcConfigurationManager,
     OpenIdConnectConfig openIdConnectConfig
-    ): IOpenIdConnectService
+) : IOpenIdConnectService
 {
-
     private static readonly ConcurrentDictionary<string, bool> RefreshInProgress = new();
-    
+
     public async Task RefreshCookieToken(CookieValidatePrincipalContext ctx)
     {
         if (ctx.Principal == null) return;
 
         var key = ctx.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(key)) return;
-        
+
         var refreshToken = ctx.Properties.GetTokenValue(IOpenIdConnectService.RefreshToken);
         if (string.IsNullOrEmpty(refreshToken)) return;
-        
+
         var expiresAt = ctx.Properties.GetTokenValue(IOpenIdConnectService.ExpiresAt);
         if (string.IsNullOrEmpty(expiresAt)) return;
-        
-        var tokenExpiry = DateTimeOffset.ParseExact(expiresAt, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
+        var tokenExpiry =
+            DateTimeOffset.ParseExact(expiresAt, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
         if (tokenExpiry >= DateTimeOffset.UtcNow.AddSeconds(30)) return;
-        
+
         // Ensure we're not refreshing twice
         if (!RefreshInProgress.TryAdd(key, true)) return;
 
@@ -50,19 +49,20 @@ internal class OpenIdConnectService(
             var tokenResponse = await RefreshTokenAsync(refreshToken);
             if (!string.IsNullOrEmpty(tokenResponse.Error))
             {
-                logger.LogError("Failed to refresh token : {Error} - {Description}", tokenResponse.Error, tokenResponse.ErrorDescription);
+                logger.LogError("Failed to refresh token : {Error} - {Description}", tokenResponse.Error,
+                    tokenResponse.ErrorDescription);
                 throw new UnauthorizedAccessException();
             }
-            
+
             var principal = await ParseIdToken(tokenResponse.IdToken);
             ctx.Principal = principal;
-            
+
             var newExpiresAt = DateTimeOffset.UtcNow.AddSeconds(double.Parse(tokenResponse.ExpiresIn));
             ctx.Properties.UpdateTokenValue(IOpenIdConnectService.ExpiresAt, newExpiresAt.ToString("o"));
             ctx.Properties.UpdateTokenValue(IOpenIdConnectService.RefreshToken, tokenResponse.RefreshToken);
             ctx.Properties.UpdateTokenValue(IOpenIdConnectService.IdToken, tokenResponse.IdToken);
             ctx.ShouldRenew = true;
-            
+
             logger.LogDebug("Automatically refreshed token for user {UserId}", key);
         }
         finally
@@ -70,7 +70,7 @@ internal class OpenIdConnectService(
             RefreshInProgress.TryRemove(key, out _);
         }
     }
-    
+
     public async Task<ClaimsPrincipal> ParseIdToken(string idToken)
     {
         var discoveryDocument = await oidcConfigurationManager.GetConfigurationAsync();
@@ -80,7 +80,7 @@ internal class OpenIdConnectService(
             ValidIssuer = discoveryDocument.Issuer,
             ValidAudience = openIdConnectConfig.ClientId,
             IssuerSigningKeys = discoveryDocument.SigningKeys,
-            ValidateIssuerSigningKey = true,
+            ValidateIssuerSigningKey = true
         };
 
         var handler = new JwtSecurityTokenHandler();
@@ -88,10 +88,9 @@ internal class OpenIdConnectService(
 
         return principal;
     }
-    
+
     private async Task<OpenIdConnectMessage> RefreshTokenAsync(string refreshToken)
     {
-
         var discoveryDocument = await oidcConfigurationManager.GetConfigurationAsync();
 
         var msg = new
@@ -99,7 +98,7 @@ internal class OpenIdConnectService(
             grant_type = IOpenIdConnectService.RefreshToken,
             refresh_token = refreshToken,
             client_id = openIdConnectConfig.ClientId,
-            client_secret = openIdConnectConfig.Secret,
+            client_secret = openIdConnectConfig.Secret
         };
 
         var json = await discoveryDocument.TokenEndpoint

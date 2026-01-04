@@ -14,7 +14,7 @@ public interface IPagesRepository
     Task<int> GetHighestSort();
 
     Task DeletePage(Guid id);
-    
+
     void Add(Page page);
     void Update(Page page);
 }

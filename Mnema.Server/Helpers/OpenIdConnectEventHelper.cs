@@ -14,28 +14,27 @@ using Mnema.Models.Internal;
 
 namespace Mnema.Server.Helpers;
 
-public class OpenIdConnectEventHelper: OpenIdConnectEvents
+public class OpenIdConnectEventHelper : OpenIdConnectEvents
 {
-
     private readonly bool _isDevelopment;
 
     public OpenIdConnectEventHelper(bool isDevelopment)
     {
         _isDevelopment = isDevelopment;
-        
+
         OnTokenValidated = HandleOnTokenValidated;
         OnRemoteFailure = HandleRemoteFailure;
         OnRedirectToIdentityProvider = HandleOnRedirectToIdentityProvider;
         OnRedirectToIdentityProviderForSignOut = HandleOnRedirectToIdentityProviderForSignOut;
     }
-    
+
     private Task HandleRemoteFailure(RemoteFailureContext ctx)
     {
         if (ctx.Failure == null)
             return Task.CompletedTask;
 
         var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<IOpenIdConnectService>>();
-        
+
         logger.LogError(ctx.Failure, "Encountered an exception while communicating with the idp");
         ctx.Response.Redirect("/login?skipAutoLogin=true&error=" + Uri.EscapeDataString(ctx.Failure.Message));
         ctx.HandleResponse();
@@ -52,23 +51,20 @@ public class OpenIdConnectEventHelper: OpenIdConnectEvents
             ctx.HandleResponse();
             return Task.CompletedTask;
         }
-        
-        if (!_isDevelopment && !string.IsNullOrEmpty(ctx.ProtocolMessage.RedirectUri))
-        {
-            ctx.ProtocolMessage.RedirectUri = ctx.ProtocolMessage.RedirectUri.Replace("http://", "https://");
-        }
 
-        return Task.CompletedTask; 
+        if (!_isDevelopment && !string.IsNullOrEmpty(ctx.ProtocolMessage.RedirectUri))
+            ctx.ProtocolMessage.RedirectUri = ctx.ProtocolMessage.RedirectUri.Replace("http://", "https://");
+
+        return Task.CompletedTask;
     }
 
     private Task HandleOnRedirectToIdentityProviderForSignOut(RedirectContext ctx)
     {
         if (!_isDevelopment && !string.IsNullOrEmpty(ctx.ProtocolMessage.PostLogoutRedirectUri))
-        {
-            ctx.ProtocolMessage.PostLogoutRedirectUri = ctx.ProtocolMessage.PostLogoutRedirectUri.Replace("http://", "https://");
-        }
+            ctx.ProtocolMessage.PostLogoutRedirectUri =
+                ctx.ProtocolMessage.PostLogoutRedirectUri.Replace("http://", "https://");
 
-        return Task.CompletedTask; 
+        return Task.CompletedTask;
     }
 
     private static async Task HandleOnTokenValidated(TokenValidatedContext ctx)
@@ -97,10 +93,7 @@ public class OpenIdConnectEventHelper: OpenIdConnectEvents
 
 
             var idToken = ctx.Properties.GetTokenValue(IOpenIdConnectService.IdToken);
-            if (!string.IsNullOrEmpty(idToken))
-            {
-                ctx.Principal = await oidcService.ParseIdToken(idToken);
-            }
+            if (!string.IsNullOrEmpty(idToken)) ctx.Principal = await oidcService.ParseIdToken(idToken);
 
             ctx.Success();
         }
@@ -108,24 +101,22 @@ public class OpenIdConnectEventHelper: OpenIdConnectEvents
         {
             var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<IOpenIdConnectService>>();
             logger.LogError(ex, "An exception occured during initial OIDC flow");
-            
+
             ctx.Response.Redirect("/login?skipAutoLogin=true&error=" + Uri.EscapeDataString(ex.Message));
             ctx.HandleResponse();
         }
     }
-    
+
     private static List<AuthenticationToken> CopyOidcTokens(TokenValidatedContext ctx)
     {
-        if (ctx.TokenEndpointResponse == null)
-        {
-            return [];
-        }
+        if (ctx.TokenEndpointResponse == null) return [];
 
         var tokens = new List<AuthenticationToken>();
 
         if (!string.IsNullOrEmpty(ctx.TokenEndpointResponse.RefreshToken))
         {
-            tokens.Add(new AuthenticationToken { Name = IOpenIdConnectService.RefreshToken, Value = ctx.TokenEndpointResponse.RefreshToken });
+            tokens.Add(new AuthenticationToken
+                { Name = IOpenIdConnectService.RefreshToken, Value = ctx.TokenEndpointResponse.RefreshToken });
         }
         else
         {
@@ -134,17 +125,16 @@ public class OpenIdConnectEventHelper: OpenIdConnectEvents
         }
 
         if (!string.IsNullOrEmpty(ctx.TokenEndpointResponse.IdToken))
-        {
-            tokens.Add(new AuthenticationToken { Name = IOpenIdConnectService.IdToken, Value = ctx.TokenEndpointResponse.IdToken });
-        }
+            tokens.Add(new AuthenticationToken
+                { Name = IOpenIdConnectService.IdToken, Value = ctx.TokenEndpointResponse.IdToken });
 
         if (!string.IsNullOrEmpty(ctx.TokenEndpointResponse.ExpiresIn))
         {
             var expiresAt = DateTimeOffset.UtcNow.AddSeconds(double.Parse(ctx.TokenEndpointResponse.ExpiresIn));
-            tokens.Add(new AuthenticationToken { Name = IOpenIdConnectService.ExpiresAt, Value = expiresAt.ToString("o") });
+            tokens.Add(new AuthenticationToken
+                { Name = IOpenIdConnectService.ExpiresAt, Value = expiresAt.ToString("o") });
         }
 
         return tokens;
     }
-    
 }

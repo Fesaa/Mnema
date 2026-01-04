@@ -14,7 +14,7 @@ using Mnema.Models.Entities.External;
 
 namespace Mnema.Database.Repositories;
 
-public class ExternalConnectionRepository(MnemaDataContext ctx, IMapper mapper): IExternalConnectionRepository
+public class ExternalConnectionRepository(MnemaDataContext ctx, IMapper mapper) : IExternalConnectionRepository
 {
     public Task<List<ExternalConnection>> GetAllConnections(CancellationToken cancellationToken)
     {
@@ -22,7 +22,8 @@ public class ExternalConnectionRepository(MnemaDataContext ctx, IMapper mapper):
             .ToListAsync(cancellationToken);
     }
 
-    public Task<PagedList<ExternalConnectionDto>> GetAllConnectionDtos(PaginationParams pagintation, CancellationToken cancellationToken)
+    public Task<PagedList<ExternalConnectionDto>> GetAllConnectionDtos(PaginationParams pagintation,
+        CancellationToken cancellationToken)
     {
         return ctx.ExternalConnections
             .ProjectTo<ExternalConnectionDto>(mapper.ConfigurationProvider)

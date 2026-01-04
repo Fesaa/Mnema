@@ -8,15 +8,16 @@ using Mnema.Database.Repositories;
 
 namespace Mnema.Database;
 
-public class UnitOfWork(ILogger<UnitOfWork> logger, MnemaDataContext ctx, IMapper mapper): IUnitOfWork
+public class UnitOfWork(ILogger<UnitOfWork> logger, MnemaDataContext ctx, IMapper mapper) : IUnitOfWork
 {
-
     public ISubscriptionRepository SubscriptionRepository { get; } = new SubscriptionRepository(ctx, mapper);
     public IPagesRepository PagesRepository { get; } = new PagesRepository(ctx, mapper);
     public IUserRepository UserRepository { get; } = new UserRepository(ctx, mapper);
     public ISettingsRepository SettingsRepository { get; } = new SettingsRepository(ctx, mapper);
     public INotificationRepository NotificationRepository { get; } = new NotificationRepository(ctx, mapper);
-    public IExternalConnectionRepository ExternalConnectionRepository { get; } = new ExternalConnectionRepository(ctx, mapper);
+
+    public IExternalConnectionRepository ExternalConnectionRepository { get; } =
+        new ExternalConnectionRepository(ctx, mapper);
 
     public async Task<bool> CommitAsync()
     {
@@ -41,5 +42,4 @@ public class UnitOfWork(ILogger<UnitOfWork> logger, MnemaDataContext ctx, IMappe
 
         return true;
     }
-    
 }

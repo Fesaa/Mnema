@@ -7,5 +7,5 @@ public enum Provider
     Webtoons = 2,
     Dynasty = 3,
     Bato = 4,
-    MangaBuddy = 5,
+    MangaBuddy = 5
 }

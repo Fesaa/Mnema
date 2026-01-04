@@ -5,7 +5,7 @@ using Mnema.Models.DTOs.Content;
 
 namespace Mnema.Providers;
 
-public class NoOpContentManager: IContentManager
+public class NoOpContentManager : IContentManager
 {
     public Task Download(DownloadRequestDto request)
     {
@@ -33,7 +33,7 @@ public class NoOpContentManager: IContentManager
         {
             Provider = message.Provider,
             ContentId = message.ContentId,
-            Type = message.Type,
+            Type = message.Type
         });
     }
 }

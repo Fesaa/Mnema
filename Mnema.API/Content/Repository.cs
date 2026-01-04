@@ -12,28 +12,28 @@ public sealed record DownloadUrl(string Url, string FallbackUrl);
 
 public interface IRepository
 {
-
     /// <summary>
-    /// Search for possible series to download given a request
+    ///     Search for possible series to download given a request
     /// </summary>
     /// <param name="request"></param>
     /// <param name="pagination"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside our control fails</exception>
-    Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken);
+    Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination,
+        CancellationToken cancellationToken);
 
     /// <summary>
-    /// Retrieve series information by id
+    ///     Retrieve series information by id
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside our control fails</exception>
     Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken);
-    
+
     /// <summary>
-    /// Retrieve all urls that should be downloaded for a series 
+    ///     Retrieve all urls that should be downloaded for a series
     /// </summary>
     /// <param name="chapter"></param>
     /// <param name="cancellationToken"></param>
@@ -42,23 +42,23 @@ public interface IRepository
     Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Retrieve all recently updated series
+    ///     Retrieve all recently updated series
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Get <see cref="DownloadMetadata"/> for the provider
+    ///     Get <see cref="DownloadMetadata" /> for the provider
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken);
+
     /// <summary>
-    /// Get all <see cref="ModifierDto"/>s avaible for search for the provider
+    ///     Get all <see cref="ModifierDto" />s avaible for search for the provider
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken);
-
 }

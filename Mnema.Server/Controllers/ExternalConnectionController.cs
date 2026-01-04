@@ -14,13 +14,15 @@ using Mnema.Models.Internal;
 namespace Mnema.Server.Controllers;
 
 [Authorize(Roles.ManageExternalConnections)]
-public class ExternalConnectionController(IUnitOfWork unitOfWork, IExternalConnectionService externalConnectionService): BaseApiController
+public class ExternalConnectionController(IUnitOfWork unitOfWork, IExternalConnectionService externalConnectionService)
+    : BaseApiController
 {
-
     [HttpGet]
-    public async Task<ActionResult<PagedList<ExternalConnectionDto>>> GetExternalConnections([FromQuery] PaginationParams paginationParams)
+    public async Task<ActionResult<PagedList<ExternalConnectionDto>>> GetExternalConnections(
+        [FromQuery] PaginationParams paginationParams)
     {
-        return Ok(await unitOfWork.ExternalConnectionRepository.GetAllConnectionDtos(paginationParams, HttpContext.RequestAborted));
+        return Ok(await unitOfWork.ExternalConnectionRepository.GetAllConnectionDtos(paginationParams,
+            HttpContext.RequestAborted));
     }
 
     [HttpGet("form")]
@@ -43,8 +45,7 @@ public class ExternalConnectionController(IUnitOfWork unitOfWork, IExternalConne
     public async Task<IActionResult> DeleteConnection(Guid id, CancellationToken cancellationToken)
     {
         await unitOfWork.ExternalConnectionRepository.DeleteConnectionById(id, cancellationToken);
-        
+
         return Ok();
     }
-    
 }

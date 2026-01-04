@@ -15,7 +15,6 @@ namespace Mnema.Services.Extensions;
 
 public static class ServiceProviderExtensions
 {
-
     public static IServiceCollection AddMnemaServices(this IServiceCollection services)
     {
         services.AddSingleton<ITicketStore, CustomTicketStore>();
@@ -32,8 +31,10 @@ public static class ServiceProviderExtensions
         #region External Connection
 
         services.AddScoped<IExternalConnectionService, ExternalConnectionService>();
-        services.AddKeyedScoped<IExternalConnectionHandlerService, DiscordExternalConnectionService>(ExternalConnectionType.Discord);
-        services.AddKeyedScoped<IExternalConnectionHandlerService, KavitaExternalConnectionService>(ExternalConnectionType.Kavita);
+        services.AddKeyedScoped<IExternalConnectionHandlerService, DiscordExternalConnectionService>(
+            ExternalConnectionType.Discord);
+        services.AddKeyedScoped<IExternalConnectionHandlerService, KavitaExternalConnectionService>(
+            ExternalConnectionType.Kavita);
 
         #endregion
 
@@ -44,5 +45,4 @@ public static class ServiceProviderExtensions
     {
         builder.MapHub<MessageHub>("/ws");
     }
-    
 }

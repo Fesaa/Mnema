@@ -10,9 +10,8 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Models;
 
-public class AutoMapperProfiles: Profile
+public class AutoMapperProfiles : Profile
 {
-
     public AutoMapperProfiles()
     {
         CreateMap<Subscription, SubscriptionDto>();
@@ -22,5 +21,4 @@ public class AutoMapperProfiles: Profile
         CreateMap<UserPreferences, UserPreferencesDto>();
         CreateMap<ExternalConnection, ExternalConnectionDto>();
     }
-    
 }

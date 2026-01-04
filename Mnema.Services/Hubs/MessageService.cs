@@ -7,13 +7,8 @@ using Mnema.Models.DTOs.User;
 
 namespace Mnema.Services.Hubs;
 
-internal class MessageService(IHubContext<MessageHub> ctx): IMessageService
+internal class MessageService(IHubContext<MessageHub> ctx) : IMessageService
 {
-    private async Task SendToUser(Guid userId, string method, object? body = null)
-    {
-        await ctx.Clients.User(userId.ToString()).SendAsync(method, body);
-    }
-
     public async Task SizeUpdate(Guid userId, string contentId, string newSize)
     {
         await SendToUser(userId, nameof(MessageEventType.ContentSizeUpdate), new ContentSizeUpdate
@@ -75,5 +70,10 @@ internal class MessageService(IHubContext<MessageHub> ctx): IMessageService
     {
         await SendToUser(userId, nameof(MessageEventType.Notification), notification);
         await SendToUser(userId, nameof(MessageEventType.NotificationAdd));
+    }
+
+    private async Task SendToUser(Guid userId, string method, object? body = null)
+    {
+        await ctx.Clients.User(userId.ToString()).SendAsync(method, body);
     }
 }

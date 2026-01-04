@@ -6,13 +6,12 @@ using Mnema.API;
 
 namespace Mnema.Server;
 
-public class JobsBootstrapper(IServiceScopeFactory scopeFactory): IHostedService
+public class JobsBootstrapper(IServiceScopeFactory scopeFactory) : IHostedService
 {
-
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         using var scope = scopeFactory.CreateScope();
-        
+
         var subscriptionSchedular = scope.ServiceProvider.GetRequiredService<ISubscriptionScheduler>();
         await subscriptionSchedular.EnsureScheduledAsync();
     }

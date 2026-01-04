@@ -15,12 +15,11 @@ public enum MessageEventType
     ContentStateUpdate,
     Notification,
     NotificationRead,
-    NotificationAdd,
+    NotificationAdd
 }
 
 public interface IMessageService
 {
-
     Task SizeUpdate(Guid userId, string contentId, string newSize);
     Task ProgressUpdate(Guid userId, string contentId, ContentSpeedUpdate progressSpeedUpdate);
     Task StateUpdate(Guid userId, string contentId, ContentState state);
@@ -32,5 +31,4 @@ public interface IMessageService
     Task NotificationAdded(Guid userId, int amount);
     Task NotificationRemoved(Guid userId, int amount);
     Task Notify(Guid userId, NotificationDto notification);
-
 }

@@ -21,15 +21,14 @@ public class SubscriptionScheduler(
     IServiceScopeFactory scopeFactory,
     IRecurringJobManagerV2 recurringJobManager,
     IWebHostEnvironment environment
-    ): ISubscriptionScheduler
+) : ISubscriptionScheduler
 {
-
     private const string JobId = "subscriptions.daily";
     private const string WatcherJobId = "subscriptions.rss";
 
     private static readonly RecurringJobOptions RecurringJobOptions = new()
     {
-        TimeZone = TimeZoneInfo.Local,
+        TimeZone = TimeZoneInfo.Local
     };
 
     public async Task EnsureScheduledAsync()
@@ -47,46 +46,44 @@ public class SubscriptionScheduler(
         logger.LogDebug("Updating subscription task with hour {hour}", hour);
         using var scope = scopeFactory.CreateScope();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        
+
         var subs = await unitOfWork.SubscriptionRepository.GetAllSubscriptions();
-        foreach (var subscription in subs)
-        {
-            subscription.NextRun = subscription.NextRunTime(hour);
-        }
-        
+        foreach (var subscription in subs) subscription.NextRun = subscription.NextRunTime(hour);
+
         await unitOfWork.CommitAsync();
-        
+
         Register(hour);
     }
 
     public async Task RunDaily()
     {
         using var scope = scopeFactory.CreateScope();
-        
+
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         var subHour = await scope.ServiceProvider
             .GetRequiredService<ISettingsService>()
             .GetSettingsAsync<int>(ServerSettingKey.SubscriptionRefreshHour);
-            
+
         var subs = await unitOfWork.SubscriptionRepository.GetAllSubscriptions();
 
         var now = DateTime.Now;
-        
+
         foreach (var subscription in subs)
         {
             var nextExec = subscription.NextRun.ToLocalTime();
-            
+
             if (nextExec.Date != now.Date)
                 continue;
 
             subscription.LastRun = DateTime.UtcNow;
             subscription.NextRun = subscription.NextRunTime(subHour);
-            
+
             try
             {
                 using var subScope = scopeFactory.CreateScope();
 
-                var contentManager = subScope.ServiceProvider.GetRequiredKeyedService<IContentManager>(subscription.Provider);
+                var contentManager =
+                    subScope.ServiceProvider.GetRequiredKeyedService<IContentManager>(subscription.Provider);
 
                 await contentManager.Download(subscription.AsDownloadRequestDto());
 
@@ -102,7 +99,7 @@ public class SubscriptionScheduler(
                     UserId = subscription.UserId,
                     Summary = ex.Message,
                     Body = ex.StackTrace,
-                    Colour = NotificationColour.Error,
+                    Colour = NotificationColour.Error
                 });
 
                 subscription.LastRunSuccess = false;
@@ -145,14 +142,12 @@ public class SubscriptionScheduler(
         );
 
         foreach (var subscription in subscriptionsToStart)
-        {
             await downloadService.StartDownload(subscription.AsDownloadRequestDto());
-        }
     }
 
     private async Task<(int, List<Subscription>)> ProcessRecentlyUpdated(
         IServiceScope scope, List<Provider> providers, Dictionary<string, Subscription> subsById
-        )
+    )
     {
         var totalUpdated = 0;
         var subscriptionsToStart = new List<Subscription>();
@@ -162,7 +157,8 @@ public class SubscriptionScheduler(
             var repository = scope.ServiceProvider.GetKeyedService<IRepository>(provider);
             if (repository == null)
             {
-                logger.LogWarning("Repository for {Provider} not found, while a subscription exists", provider.ToString());
+                logger.LogWarning("Repository for {Provider} not found, while a subscription exists",
+                    provider.ToString());
                 continue;
             }
 
@@ -188,7 +184,7 @@ public class SubscriptionScheduler(
         return (totalUpdated, subscriptionsToStart);
     }
 
-    
+
     private void Register(int hour)
     {
         var cron = $"0 {hour} * * *";
@@ -201,14 +197,10 @@ public class SubscriptionScheduler(
 
         logger.LogDebug("Registering subscription watcher task with cron {cron}", cron);
         if (environment.IsDevelopment())
-        {
             recurringJobManager.RemoveIfExists(WatcherJobId);
-        }
         else
-        {
             recurringJobManager.AddOrUpdate<SubscriptionScheduler>(WatcherJobId,
                 j => j.RunWatcher(),
                 cron, RecurringJobOptions);
-        }
     }
 }

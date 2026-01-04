@@ -8,9 +8,8 @@ using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
 
-public class ConfigController(ILogger<ConfigController> logger, ISettingsService settingsService): BaseApiController
+public class ConfigController(ILogger<ConfigController> logger, ISettingsService settingsService) : BaseApiController
 {
-
     [HttpGet]
     public async Task<ActionResult<ServerSettingsDto>> GetSettings()
     {
@@ -27,5 +26,4 @@ public class ConfigController(ILogger<ConfigController> logger, ISettingsService
 
         return Ok();
     }
-
 }

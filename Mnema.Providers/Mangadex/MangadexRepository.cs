@@ -20,35 +20,35 @@ using Mnema.Providers.Extensions;
 
 namespace Mnema.Providers.Mangadex;
 
-internal class MangadexRepository: IRepository
+internal class MangadexRepository : IRepository
 {
-
     private static readonly ConcurrentDictionary<string, string> LinkFormats =
         new(StringComparer.OrdinalIgnoreCase)
         {
-            ["al"]    = "https://anilist.co/manga/{0}",
-            ["ap"]    = "https://www.anime-planet.com/manga/{0}",
-            ["bw"]    = "https://bookwalker.jp/{0}",
-            ["mu"]    = "https://www.mangaupdates.com/series.html?id={0}",
-            ["nu"]    = "https://www.novelupdates.com/series/{0}",
-            ["kt"]    = "https://kitsu.io/api/edge/manga/{0}",
-            ["mal"]   = "https://myanimelist.net/manga/{0}",
+            ["al"] = "https://anilist.co/manga/{0}",
+            ["ap"] = "https://www.anime-planet.com/manga/{0}",
+            ["bw"] = "https://bookwalker.jp/{0}",
+            ["mu"] = "https://www.mangaupdates.com/series.html?id={0}",
+            ["nu"] = "https://www.novelupdates.com/series/{0}",
+            ["kt"] = "https://kitsu.io/api/edge/manga/{0}",
+            ["mal"] = "https://myanimelist.net/manga/{0}",
 
-            ["amz"]   = "{0}",
-            ["ebj"]   = "{0}",
-            ["cdj"]   = "{0}",
-            ["raw"]   = "{0}",
-            ["engtl"] = "{0}",
+            ["amz"] = "{0}",
+            ["ebj"] = "{0}",
+            ["cdj"] = "{0}",
+            ["raw"] = "{0}",
+            ["engtl"] = "{0}"
         };
+
+    private readonly IDistributedCache _cache;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<MangadexRepository> _logger;
 
 
     private readonly AsyncLazy<List<FormControlOption>> _tagOptions;
-    private readonly ILogger<MangadexRepository> _logger;
-    private readonly IDistributedCache _cache;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private HttpClient Client => _httpClientFactory.CreateClient(nameof(Provider.Mangadex));
 
-    public MangadexRepository(ILogger<MangadexRepository> logger, IDistributedCache cache, IHttpClientFactory httpClientFactory)
+    public MangadexRepository(ILogger<MangadexRepository> logger, IDistributedCache cache,
+        IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
         _cache = cache;
@@ -56,7 +56,10 @@ internal class MangadexRepository: IRepository
         _tagOptions = new AsyncLazy<List<FormControlOption>>(LoadTagOptions);
     }
 
-    public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken)
+    private HttpClient Client => _httpClientFactory.CreateClient(nameof(Provider.Mangadex));
+
+    public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination,
+        CancellationToken cancellationToken)
     {
         var url = "/manga".SetQueryParam("title", request.Query)
             .AddRange("status", request.Modifiers.GetStrings("status"))
@@ -68,18 +71,13 @@ internal class MangadexRepository: IRepository
             .SetQueryParam("excludedTagsMode", request.Modifiers.GetStringOrDefault("excludedTagsMode", "OR"))
             .AddPagination(pagination)
             .AddIncludes();
-        
-        var result = await Client.GetCachedAsync<SearchResponse>(url.ToString(), _cache, cancellationToken: cancellationToken);
-        if (result.IsErr)
-        {
-            throw new MnemaException("Failed to search for series", result.Error);
-        }
+
+        var result =
+            await Client.GetCachedAsync<SearchResponse>(url.ToString(), _cache, cancellationToken: cancellationToken);
+        if (result.IsErr) throw new MnemaException("Failed to search for series", result.Error);
 
         var response = result.Unwrap();
-        if (response.Data == null)
-        {
-            return PagedList<SearchResult>.Empty();
-        }
+        if (response.Data == null) return PagedList<SearchResult>.Empty();
 
         var items = response.Data.Select(searchResult => new SearchResult
         {
@@ -90,7 +88,7 @@ internal class MangadexRepository: IRepository
             Size = searchResult.Attributes.Size(),
             Tags = [],
             Url = searchResult.RefUrl,
-            ImageUrl = searchResult.CoverUrl() ?? string.Empty,
+            ImageUrl = searchResult.CoverUrl() ?? string.Empty
         });
 
         return new PagedList<SearchResult>(items, response.Total, response.Offset / response.Limit, response.Limit);
@@ -101,11 +99,9 @@ internal class MangadexRepository: IRepository
         var id = request.Id;
         var url = $"/manga/{id}".AddIncludes();
 
-        var result = await Client.GetCachedAsync<MangaResponse>(url.ToString(), _cache, cancellationToken: cancellationToken);
-        if (result.IsErr)
-        {
-            throw new MnemaException($"Failed to retrieve information for manga {id}", result.Error);
-        }
+        var result =
+            await Client.GetCachedAsync<MangaResponse>(url.ToString(), _cache, cancellationToken: cancellationToken);
+        if (result.IsErr) throw new MnemaException($"Failed to retrieve information for manga {id}", result.Error);
 
         var language = request.GetStringOrDefault(RequestConstants.LanguageKey, "en");
 
@@ -118,7 +114,7 @@ internal class MangadexRepository: IRepository
             {
                 Id = t.Id,
                 Value = t.Attributes.Name[language],
-                IsMarkedAsGenre = t.Attributes.Group == "genre",
+                IsMarkedAsGenre = t.Attributes.Group == "genre"
             })
             .ToList();
 
@@ -134,9 +130,9 @@ internal class MangadexRepository: IRepository
             TranslationGroups = chapter.RelationShips
                 .Where(r => r.Type is "scanlation_group" or "user")
                 .Select(r => r.Id)
-                .ToList(),
+                .ToList()
         }).ToList();
-        
+
         return new Series
         {
             Id = id,
@@ -151,100 +147,23 @@ internal class MangadexRepository: IRepository
             HighestChapterNumber = manga.Attributes.HighestChapter,
             HighestVolumeNumber = manga.Attributes.HighestVolume,
             Links = manga.Attributes.Links
-                .Select(kv => LinkFormats.TryGetValue(kv.Key, out var format) ? string.Format(format, kv.Value) : string.Empty)
+                .Select(kv =>
+                    LinkFormats.TryGetValue(kv.Key, out var format) ? string.Format(format, kv.Value) : string.Empty)
                 .Where(x => !string.IsNullOrEmpty(x))
                 .ToList(),
             Tags = tags,
             People = manga.People,
-            Chapters = filteredChapters,
+            Chapters = filteredChapters
         };
     }
 
-    private async Task<ChaptersResponse> GetChaptersForSeries(string id, string language, CancellationToken cancellationToken, int offSet = 0)
-    {
-        var url = $"/manga/{id}/feed?order[volume]=desc&order[chapter]=desc"
-            .AppendQueryParam("translatedLanguage[]", language)
-            .AddPagination(20, offSet)
-            .AddAllContentRatings();
-
-        var result = await Client.GetCachedAsync<ChaptersResponse>(url, _cache, cancellationToken: cancellationToken);
-        if (result.IsErr)
-        {
-            throw new MnemaException($"Failed to retrieve chapter information for manga {id} with offset {offSet}", result.Error);
-        }
-
-        var resp = result.Unwrap();
-
-        if (resp.Total < resp.Limit + resp.Offset)
-        {
-            return resp;
-        }
-
-        var extra = await GetChaptersForSeries(id, language, cancellationToken, resp.Limit + resp.Offset);
-
-        resp.Data.AddRange(extra.Data);
-
-        return resp;
-    }
-
-    private static List<ChapterData> FilterChapters(IList<ChapterData> chapters, string language, DownloadRequestDto request)
-    {
-        var scanlationGroup = request.GetStringOrDefault(RequestConstants.ScanlationGroupKey, string.Empty);
-        var allowNonMatching = request.GetBool(RequestConstants.AllowNonMatchingScanlationGroupKey, true);
-        var downloadOneShots = request.GetBool(RequestConstants.DownloadOneShotKey);
-
-        return chapters
-            .GroupBy(c => string.IsNullOrEmpty(c.Attributes.Chapter)
-                ? string.Empty
-                : $"{c.Attributes.Chapter} - {c.Attributes.Volume}")
-            .WhereIf(!downloadOneShots, g => !string.IsNullOrEmpty(g.Key))
-            .SelectMany(g =>
-            {
-                if (string.IsNullOrEmpty(g.Key)) return g.ToList();
-
-                var chapter = g.FirstOrDefault(ChapterFinder(language, scanlationGroup));
-
-                if (chapter == null && allowNonMatching)
-                {
-                    chapter = g.FirstOrDefault(ChapterFinder(language, string.Empty));
-                }
-
-                if (chapter == null) return [];
-
-                return [chapter];
-            })
-            .ToList();
-    }
-
-    private static Func<ChapterData, bool> ChapterFinder(string language, string scanlationGroup)
-    {
-        return chapter =>
-        {
-            if (chapter.Attributes.TranslatedLanguage != language) return false;
-
-            // Skip over official publisher chapters, we cannot download these from mangadex
-            if (!string.IsNullOrEmpty(chapter.Attributes.ExternalUrl )) return false;
-
-            if (string.IsNullOrEmpty(scanlationGroup)) return true;
-
-            return chapter.RelationShips.FirstOrDefault(r =>
-            {
-                if (r.Type != "scanlation_group" && r.Type != "user") return false;
-
-                return r.Id == scanlationGroup;
-            }) != null;
-        };
-    }
-    
     public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
     {
         var url = $"/at-home/server/{chapter.Id}";
 
-        var result = await Client.GetCachedAsync<ChapterImagesResponse>(url, _cache, cancellationToken: cancellationToken);
-        if (result.IsErr)
-        {
-            throw new MnemaException("Failed to retrieve chapter images", result.Error);
-        }
+        var result =
+            await Client.GetCachedAsync<ChapterImagesResponse>(url, _cache, cancellationToken: cancellationToken);
+        if (result.IsErr) throw new MnemaException("Failed to retrieve chapter images", result.Error);
 
         var imageInfo = result.Unwrap();
         var baseUrl = imageInfo.BaseUrl;
@@ -289,90 +208,94 @@ internal class MangadexRepository: IRepository
                 Key = RequestConstants.LanguageKey,
                 Type = FormType.DropDown,
                 DefaultOption = "en",
-                Options = [
+                Options =
+                [
                     new FormControlOption("en", "English"),
                     new FormControlOption("zh", "Simplified Chinese"),
                     new FormControlOption("zh-hk", "Traditional Chinese"),
                     new FormControlOption("es", "Castilian Spanish"),
                     new FormControlOption("fr", "French"),
                     new FormControlOption("ja", "Japanese")
-                ],
+                ]
             },
             new FormControlDefinition
             {
                 Key = RequestConstants.ScanlationGroupKey,
                 Advanced = true,
-                Type = FormType.Text,
+                Type = FormType.Text
             },
             new FormControlDefinition
             {
                 Key = RequestConstants.DownloadOneShotKey,
-                Type = FormType.Switch,
+                Type = FormType.Switch
             },
             new FormControlDefinition
             {
                 Key = RequestConstants.IncludeCover,
                 Type = FormType.Switch,
-                DefaultOption = "true",
+                DefaultOption = "true"
             },
             new FormControlDefinition
             {
                 Key = RequestConstants.UpdateCover,
                 Advanced = true,
-                Type = FormType.Switch,
+                Type = FormType.Switch
             },
             new FormControlDefinition
             {
                 Key = RequestConstants.TitleOverride,
                 Advanced = true,
-                Type = FormType.Text,
+                Type = FormType.Text
             },
             new FormControlDefinition
             {
                 Key = RequestConstants.AllowNonMatchingScanlationGroupKey,
                 Advanced = true,
                 Type = FormType.Switch,
-                DefaultOption = "true",
+                DefaultOption = "true"
             }
         ]));
     }
 
     public async Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        return [
+        return
+        [
             new FormControlDefinition
             {
                 Type = FormType.MultiSelect,
                 Key = "status",
-                Options = [
+                Options =
+                [
                     FormControlOption.Option("cancelled", "Cancelled"),
                     FormControlOption.Option("completed", "Completed"),
                     FormControlOption.Option("hiatus", "Hiatus"),
-                    FormControlOption.Option("ongoing", "Ongoing"),
-                ],
+                    FormControlOption.Option("ongoing", "Ongoing")
+                ]
             },
             new FormControlDefinition
             {
                 Type = FormType.MultiSelect,
                 Key = "contentRating",
-                Options = [
+                Options =
+                [
                     FormControlOption.Option("safe", "Safe"),
                     FormControlOption.Option("suggestive", "Suggestive"),
                     FormControlOption.Option("erotica", "Erotica"),
-                    FormControlOption.Option("pornographic", "Mature"),
-                ],
+                    FormControlOption.Option("pornographic", "Mature")
+                ]
             },
             new FormControlDefinition
             {
                 Type = FormType.DropDown,
                 Key = "includeTags",
-                Options = await _tagOptions,
+                Options = await _tagOptions
             },
             new FormControlDefinition
             {
                 Type = FormType.MultiSelect,
                 Key = "excludeTags",
-                Options = await _tagOptions,
+                Options = await _tagOptions
             },
             new FormControlDefinition
             {
@@ -385,10 +308,82 @@ internal class MangadexRepository: IRepository
                 Type = FormType.DropDown,
                 Key = "excludeTagsMode",
                 Options = [FormControlOption.Option("AND", "And"), FormControlOption.DefaultValue("OR", "Or")]
-            },
+            }
         ];
     }
-    
+
+    private async Task<ChaptersResponse> GetChaptersForSeries(string id, string language,
+        CancellationToken cancellationToken, int offSet = 0)
+    {
+        var url = $"/manga/{id}/feed?order[volume]=desc&order[chapter]=desc"
+            .AppendQueryParam("translatedLanguage[]", language)
+            .AddPagination(20, offSet)
+            .AddAllContentRatings();
+
+        var result = await Client.GetCachedAsync<ChaptersResponse>(url, _cache, cancellationToken: cancellationToken);
+        if (result.IsErr)
+            throw new MnemaException($"Failed to retrieve chapter information for manga {id} with offset {offSet}",
+                result.Error);
+
+        var resp = result.Unwrap();
+
+        if (resp.Total < resp.Limit + resp.Offset) return resp;
+
+        var extra = await GetChaptersForSeries(id, language, cancellationToken, resp.Limit + resp.Offset);
+
+        resp.Data.AddRange(extra.Data);
+
+        return resp;
+    }
+
+    private static List<ChapterData> FilterChapters(IList<ChapterData> chapters, string language,
+        DownloadRequestDto request)
+    {
+        var scanlationGroup = request.GetStringOrDefault(RequestConstants.ScanlationGroupKey, string.Empty);
+        var allowNonMatching = request.GetBool(RequestConstants.AllowNonMatchingScanlationGroupKey, true);
+        var downloadOneShots = request.GetBool(RequestConstants.DownloadOneShotKey);
+
+        return chapters
+            .GroupBy(c => string.IsNullOrEmpty(c.Attributes.Chapter)
+                ? string.Empty
+                : $"{c.Attributes.Chapter} - {c.Attributes.Volume}")
+            .WhereIf(!downloadOneShots, g => !string.IsNullOrEmpty(g.Key))
+            .SelectMany(g =>
+            {
+                if (string.IsNullOrEmpty(g.Key)) return g.ToList();
+
+                var chapter = g.FirstOrDefault(ChapterFinder(language, scanlationGroup));
+
+                if (chapter == null && allowNonMatching)
+                    chapter = g.FirstOrDefault(ChapterFinder(language, string.Empty));
+
+                if (chapter == null) return [];
+
+                return [chapter];
+            })
+            .ToList();
+    }
+
+    private static Func<ChapterData, bool> ChapterFinder(string language, string scanlationGroup)
+    {
+        return chapter =>
+        {
+            if (chapter.Attributes.TranslatedLanguage != language) return false;
+
+            // Skip over official publisher chapters, we cannot download these from mangadex
+            if (!string.IsNullOrEmpty(chapter.Attributes.ExternalUrl)) return false;
+
+            if (string.IsNullOrEmpty(scanlationGroup)) return true;
+
+            return chapter.RelationShips.FirstOrDefault(r =>
+            {
+                if (r.Type != "scanlation_group" && r.Type != "user") return false;
+
+                return r.Id == scanlationGroup;
+            }) != null;
+        };
+    }
+
     private async Task<List<FormControlOption>> LoadTagOptions()
     {
         var result = await Client.GetCachedAsync<TagResponse>("/manga/tag", _cache);
@@ -400,12 +395,8 @@ internal class MangadexRepository: IRepository
 
         List<FormControlOption> options = [];
         foreach (var tagData in result.Unwrap().Data)
-        {
             if (tagData.Attributes.Name.TryGetValue("en", out var value))
-            {
                 options.Add(FormControlOption.Option(tagData.Id, value));
-            }
-        }
 
         return options;
     }
@@ -415,17 +406,11 @@ internal class MangadexRepository: IRepository
         var url = $"/cover?order[volume]=asc&limit=20&manga[]={id}&offset={offset}";
 
         var result = await Client.GetCachedAsync<CoverResponse>(url, _cache, cancellationToken: cancellationToken);
-        if (result.IsErr)
-        {
-            throw new MnemaException($"Failed to load cover images for {id}", result.Error);
-        }
+        if (result.IsErr) throw new MnemaException($"Failed to load cover images for {id}", result.Error);
 
         var resp = result.Unwrap();
 
-        if (resp.Total < resp.Limit + resp.Offset)
-        {
-            return resp;
-        }
+        if (resp.Total < resp.Limit + resp.Offset) return resp;
 
         var extra = await GetCoverImages(id, cancellationToken, resp.Limit + resp.Offset);
 
@@ -433,5 +418,4 @@ internal class MangadexRepository: IRepository
 
         return resp;
     }
-
 }

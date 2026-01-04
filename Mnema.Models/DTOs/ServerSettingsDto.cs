@@ -11,7 +11,7 @@ public class ServerSettingsDto
     public string FirstInstalledVersion { get; set; }
     public DateTime InstallDate { get; set; }
     public int SubscriptionRefreshHour { get; set; }
-    public DateTime LastUpdateDate { get; set;  }
+    public DateTime LastUpdateDate { get; set; }
 }
 
 public class UpdateServerSettingsDto

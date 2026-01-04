@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
@@ -16,24 +15,29 @@ namespace Mnema.Tests.Providers.Services;
 [TestSubject(typeof(MetadataService))]
 public class MetadataServiceTest
 {
-    
-    private static IMetadataService CreateSut() => new MetadataService();
-
-    private static DownloadRequestDto Request() => new()
+    private static IMetadataService CreateSut()
     {
-        Provider = Provider.Nyaa,
-        Id = string.Empty,
-        BaseDir = string.Empty,
-        TempTitle = string.Empty,
-        DownloadMetadata = new DownloadMetadataDto
+        return new MetadataService();
+    }
+
+    private static DownloadRequestDto Request()
+    {
+        return new DownloadRequestDto
         {
-            Extra = new MetadataBag
+            Provider = Provider.Nyaa,
+            Id = string.Empty,
+            BaseDir = string.Empty,
+            TempTitle = string.Empty,
+            DownloadMetadata = new DownloadMetadataDto
             {
-                [RequestConstants.IncludeNotMatchedTagsKey] = ["true"]
+                Extra = new MetadataBag
+                {
+                    [RequestConstants.IncludeNotMatchedTagsKey] = ["true"]
+                }
             }
-        },
-    };
-    
+        };
+    }
+
     private static UserPreferences CreateDefaultPreferences(
         IList<TagMappingDto>? tagMappings = null,
         IList<AgeRatingMappingDto>? ageRatings = null,
@@ -56,9 +60,11 @@ public class MetadataServiceTest
             PinSubscriptionTitles = false
         };
     }
-    
+
     private static Tag TagOf(string value)
-        => new() { Value = value };
+    {
+        return new Tag { Value = value };
+    }
 
     #region MapTags Tests
 
@@ -300,7 +306,7 @@ public class MetadataServiceTest
         var sut = CreateSut();
 
         var preferences = CreateDefaultPreferences(
-            tagMappings: new List<TagMappingDto>
+            new List<TagMappingDto>
             {
                 new() { OriginTag = "violence", DestinationTag = "action" }
             },
@@ -467,7 +473,7 @@ public class MetadataServiceTest
         var sut = CreateSut();
 
         var preferences = CreateDefaultPreferences(
-            tagMappings: new List<TagMappingDto>
+            new List<TagMappingDto>
             {
                 new() { OriginTag = "scifi", DestinationTag = "science fiction" }
             },
@@ -493,7 +499,7 @@ public class MetadataServiceTest
         var sut = CreateSut();
 
         var preferences = CreateDefaultPreferences(
-            tagMappings: new List<TagMappingDto>
+            new List<TagMappingDto>
             {
                 new() { OriginTag = "scifi", DestinationTag = "science fiction" }
             },

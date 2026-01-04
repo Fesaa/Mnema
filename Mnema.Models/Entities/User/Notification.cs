@@ -7,12 +7,11 @@ public enum NotificationColour
     Primary = 0,
     Secondary = 1,
     Warning = 2,
-    Error = 3,
+    Error = 3
 }
 
-public class Notification: IEntityDate
+public class Notification : IEntityDate
 {
-    
     public Guid Id { get; set; }
     public required string Title { get; set; }
     public string? Summary { get; set; }

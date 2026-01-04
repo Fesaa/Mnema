@@ -30,10 +30,7 @@ public class SpeedTrackerTests
     {
         var tracker = new SpeedTracker(100);
 
-        for (int i = 0; i < 25; i++)
-        {
-            tracker.Increment();
-        }
+        for (var i = 0; i < 25; i++) tracker.Increment();
 
         Assert.Equal(25, tracker.Progress());
     }
@@ -71,17 +68,14 @@ public class SpeedTrackerTests
     public void Progress_IncludesIntermediateFractionalProgress()
     {
         var tracker = new SpeedTracker(10);
-        
+
         tracker.Increment(); // 1/10 = 10%
         tracker.SetIntermediate(100);
-        
-        for (int i = 0; i < 50; i++)
-        {
-            tracker.IncrementIntermediate(); // 50/100 = 0.5 of a main item
-        }
+
+        for (var i = 0; i < 50; i++) tracker.IncrementIntermediate(); // 50/100 = 0.5 of a main item
 
         var progress = tracker.Progress();
-        
+
         // Should be 10% + (50/100)/10 * 100 = 10% + 5% = 15%
         Assert.Equal(15, progress);
     }
@@ -112,16 +106,11 @@ public class SpeedTrackerTests
         var tracker = new SpeedTracker(1000);
         var tasks = new Task[10];
 
-        for (int i = 0; i < 10; i++)
-        {
+        for (var i = 0; i < 10; i++)
             tasks[i] = Task.Run(() =>
             {
-                for (int j = 0; j < 100; j++)
-                {
-                    tracker.Increment();
-                }
+                for (var j = 0; j < 100; j++) tracker.Increment();
             });
-        }
 
         await Task.WhenAll(tasks);
 
@@ -135,16 +124,11 @@ public class SpeedTrackerTests
         tracker.SetIntermediate(1000);
 
         var tasks = new Task[10];
-        for (int i = 0; i < 10; i++)
-        {
+        for (var i = 0; i < 10; i++)
             tasks[i] = Task.Run(() =>
             {
-                for (int j = 0; j < 100; j++)
-                {
-                    tracker.IncrementIntermediate();
-                }
+                for (var j = 0; j < 100; j++) tracker.IncrementIntermediate();
             });
-        }
 
         await Task.WhenAll(tasks);
 
@@ -160,7 +144,7 @@ public class SpeedTrackerTests
 
         tracker.SetIntermediate(100);
         tracker.IncrementIntermediate();
-        
+
         tracker.SetIntermediate(50); // Overwrites previous intermediate
 
         // Previous increments should be lost

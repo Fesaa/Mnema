@@ -5,16 +5,15 @@ namespace Mnema.Models.External;
 
 public class ComicInfo
 {
-    [XmlNamespaceDeclarations]
-    public XmlSerializerNamespaces Xmlns { get; set; }
-        
     public ComicInfo()
     {
         Xmlns = new XmlSerializerNamespaces();
         Xmlns.Add("xsd", "http://www.w3.org/2001/XMLSchema");
         Xmlns.Add("xsi", "http://www.w3.org/2001/XMLSchema-instance");
     }
-    
+
+    [XmlNamespaceDeclarations] public XmlSerializerNamespaces Xmlns { get; set; }
+
     public string Title { get; set; } = string.Empty;
     public string Summary { get; set; } = string.Empty;
     public string Series { get; set; } = string.Empty;
@@ -27,7 +26,7 @@ public class ComicInfo
     public string Genre { get; set; } = string.Empty;
     public int PageCount { get; set; }
     public string LanguageISO { get; set; } = string.Empty;
-    
+
     public string Web { get; set; } = string.Empty;
     public int Day { get; set; } = 0;
     public int Month { get; set; } = 0;
@@ -40,7 +39,7 @@ public class ComicInfo
     public string StoryArcNumber { get; set; } = string.Empty;
     public string AlternateNumber { get; set; } = string.Empty;
     public string AlternateSeries { get; set; } = string.Empty;
-    
+
     public string Format { get; set; } = string.Empty;
     public string Tags { get; set; } = string.Empty;
 

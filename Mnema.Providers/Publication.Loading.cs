@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
@@ -12,22 +11,21 @@ using Mnema.Models.Publication;
 
 namespace Mnema.Providers;
 
-internal partial class Publication 
+internal partial class Publication
 {
-    
     private readonly IScannerService _scannerService = scope.ServiceProvider.GetRequiredService<IScannerService>();
-    
+
     public async Task LoadMetadataAsync(CancellationTokenSource source)
     {
         _tokenSource = source;
 
         var cancellationToken = _tokenSource.Token;
-        
+
         var sw = Stopwatch.StartNew();
-        
+
         State = ContentState.Loading;
         await _messageService.StateUpdate(Request.UserId, Id, ContentState.Loading);
-        
+
         var preferences = await _unitOfWork.UserRepository.GetPreferences(Request.UserId);
         if (preferences == null)
         {
@@ -38,7 +36,7 @@ internal partial class Publication
         }
 
         Preferences = preferences;
-        
+
         try
         {
             await LoadSeriesInfo(cancellationToken);
@@ -54,19 +52,16 @@ internal partial class Publication
         if (Request.SubscriptionId != null)
         {
             _subscription = await _unitOfWork.SubscriptionRepository.GetSubscription(Request.SubscriptionId.Value);
-            if (_subscription == null)
-            {
-                throw new MnemaException("Invalid subscription linked to download");
-            }
+            if (_subscription == null) throw new MnemaException("Invalid subscription linked to download");
 
-            if (Preferences.PinSubscriptionTitles && !_subscription.Metadata.Extra.ContainsKey(RequestConstants.TitleOverride))
+            if (Preferences.PinSubscriptionTitles &&
+                !_subscription.Metadata.Extra.ContainsKey(RequestConstants.TitleOverride))
             {
                 _subscription.Metadata.Extra.SetValue(RequestConstants.TitleOverride, Title);
                 await _unitOfWork.CommitAsync();
             }
-            
         }
-        
+
         FilterAlreadyDownloadedContent(cancellationToken);
 
         if (_queuedChapters.Count == 0 && (Request.DownloadMetadata.StartImmediately || Request.IsSubscription))
@@ -77,9 +72,11 @@ internal partial class Publication
             return;
         }
 
-        State = Request.DownloadMetadata.StartImmediately || Request.IsSubscription ? ContentState.Ready : ContentState.Waiting;
+        State = Request.DownloadMetadata.StartImmediately || Request.IsSubscription
+            ? ContentState.Ready
+            : ContentState.Waiting;
         await _messageService.UpdateContent(Request.UserId, DownloadInfo);
-        
+
         _logger.LogDebug("Loading metadata for {Title}, {ToDownload}/{Total} chapters in {Elapsed}ms",
             Title, _queuedChapters.Count, Series!.Chapters.Count, sw.ElapsedMilliseconds);
     }
@@ -89,24 +86,20 @@ internal partial class Publication
         _logger.LogTrace("Checking disk for content: {DownloadDir}", DownloadDir);
 
         var sw = Stopwatch.StartNew();
-        
-        ExistingContent = _scannerService.ScanDirectoryAsync(_extensions.ParseOnDiskFile, DownloadDir, cancellationToken);
+
+        ExistingContent =
+            _scannerService.ScanDirectoryAsync(_extensions.ParseOnDiskFile, DownloadDir, cancellationToken);
 
         _queuedChapters = Series!.Chapters.Where(ShouldDownloadChapter).Select(c => c.Id).ToList();
-        
+
         if (sw.Elapsed.Seconds > 5)
-        {
             _logger.LogWarning("Checking for existing content took a long time: {Elapsed}s", sw.Elapsed.Seconds);
-        }
     }
 
     private bool ShouldDownloadChapter(Chapter chapter)
     {
         // Chapter is present as a download
-        if (GetContentByName(VolumeDir(chapter)) != null)
-        {
-            return false;
-        }
+        if (GetContentByName(VolumeDir(chapter)) != null) return false;
 
         var content = GetContentByName(ChapterFileName(chapter));
         if (content == null)
@@ -116,26 +109,23 @@ internal partial class Publication
             if (content == null)
             {
                 // Some providers, *dynasty*, have terrible naming schemes for specials.
-                if (Request.GetBool(RequestConstants.SkipVolumeWithoutChapter) && !string.IsNullOrEmpty(chapter.VolumeMarker))
-                {
-                    return !string.IsNullOrEmpty(chapter.ChapterMarker);
-                }
+                if (Request.GetBool(RequestConstants.SkipVolumeWithoutChapter) &&
+                    !string.IsNullOrEmpty(chapter.VolumeMarker)) return !string.IsNullOrEmpty(chapter.ChapterMarker);
 
                 return true;
             }
         }
 
-        var onDiskVolume = string.IsNullOrEmpty(content.Volume) ? _extensions.ParseVolumeFromFile(content) : content.Volume;
-        if (onDiskVolume == null)
-        {
-            return false;
-        }
+        var onDiskVolume = string.IsNullOrEmpty(content.Volume)
+            ? _extensions.ParseVolumeFromFile(content)
+            : content.Volume;
+        if (onDiskVolume == null) return false;
 
         var volumeChanged = !string.IsNullOrEmpty(chapter.VolumeMarker) && chapter.VolumeMarker != onDiskVolume;
 
         if (volumeChanged)
         {
-            _logger.LogDebug("Redownloading chapter {ChapterMarker} as volume changed from {Old} to {New}", 
+            _logger.LogDebug("Redownloading chapter {ChapterMarker} as volume changed from {Old} to {New}",
                 chapter.ChapterMarker, onDiskVolume, chapter.ChapterMarker);
             ToRemovePaths.Add(content.Path);
         }
@@ -149,21 +139,19 @@ internal partial class Publication
 
         Series = await _repository.SeriesInfo(Request, cancellationToken);
 
-        if (string.IsNullOrWhiteSpace(Series.Title))
-        {
-            throw new MnemaException("No series title is set");
-        }
+        if (string.IsNullOrWhiteSpace(Series.Title)) throw new MnemaException("No series title is set");
 
-        _logger.LogDebug("Successfully loaded series information for {SeriesName} with {Chapters} chapters in {Elapsed}ms", Series.Title, Series.Chapters.Count, sw.ElapsedMilliseconds);
+        _logger.LogDebug(
+            "Successfully loaded series information for {SeriesName} with {Chapters} chapters in {Elapsed}ms",
+            Series.Title, Series.Chapters.Count, sw.ElapsedMilliseconds);
 
         if (!Request.GetBool(RequestConstants.AssignEmptyVolumes)) return;
 
         var hasAnyVolumes = Series.Chapters.Any(c => !string.IsNullOrEmpty(c.VolumeMarker));
         if (!hasAnyVolumes) return;
 
-        foreach (var chapter in Series.Chapters.Where(c => string.IsNullOrEmpty(c.VolumeMarker) && !string.IsNullOrEmpty(c.ChapterMarker)))
-        {
+        foreach (var chapter in Series.Chapters.Where(c =>
+                     string.IsNullOrEmpty(c.VolumeMarker) && !string.IsNullOrEmpty(c.ChapterMarker)))
             chapter.VolumeMarker = "1";
-        }
     }
 }

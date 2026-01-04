@@ -19,16 +19,16 @@ namespace Mnema.Providers;
 
 internal partial class PublicationManager : IPublicationManager, IAsyncDisposable
 {
-    private readonly ILogger<PublicationManager> _logger;
-    private readonly IFileSystem _fileSystem;
-    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ApplicationConfiguration _configuration;
 
     private readonly ConcurrentDictionary<string, IPublication> _content = new();
-    private readonly Channel<IPublication> _loadingChannel;
-    private readonly Channel<IPublication> _downloadingChannel;
 
     private readonly CancellationTokenSource _cts = new();
+    private readonly Channel<IPublication> _downloadingChannel;
+    private readonly IFileSystem _fileSystem;
+    private readonly Channel<IPublication> _loadingChannel;
+    private readonly ILogger<PublicationManager> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly Task _workerTask;
 
     public PublicationManager(
@@ -36,7 +36,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         IServiceScopeFactory scopeFactory,
         IFileSystem fileSystem,
         ApplicationConfiguration configuration
-        )
+    )
     {
         _logger = logger;
         _fileSystem = fileSystem;
@@ -56,22 +56,36 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         _logger.LogTrace("PublicationManager initialized");
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        _logger.LogTrace("Shutting down PublicationManager");
+
+        await _cts.CancelAsync();
+
+        _loadingChannel.Writer.Complete();
+        _downloadingChannel.Writer.Complete();
+
+        var timeoutTask = Task.Delay(TimeSpan.FromSeconds(30));
+        var completedTask = await Task.WhenAny(_workerTask, timeoutTask);
+
+        if (completedTask == timeoutTask)
+            _logger.LogWarning("PublicationManager shutdown timeout");
+        else
+            _logger.LogTrace("PublicationManager shutdown complete");
+
+        _cts.Dispose();
+    }
+
     public async Task Download(DownloadRequestDto request)
     {
         using var scope = _scopeFactory.CreateScope();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
 
-        if (_content.ContainsKey(request.Id))
-        {
-            throw new MnemaException("Content already exists");
-        }
+        if (_content.ContainsKey(request.Id)) throw new MnemaException("Content already exists");
 
         var publication = CreatePublication(request);
 
-        if (!_content.TryAdd(publication.Id, publication))
-        {
-            throw new MnemaException("Failed to add content");
-        }
+        if (!_content.TryAdd(publication.Id, publication)) throw new MnemaException("Failed to add content");
 
         await messageService.AddContent(request.UserId, publication.DownloadInfo);
 
@@ -89,15 +103,9 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
 
     public Task StopDownload(StopRequestDto request)
     {
-        if (!_content.TryRemove(request.Id, out var publication))
-        {
-            throw new NotFoundException();
-        }
+        if (!_content.TryRemove(request.Id, out var publication)) throw new NotFoundException();
 
-        if (publication.Request.UserId != request.UserId)
-        {
-            throw new ForbiddenException();
-        }
+        if (publication.Request.UserId != request.UserId) throw new ForbiddenException();
 
         if (publication.State != ContentState.Cancel)
             _logger.LogInformation("Removing content: {Id} - {Title}, SavingFiles: {DeleteFiles}",
@@ -112,10 +120,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
 
     public async Task MoveToDownloadQueue(string id)
     {
-        if (!_content.TryGetValue(id, out var publication))
-        {
-            throw new MnemaException("Content not found");
-        }
+        if (!_content.TryGetValue(id, out var publication)) throw new MnemaException("Content not found");
 
         await AddToDownloadQueueAsync(publication);
     }
@@ -127,20 +132,14 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
 
     public Task<MessageDto> RelayMessage(MessageDto message)
     {
-        if (!_content.TryGetValue(message.ContentId, out var publication))
-        {
-            throw new NotFoundException();
-        }
+        if (!_content.TryGetValue(message.ContentId, out var publication)) throw new NotFoundException();
 
         return publication.ProcessMessage(message);
     }
 
     public Task<IPublication?> GetPublicationById(string id)
     {
-        if (!_content.TryGetValue(id, out var publication))
-        {
-            return Task.FromResult<IPublication?>(null);
-        }
+        if (!_content.TryGetValue(id, out var publication)) return Task.FromResult<IPublication?>(null);
 
         return Task.FromResult<IPublication?>(publication);
     }
@@ -178,8 +177,8 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
     }
 
     /// <summary>
-    /// Worker that prioritizes loading queue over download queue
-    /// Matches the Go implementation's select statement behavior
+    ///     Worker that prioritizes loading queue over download queue
+    ///     Matches the Go implementation's select statement behavior
     /// </summary>
     private async Task WorkerAsync()
     {
@@ -237,8 +236,8 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
     }
 
     /// <summary>
-    /// Processes loading metadata for a publication
-    /// If ready, moves to download queue automatically
+    ///     Processes loading metadata for a publication
+    ///     If ready, moves to download queue automatically
     /// </summary>
     private async Task ProcessLoadInfoAsync(IPublication publication)
     {
@@ -263,7 +262,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
                 Provider = publication.Request.Provider,
                 Id = publication.Id,
                 DeleteFiles = true,
-                UserId = publication.Request.UserId,
+                UserId = publication.Request.UserId
             });
         }
     }
@@ -279,7 +278,6 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         catch (OperationCanceledException)
         {
             _logger.LogTrace("Download for {Id} - {Title} was caught in a cancel", publication.Id, publication.Title);
-
         }
         catch (Exception ex)
         {
@@ -291,7 +289,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
                 UserId = publication.Request.UserId,
                 Summary = ex.Message,
                 Body = ex.StackTrace,
-                Colour = NotificationColour.Error,
+                Colour = NotificationColour.Error
             });
 
             await StopDownload(new StopRequestDto
@@ -299,7 +297,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
                 Provider = publication.Request.Provider,
                 Id = publication.Id,
                 DeleteFiles = true,
-                UserId = publication.Request.UserId,
+                UserId = publication.Request.UserId
             });
         }
     }
@@ -311,30 +309,6 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         var publication = new Publication(scope, request.Provider, request);
 
         return publication;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        _logger.LogTrace("Shutting down PublicationManager");
-
-        await _cts.CancelAsync();
-
-        _loadingChannel.Writer.Complete();
-        _downloadingChannel.Writer.Complete();
-
-        var timeoutTask = Task.Delay(TimeSpan.FromSeconds(30));
-        var completedTask = await Task.WhenAny(_workerTask, timeoutTask);
-
-        if (completedTask == timeoutTask)
-        {
-            _logger.LogWarning("PublicationManager shutdown timeout");
-        }
-        else
-        {
-            _logger.LogTrace("PublicationManager shutdown complete");
-        }
-
-        _cts.Dispose();
     }
 
     private async Task AddNotification(Notification notification, IUnitOfWork? unitOfWork = null)

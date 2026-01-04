@@ -9,32 +9,32 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Hangfire" Version="1.8.22" />
-      <PackageReference Include="Hangfire.AspNetCore" Version="1.8.22" />
-      <PackageReference Include="Hangfire.PostgreSql" Version="1.20.13" />
-      <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.1" />
-      <PackageReference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" Version="10.0.1" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.1">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-      <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.3.0" />
-      <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.1" />
-      <PackageReference Include="Serilog" Version="4.3.0" />
-      <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
-      <PackageReference Include="Serilog.Expressions" Version="5.0.0" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-      <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-      <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
-      <PackageReference Include="System.IO.Abstractions" Version="22.1.0" />
+        <PackageReference Include="Hangfire" Version="1.8.22"/>
+        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.22"/>
+        <PackageReference Include="Hangfire.PostgreSql" Version="1.20.13"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" Version="10.0.1"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.3.0"/>
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.1"/>
+        <PackageReference Include="Serilog" Version="4.3.0"/>
+        <PackageReference Include="Serilog.AspNetCore" Version="10.0.0"/>
+        <PackageReference Include="Serilog.Expressions" Version="5.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="7.0.0"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0"/>
+        <PackageReference Include="System.IO.Abstractions" Version="22.1.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Mnema.Common\Mnema.Common.csproj" />
-      <ProjectReference Include="..\Mnema.Database\Mnema.Database.csproj" />
-      <ProjectReference Include="..\Mnema.Models\Mnema.Models.csproj" />
-      <ProjectReference Include="..\Mnema.Providers\Mnema.Providers.csproj" />
-      <ProjectReference Include="..\Mnema.Services\Mnema.Services.csproj" />
+        <ProjectReference Include="..\Mnema.Common\Mnema.Common.csproj"/>
+        <ProjectReference Include="..\Mnema.Database\Mnema.Database.csproj"/>
+        <ProjectReference Include="..\Mnema.Models\Mnema.Models.csproj"/>
+        <ProjectReference Include="..\Mnema.Providers\Mnema.Providers.csproj"/>
+        <ProjectReference Include="..\Mnema.Services\Mnema.Services.csproj"/>
     </ItemGroup>
 
 </Project>
