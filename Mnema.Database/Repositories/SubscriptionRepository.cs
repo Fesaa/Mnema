@@ -34,6 +34,13 @@ public class SubscriptionRepository(MnemaDataContext ctx, IMapper mapper) : ISub
             .FirstOrDefaultAsync();
     }
 
+    public Task<Subscription?> GetSubscriptionByContentId(string contentId)
+    {
+        return ctx.Subscriptions
+            .Where(s => s.ContentId == contentId)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<SubscriptionDto?> GetSubscriptionDto(Guid id)
     {
         var sub = await ctx.Subscriptions

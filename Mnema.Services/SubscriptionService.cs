@@ -46,6 +46,10 @@ internal class SubscriptionService(
 
     public async Task CreateSubscription(Guid userId, CreateOrUpdateSubscriptionDto dto)
     {
+        var other = await unitOfWork.SubscriptionRepository.GetSubscriptionByContentId(dto.ContentId);
+        if (other != null && other.UserId == userId)
+            throw new MnemaException($"You already have a subscription on {dto.ContentId}");
+
         var sub = new Subscription
         {
             UserId = userId,

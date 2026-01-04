@@ -33,8 +33,9 @@ internal sealed record BatoSearchOptions(List<FormControlOption> Genres, List<Fo
 internal class BatoRepository : IRepository
 {
     private static readonly Regex ChapterUrlRegex =
-        new(@"https://[^""]+?\.webp", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+        new(@"https://[^""]+?\.(?:webp|jpeg|jpg|png)", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
+    private const string GoodServer = "n11.mbznp.org";
     private static readonly Regex BadServerRegex =
         new(@"k[0-9]{2}\.[a-z]+\.org", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
@@ -121,7 +122,7 @@ internal class BatoRepository : IRepository
                 Id = id,
                 Name = title ?? "Unknown",
                 Provider = Provider.Bato,
-                ImageUrl = imageUrl ?? string.Empty,
+                ImageUrl = string.IsNullOrEmpty(imageUrl) ? string.Empty : BadServerRegex.Replace(imageUrl, GoodServer),
                 Url = $"{Client.BaseAddress?.ToString()}title/{id}",
                 Size = size,
                 Tags = tags ?? []
@@ -184,11 +185,13 @@ internal class BatoRepository : IRepository
         var chapterNodes = document.DocumentNode
             .QuerySelectorAll("[name=\"chapter-list\"] astro-slot > div");
 
+        var coverUrl = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[1]/div[1]/img")
+            .GetAttributeValue("src", string.Empty);
+
         return new Series
         {
             Id = request.Id,
-            CoverUrl = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[1]/div[1]/img")
-                .GetAttributeValue("src", string.Empty),
+            CoverUrl = BadServerRegex.Replace(coverUrl, GoodServer).Trim(),
             RefUrl = $"{Client.BaseAddress?.ToString()}title/{request.Id}",
             Title = CleanTitleRegex.Replace(title, string.Empty).Trim(),
             Summary = summary,
@@ -311,7 +314,7 @@ internal class BatoRepository : IRepository
         if (string.IsNullOrEmpty(props))
             throw new MnemaException("No properties found");
 
-        props = BadServerRegex.Replace(props, "n11.mbznp.org");
+        props = BadServerRegex.Replace(props, GoodServer);
 
         return ChapterUrlRegex
             .Matches(props)

@@ -18,6 +18,7 @@ public interface ISubscriptionRepository
 {
     Task<PagedList<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId, string query, PaginationParams pagination);
     Task<Subscription?> GetSubscription(Guid id);
+    Task<Subscription?> GetSubscriptionByContentId(string contentId);
     Task<SubscriptionDto?> GetSubscriptionDto(Guid id);
     Task<List<Subscription>> GetAllSubscriptions();
 
