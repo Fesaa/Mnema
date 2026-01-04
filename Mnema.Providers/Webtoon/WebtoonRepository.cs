@@ -1,3 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Fizzler.Systems.HtmlAgilityPack;
 using Flurl;
 using HtmlAgilityPack;
@@ -22,15 +28,10 @@ internal class WebtoonRepository(
     IHttpClientFactory httpClientFactory)
     : IRepository
 {
-    private readonly ILogger<WebtoonRepository> _logger = logger;
     private HttpClient Client => httpClientFactory.CreateClient(nameof(Provider.Webtoons));
 
-    private static readonly DistributedCacheEntryOptions LongCacheEntryOptions = new()
-    {
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(7),
-    };
-
-    public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken)
+    public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination,
+        CancellationToken cancellationToken)
     {
         var url = ("en/search/" + request.Modifiers.GetStringOrDefault("search_type", "originals"))
             .SetQueryParam("keyword", request.Query)
@@ -38,10 +39,7 @@ internal class WebtoonRepository(
 
         var result = await Client.GetCachedStringAsync(url, cache, cancellationToken: cancellationToken);
 
-        if (result.IsErr)
-        {
-            throw new MnemaException("Failed to search for webtoons", result.Error);
-        }
+        if (result.IsErr) throw new MnemaException("Failed to search for webtoons", result.Error);
 
         var baseUrl = Client.BaseAddress!.ToString();
         var document = result.Unwrap().ToHtmlDocument();
@@ -57,10 +55,11 @@ internal class WebtoonRepository(
                     .RemovePrefix(SharedConstants.WebtoonImageBase)
                     .RemoveSuffix("?type=q90")}",
                 Url = node.GetAttributeValue("href", string.Empty),
-                Tags = [
+                Tags =
+                [
                     node.QuerySelector(".view_count").InnerText,
                     ..node.QuerySelector(".author")?.InnerText
-                        .Split('/', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                          .Split('/', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
                       ?? []
                 ]
             });
@@ -72,48 +71,41 @@ internal class WebtoonRepository(
             var list = items.ToList();
             return new PagedList<SearchResult>(list, list.Count, 0, list.Count);
         }
-        
+
         var current = paginator.QuerySelector("[aria-current=\"true\"]")?.InnerText.AsInt();
 
         return new PagedList<SearchResult>(items, 30 * last.Value, current - 1 ?? 0, 30);
-
     }
 
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
     {
         var baseUrl = Client.BaseAddress!.ToString().TrimEnd('/');
         var url = $"{baseUrl}/{request.Id}";
-        
+
         var result = await Client.GetCachedStringAsync(url, cache, cancellationToken: cancellationToken);
-        if (result.IsErr)
-        {
-            throw new MnemaException($"Failed to get series info for {request.Id}", result.Error);
-        }
-        
+        if (result.IsErr) throw new MnemaException($"Failed to get series info for {request.Id}", result.Error);
+
         var document = result.Unwrap().ToHtmlDocument();
 
         var infoHeaderNode = document.DocumentNode.QuerySelector(".detail_header .info");
         var detailNode = document.DocumentNode.QuerySelector(".detail");
-        
+
         var chapters = ParseChapters(document);
-        var pages= ParsePages(document.DocumentNode);
+        var pages = ParsePages(document.DocumentNode);
 
         for (var index = 1; pages.Count > index; index++)
         {
             var pageUrl = baseUrl + pages[index];
-            _logger.LogDebug("Fetching page {pageUrl}", pages[index]);
-            
+            logger.LogDebug("Fetching page {pageUrl}", pages[index]);
+
             result = await Client.GetCachedStringAsync(pageUrl, cache, cancellationToken: cancellationToken);
             if (result.IsErr)
                 throw new MnemaException($"Failed to get series info for {request.Id} on page {pageUrl}", result.Error);
-            
-            if (index == pages.Count - 1 && pages.Count > 10)
-            {
-                index = 1;
-            }
-            
+
+            if (index == pages.Count - 1 && pages.Count > 10) index = 1;
+
             document = result.Unwrap().ToHtmlDocument();
-            
+
             chapters.AddRange(ParseChapters(document));
             pages = ParsePages(document.DocumentNode);
 
@@ -127,7 +119,8 @@ internal class WebtoonRepository(
             Title = infoHeaderNode.QuerySelector(".subj").InnerText.Trim('\n', '\t'),
             Summary = detailNode.QuerySelector(".summary")?.InnerText ?? string.Empty,
             Status = detailNode.QuerySelector(".day_info")?.InnerText.Contains("COMPLETED") ?? false
-                ? PublicationStatus.Completed : PublicationStatus.Unknown,
+                ? PublicationStatus.Completed
+                : PublicationStatus.Unknown,
             Tags = infoHeaderNode.QuerySelectorAll(".genre")?
                 .Select(node => new Tag(node.InnerText, true))
                 .ToList() ?? [],
@@ -139,7 +132,7 @@ internal class WebtoonRepository(
                 })
                 .ToList() ?? [],
             Links = [],
-            Chapters = chapters,
+            Chapters = chapters
         };
 
         List<string> ParsePages(HtmlNode rootNode)
@@ -149,6 +142,62 @@ internal class WebtoonRepository(
                 .Where(x => !string.IsNullOrEmpty(x))
                 .ToList();
         }
+    }
+
+    public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(chapter.RefUrl)) throw new MnemaException("Chapter URL is missing");
+
+        var result = await Client.GetCachedStringAsync(chapter.RefUrl, cache, cancellationToken: cancellationToken);
+        if (result.IsErr) throw new MnemaException("Failed to retrieve chapter urls", result.Error);
+
+        var document = result.Unwrap().ToHtmlDocument();
+
+        return document.DocumentNode.QuerySelectorAll("#_imageList img")
+            .Select(node => node.GetAttributeValue("data-url", string.Empty))
+            .Where(s => !string.IsNullOrEmpty(s))
+            .Select(s => new DownloadUrl(s, s))
+            .ToList();
+    }
+
+    public Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken)
+    {
+        return Task.FromResult<IList<string>>([]);
+    }
+
+    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
+    {
+        return Task.FromResult<List<FormControlDefinition>>([
+            new FormControlDefinition
+            {
+                Key = RequestConstants.IncludeCover,
+                Type = FormType.Switch,
+                DefaultOption = "true"
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.TitleOverride,
+                Type = FormType.Text,
+                Advanced = true
+            }
+        ]);
+    }
+
+    public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new List<FormControlDefinition>
+        {
+            new()
+            {
+                Type = FormType.DropDown,
+                Key = "search_type",
+                Options =
+                [
+                    FormControlOption.DefaultValue("originals", "Originals"),
+                    FormControlOption.Option("canvas", "Canvas")
+                ]
+            }
+        });
     }
 
     private List<Chapter> ParseChapters(HtmlDocument document)
@@ -165,67 +214,5 @@ internal class WebtoonRepository(
             People = [],
             TranslationGroups = []
         }).ToList();
-    }
-
-    public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(chapter.RefUrl))
-        {
-            throw new MnemaException("Chapter URL is missing");
-        }
-        
-        var result = await Client.GetCachedStringAsync(chapter.RefUrl, cache, cancellationToken: cancellationToken);
-        if (result.IsErr)
-        {
-            throw new MnemaException("Failed to retrieve chapter urls", result.Error);
-        }
-        
-        var document = result.Unwrap().ToHtmlDocument();
-
-        return document.DocumentNode.QuerySelectorAll("#_imageList img")
-            .Select(node => node.GetAttributeValue("data-url", string.Empty))
-            .Where(s => !string.IsNullOrEmpty(s))
-            .Select(s => new DownloadUrl(s, s))
-            .ToList();
-    }
-
-    public Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken)
-    {
-        return Task.FromResult<IList<string>>([]);
-    }
-
-    public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new DownloadMetadata([
-            new DownloadMetadataDefinition
-            {
-                Key = RequestConstants.IncludeCover,
-                FormType = FormType.Switch,
-                DefaultOption = "true",
-            },
-            new DownloadMetadataDefinition
-            {
-                Key = RequestConstants.TitleOverride,
-                FormType = FormType.Text,
-                Advanced = true,
-            }
-        ]));
-    }
-
-    public Task<List<ModifierDto>> Modifiers(CancellationToken cancellationToken)
-    {
-        return  Task.FromResult(new List<ModifierDto>
-        {
-            new()
-            {
-                Title = "Search Type",
-                Type = ModifierType.DropDown,
-                Key = "search_type",
-                Values = [
-                    ModifierValueDto.DefaultValue("originals", "Originals"),
-                    ModifierValueDto.Option("canvas", "Canvas"),
-                ]
-            },
-        });
     }
 }

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
 using Mnema.Common;
@@ -5,9 +8,8 @@ using Mnema.Models.DTOs.User;
 
 namespace Mnema.Server.Controllers;
 
-public class NotificationsController(IUnitOfWork unitOfWork, IMessageService messageService): BaseApiController
+public class NotificationsController(IUnitOfWork unitOfWork, IMessageService messageService) : BaseApiController
 {
-
     [HttpGet("all")]
     public async Task<ActionResult<IList<NotificationDto>>> GetNotifications([FromQuery] PaginationParams? pagination)
     {
@@ -21,12 +23,13 @@ public class NotificationsController(IUnitOfWork unitOfWork, IMessageService mes
     [HttpGet("recent")]
     public async Task<ActionResult<IList<NotificationDto>>> GetRecentNotifications([FromQuery] int limit)
     {
-        var notifications = await unitOfWork.NotificationRepository.GetNotificationsForUser(UserId, false, new PaginationParams
-        {
-            PageNumber = 0,
-            PageSize = limit,
-        });
-        
+        var notifications = await unitOfWork.NotificationRepository.GetNotificationsForUser(UserId, false,
+            new PaginationParams
+            {
+                PageNumber = 0,
+                PageSize = limit
+            });
+
         return Ok(notifications.Items);
     }
 
@@ -40,24 +43,18 @@ public class NotificationsController(IUnitOfWork unitOfWork, IMessageService mes
     public async Task<IActionResult> ReadNotification(Guid notificationId)
     {
         var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsRead(UserId, [notificationId]);
-        
-        if (changes > 0)
-        {
-            await messageService.NotificationRemoved(UserId, changes);
-        }
+
+        if (changes > 0) await messageService.NotificationRemoved(UserId, changes);
 
         return Ok();
     }
-    
+
     [HttpPost("{notificationId:guid}/unread")]
     public async Task<IActionResult> UnReadNotification(Guid notificationId)
     {
         var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsUnRead(UserId, [notificationId]);
 
-        if (changes > 0)
-        {
-            await messageService.NotificationAdded(UserId, changes);
-        }
+        if (changes > 0) await messageService.NotificationAdded(UserId, changes);
 
         return Ok();
     }
@@ -75,27 +72,21 @@ public class NotificationsController(IUnitOfWork unitOfWork, IMessageService mes
     {
         var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsRead(UserId, ids);
 
-        if (changes > 0)
-        {
-            await messageService.NotificationRemoved(UserId, changes);
-        }
+        if (changes > 0) await messageService.NotificationRemoved(UserId, changes);
 
         return Ok();
     }
-    
+
     [HttpPost("many/unread")]
     public async Task<IActionResult> UnReadMany([FromBody] Guid[] ids)
     {
         var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsRead(UserId, ids);
-        
-        if (changes > 0)
-        {
-            await messageService.NotificationAdded(UserId, changes);
-        }
+
+        if (changes > 0) await messageService.NotificationAdded(UserId, changes);
 
         return Ok();
     }
-    
+
     [HttpPost("many/delete")]
     public async Task<IActionResult> DeleteMany([FromBody] Guid[] ids)
     {
@@ -103,7 +94,4 @@ public class NotificationsController(IUnitOfWork unitOfWork, IMessageService mes
 
         return Ok();
     }
-    
-    
-    
 }

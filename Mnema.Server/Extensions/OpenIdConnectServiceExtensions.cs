@@ -1,9 +1,15 @@
+using System;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Mnema.API;
 using Mnema.Common.Exceptions;
 using Mnema.Database;
 using Mnema.Models.Internal;
@@ -15,18 +21,17 @@ public static class OpenIdConnectServiceExtensions
 {
     public const string OpenIdConnect = nameof(OpenIdConnect);
 
-    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         var openIdConnectConfig = configuration.GetSection(OpenIdConnect).Get<OpenIdConnectConfig>();
-        if (openIdConnectConfig is not {Valid: true})
-        {
+        if (openIdConnectConfig is not { Valid: true })
             throw new MnemaException("No valid OpenIDConnect configuration found");
-        }
 
         services.AddDataProtection()
             .PersistKeysToDbContext<MnemaDataContext>()
             .SetApplicationName("Mnema");
-        
+
         services.AddSingleton<ConfigurationManager<OpenIdConnectConfiguration>>(_ =>
         {
             var url = openIdConnectConfig.Authority + "/.well-known/openid-configuration";
@@ -42,10 +47,10 @@ public static class OpenIdConnectServiceExtensions
         services.AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
             .Configure<ITicketStore>((options, store) =>
             {
-                
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
-                
+
+                options.Cookie.Name = IOpenIdConnectService.CookieName;
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
                 options.Cookie.MaxAge = TimeSpan.FromDays(30);
@@ -53,11 +58,8 @@ public static class OpenIdConnectServiceExtensions
 
                 options.LoginPath = "/Auth/login";
                 options.LogoutPath = "/Auth/logout";
-                
-                if (environment.IsDevelopment())
-                {
-                    options.Cookie.Domain = null;
-                }
+
+                if (environment.IsDevelopment()) options.Cookie.Domain = null;
 
                 options.Events = new CookieAuthenticationEventsHelper();
             });
@@ -70,7 +72,7 @@ public static class OpenIdConnectServiceExtensions
                 options.ClientId = openIdConnectConfig.ClientId;
                 options.ClientSecret = openIdConnectConfig.Secret;
                 options.RequireHttpsMetadata = options.Authority.StartsWith("https://");
-                
+
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.ResponseType = OpenIdConnectResponseType.Code;
                 options.CallbackPath = "/signin-oidc";
@@ -93,15 +95,15 @@ public static class OpenIdConnectServiceExtensions
             .AddPolicy(Roles.ManageSettings)
             .AddPolicy(Roles.ManagePages)
             .AddPolicy(Roles.HangFire)
-            .AddPolicy(Roles.CreateDirectory);
+            .AddPolicy(Roles.CreateDirectory)
+            .AddPolicy(Roles.ManageExternalConnections);
 
         return services;
     }
-    
+
     private static AuthorizationBuilder AddPolicy(this AuthorizationBuilder builder, string roleName)
     {
-        return builder.AddPolicy(roleName, policy => 
+        return builder.AddPolicy(roleName, policy =>
             policy.RequireRole(roleName, roleName.ToLower(), roleName.ToUpper()));
     }
-    
 }

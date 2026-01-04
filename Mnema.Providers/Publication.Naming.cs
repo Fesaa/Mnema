@@ -1,5 +1,7 @@
+using System;
+using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Logging;
-using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.Publication;
 
@@ -7,31 +9,32 @@ namespace Mnema.Providers;
 
 internal partial class Publication
 {
-
-    private string VolumeDir(Chapter chapter) => $"{Title} Vol. {chapter.VolumeMarker}";
+    private string VolumeDir(Chapter chapter)
+    {
+        return $"{Title} Vol. {chapter.VolumeMarker}";
+    }
 
     private string ChapterPath(Chapter chapter)
     {
         var basePath = Path.Join(_configuration.DownloadDir, Request.BaseDir, Title);
 
         if (!string.IsNullOrEmpty(chapter.VolumeMarker) && !true) // TODO: Port config switches
-        {
             basePath = Path.Join(basePath, VolumeDir(chapter));
-        }
 
         return Path.Join(basePath, ChapterFileName(chapter));
     }
 
-    private string ChapterFileName(Chapter chapter) => chapter.IsOneShot ? OneShotFileName(chapter) : DefaultFileName(chapter);
+    private string ChapterFileName(Chapter chapter)
+    {
+        return chapter.IsOneShot ? OneShotFileName(chapter) : DefaultFileName(chapter);
+    }
 
     private string DefaultFileName(Chapter chapter)
     {
         var fileName = Title;
 
         if (!string.IsNullOrEmpty(chapter.VolumeMarker) && ShouldIncludeVolumeMarker())
-        {
             fileName += $" Vol. {chapter.VolumeMarker}";
-        }
 
         if (chapter.ChapterNumber() == null)
         {
@@ -47,10 +50,7 @@ internal partial class Publication
         // TODO: Port config switches
         if (true) return true;
 
-        if (_hasDuplicateVolumes != null)
-        {
-            return _hasDuplicateVolumes.Value;
-        }
+        if (_hasDuplicateVolumes != null) return _hasDuplicateVolumes.Value;
 
         _hasDuplicateVolumes = Series.Chapters
             .GroupBy(c => c.ChapterMarker)
@@ -63,11 +63,9 @@ internal partial class Publication
     private string OneShotFileName(Chapter chapter)
     {
         var fileName = $"{Title} {chapter.Title}".Trim();
-        
-        if (!false)  // TODO: Port config switches
-        {
+
+        if (!false) // TODO: Port config switches
             fileName += " (OneShot)";
-        }
 
         var idx = 0;
         var finalFileName = fileName;
@@ -87,5 +85,4 @@ internal partial class Publication
 
         return finalFileName;
     }
-
 }

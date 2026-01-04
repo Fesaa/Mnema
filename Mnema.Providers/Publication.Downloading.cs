@@ -1,6 +1,13 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.RateLimiting;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
@@ -25,19 +32,20 @@ internal sealed record DownloadContext
 
 internal partial class Publication
 {
+    private readonly IHttpClientFactory _httpClientFactory =
+        scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
 
-    private readonly IHttpClientFactory _httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
-    
     public Task DownloadContentAsync(CancellationTokenSource tokenSource)
     {
         if (State != ContentState.Waiting && State != ContentState.Ready)
         {
-            _logger.LogWarning("Publication is not in a valid state ({State}) to start, ignoring request", State.ToString());
+            _logger.LogWarning("Publication is not in a valid state ({State}) to start, ignoring request",
+                State.ToString());
             return Task.CompletedTask;
         }
 
         State = ContentState.Downloading;
-        
+
         _tokenSource = tokenSource;
 
         try
@@ -55,22 +63,20 @@ internal partial class Publication
     {
         if (Series == null)
             throw new MnemaException("Publication is downloading before series has loaded");
-        
+
         await _messageService.StateUpdate(Request.UserId, Id, ContentState.Downloading);
-        
+
         var hook = scope.ServiceProvider.GetKeyedService<IPreDownloadHook>(provider);
-        if (hook != null)
-        {
-            await hook.PreDownloadHook(this, scope, _tokenSource.Token);
-        }
+        if (hook != null) await hook.PreDownloadHook(this, scope, _tokenSource.Token);
 
         if (_userSelectedIds.Count > 0)
         {
             var initialSize = _queuedChapters.Count;
 
             _queuedChapters = Series.Chapters.Select(c => c.Id).Where(_userSelectedIds.Contains).ToList();
-            
-            _logger.LogDebug("Chapters filtered after user selection. Old: {Old}, New: {New}", initialSize, _queuedChapters.Count);
+
+            _logger.LogDebug("Chapters filtered after user selection. Old: {Old}, New: {New}", initialSize,
+                _queuedChapters.Count);
 
             if (ToRemovePaths.Count > 0)
             {
@@ -82,14 +88,16 @@ internal partial class Publication
 
                 ToRemovePaths = ToRemovePaths.Where(paths.Contains).ToList();
             }
-            
         }
-        
-        
-        _logger.LogInformation("Will be downloading {Chapters}, and removing {ToDelete} chapters from {Provider} into {Dir}",
+
+
+        _logger.LogInformation(
+            "Will be downloading {Chapters}, and removing {ToDelete} chapters from {Provider} into {Dir}",
             _queuedChapters.Count, ToRemovePaths.Count, provider.ToString(), DownloadDir);
 
         _speedTracker = new SpeedTracker(_queuedChapters.Count);
+
+        _externalConnectionService.CommunicateDownloadStarted(DownloadInfo);
 
         var sw = Stopwatch.StartNew();
 
@@ -99,7 +107,7 @@ internal partial class Publication
             PermitLimit = _settings.MaxConcurrentImages,
             Window = TimeSpan.FromSeconds(1),
             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-            QueueLimit = 10000,
+            QueueLimit = 10000
         });
         var maxImages = _settings.MaxConcurrentImages;
 
@@ -109,9 +117,9 @@ internal partial class Publication
         workers.Add(ProcessDownloads(ioChannel));
 
         _ = Task.Run(SignalRUpdateLoop, _tokenSource.Token);
-        
+
         await Task.WhenAll(workers);
-        
+
         _logger.LogInformation("Downloaded all chapters in {Elapsed}ms for {Title} - {Id}",
             sw.ElapsedMilliseconds, Title, Id);
 
@@ -124,7 +132,6 @@ internal partial class Publication
     private async Task IoWorker(Channel<IoWork> channel)
     {
         await foreach (var ioWork in channel.Reader.ReadAllAsync(_tokenSource.Token))
-        {
             try
             {
                 var filePath = await _extensions.DownloadCallback(ioWork, _tokenSource.Token);
@@ -140,7 +147,6 @@ internal partial class Publication
                 _logger.LogError(ex, "An exception occured while handling I/O");
                 await Cancel();
             }
-        }
     }
 
     private async Task ProcessDownloads(Channel<IoWork> channel)
@@ -179,7 +185,6 @@ internal partial class Publication
 
     private async Task DownloadChapter(Channel<IoWork> channel, Chapter chapter)
     {
-
         var urls = await _repository.ChapterUrls(chapter, _tokenSource.Token);
 
         if (urls.Count == 0)
@@ -190,7 +195,7 @@ internal partial class Publication
 
         var chapterPath = ChapterPath(chapter);
         _fileSystem.Directory.CreateDirectory(chapterPath);
-        
+
         // Mark as downloaded as soon as the directory is created as we need to remove it in case of an error
         DownloadedPaths.Add(chapterPath.RemovePrefix(_configuration.DownloadDir));
 
@@ -202,11 +207,12 @@ internal partial class Publication
         {
             _logger.LogWarning(ex, "An exception occured while writing metadata");
         }
-        
-        _logger.LogDebug("Starting download of chapter {ChapterMarker} with {Count} urls", chapter.ChapterMarker, urls.Count);
+
+        _logger.LogDebug("Starting download of chapter {ChapterMarker} with {Count} urls", chapter.ChapterMarker,
+            urls.Count);
 
         var sw = Stopwatch.StartNew();
-        
+
         _speedTracker!.SetIntermediate(urls.Count);
 
         var urlChannel = BuildUrlChannel(urls);
@@ -216,40 +222,32 @@ internal partial class Publication
             {
                 Reader = urlChannel.Reader,
                 Writer = channel.Writer,
-                Chapter = chapter,
+                Chapter = chapter
             })));
-        
-        _logger.LogDebug("Finished downloading chapter {Chapter} in {Elapsed}ms", chapter.ChapterMarker, sw.ElapsedMilliseconds);
 
-        if (urls.Count < 5)
-        {
-            await Task.Delay(TimeSpan.FromSeconds(1));
-        }
-        
+        _logger.LogDebug("Finished downloading chapter {Chapter} in {Elapsed}ms", chapter.ChapterMarker,
+            sw.ElapsedMilliseconds);
+
+        if (urls.Count < 5) await Task.Delay(TimeSpan.FromSeconds(1));
+
         _speedTracker!.ClearIntermediate();
         _speedTracker!.Increment();
     }
 
     private async Task DownloadWorker(DownloadContext ctx)
     {
-        var failedTasks = await ProcessDownloadsAsync(ctx, isRetry: false);
-        
-        if (failedTasks.Count == 0 || _tokenSource.Token.IsCancellationRequested)
-        {
-            return;
-        }
+        var failedTasks = await ProcessDownloadsAsync(ctx, false);
+
+        if (failedTasks.Count == 0 || _tokenSource.Token.IsCancellationRequested) return;
 
         _logger.LogDebug("Some tasks failed to complete, retrying. Count: {Count}", failedTasks.Count);
         _failedDownloadsTracker += failedTasks.Count;
 
         var retryChannel = Channel.CreateUnbounded<DownloadWork>();
-        foreach (var task in failedTasks)
-        {
-            retryChannel.Writer.TryWrite(task);
-        }
+        foreach (var task in failedTasks) retryChannel.Writer.TryWrite(task);
         retryChannel.Writer.Complete();
 
-        await ProcessDownloadsAsync(ctx, isRetry: true);
+        await ProcessDownloadsAsync(ctx, true);
     }
 
     private async Task<List<DownloadWork>> ProcessDownloadsAsync(DownloadContext ctx, bool isRetry)
@@ -259,10 +257,7 @@ internal partial class Publication
 
         await foreach (var task in ctx.Reader.ReadAllAsync(_tokenSource.Token))
         {
-            if (_tokenSource.Token.IsCancellationRequested)
-            {
-                return failedTasks;
-            }
+            if (_tokenSource.Token.IsCancellationRequested) return failedTasks;
 
             using var lease = await _limiter.AcquireAsync(cancellationToken: _tokenSource.Token);
             if (!lease.IsAcquired)
@@ -286,8 +281,9 @@ internal partial class Publication
             catch (Exception ex)
             {
                 if (isRetry) throw;
-                
-                _logger.LogWarning(ex, "Task {Idx} on {Url} has failed failed for the first time, retrying later", task.Idx, url);
+
+                _logger.LogWarning(ex, "Task {Idx} on {Url} has failed failed for the first time, retrying later",
+                    task.Idx, url);
                 failedTasks.Add(task);
             }
         }
@@ -301,15 +297,11 @@ internal partial class Publication
 
         var idx = 0;
         foreach (var url in urls)
-        {
             if (!channel.Writer.TryWrite(new DownloadWork(++idx, url)))
-            {
                 _logger.LogWarning("Failed to write {Url} to channel", url);
-            }
-        }
 
         channel.Writer.Complete();
-        
+
         return channel;
     }
 
@@ -320,14 +312,11 @@ internal partial class Publication
         try
         {
             while (await timer.WaitForNextTickAsync(_tokenSource.Token))
-            {
                 await _messageService.UpdateContent(Request.UserId, DownloadInfo);
-            }
         }
         catch (OperationCanceledException)
         {
             /* Ignored */
         }
     }
-    
 }

@@ -10,75 +10,41 @@
 
     <div class="modal-body scrollable-modal">
 
-      <form [formGroup]="downloadForm">
+      @let generalFormDefinitionValue = generalFormDefinition();
+      @let advancedFormDefinitionValue = advancedFormDefinition();
 
-        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
-
-          <li [ngbNavItem]="'general'">
-            <a ngbNavLink>{{t('general')}}</a>
-            <ng-template ngbNavContent>
-
-              <div class="row pt-4">
-                <div class="col-md-6 col-sm-12">
-                  @if (downloadForm.get('dir'); as control) {
-                    <app-settings-item [showEdit]="false" [control]="control" [title]="t('dir-label')">
-                      <ng-template #view>
-                        <div class="d-flex align-items-center">
-                          <button class="btn btn-primary me-2" (click)="pickDirectory()">
-                            <i class="fa fa-folder"></i>
-                          </button>
-                          <span>{{control.value | defaultValue}}</span>
-                        </div>
-                      </ng-template>
-                      <ng-template #edit>
-                        <div class="d-flex align-items-center">
-                          <button class="btn btn-primary me-2" (click)="pickDirectory()">
-                            <i class="fa fa-folder"></i>
-                          </button>
-
-                          <input formControlName="dir" id="dir" class="form-control flex-grow-1">
-                        </div>
-                      </ng-template>
-                    </app-settings-item>
-                  }
-                </div>
-
-                <div class="col-md-6 col-sm-12 pt-4">
-                  @if (downloadForm.get('downloadMetadata.startImmediately'); as control) {
-                    <app-settings-switch [control]="control" [title]="t('start-immediately-label')">
-                      <ng-template #switch>
-                        <div class="form-switch form-check" formGroupName="downloadMetadata">
-                          <input class="form-check-input" type="checkbox" formControlName="startImmediately">
-                        </div>
-                      </ng-template>
-                    </app-settings-switch>
-                  }
-                </div>
-
-                <ng-container *ngTemplateOutlet="formFieldTemplate; context: { $implicit: generalDef() }"></ng-container>
-              </div>
-
-            </ng-template>
+      @if (generalFormDefinitionValue && advancedFormDefinitionValue) {
+        <ul class="nav nav-tabs">
+          <li class="nav-item" (click)="activeTab = 'general'">
+            <a class="nav-link" [class.active]="activeTab === 'general'">{{ t('general') }}</a>
           </li>
-
-          @if (advancedDef().length > 0) {
-            <li [ngbNavItem]="'advanced'">
-              <a ngbNavLink>{{t('advanced')}}</a>
-              <ng-template ngbNavContent>
-                <div class="row">
-                  <ng-container *ngTemplateOutlet="formFieldTemplate; context: { $implicit: advancedDef() }"></ng-container>
-                </div>
-              </ng-template>
-            </li>
-          }
-
+          <li class="nav-item" (click)="activeTab = 'advanced'">
+            <a class="nav-link" [class.active]="activeTab === 'advanced'">{{ t('advanced') }}</a>
+          </li>
         </ul>
 
-        <div class="g-0 mb-2">
-          <div [ngbNavOutlet]="nav" class="mt-2 mx-5"></div>
+        <div class="tab-content mt-2 mx-4">
+
+          <div class="tab-pane" [class.active]="activeTab === 'general'">
+            <app-generic-form
+              [formDefinition]="generalFormDefinitionValue"
+              [supplyFormGroup]="downloadForm"
+              [initialValue]="baseRequest()"
+            ></app-generic-form>
+          </div>
+
+          <div class="tab-pane" [class.active]="activeTab === 'advanced'">
+            <app-generic-form
+              [formDefinition]="advancedFormDefinitionValue"
+              [supplyFormGroup]="downloadForm"
+              [initialValue]="baseRequest()"
+            ></app-generic-form>
+          </div>
+
         </div>
 
-      </form>
+      }
+
     </div>
 
     <div class="modal-footer">
@@ -91,48 +57,5 @@
     </div>
 
   </div>
-
-  <ng-template #formFieldTemplate let-definitions>
-    <ng-container [formGroup]="downloadForm">
-      @for (def of definitions; track def.key) {
-        <div class="col-md-6 col-sm-12 pt-4">
-          @if (downloadForm.get('downloadMetadata.'+def.key); as control) {
-            <app-settings-item [control]="control" [showEdit]="false" [title]="t( `extra-metadata.${def.key}.label`)" [tooltip]="t( `extra-metadata.${def.key}.tooltip`)">
-              <ng-template #view>
-                @if (def.formType === DownloadMetadataFormType.SWITCH) {
-                  <div class="form-switch form-check" formGroupName="downloadMetadata">
-                    <input class="form-check-input" type="checkbox" [formControlName]="def.key">
-                  </div>
-                } @else {
-                  {{getValue(def, control.value) | defaultValue}}
-                }
-              </ng-template>
-              <ng-template #edit>
-                <div formGroupName="downloadMetadata">
-                  @switch (def.formType) {
-                    @case (DownloadMetadataFormType.DROPDOWN) {
-                      <select [formControlName]="def.key" class="form-control">
-                        @for (opt of def.options; track opt.key) {
-                          <option [value]="opt.key">{{opt.value}}</option>
-                        }
-                      </select>
-                    }
-                    @case (DownloadMetadataFormType.SWITCH) {
-                      <div class="form-switch form-check">
-                        <input class="form-check-input" type="checkbox" [formControlName]="def.key">
-                      </div>
-                    }
-                    @case (DownloadMetadataFormType.TEXT) {
-                      <input [formControlName]="def.key" type="text" class="form-control">
-                    }
-                  }
-                </div>
-              </ng-template>
-            </app-settings-item>
-          }
-        </div>
-      }
-    </ng-container>
-  </ng-template>
 
 </ng-container>

@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
@@ -8,10 +10,10 @@ using Mnema.Models.DTOs.Content;
 
 namespace Mnema.Services;
 
-internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory serviceScopeFactory): ISearchService
+internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory serviceScopeFactory) : ISearchService
 {
-
-    public Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, PaginationParams paginationParams, CancellationToken cancellationToken)
+    public Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, PaginationParams paginationParams,
+        CancellationToken cancellationToken)
     {
         using var scope = serviceScopeFactory.CreateScope();
 

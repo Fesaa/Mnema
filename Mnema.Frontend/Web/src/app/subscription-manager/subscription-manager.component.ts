@@ -2,7 +2,7 @@ import {Component, computed, effect, EventEmitter, inject, OnInit, signal} from 
 import {NavService} from "../_services/nav.service";
 import {SubscriptionService} from '../_services/subscription.service';
 import {RefreshFrequency, Subscription} from "../_models/subscription";
-import {DownloadMetadata, Provider} from "../_models/page";
+import {Provider} from "../_models/page";
 import {dropAnimation} from "../_animations/drop-animation";
 import {SubscriptionExternalUrlPipe} from "../_pipes/subscription-external-url.pipe";
 import {DatePipe} from "@angular/common";
@@ -18,10 +18,9 @@ import {catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, switc
 import {EditSubscriptionModalComponent} from "./_components/edit-subscription-modal/edit-subscription-modal.component";
 import {DefaultModalOptions} from "../_models/default-modal-options";
 import {PageService} from "../_services/page.service";
-import {ProviderNamePipe} from "../_pipes/provider-name.pipe";
-import {UtilityService} from "../_services/utility.service";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {takeUntilDestroyed, toSignal} from "@angular/core/rxjs-interop";
+import {FormControlDefinition} from "../generic-form/form";
 
 @Component({
   selector: 'app-subscription-manager',
@@ -48,7 +47,7 @@ export class SubscriptionManagerComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly pageService = inject(PageService);
 
-  metadata = signal<Map<Provider, DownloadMetadata>>(new Map());
+  metadata = signal<Map<Provider, FormControlDefinition[]>>(new Map());
   allowedProviders = signal<Provider[]>([]);
   hasAny = signal(false);
 
@@ -80,8 +79,8 @@ export class SubscriptionManagerComponent implements OnInit {
         switchMap(providers => {
           const loaders$ = providers.map(
             p => this.pageService.metadata(p).pipe(
-              map(m => [p, m] as [Provider, DownloadMetadata]),
-              catchError(err => of([p, {definitions: []}] as [Provider, DownloadMetadata]))
+              map(m => [p, m] as [Provider, FormControlDefinition[]]),
+              catchError(err => of([p, []] as [Provider, FormControlDefinition[]]))
             ));
 
           return forkJoin(loaders$);
@@ -141,6 +140,10 @@ export class SubscriptionManagerComponent implements OnInit {
     const [modal, component] = this.modalService.open(EditSubscriptionModalComponent, DefaultModalOptions);
     component.subscription.set(sub);
     component.providers.set(this.allowedProviders());
-    component.metadata.set(this.metadata().get(sub.provider) ?? {definitions: []});
+    component.metadata.set(this.metadata().get(sub.provider) ?? []);
+
+    this.modalService.onClose$(modal).pipe(
+      tap(() => this.pageReloader.emit())
+    ).subscribe();
   }
 }

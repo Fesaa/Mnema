@@ -1,4 +1,5 @@
-using Mnema.API;
+using System.Collections.Generic;
+using System.Linq;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
@@ -8,7 +9,7 @@ using Mnema.Models.Publication;
 
 namespace Mnema.Providers.Services;
 
-internal class MetadataService: IMetadataService
+internal class MetadataService : IMetadataService
 {
     public (List<string>, List<string>) ProcessTags(
         UserPreferences preferences, IList<Tag> inputTags, DownloadRequestDto request)
@@ -16,9 +17,9 @@ internal class MetadataService: IMetadataService
         var mapToGenre = preferences.ConvertToGenreList.Select(g => g.ToNormalized()).ToList();
         var blackListed = preferences.BlackListedTags.Select(g => g.ToNormalized()).ToList();
         var whiteListed = preferences.WhiteListedTags.Select(g => g.ToNormalized()).ToList();
-        
+
         var finalInputTags = MapTags(inputTags, preferences.TagMappings);
-        
+
         var filteredGenres = finalInputTags
             .Where(TagAllowedAsGenre)
             .Select(t => t.Value)
@@ -31,7 +32,7 @@ internal class MetadataService: IMetadataService
             .ToList();
 
         return (filteredGenres, filteredTags);
-        
+
         bool TagAllowedAsGenre(Tag tag)
         {
             var tagValue = tag.Value.ToNormalized();
@@ -63,9 +64,9 @@ internal class MetadataService: IMetadataService
     {
         var ageRatingMappings = preferences.AgeRatingMappings.Select(m => m with
         {
-            Tag = m.Tag.ToNormalized(),
+            Tag = m.Tag.ToNormalized()
         }).ToList();
-        
+
         var finalInputTags = MapTags(inputTags, preferences.TagMappings);
 
         var ageRatings = finalInputTags
@@ -93,9 +94,9 @@ internal class MetadataService: IMetadataService
     {
         mappings = mappings.Select(m => m with
         {
-            OriginTag = m.OriginTag.ToNormalized(),
+            OriginTag = m.OriginTag.ToNormalized()
         }).ToList();
-        
+
         return tags.Select(tag =>
         {
             var tagValue = tag.Value.ToNormalized();
@@ -105,7 +106,7 @@ internal class MetadataService: IMetadataService
             {
                 Id = mappings.FirstOrDefault(m => m.OriginTag == tagId)?.DestinationTag ?? tag.Id,
                 Value = mappings.FirstOrDefault(m => m.OriginTag == tagValue)?.DestinationTag ?? tag.Value,
-                IsMarkedAsGenre = tag.IsMarkedAsGenre,
+                IsMarkedAsGenre = tag.IsMarkedAsGenre
             };
         }).ToList();
     }

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.UI;
 
@@ -11,7 +14,7 @@ public interface IPagesRepository
     Task<int> GetHighestSort();
 
     Task DeletePage(Guid id);
-    
+
     void Add(Page page);
     void Update(Page page);
 }

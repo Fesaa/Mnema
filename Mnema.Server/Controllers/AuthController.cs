@@ -15,7 +15,7 @@ public class AuthController : Controller
     {
         var properties = new AuthenticationProperties
         {
-            RedirectUri = returnUrl ?? "/",
+            RedirectUri = returnUrl ?? "/"
         };
 
         return Challenge(properties, OpenIdConnectServiceExtensions.OpenIdConnect);

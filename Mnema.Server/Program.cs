@@ -1,8 +1,14 @@
-
+using System;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
-using Mnema.API;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Mnema.Database;
 using Mnema.Server.Logging;
 using Serilog;
@@ -38,7 +44,7 @@ public class Program
 
                     await context.Database.MigrateAsync();
 
-                    logger.LogInformation("Database has been migrated, starting Mnema");   
+                    logger.LogInformation("Database has been migrated, starting Mnema");
                 }
 
                 await context.SeedDatabase();
@@ -48,7 +54,7 @@ public class Program
                 logger.LogCritical(ex, "An exception occured while migrating the database. Mnema will not start");
                 return;
             }
-            
+
             await host.RunAsync();
         }
         catch (Exception ex)
@@ -62,11 +68,9 @@ public class Program
     }
 
     private static IHostBuilder CreateHostBuilder(string[] args)
-        => Host.CreateDefaultBuilder(args)
-            .UseSerilog((context, _, config) =>
-            {
-                SerilogOptions.CreateConfig(context, config);
-            })
+    {
+        return Host.CreateDefaultBuilder(args)
+            .UseSerilog((context, _, config) => { SerilogOptions.CreateConfig(context, config); })
             .ConfigureAppConfiguration((ctx, conf) =>
             {
                 conf.Sources.Clear();
@@ -79,10 +83,8 @@ public class Program
             })
             .ConfigureWebHostDefaults(builder => builder
                 .UseKestrel(options => options
-                    .ListenAnyIP(8080, listenOptions =>
-                    {
-                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-                    }))
+                    .ListenAnyIP(8080,
+                        listenOptions => { listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3; }))
                 .UseStartup<Startup>());
-
+    }
 }

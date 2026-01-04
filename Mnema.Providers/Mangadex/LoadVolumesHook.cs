@@ -1,3 +1,7 @@
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.Content;
 using Mnema.Models.Entities.Content;
@@ -5,20 +9,17 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Providers.Mangadex;
 
-internal class LoadVolumesHook: IPreDownloadHook
+internal class LoadVolumesHook : IPreDownloadHook
 {
-
     public async Task PreDownloadHook(Publication publication, IServiceScope scope, CancellationToken cancellationToken)
     {
-        if (publication.Series == null)
-        {
-            return;
-        }
-        
+        if (publication.Series == null) return;
+
         // Reset cover pointing to proxy
         publication.Series.CoverUrl = string.Empty;
 
-        var mangadexRepository = (MangadexRepository) scope.ServiceProvider.GetRequiredKeyedService<IRepository>(Provider.Mangadex);
+        var mangadexRepository =
+            (MangadexRepository)scope.ServiceProvider.GetRequiredKeyedService<IRepository>(Provider.Mangadex);
 
         var coverImages = await mangadexRepository.GetCoverImages(publication.Series.Id, cancellationToken);
 
@@ -33,7 +34,8 @@ internal class LoadVolumesHook: IPreDownloadHook
 
         foreach (var chapter in publication.Series.Chapters)
         {
-            if (!string.IsNullOrEmpty(chapter.VolumeMarker) && coversByVolume.TryGetValue(chapter.VolumeMarker, out var covers))
+            if (!string.IsNullOrEmpty(chapter.VolumeMarker) &&
+                coversByVolume.TryGetValue(chapter.VolumeMarker, out var covers))
             {
                 var cover = covers.FirstOrDefault(LangFilter) ?? covers.FirstOrDefault();
                 if (cover != null)

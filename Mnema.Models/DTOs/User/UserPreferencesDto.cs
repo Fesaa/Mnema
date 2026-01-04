@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Models.DTOs.User;

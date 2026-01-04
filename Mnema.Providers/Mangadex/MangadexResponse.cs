@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -6,7 +9,7 @@ using Mnema.Models.Publication;
 
 namespace Mnema.Providers.Mangadex;
 
-internal sealed class LanguageMap: Dictionary<string, string>;
+internal sealed class LanguageMap : Dictionary<string, string>;
 
 internal record MangadexResponse<TResponse>
 {
@@ -24,53 +27,48 @@ internal record Identifiable
     public required string Type { get; set; }
 }
 
-internal sealed record MangaData: Identifiable
+internal sealed record MangaData : Identifiable
 {
+    private static readonly Dictionary<string, PersonRole[]> RelationMappings = new()
+    {
+        ["author"] = [PersonRole.Writer],
+        ["artist"] = [PersonRole.Colorist]
+    };
+
     public required MangaAttributes Attributes { get; set; }
     public required IList<RelationShip> RelationShips { get; set; }
 
     public string RefUrl => $"https://mangadex.org/title/{Id}/";
-    
-    public string? CoverUrl()
+
+    public IList<Person> People => RelationShips.Select(r =>
+    {
+        if (!r.Attributes.TryGetValue("name", out var nameEl) || nameEl.ValueKind != JsonValueKind.String) return null;
+
+        var name = nameEl.GetString();
+        if (string.IsNullOrEmpty(name)) return null;
+
+        if (RelationMappings.TryGetValue(r.Type, out var roles))
+            return new Person
+            {
+                Name = name,
+                Roles = roles
+            };
+
+        return null;
+    }).WhereNotNull().ToList();
+
+    public string? CoverUrl(bool proxy = true)
     {
         var cover = RelationShips.FirstOrDefault(r => r.Type == "cover_art");
         if (cover == null) return null;
 
         if (cover.Attributes.TryGetValue("fileName", out var fileName) && fileName.ValueKind == JsonValueKind.String)
-        {
-            return $"proxy/mangadex/covers/{Id}/{fileName}.256.jpg";
-        }
+            return proxy
+                ? $"proxy/mangadex/covers/{Id}/{fileName}.256.jpg"
+                : $"https://mangadex.org/covers/{Id}/{fileName}.256.jpg";
 
         return null;
     }
-
-    private static readonly Dictionary<string, PersonRole[]> RelationMappings = new()
-    {
-        ["author"] = [PersonRole.Writer],
-        ["artist"] = [PersonRole.Colorist],
-    };
-
-    public IList<Person> People => RelationShips.Select(r =>
-    {
-        if (!r.Attributes.TryGetValue("name", out var nameEl) || nameEl.ValueKind != JsonValueKind.String)
-        {
-            return null;
-        }
-
-        var name = nameEl.GetString();
-        if (string.IsNullOrEmpty(name)) return null;
-        
-        if (RelationMappings.TryGetValue(r.Type, out var roles))
-        {
-            return new Person
-            {
-                Name = name,
-                Roles = roles,
-            };
-        }
-
-        return null;
-    }).WhereNotNull().ToList();
 }
 
 internal sealed record MangaAttributes
@@ -88,23 +86,22 @@ internal sealed record MangaAttributes
     public required ContentRating ContentRating { get; set; }
     public required IList<TagData> Tags { get; set; }
 
+    public int? HighestChapter => string.IsNullOrWhiteSpace(LastChapter) ? null :
+        int.TryParse(LastChapter, out var result) ? result : null;
+
+    public int? HighestVolume => string.IsNullOrWhiteSpace(LastVolume) ? null :
+        int.TryParse(LastVolume, out var result) ? result : null;
+
     public string LangTitle(string lang)
     {
         // Note: for some reason the en title may still be in Japanese, don't really have a way of checking if it is
         // as the Japanese title is in the latin alphabet. We'll just have to be fine with it, as the alternative titles
         // are just plain weird from time to time
-        if (Title.TryGetValue(lang, out var title) && !string.IsNullOrEmpty(title))
-        {
-            return title;
-        }
+        if (Title.TryGetValue(lang, out var title) && !string.IsNullOrEmpty(title)) return title;
 
         foreach (var altTitleMap in AltTitles)
-        {
             if (altTitleMap.TryGetValue(lang, out var altTitle) && !string.IsNullOrEmpty(altTitle))
-            {
                 return altTitle;
-            }
-        }
 
         return Title.Values.FirstOrDefault(t => !string.IsNullOrEmpty(t)) ?? "Mnema-Fallback-Title";
     }
@@ -113,37 +110,24 @@ internal sealed record MangaAttributes
     {
         var sb = new StringBuilder();
 
-        if (!string.IsNullOrEmpty(LastVolume))
-        {
-            sb.Append($"{LastVolume} Vol.");
-        }
+        if (!string.IsNullOrEmpty(LastVolume)) sb.Append($"{LastVolume} Vol.");
 
-        if (!string.IsNullOrWhiteSpace(LastChapter))
-        {
-            sb.Append($"{LastChapter} Ch.");
-        }
+        if (!string.IsNullOrWhiteSpace(LastChapter)) sb.Append($"{LastChapter} Ch.");
 
         return sb.ToString();
     }
-
-    public int? HighestChapter => string.IsNullOrWhiteSpace(LastChapter) ? null :
-        int.TryParse(LastChapter, out var result) ? result : null;
-    
-    public int? HighestVolume => string.IsNullOrWhiteSpace(LastVolume) ? null :
-        int.TryParse(LastVolume, out var result) ? result : null;
-
 }
 
-internal sealed record ChapterData: Identifiable
+internal sealed record ChapterData : Identifiable
 {
     public required ChapterAttributes Attributes { get; set; }
-    
+
     public required IList<RelationShip> RelationShips { get; set; }
 }
 
 internal sealed record ChapterAttributes
 {
-    public string Title { get; set; } = string.Empty; 
+    public string Title { get; set; } = string.Empty;
     public string? Volume { get; set; } = string.Empty;
     public string? Chapter { get; set; } = string.Empty;
     public string TranslatedLanguage { get; set; } = string.Empty;
@@ -156,14 +140,10 @@ internal sealed record ChapterAttributes
 
 internal enum Status
 {
-    [JsonPropertyName("ongoing")]
-    Ongoing,
-    [JsonPropertyName("completed")]
-    Completed,
-    [JsonPropertyName("hiatus")]
-    Hiatus,
-    [JsonPropertyName("cancelled")]
-    Cancelled,
+    [JsonPropertyName("ongoing")] Ongoing,
+    [JsonPropertyName("completed")] Completed,
+    [JsonPropertyName("hiatus")] Hiatus,
+    [JsonPropertyName("cancelled")] Cancelled
 }
 
 internal static class EnumExtensions
@@ -172,7 +152,6 @@ internal static class EnumExtensions
     {
         return contentRating switch
         {
-
             ContentRating.Safe => AgeRating.Everyone,
             ContentRating.Suggestive => AgeRating.Teen,
             ContentRating.Erotica => AgeRating.Mature17Plus,
@@ -196,17 +175,13 @@ internal static class EnumExtensions
 
 internal enum ContentRating
 {
-    [JsonPropertyName("safe")]
-    Safe,
-    [JsonPropertyName("suggestive")]
-    Suggestive,
-    [JsonPropertyName("ertocia")]
-    Erotica,
-    [JsonPropertyName("pornographic")]
-    Pornographic,
+    [JsonPropertyName("safe")] Safe,
+    [JsonPropertyName("suggestive")] Suggestive,
+    [JsonPropertyName("ertocia")] Erotica,
+    [JsonPropertyName("pornographic")] Pornographic
 }
 
-internal sealed record TagData: Identifiable
+internal sealed record TagData : Identifiable
 {
     public required TagAttributes Attributes { get; set; }
 }
@@ -220,7 +195,7 @@ internal sealed record TagAttributes
     public IList<RelationShip> RelationShips { get; set; } = [];
 }
 
-internal sealed record RelationShip: Identifiable
+internal sealed record RelationShip : Identifiable
 {
     public IDictionary<string, JsonElement> Attributes { get; set; } = new Dictionary<string, JsonElement>();
 }
@@ -238,12 +213,15 @@ internal sealed record ChapterImagesInfo
     public required IList<string> Data { get; set; }
 }
 
-internal sealed record CoverData: Identifiable
+internal sealed record CoverData : Identifiable
 {
     public CoverAttributes Attributes { get; set; }
     public IList<RelationShip> RelationShips { get; set; } = [];
 
-    public string Url(string seriesId) => $"https://uploads.mangadex.org/covers/{seriesId}/{Attributes.FileName}.512.jpg";
+    public string Url(string seriesId)
+    {
+        return $"https://uploads.mangadex.org/covers/{seriesId}/{Attributes.FileName}.512.jpg";
+    }
 }
 
 internal sealed record CoverAttributes
@@ -254,12 +232,12 @@ internal sealed record CoverAttributes
     public string Locale { get; set; }
 }
 
-internal sealed record SearchResponse: MangadexResponse<IList<MangaData>>;
+internal sealed record SearchResponse : MangadexResponse<IList<MangaData>>;
 
-internal sealed record MangaResponse: MangadexResponse<MangaData>;
+internal sealed record MangaResponse : MangadexResponse<MangaData>;
 
-internal sealed record ChaptersResponse: MangadexResponse<List<ChapterData>>;
+internal sealed record ChaptersResponse : MangadexResponse<List<ChapterData>>;
 
-internal sealed record TagResponse: MangadexResponse<List<TagData>>;
+internal sealed record TagResponse : MangadexResponse<List<TagData>>;
 
-internal sealed record CoverResponse: MangadexResponse<List<CoverData>>;
+internal sealed record CoverResponse : MangadexResponse<List<CoverData>>;

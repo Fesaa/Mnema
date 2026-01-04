@@ -29,11 +29,13 @@ export class ConfirmModalComponent {
 
   confirm() {
     this.result.next(true);
+    this.result.complete();
     this.modal.close();
   }
 
   close() {
     this.result.next(false);
+    this.result.complete();
     this.modal.close();
   }
 

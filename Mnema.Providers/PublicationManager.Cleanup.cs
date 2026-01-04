@@ -1,29 +1,27 @@
+using System;
 using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Models.DTOs.Content;
-using Mnema.Models.Entities.User;
 
 namespace Mnema.Providers;
 
 internal partial class PublicationManager
 {
-
     private async Task CleanupAfterDownload(IPublication publication, bool skipSaving)
     {
         using var scope = _scopeFactory.CreateScope();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
-        
+
         try
         {
             if (publication.State != ContentState.Cancel)
             {
-                if (!skipSaving)
-                {
-                    await publication.Cleanup();
-                }
+                if (!skipSaving) await publication.Cleanup();
 
                 await DeleteFiles(publication);
             }
@@ -44,7 +42,8 @@ internal partial class PublicationManager
         var directory = publication.DownloadDir.Trim();
         if (string.IsNullOrWhiteSpace(directory))
         {
-            _logger.LogError("Download directory of {Id} - {Title} was empty, not deleting any files", publication.Id, publication.Title);
+            _logger.LogError("Download directory of {Id} - {Title} was empty, not deleting any files", publication.Id,
+                publication.Title);
             return Task.CompletedTask;
         }
 
@@ -63,5 +62,4 @@ internal partial class PublicationManager
 
         return Task.CompletedTask;
     }
-    
 }

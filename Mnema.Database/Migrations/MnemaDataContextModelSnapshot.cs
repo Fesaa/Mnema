@@ -66,7 +66,7 @@ namespace Mnema.Database.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
-                        .HasDefaultValue("{\"StartImmediately\":false,\"Extra\":{}}");
+                        .HasDefaultValue("{}");
 
                     b.Property<DateTime>("NextRun")
                         .HasColumnType("timestamp with time zone");
@@ -94,6 +94,36 @@ namespace Mnema.Database.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Subscriptions");
+                });
+
+            modelBuilder.Entity("Mnema.Models.Entities.External.ExternalConnection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.PrimitiveCollection<int[]>("FollowedEvents")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer[]")
+                        .HasDefaultValue(new int[0]);
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("{}");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExternalConnections");
                 });
 
             modelBuilder.Entity("Mnema.Models.Entities.ServerSetting", b =>

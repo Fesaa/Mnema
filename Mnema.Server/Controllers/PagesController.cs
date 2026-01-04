@@ -1,5 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Models.DTOs.UI;
@@ -9,25 +14,28 @@ using Mnema.Server.Configuration;
 
 namespace Mnema.Server.Controllers;
 
-public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOfWork, IPagesService pagesService, IServiceProvider serviceProvider): BaseApiController
+public class PagesController(
+    ILogger<PagesController> logger,
+    IUnitOfWork unitOfWork,
+    IPagesService pagesService,
+    IServiceProvider serviceProvider) : BaseApiController
 {
-
     /// <summary>
-    /// Returns the pages the currently active user has access to
+    ///     Returns the pages the currently active user has access to
     /// </summary>
     /// <returns></returns>
     [HttpGet]
     public async Task<ActionResult<IList<PageDto>>> GetPages()
     {
         var pages = await unitOfWork.PagesRepository.GetPageDtosForUser(UserId);
-        
+
         foreach (var page in pages)
         {
             var repository = serviceProvider.GetKeyedService<IRepository>(page.Provider);
             if (repository == null)
             {
                 logger.LogWarning("Page {Guid} with provider {Provider} could not be enriched", page.Id, page.Provider);
-                page.Metadata = new DownloadMetadata([]);
+                page.Metadata = [];
                 page.Modifiers = [];
                 continue;
             }
@@ -35,18 +43,18 @@ public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOf
             page.Metadata = await repository.DownloadMetadata(HttpContext.RequestAborted);
             page.Modifiers = await repository.Modifiers(HttpContext.RequestAborted);
         }
-        
+
         return Ok(pages);
     }
 
     [HttpGet("download-metadata")]
     [ResponseCache(CacheProfileName = CacheProfiles.OneHour, VaryByQueryKeys = ["provider"])]
-    public async Task<ActionResult<DownloadMetadata>> DownloadMetadata([FromQuery] Provider provider)
+    public async Task<ActionResult<List<FormControlDefinition>>> DownloadMetadata([FromQuery] Provider provider)
     {
         var repository = serviceProvider.GetKeyedService<IRepository>(provider);
         if (repository == null)
             return NotFound();
-        
+
         return Ok(await repository.DownloadMetadata(HttpContext.RequestAborted));
     }
 
@@ -84,5 +92,4 @@ public class PagesController(ILogger<PagesController> logger, IUnitOfWork unitOf
     {
         throw new NotImplementedException();
     }
-    
 }

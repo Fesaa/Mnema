@@ -28,45 +28,6 @@ public class StringExtensionsTests
 
     #endregion
 
-    #region OrNonEmpty Tests
-
-    [Fact]
-    public void OrNonEmpty_WithNonEmptyString_ReturnsOriginal()
-    {
-        Assert.Equal("first", "first".OrNonEmpty("second", "third"));
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void OrNonEmpty_WithNullOrEmpty_ReturnsFirstNonEmpty(string? input)
-    {
-        Assert.Equal("second", input.OrNonEmpty("second", "third"));
-    }
-
-    [Fact]
-    public void OrNonEmpty_WithAllEmpty_ReturnsEmpty()
-    {
-        string? s = null;
-        Assert.Equal(string.Empty, s.OrNonEmpty(string.Empty, null, ""));
-    }
-
-    [Fact]
-    public void OrNonEmpty_SkipsEmptyValues()
-    {
-        string? s = null;
-        Assert.Equal("third", s.OrNonEmpty(string.Empty, null, "third", "fourth"));
-    }
-
-    [Fact]
-    public void OrNonEmpty_WithNoParameters_ReturnsEmpty()
-    {
-        string? s = null;
-        Assert.Equal(string.Empty, s.OrNonEmpty());
-    }
-
-    #endregion
-
     #region PadFloat Tests
 
     [Theory]
@@ -136,16 +97,56 @@ public class StringExtensionsTests
 
     #endregion
 
+    #region OrNonEmpty Tests
+
+    [Fact]
+    public void OrNonEmpty_WithNonEmptyString_ReturnsOriginal()
+    {
+        Assert.Equal("first", "first".OrNonEmpty("second", "third"));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void OrNonEmpty_WithNullOrEmpty_ReturnsFirstNonEmpty(string? input)
+    {
+        Assert.Equal("second", input.OrNonEmpty("second", "third"));
+    }
+
+    [Fact]
+    public void OrNonEmpty_WithAllEmpty_ReturnsEmpty()
+    {
+        string? s = null;
+        Assert.Equal(string.Empty, s.OrNonEmpty(string.Empty, null, ""));
+    }
+
+    [Fact]
+    public void OrNonEmpty_SkipsEmptyValues()
+    {
+        string? s = null;
+        Assert.Equal("third", s.OrNonEmpty(string.Empty, null, "third", "fourth"));
+    }
+
+    [Fact]
+    public void OrNonEmpty_WithNoParameters_ReturnsEmpty()
+    {
+        string? s = null;
+        Assert.Equal(string.Empty, s.OrNonEmpty());
+    }
+
+    #endregion
+
     #region AsDateTime Tests
 
     [Theory]
     [InlineData("2024-01-15", "yyyy-MM-dd", 2024, 1, 15, 0, 0, 0)]
     [InlineData("  2024-01-15  ", "yyyy-MM-dd", 2024, 1, 15, 0, 0, 0)]
     [InlineData("15/01/2024 14:30:00", "dd/MM/yyyy HH:mm:ss", 2024, 1, 15, 14, 30, 0)]
-    public void AsDateTime_WithValidFormat_ReturnsDateTime(string input, string format, int year, int month, int day, int hour, int minute, int second)
+    public void AsDateTime_WithValidFormat_ReturnsDateTime(string input, string format, int year, int month, int day,
+        int hour, int minute, int second)
     {
         var result = input.AsDateTime(format);
-        
+
         Assert.NotNull(result);
         Assert.Equal(new DateTime(year, month, day, hour, minute, second), result);
     }

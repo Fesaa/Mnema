@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.API.External;
+using Mnema.Models.Entities.External;
+using Mnema.Services.External;
 using Mnema.Services.Hubs;
 using Mnema.Services.Scheduled;
 using Mnema.Services.Store;
@@ -12,7 +15,6 @@ namespace Mnema.Services.Extensions;
 
 public static class ServiceProviderExtensions
 {
-
     public static IServiceCollection AddMnemaServices(this IServiceCollection services)
     {
         services.AddSingleton<ITicketStore, CustomTicketStore>();
@@ -26,6 +28,16 @@ public static class ServiceProviderExtensions
         services.AddScoped<ISubscriptionScheduler, SubscriptionScheduler>();
         services.AddScoped<IMessageService, MessageService>();
 
+        #region External Connection
+
+        services.AddScoped<IExternalConnectionService, ExternalConnectionService>();
+        services.AddKeyedScoped<IExternalConnectionHandlerService, DiscordExternalConnectionService>(
+            ExternalConnectionType.Discord);
+        services.AddKeyedScoped<IExternalConnectionHandlerService, KavitaExternalConnectionService>(
+            ExternalConnectionType.Kavita);
+
+        #endregion
+
         return services;
     }
 
@@ -33,5 +45,4 @@ public static class ServiceProviderExtensions
     {
         builder.MapHub<MessageHub>("/ws");
     }
-    
 }

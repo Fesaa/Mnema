@@ -29,6 +29,7 @@ import {filter, fromEvent, tap} from 'rxjs';
     NgTemplateOutlet,
     NgClass,
     SafeHtmlPipe,
+
   ],
   templateUrl: './settings-item.component.html',
   styleUrl: './settings-item.component.scss',
@@ -130,5 +131,24 @@ export class SettingsItemComponent implements OnChanges {
 
     return nativeInputs[0];
   }
+
+  get errors() {
+    const control = this.control();
+    if (!control || !control.errors) return [];
+
+    return Object.entries(control.errors).map(([key, value]) => ({
+      key,
+      value
+    }));
+  }
+
+  shouldShowErrors(): boolean {
+    const control = this.control();
+    return (
+      !!control &&
+      control.invalid
+    );
+  }
+
 
 }

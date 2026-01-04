@@ -1,5 +1,6 @@
 import {Pipe, PipeTransform} from '@angular/core';
 import {Provider} from "../_models/page";
+import {translate} from "@jsverse/transloco";
 
 @Pipe({
   name: 'providerName'
@@ -9,15 +10,15 @@ export class ProviderNamePipe implements PipeTransform {
   transform(value: Provider): string {
     switch (value) {
       case Provider.NYAA:
-        return "Nyaa";
+        return translate('provider-name-pipe.nyaa');
       case Provider.MANGADEX:
-        return "Mangadex";
+        return translate('provider-name-pipe.mangadex');
       case Provider.DYNASTY:
-        return "Dynasty";
+        return translate('provider-name-pipe.dynasty');
       case Provider.WEBTOON:
-        return "WebToon";
+        return translate('provider-name-pipe.webtoon');
       case Provider.BATO:
-        return "Bato";
+        return translate('provider-name-pipe.bato');
       case Provider.MANGABUDDY:
         return "Manga buddy"
       default:

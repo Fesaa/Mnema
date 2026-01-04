@@ -1,19 +1,24 @@
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Models.DTOs.User;
 
 namespace Mnema.Server.Controllers;
 
-public class PreferencesController(ILogger<PreferencesController> logger, IUnitOfWork unitOfWork, IUserService userService, IMapper mapper): BaseApiController
+public class PreferencesController(
+    ILogger<PreferencesController> logger,
+    IUnitOfWork unitOfWork,
+    IUserService userService,
+    IMapper mapper) : BaseApiController
 {
-
     [HttpGet]
     public async Task<ActionResult<UserPreferencesDto>> GetPreferences()
     {
         var pref = await unitOfWork.UserRepository.GetPreferences(UserId);
         if (pref == null) return NotFound();
-        
+
         return Ok(mapper.Map<UserPreferencesDto>(pref));
     }
 
@@ -24,5 +29,4 @@ public class PreferencesController(ILogger<PreferencesController> logger, IUnitO
 
         return Ok();
     }
-    
 }

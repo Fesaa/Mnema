@@ -1,14 +1,15 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Models.DTOs;
 using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
 
-public class ConfigController(ILogger<ConfigController> logger, ISettingsService settingsService): BaseApiController
+public class ConfigController(ILogger<ConfigController> logger, ISettingsService settingsService) : BaseApiController
 {
-
     [HttpGet]
     public async Task<ActionResult<ServerSettingsDto>> GetSettings()
     {
@@ -25,5 +26,4 @@ public class ConfigController(ILogger<ConfigController> logger, ISettingsService
 
         return Ok();
     }
-
 }

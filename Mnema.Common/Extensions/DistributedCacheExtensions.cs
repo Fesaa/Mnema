@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Mnema.Common.Extensions;
@@ -10,7 +12,7 @@ public static class DistributedCacheExtensions
         public Task SetAsJsonAsync<T>(string key,
             T value,
             DistributedCacheEntryOptions options,
-            CancellationToken token = default (CancellationToken)
+            CancellationToken token = default
         )
         {
             var bytes = JsonSerializer.SerializeToUtf8Bytes(value);
@@ -18,13 +20,12 @@ public static class DistributedCacheExtensions
         }
 
         public async Task<T?> GetAsJsonAsync<T>(string key,
-            CancellationToken token = default(CancellationToken))
+            CancellationToken token = default)
         {
             var bytes = await cache.GetAsync(key, token);
             if (bytes == null) return default;
-        
+
             return JsonSerializer.Deserialize<T>(bytes);
         }
     }
-
 }

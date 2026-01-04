@@ -36,7 +36,6 @@ export class ServerSettingsComponent {
   config = this.settingsService.config;
 
   settingsForm: FormGroup<{
-    rootDir: FormControl<string>
     maxConcurrentImages: FormControl<number>
     maxConcurrentTorrents: FormControl<number>
     subscriptionRefreshHour: FormControl<number>;
@@ -48,7 +47,6 @@ export class ServerSettingsComponent {
       if (config == undefined) return
 
       this.settingsForm = this.fb.group({
-        rootDir: this.fb.control(config.rootDir, [Validators.required]),
         maxConcurrentImages: this.fb.control(config.maxConcurrentImages, [Validators.required, Validators.min(1), Validators.max(5)]),
         maxConcurrentTorrents: this.fb.control(config.maxConcurrentTorrents, [Validators.required, Validators.min(1), Validators.max(10)]),
         subscriptionRefreshHour: this.fb.control(config.subscriptionRefreshHour),

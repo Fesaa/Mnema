@@ -17,11 +17,15 @@ import {PreferenceSettingsComponent} from "./_components/preference-settings/pre
 import {PagesSettingsComponent} from "./_components/pages-settings/pages-settings.component";
 import {ServerSettingsComponent} from "./_components/server-settings/server-settings.component";
 import {TranslocoDirective} from "@jsverse/transloco";
+import {
+  ExternalConnectionSettingsComponent
+} from "./_components/external-connection-settings/external-connection-settings.component";
 
 export enum SettingsID {
   Server = "server",
   Preferences = "preferences",
   Pages = "pages",
+  ExternalConnections = "external_connections",
 }
 
 interface SettingsTab {
@@ -42,6 +46,7 @@ interface SettingsTab {
     PagesSettingsComponent,
     ServerSettingsComponent,
     TranslocoDirective,
+    ExternalConnectionSettingsComponent,
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']
@@ -63,6 +68,7 @@ export class SettingsComponent {
     { id: SettingsID.Preferences, title: "Preferences", icon: 'fa fa-heart', roles: [] },
     { id: SettingsID.Pages, title: 'Pages', icon: 'fa fa-thumbtack', roles: [Role.ManagePages] },
     { id: SettingsID.Server, title: 'Server', icon: 'fa fa-server', roles: [Role.ManageServerConfigs] },
+    { id: SettingsID.ExternalConnections, title: 'External Connections', icon: 'fa-solid fa-satellite-dish', roles: [Role.ManageExternalConnections] },
   ];
 
   readonly visibleSettings = computed(() => {

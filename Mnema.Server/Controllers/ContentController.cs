@@ -1,16 +1,23 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 
 namespace Mnema.Server.Controllers;
 
-public class ContentController(ISearchService searchService, IDownloadService downloadService, IServiceProvider serviceProvider): BaseApiController
+public class ContentController(
+    ISearchService searchService,
+    IDownloadService downloadService,
+    IServiceProvider serviceProvider) : BaseApiController
 {
-
     [HttpPost("search")]
     public Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, [FromQuery] PaginationParams? pagination)
     {
@@ -42,14 +49,15 @@ public class ContentController(ISearchService searchService, IDownloadService do
             Id = id,
             BaseDir = string.Empty,
             TempTitle = string.Empty,
-            DownloadMetadata = new DownloadMetadataDto(),
+            Metadata = new MetadataBag(),
         };
-        
+
         return Ok(await repository.SeriesInfo(request, HttpContext.RequestAborted));
     }
 
     [HttpGet("chapter-urls")]
-    public async Task<ActionResult<List<DownloadUrl>>> GetChapterUrls([FromQuery] Provider provider, [FromQuery] string id)
+    public async Task<ActionResult<List<DownloadUrl>>> GetChapterUrls([FromQuery] Provider provider,
+        [FromQuery] string id)
     {
         var repository = serviceProvider.GetKeyedService<IRepository>(provider);
         if (repository == null)
@@ -65,7 +73,7 @@ public class ContentController(ISearchService searchService, IDownloadService do
             People = [],
             TranslationGroups = []
         };
-        
+
         return Ok(await repository.ChapterUrls(chapter, HttpContext.RequestAborted));
     }
 
@@ -73,10 +81,37 @@ public class ContentController(ISearchService searchService, IDownloadService do
     public async Task<IActionResult> Download(DownloadRequestDto request)
     {
         request.UserId = UserId;
-        
+
         await downloadService.StartDownload(request);
 
         return Ok();
+    }
+
+    [HttpGet("form")]
+    public ActionResult<FormDefinition> GetForm()
+    {
+        return Ok(new FormDefinition
+        {
+            Key = "download-modal",
+            Controls = [
+                new FormControlDefinition
+                {
+                    Key = "dir",
+                    Field = "baseDir",
+                    Type = FormType.Directory,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "start-immediately",
+                    Field = "startImmediately",
+                    Type = FormType.Switch,
+                    DefaultOption = true,
+                }
+            ]
+        });
     }
 
     [HttpGet("stats")]
@@ -91,7 +126,7 @@ public class ContentController(ISearchService searchService, IDownloadService do
         request.UserId = UserId;
 
         await downloadService.CancelDownload(request);
-        
+
         return Ok();
     }
 
@@ -101,8 +136,7 @@ public class ContentController(ISearchService searchService, IDownloadService do
         var contentManager = serviceProvider.GetKeyedService<IContentManager>(message.Provider);
         if (contentManager == null)
             return NotFound();
-        
+
         return Ok(await contentManager.RelayMessage(message));
     }
-    
 }

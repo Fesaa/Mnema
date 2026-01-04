@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -9,13 +13,13 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.Database.Repositories;
 
-public class SubscriptionRepository(MnemaDataContext ctx, IMapper mapper): ISubscriptionRepository
+public class SubscriptionRepository(MnemaDataContext ctx, IMapper mapper) : ISubscriptionRepository
 {
-
-    public Task<PagedList<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId, string query, PaginationParams pagination)
+    public Task<PagedList<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId, string query,
+        PaginationParams pagination)
     {
         var queryMatcher = $"%{query.ToLower()}%";
-        
+
         return ctx.Subscriptions
             .Where(s => s.UserId == userId && EF.Functions.Like(s.Title.ToLower(), queryMatcher))
             .ProjectTo<SubscriptionDto>(mapper.ConfigurationProvider)

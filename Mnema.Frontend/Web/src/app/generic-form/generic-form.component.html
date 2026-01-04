@@ -1,0 +1,109 @@
+
+<form *transloco="let t; prefix: formDefinition().key" class="row">
+
+  @for (control of formDefinition().controls; track control.key) {
+    @let formControl = getFormControl(control);
+    @let formControlName = getFormControlName(control);
+
+    <div [formGroup]="getFormGroup(control)" class="{{ (double() && !control.forceSingle) ? 'col-md-6' : 'col-md-12' }} col-sm-12 pt-4">
+      @switch (control.type) {
+        @case (FormType.Switch) {
+          <app-settings-switch
+            [control]="formControl"
+            [labelId]="control.key"
+            [title]="t(control.key + '-title')"
+            [tooltip]="t(control.key + '-tooltip')"
+          >
+            <ng-template #switch>
+              <div class="form-switch form-check">
+                <input class="form-check-input" type="checkbox" [formControlName]="formControlName">
+              </div>
+            </ng-template>
+
+          </app-settings-switch>
+        }
+        @case (FormType.Text) {
+          <app-settings-item
+            [control]="formControl"
+            [labelId]="control.key"
+            [title]="t(control.key + '-title')"
+            [tooltip]="t(control.key + '-tooltip')"
+          >
+            <ng-template #view>
+              {{formControl.value | defaultValue}}
+            </ng-template>
+            <ng-template #edit>
+              <input class="form-control" type="text" [formControlName]="formControlName">
+            </ng-template>
+          </app-settings-item>
+        }
+        @case (FormType.Directory) {
+          <app-settings-item
+            [control]="formControl"
+            [labelId]="control.key"
+            [title]="t(control.key + '-title')"
+            [tooltip]="t(control.key + '-tooltip')"
+          >
+            <ng-template #view>
+              <div class="d-flex align-items-center">
+                <div role="button" class="btn btn-primary me-2" (click)="$event.stopPropagation(); pickDirectory(formControl)">
+                  <i class="fa fa-folder"></i>
+                </div>
+                <span>{{formControl.value | defaultValue}}</span>
+              </div>
+            </ng-template>
+            <ng-template #edit>
+              <input class="form-control" type="text" [formControlName]="formControlName">
+            </ng-template>
+          </app-settings-item>
+        }
+        @case (FormType.DropDown) {
+          <app-settings-item
+            [control]="formControl"
+            [labelId]="control.key"
+            [title]="t(control.key + '-title')"
+            [tooltip]="t(control.key + '-tooltip')"
+          >
+            <ng-template #view>
+              @let option = getFormOption(control, formControl.value);
+              {{ option ? t(control.key + '.' + option.key) : null | defaultValue }}
+            </ng-template>
+            <ng-template #edit>
+              <select class="form-select" [formControlName]="formControlName">
+                @for (option of control.options; track option.key) {
+                  <option [ngValue]="option.value"> {{ t(control.key + '.' + option.key) }} </option>
+                }
+              </select>
+            </ng-template>
+          </app-settings-item>
+        }
+        @case (FormType.MultiSelect) {
+          <app-settings-item
+            [control]="formControl"
+            [labelId]="control.key"
+            [title]="t(control.key + '-title')"
+            [tooltip]="t(control.key + '-tooltip')"
+            [canEdit]="false"
+            [showEdit]="false"
+          >
+            <ng-template #view>
+              <app-type-ahead
+                [settings]="genericFormFactoryService.createTypeAheadSettings(formControl.value, control)"
+                (selectedData)="patchTypeAheadControlValue($event, formControl)"
+              >
+                <ng-template #optionItem let-option>
+                  {{ t(control.key + '.' + option.key) }}
+                </ng-template>
+                <ng-template #badgeItem let-item>
+                  {{ t(control.key + '.' + item.key) }}
+                </ng-template>
+              </app-type-ahead>
+            </ng-template>
+          </app-settings-item>
+        }
+      }
+    </div>
+
+  }
+
+</form>

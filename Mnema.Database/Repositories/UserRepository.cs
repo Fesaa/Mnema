@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Mnema.API;
@@ -6,18 +9,14 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Database.Repositories;
 
-public class UserRepository(MnemaDataContext ctx, IMapper mapper): IUserRepository
+public class UserRepository(MnemaDataContext ctx, IMapper mapper) : IUserRepository
 {
-
     public async Task<MnemaUser> GetUserById(Guid id, UserIncludes includes = UserIncludes.Preferences)
     {
         var user = await ctx.Users
             .Includes(includes)
             .FirstOrDefaultAsync(u => u.Id == id);
-        if (user != null)
-        {
-            return user;
-        }
+        if (user != null) return user;
 
         user = new MnemaUser
         {
@@ -30,8 +29,8 @@ public class UserRepository(MnemaDataContext ctx, IMapper mapper): IUserReposito
                 BlackListedTags = [],
                 WhiteListedTags = [],
                 AgeRatingMappings = [],
-                TagMappings = [],
-            },
+                TagMappings = []
+            }
         };
 
         await ctx.Users.AddAsync(user);

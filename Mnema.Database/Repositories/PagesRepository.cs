@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -7,9 +11,8 @@ using Mnema.Models.Entities.UI;
 
 namespace Mnema.Database.Repositories;
 
-public class PagesRepository(MnemaDataContext ctx, IMapper mapper): IPagesRepository
+public class PagesRepository(MnemaDataContext ctx, IMapper mapper) : IPagesRepository
 {
-
     public Task<List<PageDto>> GetPageDtosForUser(Guid userId)
     {
         return ctx.Pages
@@ -17,6 +20,7 @@ public class PagesRepository(MnemaDataContext ctx, IMapper mapper): IPagesReposi
             .ProjectTo<PageDto>(mapper.ConfigurationProvider)
             .ToListAsync();
     }
+
     public Task<List<Page>> GetPages()
     {
         return ctx.Pages.ToListAsync();
@@ -32,7 +36,7 @@ public class PagesRepository(MnemaDataContext ctx, IMapper mapper): IPagesReposi
         var result = await ctx.Pages
             .Select(p => (int?)p.SortValue)
             .MaxAsync();
-    
+
         return result ?? 0;
     }
 

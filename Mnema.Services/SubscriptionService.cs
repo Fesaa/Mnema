@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
@@ -14,9 +16,8 @@ internal class SubscriptionService(
     IUnitOfWork unitOfWork,
     IServiceScopeFactory scopeFactory,
     ISettingsService settingsService
-    ): ISubscriptionService
+) : ISubscriptionService
 {
-    
     public async Task UpdateSubscription(Guid userId, SubscriptionDto dto)
     {
         var sub = await unitOfWork.SubscriptionRepository.GetSubscription(dto.Id);
@@ -24,10 +25,7 @@ internal class SubscriptionService(
 
         if (sub.UserId != userId) throw new ForbiddenException();
 
-        if (sub.Title != dto.Title)
-        {
-            sub.Title = dto.Title;
-        }
+        if (sub.Title != dto.Title) sub.Title = dto.Title;
 
         if (sub.BaseDir != dto.BaseDir)
         {
@@ -40,15 +38,16 @@ internal class SubscriptionService(
         sub.Metadata = dto.Metadata;
         sub.NoDownloadsRuns = 0;
         sub.RefreshFrequency = dto.RefreshFrequency;
-        
+
         unitOfWork.SubscriptionRepository.Update(sub);
 
         await unitOfWork.CommitAsync();
     }
+
     public async Task CreateSubscription(Guid userId, SubscriptionDto dto)
     {
         var hour = await settingsService.GetSettingsAsync<int>(ServerSettingKey.SubscriptionRefreshHour);
-        
+
         var sub = new Subscription
         {
             UserId = userId,
@@ -59,11 +58,11 @@ internal class SubscriptionService(
             Provider = dto.Provider,
             RefreshFrequency = dto.RefreshFrequency,
             LastRun = DateTime.MinValue,
-            LastRunSuccess = true,
+            LastRunSuccess = true
         };
 
         sub.NextRun = sub.NextRunTime(hour);
-        
+
         unitOfWork.SubscriptionRepository.Add(sub);
 
         await unitOfWork.CommitAsync();
@@ -75,29 +74,13 @@ internal class SubscriptionService(
     public async Task RunOnce(Guid userId, Guid subId)
     {
         var sub = await unitOfWork.SubscriptionRepository.GetSubscription(subId);
-        if (sub == null)
-        {
-            throw new NotFoundException();
-        }
+        if (sub == null) throw new NotFoundException();
 
-        if (sub.UserId != userId)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        var downloadRequest = new DownloadRequestDto
-        {
-            Provider = sub.Provider,
-            Id = sub.ContentId,
-            BaseDir = sub.BaseDir,
-            TempTitle = sub.Title,
-            DownloadMetadata = sub.Metadata,
-            UserId = userId,
-        };
+        if (sub.UserId != userId) throw new UnauthorizedAccessException();
 
         using var scope = scopeFactory.CreateScope();
         var manager = scope.ServiceProvider.GetRequiredKeyedService<IContentManager>(sub.Provider);
 
-        await manager.Download(downloadRequest);
+        await manager.Download(sub.AsDownloadRequestDto());
     }
 }

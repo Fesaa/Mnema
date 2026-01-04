@@ -4,4 +4,6 @@ using Microsoft.AspNetCore.SignalR;
 namespace Mnema.Services.Hubs;
 
 [Authorize]
-internal class MessageHub: Hub {}
+internal class MessageHub : Hub
+{
+}

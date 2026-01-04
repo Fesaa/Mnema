@@ -38,19 +38,25 @@
 
       @defer (when selected() === SettingsID.Preferences; prefetch on idle) {
         @if (selected() === SettingsID.Preferences && canSee(SettingsID.Preferences)) {
-          <app-preference-settings></app-preference-settings>
+          <app-preference-settings />
         }
       }
 
       @defer (when selected() === SettingsID.Pages; prefetch on idle) {
         @if (selected() === SettingsID.Pages && canSee(SettingsID.Pages)) {
-          <app-pages-settings></app-pages-settings>
+          <app-pages-settings />
         }
       }
 
       @defer (when selected() === SettingsID.Server; prefetch on idle) {
         @if (selected() === SettingsID.Server && canSee(SettingsID.Server)) {
-          <app-server-settings></app-server-settings>
+          <app-server-settings />
+        }
+      }
+
+      @defer (when selected() === SettingsID.ExternalConnections; prefetch on idle) {
+        @if (selected() === SettingsID.ExternalConnections && canSee(SettingsID.ExternalConnections)) {
+          <app-external-connection-settings />
         }
       }
     </section>

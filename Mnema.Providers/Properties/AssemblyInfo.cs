@@ -1,1 +1,3 @@
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Mnema.Tests")]
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Mnema.Tests")]

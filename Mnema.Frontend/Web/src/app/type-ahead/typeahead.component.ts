@@ -194,6 +194,14 @@ export class TypeaheadComponent<T> implements OnInit {
       .subscribe(value => {
         this.searchSubject.next(value || '');
       });
+
+    effect(() => {
+      if (this.disabled() || this.locked()) {
+        this.searchControl.disable({ onlySelf: true });
+      } else {
+        this.searchControl.enable({ onlySelf: true });
+      }
+    });
   }
 
   ngOnInit(): void {

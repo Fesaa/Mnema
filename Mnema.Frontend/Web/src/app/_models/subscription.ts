@@ -1,5 +1,5 @@
 import {Provider} from "./page";
-import {DownloadRequestMetadata} from "./search";
+import {MetadataBag} from "./search";
 
 export type Subscription = {
   id: string;
@@ -11,7 +11,7 @@ export type Subscription = {
   lastRunSuccess: boolean;
   nextRun: Date;
   provider: Provider;
-  metadata: DownloadRequestMetadata;
+  metadata: MetadataBag;
 }
 
 export enum RefreshFrequency {
@@ -19,9 +19,3 @@ export enum RefreshFrequency {
   Week,
   Month,
 }
-
-export const RefreshFrequencies = [
-  {label: "Day", value: RefreshFrequency.Day},
-  {label: "Week", value: RefreshFrequency.Week},
-  {label: "Month", value: RefreshFrequency.Month},
-];

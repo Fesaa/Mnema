@@ -1,9 +1,10 @@
 import {effect, inject, Injectable, signal} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {environment} from "../../environments/environment";
-import {DownloadMetadata, Page, Provider} from "../_models/page";
+import {Page, Provider} from "../_models/page";
 import {Observable, of, ReplaySubject, tap} from "rxjs";
 import {AccountService} from "./account.service";
+import {FormControlDefinition} from "../generic-form/form";
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,7 @@ export class PageService {
   private _pages = signal<Page[]>([]);
   public readonly pages = this._pages.asReadonly();
 
-  private metadataCache: { [key: number]: DownloadMetadata } = {};
+  private metadataCache: { [key: number]: FormControlDefinition[] } = {};
 
   constructor() {
     effect(() => {
@@ -96,7 +97,7 @@ export class PageService {
       return of(metadata);
     }
 
-    return this.httpClient.get<DownloadMetadata>(this.baseUrl + `download-metadata?provider=${provider}`)
+    return this.httpClient.get<FormControlDefinition[]>(this.baseUrl + `download-metadata?provider=${provider}`)
       .pipe(tap(metadata => {
         this.metadataCache[provider] = metadata;
       }))

@@ -1,6 +1,10 @@
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Logging;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.Entities.Content;
@@ -9,10 +13,9 @@ using Mnema.Server.Configuration;
 
 namespace Mnema.Server.Controllers;
 
-public class ProxyController(ILogger<ProxyController> logger, IHttpClientFactory httpClientFactory): BaseApiController
+public class ProxyController(ILogger<ProxyController> logger, IHttpClientFactory httpClientFactory) : BaseApiController
 {
-
-    private static readonly FileExtensionContentTypeProvider FileTypeProvider = new ();
+    private static readonly FileExtensionContentTypeProvider FileTypeProvider = new();
 
     [HttpGet("mangadex/covers/{id}/{fileName}")]
     [OutputCache(PolicyName = CacheProfiles.OneWeek, VaryByRouteValueNames = ["id", "fileName"])]
@@ -43,7 +46,7 @@ public class ProxyController(ILogger<ProxyController> logger, IHttpClientFactory
     public async Task<IActionResult> GetWebtoonCover(string id, string fileName, string date)
     {
         FileTypeProvider.TryGetContentType(fileName, out var contentType);
-        
+
         var url = $"{SharedConstants.WebtoonImageBase}{date}/{id}/{fileName}";
         var client = httpClientFactory.CreateClient(nameof(Provider.Webtoons));
 
@@ -56,10 +59,9 @@ public class ProxyController(ILogger<ProxyController> logger, IHttpClientFactory
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to get webtoon cover @ {Url}", url.CleanForLogging());
-            
+
             // TODO: Use fallback image
             throw new MnemaException("Failed to get image from webtoon", ex);
         }
     }
-
 }

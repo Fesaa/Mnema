@@ -1,6 +1,11 @@
-using System.Globalization;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Fizzler.Systems.HtmlAgilityPack;
 using Flurl;
 using HtmlAgilityPack;
@@ -27,83 +32,161 @@ internal class DynastyRepository(
     IHttpClientFactory httpClientFactory)
     : IRepository
 {
-    
     private const string ChapterReleaseDateFormat = "MMM d, yyyy";
     private const string SeriesReleaseDateFormat = "MMM d \\'yy";
     private const int JsonOffset = 2;
-    
-    private static readonly Regex ChapterTitleRegex = new (@"Chapter\s+([\d.]+)(?::\s*(.+))?", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
-    
-    private HttpClient Client => httpClientFactory.CreateClient(nameof(Provider.Dynasty));
-    
 
-    public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken)
+    private static readonly Regex ChapterTitleRegex =
+        new(@"Chapter\s+([\d.]+)(?::\s*(.+))?", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+
+    private HttpClient Client => httpClientFactory.CreateClient(nameof(Provider.Dynasty));
+
+
+    public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination,
+        CancellationToken cancellationToken)
     {
         var url = "/search"
             .SetQueryParam("q", request.Query)
             .SetQueryParamIf(request.Modifiers.GetBool("AllowChapters"), "classes[]", "Chapter")
             .AppendQueryParam("classes[]", "Series")
             .SetQueryParam("page", pagination.PageNumber + 1); // Dynasty is 1 indexed
-        
+
         var result = await Client.GetCachedStringAsync(url.ToString(), cache, cancellationToken: cancellationToken);
-        if (result.IsErr)
-        {
-            throw new MnemaException("Failed to search for series", result.Error);
-        }
+        if (result.IsErr) throw new MnemaException("Failed to search for series", result.Error);
 
         var document = result.Unwrap().ToHtmlDocument();
 
         var resultNodes = document.DocumentNode.QuerySelectorAll(".chapter-list dd");
-        if (resultNodes == null)
-        {
-            return PagedList<SearchResult>.Empty();
-        }
+        if (resultNodes == null) return PagedList<SearchResult>.Empty();
 
         var baseUrl = Client.BaseAddress?.ToString().TrimEnd('/');
-        
+
         var results = resultNodes.Select(node =>
         {
             var nameNode = node.QuerySelector(".name");
 
             return new SearchResult
             {
-                Id = nameNode.GetAttributeValue("href", string.Empty),  
+                Id = nameNode.GetAttributeValue("href", string.Empty),
                 Name = nameNode.InnerText,
                 Provider = Provider.Dynasty,
                 Tags = node.QuerySelectorAll(".tags a.label").Select(x => x.InnerText).ToList(),
-                Url = $"{baseUrl}{nameNode.GetAttributeValue("href", string.Empty)}",
+                Url = $"{baseUrl}{nameNode.GetAttributeValue("href", string.Empty)}"
             };
         }).ToList();
 
         var paginatorNode = document.DocumentNode.QuerySelector(".pagination");
-        if (paginatorNode == null)
-        {
-            return new PagedList<SearchResult>(results, results.Count, 0, results.Count);
-        }
+        if (paginatorNode == null) return new PagedList<SearchResult>(results, results.Count, 0, results.Count);
 
         var currentPage = paginatorNode.QuerySelector(".active a").InnerText.AsInt();
         var lastPage = paginatorNode.QuerySelectorAll("a").ElementAtOrDefault(^2)?.InnerText.AsInt() ?? 1;
-        
+
         return new PagedList<SearchResult>(results, 20 * lastPage, currentPage - 1, 20);
     }
 
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
     {
         var result = await Client.GetCachedStringAsync(request.Id, cache, cancellationToken: cancellationToken);
-        if (result.IsErr)
-        {
-            throw new MnemaException("Failed to retrieve series info", result.Error);
-        }
-        
+        if (result.IsErr) throw new MnemaException("Failed to retrieve series info", result.Error);
+
         var document = result.Unwrap().ToHtmlDocument();
 
-        if (request.Id.StartsWith("/series/"))
-        {
-            return ParseSeriesPage(document, request);
-        }
+        if (request.Id.StartsWith("/series/")) return ParseSeriesPage(document, request);
 
         return ParseChapterPageAsSeries(document, request);
+    }
 
+    public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    {
+        var result =
+            await Client.GetCachedStringAsync($"chapters/{chapter.Id}", cache, cancellationToken: cancellationToken);
+        if (result.IsErr) throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}", result.Error);
+
+        var document = result.Unwrap().ToHtmlDocument();
+
+        var scriptNode = document.DocumentNode.QuerySelectorAll("script")
+            .FirstOrDefault(node => node.InnerText.Contains("var pages"));
+        if (scriptNode == null)
+            throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}, no matching script found");
+
+        var start = scriptNode.InnerText.IndexOf("[{", StringComparison.InvariantCulture);
+        var end = scriptNode.InnerText.LastIndexOf("}]", StringComparison.InvariantCulture);
+        if (start == -1 || end == -1)
+            throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}, could not find json data");
+
+        var jsonData = scriptNode.InnerText[start..(end + JsonOffset)];
+
+        return JsonSerializer.Deserialize<List<DynastyImage>>(jsonData)?
+            .Select(i => new DownloadUrl(i.image, i.image))
+            .ToList() ?? [];
+    }
+
+    public async Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken)
+    {
+        var result = await Client.GetCachedStringAsync(string.Empty, cache, cancellationToken: cancellationToken);
+        if (result.IsErr)
+            throw new MnemaException("Failed to retrieve recently updated chapters", result.Error);
+
+        var document = result.Unwrap().ToHtmlDocument();
+
+        return document.DocumentNode.QuerySelectorAll(".chapter")
+            .Select(node => node.GetAttributeValue("href", string.Empty))
+            .Where(x => !string.IsNullOrEmpty(x))
+            .Select(x =>
+            {
+                // Chapter belonging to a series end in _chXXX, transform into the series id
+                var idx = x.LastIndexOf("_ch", StringComparison.InvariantCulture);
+                return idx < 0 ? x : x[..idx].Replace("chapters", "series");
+            })
+            .Distinct()
+            .ToList();
+    }
+
+    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
+    {
+        return Task.FromResult<List<FormControlDefinition>>([
+            new FormControlDefinition
+            {
+                Key = RequestConstants.DownloadOneShotKey,
+                Type = FormType.Switch
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.IncludeNotMatchedTagsKey,
+                Type = FormType.Switch,
+                Advanced = true
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.IncludeCover,
+                Type = FormType.Switch,
+                DefaultOption = "true"
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.TitleOverride,
+                Type = FormType.Text,
+                Advanced = true
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.SkipVolumeWithoutChapter,
+                Type = FormType.Switch,
+                Advanced = true
+            }
+        ]);
+    }
+
+    public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    {
+        return Task.FromResult<List<FormControlDefinition>>([
+            new FormControlDefinition
+            {
+                Type = FormType.Switch,
+                Key = "AllowChapters",
+                Options = []
+            }
+        ]);
     }
 
     private Series ParseSeriesPage(HtmlDocument document, DownloadRequestDto request)
@@ -121,21 +204,24 @@ internal class DynastyRepository(
                 Roles = [PersonRole.Writer]
             })
             .ToList();
-        
-        
+
+
         return new Series
         {
             Id = request.Id,
             Title = document.DocumentNode.QuerySelector(".tag-title b").InnerText,
             LocalizedSeries = document.DocumentNode.QuerySelector(".aliases b")?.InnerText,
             Summary = document.DocumentNode.QuerySelector(".description p")?.InnerText ?? string.Empty,
-            CoverUrl = string.IsNullOrEmpty(coverUrl) ? string.Empty : $"{Client.BaseAddress?.ToString().TrimEnd('/')}{coverUrl}",
-            RefUrl =  $"{Client.BaseAddress?.ToString().TrimEnd('/')}{request.Id}",
-            Status = ParseStatus(document.DocumentNode.QuerySelectorAll(".tag-title small")?.LastOrDefault()?.InnerText.RemovePrefix("— ")),
+            CoverUrl = string.IsNullOrEmpty(coverUrl)
+                ? string.Empty
+                : $"{Client.BaseAddress?.ToString().TrimEnd('/')}{coverUrl}",
+            RefUrl = $"{Client.BaseAddress?.ToString().TrimEnd('/')}{request.Id}",
+            Status = ParseStatus(document.DocumentNode.QuerySelectorAll(".tag-title small")?.LastOrDefault()?.InnerText
+                .RemovePrefix("— ")),
             Tags = tags,
             People = people,
             Links = [],
-            Chapters = ParseChapters(document.DocumentNode.QuerySelector(".chapter-list")),
+            Chapters = ParseChapters(document.DocumentNode.QuerySelector(".chapter-list"))
         };
     }
 
@@ -143,31 +229,25 @@ internal class DynastyRepository(
     {
         List<Chapter> chapters = [];
         var currentVolume = "";
-        
+
         foreach (var child in parent.Children())
         {
             if (child.Name == "dt")
             {
-                if (child.InnerText.Contains("Volume"))
-                {
-                    currentVolume = child.InnerText.RemovePrefix("Volume").Trim();
-                }
+                if (child.InnerText.Contains("Volume")) currentVolume = child.InnerText.RemovePrefix("Volume").Trim();
                 continue;
             }
 
-            if (child.Name != "dd")
-            {
-                continue;
-            }
+            if (child.Name != "dd") continue;
 
             var titleNode = child.QuerySelector(".name");
-            
+
             var tags = child.QuerySelectorAll(".label")
                 .Where(node => node.GetAttributeValue("href", string.Empty).StartsWith("/tags/"))
                 .Select(node => new Tag(node.InnerText))
                 .ToList();
             var (chapter, title) = ParseChapterAndTitle(titleNode.InnerText);
-            
+
             chapters.Add(new Chapter
             {
                 Id = titleNode.GetAttributeValue("href", string.Empty).RemovePrefix("/chapters/"),
@@ -177,7 +257,8 @@ internal class DynastyRepository(
                 Tags = tags,
                 People = [],
                 TranslationGroups = [],
-                ReleaseDate = child.QuerySelector("small")?.InnerText.RemovePrefix("released").AsDateTime(SeriesReleaseDateFormat),
+                ReleaseDate = child.QuerySelector("small")?.InnerText.RemovePrefix("released")
+                    .AsDateTime(SeriesReleaseDateFormat)
             });
         }
 
@@ -187,9 +268,7 @@ internal class DynastyRepository(
         {
             var matches = ChapterTitleRegex.Match(chapterText);
             if (matches is { Success: true, Groups.Count: 3 })
-            {
                 return (matches.Groups[1].Value, matches.Groups[2].Value);
-            }
 
             return (string.Empty, chapterText);
         }
@@ -211,7 +290,7 @@ internal class DynastyRepository(
             })
             .ToList();
         var releaseDate = document.DocumentNode.QuerySelector("#chapter-details .released")?.InnerText
-            .Replace("  ", " ") // Dynasty sometimes has double spaces for some reason. Remove them 
+            .Replace("  ", " ") // Dynasty sometimes has double spaces for some reason. Remove them
             .AsDateTime(ChapterReleaseDateFormat);
 
         return new Series
@@ -221,12 +300,14 @@ internal class DynastyRepository(
             LocalizedSeries = document.DocumentNode.QuerySelector(".aliases b")?.InnerText,
             RefUrl = $"{Client.BaseAddress?.ToString().TrimEnd('/')}{request.Id}",
             Summary = string.Empty,
-            Status = ParseStatus(document.DocumentNode.QuerySelectorAll(".tag-title small")?.LastOrDefault()?.InnerText.RemovePrefix("— ")),
+            Status = ParseStatus(document.DocumentNode.QuerySelectorAll(".tag-title small")?.LastOrDefault()?.InnerText
+                .RemovePrefix("— ")),
             Year = releaseDate?.Year,
             Tags = tags,
             People = people,
             Links = [],
-            Chapters = [
+            Chapters =
+            [
                 new Chapter
                 {
                     Id = request.Id.RemovePrefix("/chapters/"),
@@ -236,10 +317,11 @@ internal class DynastyRepository(
                     ChapterMarker = string.Empty,
                     Tags = tags,
                     People = people,
-                    TranslationGroups = document.DocumentNode.QuerySelectorAll(".scanlators a").Select(node => node.InnerText.Trim()).ToList(),
-                    ReleaseDate = releaseDate,
+                    TranslationGroups = document.DocumentNode.QuerySelectorAll(".scanlators a")
+                        .Select(node => node.InnerText.Trim()).ToList(),
+                    ReleaseDate = releaseDate
                 }
-            ],
+            ]
         };
     }
 
@@ -252,107 +334,7 @@ internal class DynastyRepository(
         {
             "Completed" => PublicationStatus.Completed,
             "Ongoing" => PublicationStatus.Ongoing,
-            _ => PublicationStatus.Unknown,
+            _ => PublicationStatus.Unknown
         };
-    }
-
-    public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
-    {
-        var result = await Client.GetCachedStringAsync($"chapters/{chapter.Id}", cache, cancellationToken: cancellationToken);
-        if (result.IsErr)
-        {
-            throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}", result.Error);
-        }
-
-        var document = result.Unwrap().ToHtmlDocument();
-
-        var scriptNode = document.DocumentNode.QuerySelectorAll("script")
-            .FirstOrDefault(node => node.InnerText.Contains("var pages"));
-        if (scriptNode == null)
-        {
-            throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}, no matching script found");
-        }
-
-        var start = scriptNode.InnerText.IndexOf("[{", StringComparison.InvariantCulture);
-        var end = scriptNode.InnerText.LastIndexOf("}]", StringComparison.InvariantCulture);
-        if (start == -1 || end == -1)
-        {
-            throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}, could not find json data");
-        }
-
-        var jsonData = scriptNode.InnerText[start..(end + JsonOffset)];
-
-        return JsonSerializer.Deserialize<List<DynastyImage>>(jsonData)?
-            .Select(i => new DownloadUrl(i.image, i.image))
-            .ToList() ?? [];
-    }
-
-    public async Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken)
-    {
-        var result = await Client.GetCachedStringAsync(string.Empty, cache, cancellationToken: cancellationToken);
-        if (result.IsErr)
-            throw new MnemaException($"Failed to retrieve recently updated chapters", result.Error);
-
-        var document = result.Unwrap().ToHtmlDocument();
-
-        return document.DocumentNode.QuerySelectorAll(".chapter")
-            .Select(node => node.GetAttributeValue("href", string.Empty))
-            .Where(x => !string.IsNullOrEmpty(x))
-            .Select(x =>
-            {
-                // Chapter belonging to a series end in _chXXX, transform into the series id 
-                var idx = x.LastIndexOf("_ch", StringComparison.InvariantCulture);
-                return idx < 0 ? x : x[..idx].Replace("chapters", "series");
-            })
-            .Distinct()
-            .ToList();
-    }
-
-    public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
-    {
-        return Task.FromResult(new DownloadMetadata([
-            new DownloadMetadataDefinition
-            {
-                Key = RequestConstants.DownloadOneShotKey,
-                FormType = FormType.Switch,
-            },
-            new DownloadMetadataDefinition
-            {
-                Key = RequestConstants.IncludeNotMatchedTagsKey,
-                FormType = FormType.Switch,
-                Advanced = true,
-            },
-            new DownloadMetadataDefinition
-            {
-                Key = RequestConstants.IncludeCover,
-                FormType = FormType.Switch,
-                DefaultOption = "true",
-            },
-            new DownloadMetadataDefinition
-            {
-                Key = RequestConstants.TitleOverride,
-                FormType = FormType.Text,
-                Advanced = true,
-            },
-            new DownloadMetadataDefinition
-            {
-                Key = RequestConstants.SkipVolumeWithoutChapter,
-                FormType = FormType.Switch,
-                Advanced = true,
-            },
-        ]));
-    }
-
-    public Task<List<ModifierDto>> Modifiers(CancellationToken cancellationToken)
-    {
-        return Task.FromResult<List<ModifierDto>>([
-            new ModifierDto
-            {
-                Title = "Allow Chapters",
-                Type = ModifierType.Switch,
-                Key = "AllowChapters",
-                Values = [],
-            }
-        ]);
     }
 }

@@ -1,3 +1,4 @@
+using System.IO;
 using System.Xml.Serialization;
 
 namespace Mnema.Common.Helpers;
@@ -16,6 +17,6 @@ public static class XmlHelper
     {
         var serializer = new XmlSerializer(typeof(T));
         var ret = serializer.Deserialize(content);
-        return ret == null ? default : (T) ret;
+        return ret == null ? default : (T)ret;
     }
 }
