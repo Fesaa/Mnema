@@ -14,7 +14,6 @@ public sealed record DownloadRequestDto
     public required Provider Provider { get; set; }
     public required string Id { get; set; }
 
-    [JsonPropertyName("dir")]
     public required string BaseDir { get; set; }
 
     [JsonPropertyName("title")]
@@ -23,7 +22,7 @@ public sealed record DownloadRequestDto
     [Required]
     public bool StartImmediately { get; set; }
 
-    public required MetadataBag DownloadMetadata { get; set; }
+    public required MetadataBag Metadata { get; set; }
 
     [JsonIgnore] public Guid? SubscriptionId { get; set; }
 
@@ -31,16 +30,16 @@ public sealed record DownloadRequestDto
 
     public string? GetString(string key)
     {
-        return DownloadMetadata.GetString(key);
+        return Metadata.GetString(key);
     }
 
     public string GetStringOrDefault(string key, string defaultValue)
     {
-        return DownloadMetadata.GetStringOrDefault(key, defaultValue);
+        return Metadata.GetStringOrDefault(key, defaultValue);
     }
 
     public bool GetBool(string key, bool fallback = false)
     {
-        return DownloadMetadata.GetBool(key, fallback);
+        return Metadata.GetBool(key, fallback);
     }
 }

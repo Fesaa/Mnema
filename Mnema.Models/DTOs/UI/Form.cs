@@ -46,10 +46,12 @@ public sealed record FormControlDefinition
 /// <summary>
 /// </summary>
 /// <param name="Key">Key to be used for translation</param>
-/// <param name="Value">The value to be send back</param>
+/// <param name="Value">The value to be sent back</param>
 public sealed record FormControlOption(string Key, object Value)
 {
     public bool Default { get; set; }
+
+    public FormControlOption(string v) : this(v, v) {}
 
     public static FormControlOption DefaultValue(string key, object value)
     {

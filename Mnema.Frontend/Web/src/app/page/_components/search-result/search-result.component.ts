@@ -1,6 +1,6 @@
 import {Component, inject, input, OnInit, signal} from '@angular/core';
 import {SearchInfo} from "../../../_models/Info";
-import {DownloadMetadata, Page, Provider} from "../../../_models/page";
+import {Page, Provider} from "../../../_models/page";
 import {bounceIn200ms} from "../../../_animations/bounce-in";
 import {dropAnimation} from "../../../_animations/drop-animation";
 import {ImageService} from "../../../_services/image.service";
@@ -15,6 +15,7 @@ import {
 } from "../../../subscription-manager/_components/edit-subscription-modal/edit-subscription-modal.component";
 import {RefreshFrequency, Subscription} from "../../../_models/subscription";
 import {SeriesInfoComponent} from "../series-info/series-info.component";
+import {FormControlDefinition} from "../../../generic-form/form";
 
 @Component({
   selector: 'app-search-result',
@@ -35,7 +36,7 @@ export class SearchResultComponent implements OnInit{
   page = input.required<Page>();
   searchResult = input.required<SearchInfo>();
   providers = input.required<Provider[]>();
-  metadata = input.required<DownloadMetadata>();
+  metadata = input.required<FormControlDefinition[]>();
 
   imageSource = signal<string | null>(null);
 
@@ -57,10 +58,7 @@ export class SearchResultComponent implements OnInit{
       lastRun: null!,
       lastRunSuccess: null!,
       nextRun: null!,
-      metadata: {
-        startImmediately: true,
-        extra: {}
-      }
+      metadata: {}
     };
 
     component.subscription.set(newSub);

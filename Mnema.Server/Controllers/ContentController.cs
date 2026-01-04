@@ -7,6 +7,7 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 
@@ -48,7 +49,7 @@ public class ContentController(
             Id = id,
             BaseDir = string.Empty,
             TempTitle = string.Empty,
-            DownloadMetadata = new MetadataBag(),
+            Metadata = new MetadataBag(),
         };
 
         return Ok(await repository.SeriesInfo(request, HttpContext.RequestAborted));
@@ -84,6 +85,33 @@ public class ContentController(
         await downloadService.StartDownload(request);
 
         return Ok();
+    }
+
+    [HttpGet("form")]
+    public ActionResult<FormDefinition> GetForm()
+    {
+        return Ok(new FormDefinition
+        {
+            Key = "download-modal",
+            Controls = [
+                new FormControlDefinition
+                {
+                    Key = "dir",
+                    Field = "baseDir",
+                    Type = FormType.Directory,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "start-immediately",
+                    Field = "startImmediately",
+                    Type = FormType.Switch,
+                    DefaultOption = true,
+                }
+            ]
+        });
     }
 
     [HttpGet("stats")]

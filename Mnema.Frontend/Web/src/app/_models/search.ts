@@ -1,22 +1,20 @@
 import {Provider} from "./page";
 
+export type MetadataBag = { [key: string]: string[] };
+
 export type SearchRequest = {
   provider: Provider;
   query: string;
-  modifiers?: { [key: string]: string[] };
+  modifiers?: MetadataBag;
 }
 
 export type DownloadRequest = {
   provider: Provider;
   id: string;
-  dir: string;
+  baseDir: string;
   title: string;
-  downloadMetadata: DownloadRequestMetadata;
-}
-
-export type DownloadRequestMetadata = {
   startImmediately: boolean;
-  extra: { [key: string]: string[] };
+  metadata: MetadataBag;
 }
 
 export type StopRequest = {

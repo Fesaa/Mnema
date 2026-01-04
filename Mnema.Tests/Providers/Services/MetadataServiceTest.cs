@@ -28,7 +28,7 @@ public class MetadataServiceTest
             Id = string.Empty,
             BaseDir = string.Empty,
             TempTitle = string.Empty,
-            DownloadMetadata = new MetadataBag
+            Metadata = new MetadataBag
             {
                 [RequestConstants.IncludeNotMatchedTagsKey] = ["true"]
             }
@@ -318,7 +318,7 @@ public class MetadataServiceTest
         };
 
         var req = Request();
-        req.DownloadMetadata[RequestConstants.IncludeNotMatchedTagsKey] = ["true"];
+        req.Metadata[RequestConstants.IncludeNotMatchedTagsKey] = ["true"];
         var (_, processedTags) = sut.ProcessTags(preferences, tags, req);
 
         Assert.Contains("action", processedTags);

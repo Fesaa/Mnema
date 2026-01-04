@@ -200,9 +200,9 @@ internal class MangadexRepository : IRepository
             .ToList();
     }
 
-    public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
+    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
-        return Task.FromResult(new DownloadMetadata([
+        return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
                 Key = RequestConstants.LanguageKey,
@@ -210,12 +210,12 @@ internal class MangadexRepository : IRepository
                 DefaultOption = "en",
                 Options =
                 [
-                    new FormControlOption("en", "English"),
-                    new FormControlOption("zh", "Simplified Chinese"),
-                    new FormControlOption("zh-hk", "Traditional Chinese"),
-                    new FormControlOption("es", "Castilian Spanish"),
-                    new FormControlOption("fr", "French"),
-                    new FormControlOption("ja", "Japanese")
+                    new FormControlOption("en"),
+                    new FormControlOption("zh"),
+                    new FormControlOption("zh-hk"),
+                    new FormControlOption("es"),
+                    new FormControlOption("fr"),
+                    new FormControlOption("ja")
                 ]
             },
             new FormControlDefinition
@@ -254,7 +254,7 @@ internal class MangadexRepository : IRepository
                 Type = FormType.Switch,
                 DefaultOption = "true"
             }
-        ]));
+        ]);
     }
 
     public async Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)

@@ -161,7 +161,7 @@ export class NavHeaderComponent implements OnInit {
         modifiers: [],
         provider: Provider.MANGADEX,
         sortValue: -100,
-        metadata: {definitions: []},
+        metadata: [],
       },
       ...pages
     ]);

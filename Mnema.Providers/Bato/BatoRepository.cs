@@ -335,9 +335,9 @@ internal class BatoRepository : IRepository
             .ToList();
     }
 
-    public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
+    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
-        return Task.FromResult(new DownloadMetadata([
+        return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
                 Key = RequestConstants.ScanlationGroupKey,
@@ -374,7 +374,7 @@ internal class BatoRepository : IRepository
                 Type = FormType.Switch,
                 DefaultOption = "true"
             }
-        ]));
+        ]);
     }
 
     public async Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)

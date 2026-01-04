@@ -1,22 +1,37 @@
-import {Injectable} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {environment} from "../../environments/environment";
 import {HttpClient} from "@angular/common/http";
-import {map, Observable} from "rxjs";
+import {map, Observable, of, tap} from "rxjs";
 import {InfoStat, StatsResponse} from "../_models/stats";
 import {DownloadRequest, SearchRequest, StopRequest} from "../_models/search";
 import {SearchInfo} from "../_models/Info";
 import {ListContentData, Message, MessageType} from "../_models/messages";
 import {Provider} from "../_models/page";
 import {PagedList} from "../_models/paged-list";
+import {FormDefinition} from "../generic-form/form";
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContentService {
 
-  baseUrl = environment.apiUrl + "content/";
+  private readonly httpClient = inject(HttpClient);
+  private baseUrl = environment.apiUrl + "Content/";
 
-  constructor(private httpClient: HttpClient) {
+  private _cachedForm?: FormDefinition;
+
+  getForm() {
+    if (this._cachedForm) {
+      return of(this._cachedForm);
+    }
+
+    return this.httpClient.get<FormDefinition>(`${this.baseUrl}form`).pipe(
+      tap(form => {
+        if (environment.production) {
+          this._cachedForm = form;
+        }
+      }),
+    );
   }
 
   startDownload(provider: Provider, contentId: string) {

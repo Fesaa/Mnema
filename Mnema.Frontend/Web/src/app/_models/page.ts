@@ -7,7 +7,7 @@ export type Page = {
   icon: string;
   provider: Provider;
   modifiers?: FormControlDefinition[];
-  metadata?: DownloadMetadata,
+  metadata?: FormControlDefinition[],
   customRootDir: string;
 }
 
@@ -21,8 +21,4 @@ export enum Provider {
 }
 
 export const AllProviders = Object.values(Provider).filter(value => typeof value === 'number') as number[];
-
-export type DownloadMetadata = {
-  definitions: FormControlDefinition[];
-}
 

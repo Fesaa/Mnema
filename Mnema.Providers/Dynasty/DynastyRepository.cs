@@ -134,7 +134,7 @@ internal class DynastyRepository(
             .Where(x => !string.IsNullOrEmpty(x))
             .Select(x =>
             {
-                // Chapter belonging to a series end in _chXXX, transform into the series id 
+                // Chapter belonging to a series end in _chXXX, transform into the series id
                 var idx = x.LastIndexOf("_ch", StringComparison.InvariantCulture);
                 return idx < 0 ? x : x[..idx].Replace("chapters", "series");
             })
@@ -142,9 +142,9 @@ internal class DynastyRepository(
             .ToList();
     }
 
-    public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
+    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
-        return Task.FromResult(new DownloadMetadata([
+        return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
                 Key = RequestConstants.DownloadOneShotKey,
@@ -174,7 +174,7 @@ internal class DynastyRepository(
                 Type = FormType.Switch,
                 Advanced = true
             }
-        ]));
+        ]);
     }
 
     public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
@@ -290,7 +290,7 @@ internal class DynastyRepository(
             })
             .ToList();
         var releaseDate = document.DocumentNode.QuerySelector("#chapter-details .released")?.InnerText
-            .Replace("  ", " ") // Dynasty sometimes has double spaces for some reason. Remove them 
+            .Replace("  ", " ") // Dynasty sometimes has double spaces for some reason. Remove them
             .AsDateTime(ChapterReleaseDateFormat);
 
         return new Series

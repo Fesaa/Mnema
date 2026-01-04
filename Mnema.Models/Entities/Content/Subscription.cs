@@ -105,7 +105,7 @@ public class Subscription
             Id = ContentId,
             BaseDir = BaseDir,
             TempTitle = Title,
-            DownloadMetadata = Metadata,
+            Metadata = Metadata,
             StartImmediately = true,
             UserId = UserId,
             SubscriptionId = Id

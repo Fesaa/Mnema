@@ -165,9 +165,9 @@ internal class WebtoonRepository(
         return Task.FromResult<IList<string>>([]);
     }
 
-    public Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken)
+    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
-        return Task.FromResult(new DownloadMetadata([
+        return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
                 Key = RequestConstants.IncludeCover,
@@ -180,7 +180,7 @@ internal class WebtoonRepository(
                 Type = FormType.Text,
                 Advanced = true
             }
-        ]));
+        ]);
     }
 
     public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)

@@ -1,33 +1,22 @@
-import {ChangeDetectionStrategy, Component, computed, inject, model, OnInit} from '@angular/core';
-import {DownloadMetadata, Page} from "../../../_models/page";
+import {ChangeDetectionStrategy, Component, computed, inject, model, OnInit, signal} from '@angular/core';
 import {TranslocoDirective} from "@jsverse/transloco";
-import {NgbActiveModal, NgbNav, NgbNavContent, NgbNavItem, NgbNavLink, NgbNavOutlet} from "@ng-bootstrap/ng-bootstrap";
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
+import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
+import {FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {SearchInfo} from "../../../_models/Info";
-import {SettingsItemComponent} from "../../../shared/form/settings-item/settings-item.component";
-import {ModalService} from "../../../_services/modal.service";
 import {DownloadRequest} from "../../../_models/search";
-import {NgTemplateOutlet} from "@angular/common";
-import {DefaultValuePipe} from "../../../_pipes/default-value.pipe";
 import {ContentService} from "../../../_services/content.service";
 import {ToastService} from "../../../_services/toast.service";
-import {SettingsSwitchComponent} from "../../../shared/form/settings-switch/settings-switch.component";
-import {FormControlDefinition, FormType} from "../../../generic-form/form";
+import {FormControlDefinition, FormDefinition} from "../../../generic-form/form";
+import {tap} from "rxjs";
+import {GenericFormComponent} from "../../../generic-form/generic-form.component";
+import {GenericFormFactoryService} from "../../../generic-form/generic-form-factory.service";
 
 @Component({
   selector: 'app-download-modal',
   imports: [
     TranslocoDirective,
-    NgbNav,
-    NgbNavItem,
-    NgbNavLink,
-    NgbNavContent,
-    NgbNavOutlet,
-    SettingsItemComponent,
     ReactiveFormsModule,
-    NgTemplateOutlet,
-    DefaultValuePipe,
-    SettingsSwitchComponent
+    GenericFormComponent
   ],
   templateUrl: './download-modal.component.html',
   styleUrl: './download-modal.component.scss',
@@ -36,110 +25,69 @@ import {FormControlDefinition, FormType} from "../../../generic-form/form";
 export class DownloadModalComponent implements OnInit {
 
   private readonly toastService = inject(ToastService);
-  private readonly modalService = inject(ModalService);
   private readonly contentService = inject(ContentService)
   private readonly modal = inject(NgbActiveModal);
+  private readonly genericFormFactoryService = inject(GenericFormFactoryService);
 
   info = model.required<SearchInfo>();
   defaultDir = model.required<string>();
   rootDir = model.required<string>();
-  metadata = model.required<DownloadMetadata>();
+  metadata = model.required<FormControlDefinition[]>();
 
-  generalDef = computed(() =>
-    this.metadata().definitions.filter(d => !d.advanced))
-  advancedDef = computed(() =>
-    this.metadata().definitions.filter(d => d.advanced))
+  private formDefinition = signal<FormDefinition | undefined>(undefined);
+  generalFormDefinition = computed(() => {
+    const form = this.formDefinition();
+    if (!form) return null;
+
+    return {
+      key: form.key,
+      descriptionKey: form.descriptionKey,
+      controls: [
+        ...form.controls,
+        ...this.metadata().filter(d => !d.advanced)
+      ],
+    };
+  })
+  advancedFormDefinition = computed(() => {
+    const form = this.formDefinition();
+    if (!form) return null;
+
+    return {
+      key: form.key,
+      descriptionKey: form.descriptionKey,
+      controls: this.metadata().filter(d => d.advanced)
+    }
+  })
+
+  baseRequest = computed<DownloadRequest>(() => ({
+    id: this.info().id,
+    provider: this.info().provider,
+    title: this.info().name,
+    startImmediately: true,
+    metadata: {},
+    baseDir: this.defaultDir(),
+  }));
 
   activeTab: 'general' | 'advanced' = 'general';
 
   downloadForm = new FormGroup({})
 
   ngOnInit(): void {
-    const info = this.info();
-    const metadata = this.metadata();
-
-    // Not used in form, but required in download request
-    this.downloadForm.addControl('id', new FormControl(info.id));
-    this.downloadForm.addControl('provider', new FormControl(info.provider));
-    this.downloadForm.addControl('title', new FormControl(info.name, []));
-
-    this.downloadForm.addControl('dir', new FormControl(this.defaultDir(), [Validators.required]));
-
-    const downloadMetadata = new FormGroup<any>({
-      startImmediately: new FormControl(true),
-    });
-
-    for (let def of metadata.definitions) {
-      downloadMetadata.addControl(def.key, new FormControl(this.getDefaultValue(def)));
-    }
-
-    this.downloadForm.addControl('downloadMetadata', downloadMetadata);
-  }
-
-  private getDefaultValue(def: FormControlDefinition) {
-    switch (def.type) {
-      case FormType.Switch:
-        return Boolean(def.defaultOption);
-      case FormType.Text:
-        return def.defaultOption;
-      case FormType.DropDown:
-        return def.defaultOption;
-    }
-    return null;
-  }
-
-  getValue(def: FormControlDefinition, key: string) {
-    if (!def.options) return key;
-
-    const opt = def.options.find(d => d.key === key);
-    if (opt) {
-      return opt.value;
-    }
-    return key;
-  }
-
-  packData() {
-    const data = this.downloadForm.value as DownloadRequest;
-
-    // Get extra's in the expected format
-    const extras: { [key: string]: string[] } = {}
-    Object.keys(data.downloadMetadata)
-      .filter(key => key !== 'startImmediately' &&
-        (data.downloadMetadata as any)[key] !== undefined &&
-        (data.downloadMetadata as any)[key] !== null)
-      .forEach(key => {
-        const val = (data.downloadMetadata as any)[key];
-        extras[key] = Array.isArray(val) ? val.map(v => v+'') : [val+''];
-      });
-
-    data.downloadMetadata = {
-      startImmediately: data.downloadMetadata.startImmediately,
-      extra: extras,
-    }
-
-    return data;
-  }
-
-  async pickDirectory() {
-    const dir = await this.modalService.getDirectory(this.rootDir(), {
-      copy: true,
-      filter: true,
-      create: true,
-      showFiles: false,
-    });
-
-    if (dir) {
-      (this.downloadForm.get('dir') as unknown as FormControl<string>)?.setValue(dir);
-    }
+    this.contentService.getForm().pipe(
+      tap(form => this.formDefinition.set(form)),
+    ).subscribe();
   }
 
 
   close() {
-    this.modal.close();
+    this.modal.dismiss();
   }
 
   download() {
-    const req = this.packData();
+    const req = {
+      ...this.baseRequest(),
+      ...this.genericFormFactoryService.adjustForGenericMetadata(this.downloadForm.value),
+    };
 
     this.contentService.download(req).subscribe({
       next: () => {
@@ -154,5 +102,4 @@ export class DownloadModalComponent implements OnInit {
 
   }
 
-  protected readonly DownloadMetadataFormType = FormType;
 }

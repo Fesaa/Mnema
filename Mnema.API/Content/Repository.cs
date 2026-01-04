@@ -53,7 +53,7 @@ public interface IRepository
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<DownloadMetadata> DownloadMetadata(CancellationToken cancellationToken);
+    Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken);
 
     /// <summary>
     ///     Get all <see cref="ModifierDto" />s avaible for search for the provider

@@ -35,7 +35,7 @@ public class PagesController(
             if (repository == null)
             {
                 logger.LogWarning("Page {Guid} with provider {Provider} could not be enriched", page.Id, page.Provider);
-                page.Metadata = new DownloadMetadata([]);
+                page.Metadata = [];
                 page.Modifiers = [];
                 continue;
             }
@@ -49,7 +49,7 @@ public class PagesController(
 
     [HttpGet("download-metadata")]
     [ResponseCache(CacheProfileName = CacheProfiles.OneHour, VaryByQueryKeys = ["provider"])]
-    public async Task<ActionResult<DownloadMetadata>> DownloadMetadata([FromQuery] Provider provider)
+    public async Task<ActionResult<List<FormControlDefinition>>> DownloadMetadata([FromQuery] Provider provider)
     {
         var repository = serviceProvider.GetKeyedService<IRepository>(provider);
         if (repository == null)

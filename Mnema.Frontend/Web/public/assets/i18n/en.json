@@ -47,59 +47,42 @@
     "general": "General",
     "advanced": "Advanced",
 
-    "dir-label": "Download directory",
-
-    "title-label": "Title override",
+    "dir-title": "Download directory",
+    "dir-tooltip": "",
+    "title-title": "Title override",
     "title-tooltip": "Leave empty to use the title given by the provider",
-
-    "start-immediately-label": "Start download immediately",
-
-    "extra-metadata": {
-      "tl-lang": {
-        "label": "Language",
-        "tooltip": "Will only download chapters in the selected language"
-      },
-      "scanlation_group": {
-        "label": "Scanlation group",
-        "tooltip": "Prioritise chapters from this group, fallback is controlled in the advanced section"
-      },
-      "download_one_shot": {
-        "label": "Download OneShot",
-        "tooltip": "A chapter is a OneShot if it has no chapter number"
-      },
-      "include_cover": {
-        "label": "Include cover",
-        "tooltip": "Adds a cover image, can be nice to turn off for webtoons"
-      },
-      "update_cover": {
-        "label": "Update cover",
-        "tooltip": "Checks if the currently downloaded cover is outdated"
-      },
-      "include_not_matched_tags": {
-        "label": "Add not matched tags to ComicInfo",
-        "tooltip": "Tags not configured to be a genre, will be added as tags instead"
-      },
-      "no-sub-dir": {
-        "label": "Download into parent",
-        "tooltip": "Content will be copied in your selected dir, instead of creating child directory first"
-      },
-      "title_override": {
-        "label": "Override title",
-        "tooltip": "Set a specific title"
-      },
-      "allow_non_matching_scanlation_group": {
-        "label": "Scanlation group fallback",
-        "tooltip": "Use chapters from different scanlation groups, default to true"
-      },
-      "assign_empty_volumes": {
-        "label": "Assign empty volumes",
-        "tooltip": "Assign volume 1 to chapters without a volume, if at least one other volume is present"
-      },
-      "skip_volume_without_chapter": {
-        "label": "Skip volumes without chapter",
-        "tooltip": "Do not download chapters that are assigned a volume, but do not have a chapter marker"
-      }
-    }
+    "start-immediately-title": "Start download immediately",
+    "start-immediately-tooltip": "",
+    "tl-lang-title": "{{provider-metadata.tl-lang-title}}",
+    "tl-lang-tooltip": "{{provider-metadata.tl-lang-tooltip}}",
+    "tl-lang": {
+      "en": "English",
+      "zh": "Chinese",
+      "zh-hk": "Traditional Chinese",
+      "es": "Spanish",
+      "fr": "French",
+      "ja": "Japanese"
+    },
+    "scanlation_group-title": "{{provider-metadata.scanlation_group-title}}",
+    "scanlation_group-tooltip": "{{provider-metadata.scanlation_group-tooltip}}",
+    "download_one_shot-title": "{{provider-metadata.download_one_shot-title}}",
+    "download_one_shot-tooltip": "{{provider-metadata.download_one_shot-tooltip}}",
+    "include_cover-title": "{{provider-metadata.include_cover-title}}",
+    "include_cover-tooltip": "{{provider-metadata.include_cover-tooltip}}",
+    "update_cover-title": "{{provider-metadata.update_cover-title}}",
+    "update_cover-tooltip": "{{provider-metadata.update_cover-tooltip}}",
+    "include_not_matched_tags-title": "{{provider-metadata.include_not_matched_tags-title}}",
+    "include_not_matched_tags-tooltip": "{{provider-metadata.include_not_matched_tags-tooltip}}",
+    "no-sub-dir-title": "{{provider-metadata.no-sub-dir-title}}",
+    "no-sub-dir-tooltip": "{{provider-metadata.no-sub-dir-tooltip}}",
+    "title_override-title": "{{provider-metadata.title_override-title}}",
+    "title_override-tooltip": "{{provider-metadata.title_override-tooltip}}",
+    "allow_non_matching_scanlation_group-title": "{{provider-metadata.allow_non_matching_scanlation_group-title}}",
+    "allow_non_matching_scanlation_group-tooltip": "{{provider-metadata.allow_non_matching_scanlation_group-tooltip}}",
+    "assign_empty_volumes-title": "{{provider-metadata.assign_empty_volumes-title}}",
+    "assign_empty_volumes-tooltip": "{{provider-metadata.assign_empty_volumes-tooltip}}",
+    "skip_volume_without_chapter-title": "{{provider-metadata.skip_volume_without_chapter-title}}",
+    "skip_volume_without_chapter-tooltip": "{{provider-metadata.skip_volume_without_chapter-tooltip}}"
   },
 
   "edit-subscription-modal": {
@@ -137,39 +120,54 @@
       "webtoon": "{{provider-name-pipe.webtoon}}",
       "bato": "{{provider-name-pipe.bato}}"
     },
+
+    "tl-lang-title": "{{provider-metadata.tl-lang-title}}",
+    "tl-lang-tooltip": "{{provider-metadata.tl-lang-tooltip}}",
+    "scanlation_group-title": "{{provider-metadata.scanlation_group-title}}",
+    "scanlation_group-tooltip": "{{provider-metadata.scanlation_group-tooltip}}",
+    "download_one_shot-title": "{{provider-metadata.download_one_shot-title}}",
+    "download_one_shot-tooltip": "{{provider-metadata.download_one_shot-tooltip}}",
+    "include_cover-title": "{{provider-metadata.include_cover-title}}",
+    "include_cover-tooltip": "{{provider-metadata.include_cover-tooltip}}",
+    "update_cover-title": "{{provider-metadata.update_cover-title}}",
+    "update_cover-tooltip": "{{provider-metadata.update_cover-tooltip}}",
+    "include_not_matched_tags-title": "{{provider-metadata.include_not_matched_tags-title}}",
+    "include_not_matched_tags-tooltip": "{{provider-metadata.include_not_matched_tags-tooltip}}",
+    "no-sub-dir-title": "{{provider-metadata.no-sub-dir-title}}",
+    "no-sub-dir-tooltip": "{{provider-metadata.no-sub-dir-tooltip}}",
+    "title_override-title": "{{provider-metadata.title_override-title}}",
+    "title_override-tooltip": "{{provider-metadata.title_override-tooltip}}",
+    "allow_non_matching_scanlation_group-title": "{{provider-metadata.allow_non_matching_scanlation_group-title}}",
+    "allow_non_matching_scanlation_group-tooltip": "{{provider-metadata.allow_non_matching_scanlation_group-tooltip}}",
+    "assign_empty_volumes-title": "{{provider-metadata.assign_empty_volumes-title}}",
+    "assign_empty_volumes-tooltip": "{{provider-metadata.assign_empty_volumes-tooltip}}",
+    "skip_volume_without_chapter-title": "{{provider-metadata.skip_volume_without_chapter-title}}",
+    "skip_volume_without_chapter-tooltip": "{{provider-metadata.skip_volume_without_chapter-tooltip}}"
+  },
+
+  "provider-metadata": {
     "tl-lang-title": "Language",
     "tl-lang-tooltip": "Will only download chapters in the selected language",
-
     "scanlation_group-title": "Scanlation group",
     "scanlation_group-tooltip": "Prioritise chapters from this group, fallback is controlled in the advanced section",
-
     "download_one_shot-title": "Download OneShot",
     "download_one_shot-tooltip": "A chapter is a OneShot if it has no chapter number",
-
     "include_cover-title": "Include cover",
     "include_cover-tooltip": "Adds a cover image, can be nice to turn off for webtoons",
-
     "update_cover-title": "Update cover",
     "update_cover-tooltip": "Checks if the currently downloaded cover is outdated",
-
     "include_not_matched_tags-title": "Add not matched tags to ComicInfo",
     "include_not_matched_tags-tooltip": "Tags not configured to be a genre, will be added as tags instead",
-
     "no-sub-dir-title": "Download into parent",
     "no-sub-dir-tooltip": "Content will be copied in your selected dir, instead of creating child directory first",
-
     "title_override-title": "Override title",
     "title_override-tooltip": "Set a specific title",
-
     "allow_non_matching_scanlation_group-title": "Scanlation group fallback",
     "allow_non_matching_scanlation_group-tooltip": "Use chapters from different scanlation groups, default to true",
-
     "assign_empty_volumes-title": "Assign empty volumes",
     "assign_empty_volumes-tooltip": "Assign volume 1 to chapters without a volume, if at least one other volume is present",
-
     "skip_volume_without_chapter-title": "Skip volumes without chapter",
     "skip_volume_without_chapter-tooltip": "Do not download chapters that are assigned a volume, but do not have a chapter marker"
-
   },
 
   "refresh-frequency-pipe": {
