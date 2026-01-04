@@ -1,12 +1,11 @@
 import {Component, computed, effect, EventEmitter, inject, OnInit, signal} from '@angular/core';
 import {NavService} from "../_services/nav.service";
 import {SubscriptionService} from '../_services/subscription.service';
-import {RefreshFrequency, Subscription} from "../_models/subscription";
+import {Subscription} from "../_models/subscription";
 import {Provider} from "../_models/page";
 import {dropAnimation} from "../_animations/drop-animation";
 import {SubscriptionExternalUrlPipe} from "../_pipes/subscription-external-url.pipe";
 import {DatePipe} from "@angular/common";
-import {RefreshFrequencyPipe} from "../_pipes/refresh-frequency.pipe";
 import {ToastService} from "../_services/toast.service";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {UtcToLocalTimePipe} from "../_pipes/utc-to-local.pipe";
@@ -21,19 +20,17 @@ import {PageService} from "../_services/page.service";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {takeUntilDestroyed, toSignal} from "@angular/core/rxjs-interop";
 import {FormControlDefinition} from "../generic-form/form";
+import {ProviderNamePipe} from "../_pipes/provider-name.pipe";
 
 @Component({
   selector: 'app-subscription-manager',
   imports: [
     SubscriptionExternalUrlPipe,
-    DatePipe,
-    RefreshFrequencyPipe,
     TranslocoDirective,
-    UtcToLocalTimePipe,
     TableComponent,
-    BadgeComponent,
     NgbTooltip,
     ReactiveFormsModule,
+    ProviderNamePipe,
   ],
   templateUrl: './subscription-manager.component.html',
   styleUrl: './subscription-manager.component.scss',
@@ -120,18 +117,6 @@ export class SubscriptionManagerComponent implements OnInit {
     ).subscribe();
   }
 
-  getSeverity(sub: Subscription): "primary" | "secondary" | "error" | "warning" {
-    switch (sub.refreshFrequency) {
-      case RefreshFrequency.Day:
-        return "primary"
-      case RefreshFrequency.Week:
-        return "warning"
-      case RefreshFrequency.Month:
-        return "error"
-    }
-    return "secondary";
-  }
-
   trackBy(idx: number, sub: Subscription) {
     return sub.id
   }
@@ -142,7 +127,7 @@ export class SubscriptionManagerComponent implements OnInit {
     component.providers.set(this.allowedProviders());
     component.metadata.set(this.metadata().get(sub.provider) ?? []);
 
-    this.modalService.onClose$(modal).pipe(
+    this.modalService.onClose$(modal, false).pipe(
       tap(() => this.pageReloader.emit())
     ).subscribe();
   }

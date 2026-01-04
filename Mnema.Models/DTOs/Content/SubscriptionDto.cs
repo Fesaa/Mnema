@@ -27,18 +27,6 @@ public class SubscriptionDto
     /// <inheritdoc cref="Subscription.Metadata" />
     public required MetadataBag Metadata { get; set; }
 
-    /// <inheritdoc cref="Subscription.LastRun" />
-    public DateTime LastRun { get; set; }
-
-    /// <inheritdoc cref="Subscription.LastRunSuccess" />
-    public bool LastRunSuccess { get; set; }
-
-    /// <inheritdoc cref="Subscription.NextRun" />
-    public DateTime NextRun { get; set; }
-
-    /// <inheritdoc cref="Subscription.NoDownloadsRuns" />
-    public int NoDownloadsRuns { get; set; }
-
-    /// <inheritdoc cref="Subscription.RefreshFrequency" />
-    public RefreshFrequency RefreshFrequency { get; set; }
+    /// <inheritdoc cref="Subscription.Status" />
+    public required SubscriptionStatus Status { get; set; }
 }

@@ -27,30 +27,23 @@
         </div>
 
         <div class="card-body">
-          <div class="card-row">
-            <span class="card-label">{{ t('next-exec') }}</span>
-            <span class="card-value">{{ sub.nextRun | utcToLocalTime: 'short' }}</span>
+          <div class="mb-2">
+            <small class="text-muted">{{ t('provider') }}:</small>
+            <span class="ms-2">{{ sub.provider | providerName }}</span>
           </div>
-
-          <div class="card-row">
-            <span class="card-label">{{ t('last') }}</span>
-            <span class="card-value">
-          <app-badge
-            [colour]="sub.lastRunSuccess ? 'primary' : 'error'"
-            [ngbTooltip]="(sub.lastRun | date: 'yyyy-MM-dd HH:mm:ss') ?? t('unknown')"
-          >
-            {{ sub.lastRunSuccess ? t('success') : t('failing') }}
-          </app-badge>
-        </span>
+          <div class="mb-2">
+            <small class="text-muted">{{ t('content-id') }}:</small>
+            <span class="ms-2">{{ sub.contentId }}</span>
           </div>
-
-          <div class="card-row">
-            <span class="card-label">{{ t('frequency') }}</span>
-            <span class="card-value">
-          <app-badge [colour]="getSeverity(sub)">
-            {{ sub.refreshFrequency | refreshFrequency }}
-          </app-badge>
-        </span>
+          <div class="mb-2">
+            <small class="text-muted">{{ t('base-dir') }}:</small>
+            <span class="ms-2">{{ sub.baseDir }}</span>
+          </div>
+          <div>
+            <small class="text-muted">{{ t('status') }}:</small>
+            <span class="ms-2 badge" [class.bg-success]="sub.status === 0" [class.bg-secondary]="sub.status === 1">
+              {{ sub.status === 0 ? t('status-enabled') : t('status-disabled') }}
+            </span>
           </div>
         </div>
 
@@ -90,15 +83,15 @@
     <ng-template #header>
       <tr>
         <th class="table-header-cell">{{ t('title') }}</th>
-        <th class="table-header-cell">{{ t('next-exec') }}</th>
-        <th class="table-header-cell">{{ t('last') }}</th>
-        <th class="table-header-cell">{{ t('frequency') }}</th>
+        <th class="table-header-cell">{{ t('provider') }}</th>
+        <th class="table-header-cell">{{ t('base-dir') }}</th>
+        <th class="table-header-cell">{{ t('status') }}</th>
         <th class="table-header-cell">{{ t('actions.label') }}</th>
       </tr>
     </ng-template>
 
     <ng-template #cell let-sub>
-      <th class="table-cell">
+      <td class="table-cell">
         <a
           [href]="sub.contentId | subscriptionExternalUrl:sub.provider"
           target="_blank"
@@ -106,26 +99,27 @@
         >
           {{ sub.title }}
         </a>
-      </th>
+        <div>
+          <small class="text-muted">{{ sub.contentId }}</small>
+        </div>
+      </td>
 
-      <th class="table-cell">{{ sub.nextRun | utcToLocalTime: 'short' }}</th>
+      <td class="table-cell">
+        {{ sub.provider | providerName }}
+      </td>
 
-      <th class="table-cell">
-        <app-badge
-          [colour]="sub.lastRunSuccess ? 'primary' : 'error'"
-          [ngbTooltip]="(sub.lastRun | date: 'yyyy-MM-dd HH:mm:ss') ?? t('unknown')"
-        >
-          {{ sub.lastRunSuccess ? t('success') : t('failing') }}
-        </app-badge>
-      </th>
+      <td class="table-cell">
+        <code class="text-muted">{{ sub.baseDir }}</code>
+      </td>
 
-      <th class="table-cell">
-        <app-badge [colour]="getSeverity(sub)">
-          {{ sub.refreshFrequency | refreshFrequency }}
-        </app-badge>
-      </th>
+      <td class="table-cell">
+        <!-- TODO: Proper pipe, but it's fine for now -->
+        <span class="badge" [class.bg-success]="sub.status === 0" [class.bg-secondary]="sub.status === 1">
+          {{ sub.status === 0 ? t('status-enabled') : t('status-disabled') }}
+        </span>
+      </td>
 
-      <th class="table-cell">
+      <td class="table-cell">
         <div class="d-flex flex-column flex-md-row gap-2 my-2 justify-content-center align-items-center">
 
           <button
@@ -156,7 +150,7 @@
           </button>
 
         </div>
-      </th>
+      </td>
     </ng-template>
 
     <ng-template #empty>

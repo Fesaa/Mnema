@@ -13,7 +13,7 @@ import {DefaultModalOptions} from "../../../_models/default-modal-options";
 import {
   EditSubscriptionModalComponent
 } from "../../../subscription-manager/_components/edit-subscription-modal/edit-subscription-modal.component";
-import {RefreshFrequency, Subscription} from "../../../_models/subscription";
+import {Subscription, SubscriptionStatus} from "../../../_models/subscription";
 import {SeriesInfoComponent} from "../series-info/series-info.component";
 import {FormControlDefinition} from "../../../generic-form/form";
 
@@ -52,13 +52,10 @@ export class SearchResultComponent implements OnInit{
       id: '',
       contentId: this.searchResult().id,
       provider: this.searchResult().provider,
-      refreshFrequency: RefreshFrequency.Week,
       title: this.searchResult().name,
       baseDir: this.page().customRootDir,
-      lastRun: null!,
-      lastRunSuccess: null!,
-      nextRun: null!,
-      metadata: {}
+      metadata: {},
+      status: SubscriptionStatus.Enabled,
     };
 
     component.subscription.set(newSub);

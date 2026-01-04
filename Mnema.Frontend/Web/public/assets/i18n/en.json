@@ -102,23 +102,20 @@
     "content-id-tooltip": "The id from your provider, must be correct",
     "base-dir-title": "Download directory",
     "base-dir-tooltip": "",
-    "last-download-dir-title": "Last download directory",
-    "last-download-dir-tooltip": "Used to adjust for title changes in the providers metadata",
     "provider-title": "Provider",
     "provider-tooltip": "Which provider is this subscription using",
-    "refresh-frequency-title": "Refresh frequency",
-    "refresh-frequency-tooltip": "How often should this subscription be downloaded",
-    "refresh-frequency": {
-      "day": "{{refresh-frequency-pipe.day}}",
-      "week": "{{refresh-frequency-pipe.week}}",
-      "month": "{{refresh-frequency-pipe.month}}"
-    },
     "provider": {
       "nyaa": "{{provider-name-pipe.nyaa}}",
       "mangadex": "{{provider-name-pipe.mangadex}}",
       "dynasty": "{{provider-name-pipe.dynasty}}",
       "webtoon": "{{provider-name-pipe.webtoon}}",
       "bato": "{{provider-name-pipe.bato}}"
+    },
+    "status-title": "Status",
+    "status-tooltip": "",
+    "status": {
+      "enabled": "Enabled",
+      "disabled": "Disabled"
     },
 
     "tl-lang-title": "{{provider-metadata.tl-lang-title}}",
@@ -773,6 +770,11 @@
     "success": "Success",
     "failing": "Failing",
     "unknown": "Unknown",
+    "provider": "Provider",
+    "status": "Status",
+    "base-dir": "Base dir",
+    "status-enabled": "Enabled",
+    "status-disabled": "Disabled",
     "actions": {
       "label": "Actions",
       "edit": "Edit",

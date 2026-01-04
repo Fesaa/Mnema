@@ -13,7 +13,6 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
-using ValueType = Mnema.Models.DTOs.UI.ValueType;
 
 namespace Mnema.Server.Controllers;
 

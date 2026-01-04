@@ -75,8 +75,6 @@ export class EditSubscriptionModalComponent implements OnInit {
       ...this.genericFormFactoryService.adjustForGenericMetadata(this.subscriptionForm.value),
     };
 
-    console.log(this.genericFormFactoryService.adjustForGenericMetadata(this.subscriptionForm.value));
-
     const actions$ = this.subscription().id === ''
       ? this.subscriptionService.new(sub)
       : this.subscriptionService.update(sub);
@@ -89,7 +87,7 @@ export class EditSubscriptionModalComponent implements OnInit {
       error: err => {
         this.toastService.errorLoco(`subscriptions.toasts.${kind}.error`, {name: sub.title}, {msg: err.error.message});
       }
-    }).add(() => this.close());
+    }).add(() => this.modal.close());
   }
 
 }

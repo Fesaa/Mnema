@@ -50,9 +50,6 @@ public sealed class MnemaDataContext(DbContextOptions options) : DbContext(optio
             .HasJsonConversion(new MetadataBag())
             .HasColumnType("TEXT")
             .HasDefaultValue(new MetadataBag());
-        builder.Entity<Subscription>()
-            .Property(s => s.RefreshFrequency)
-            .HasDefaultValue(RefreshFrequency.Day);
 
         builder.Entity<ExternalConnection>()
             .Property(c => c.Metadata)

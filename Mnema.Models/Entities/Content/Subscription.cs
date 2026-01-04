@@ -30,72 +30,7 @@ public class Subscription
     public required Provider Provider { get; set; }
     public required MetadataBag Metadata { get; set; }
 
-    /// <summary>
-    ///     When the last run took place
-    /// </summary>
-    public DateTime LastRun { get; set; }
-
-    /// <summary>
-    ///     If the last run was a success
-    /// </summary>
-    public bool LastRunSuccess { get; set; }
-
-    /// <summary>
-    ///     When the next run is expected to take place
-    /// </summary>
-    public DateTime NextRun { get; set; }
-
-    /// <summary>
-    ///     Represents the amount of sequential runs without any chapters being downloaded
-    /// </summary>
-    public int NoDownloadsRuns { get; set; }
-
-    /// <summary>
-    ///     How often to check for updates
-    /// </summary>
-    public RefreshFrequency RefreshFrequency { get; set; }
-
-    private static DateTime NormalizeLocalHourToUtc(DateTime utcNow, int hour)
-    {
-        var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, TimeZoneInfo.Local);
-
-        var localTarget = new DateTime(
-            localNow.Year,
-            localNow.Month,
-            localNow.Day,
-            hour,
-            0,
-            0,
-            DateTimeKind.Unspecified
-        );
-
-        return TimeZoneInfo.ConvertTimeToUtc(localTarget, TimeZoneInfo.Local);
-    }
-
-
-    public DateTime NextRunTime(int hour)
-    {
-        var nowUtc = DateTime.UtcNow;
-        var diff = nowUtc - LastRun; // LastRun MUST be UTC
-
-        DateTime nextUtc;
-
-        if (diff > RefreshFrequency.AsTimeSpan())
-        {
-            nextUtc = NormalizeLocalHourToUtc(nowUtc, hour);
-
-            if (nextUtc <= nowUtc) nextUtc = NormalizeLocalHourToUtc(nowUtc.AddDays(1), hour);
-
-            return nextUtc;
-        }
-
-        nextUtc = nowUtc.Add(RefreshFrequency.AsTimeSpan() - diff);
-        nextUtc = NormalizeLocalHourToUtc(nextUtc, hour);
-
-        if (nextUtc <= nowUtc) nextUtc = NormalizeLocalHourToUtc(nextUtc.AddDays(1), hour);
-
-        return nextUtc;
-    }
+    public required SubscriptionStatus Status { get; set; }
 
     public DownloadRequestDto AsDownloadRequestDto()
     {
@@ -113,29 +48,8 @@ public class Subscription
     }
 }
 
-public enum RefreshFrequency
+public enum SubscriptionStatus
 {
-    Day = 2,
-    Week = 3,
-    Month = 4
-}
-
-public static class SubscriptionExtensions
-{
-    public static TimeSpan AsTimeSpan(this RefreshFrequency refreshFrequency)
-    {
-        return refreshFrequency switch
-        {
-            RefreshFrequency.Day => TimeSpan.FromDays(1),
-            RefreshFrequency.Week => TimeSpan.FromDays(7),
-            RefreshFrequency.Month => TimeSpan.FromDays(30),
-            _ => throw new ArgumentOutOfRangeException(nameof(refreshFrequency), refreshFrequency, null)
-        };
-    }
-
-    public static DateTime NormalizeToHour(this DateTime date, int hour)
-    {
-        return DateOnly.FromDateTime(date)
-            .ToDateTime(TimeOnly.FromTimeSpan(TimeSpan.FromHours(hour)), DateTimeKind.Local);
-    }
+    Enabled = 0,
+    Disabled = 1,
 }

@@ -24,6 +24,7 @@ public class CreateOrUpdateSubscriptionDto
     /// <inheritdoc cref="Subscription.Metadata" />
     public required MetadataBag Metadata { get; set; }
 
-    /// <inheritdoc cref="Subscription.RefreshFrequency" />
-    public RefreshFrequency RefreshFrequency { get; set; }
+    /// <inheritdoc cref="Subscription.Status" />
+    public required SubscriptionStatus Status { get; set; }
+
 }

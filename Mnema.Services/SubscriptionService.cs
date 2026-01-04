@@ -8,9 +8,7 @@ using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
-using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
-using ValueType = Mnema.Models.DTOs.UI.ValueType;
 
 namespace Mnema.Services;
 
@@ -39,8 +37,7 @@ internal class SubscriptionService(
 
         sub.Provider = dto.Provider;
         sub.Metadata = dto.Metadata;
-        sub.NoDownloadsRuns = 0;
-        sub.RefreshFrequency = dto.RefreshFrequency;
+        sub.Status = dto.Status;
 
         unitOfWork.SubscriptionRepository.Update(sub);
 
@@ -49,8 +46,6 @@ internal class SubscriptionService(
 
     public async Task CreateSubscription(Guid userId, CreateOrUpdateSubscriptionDto dto)
     {
-        var hour = await settingsService.GetSettingsAsync<int>(ServerSettingKey.SubscriptionRefreshHour);
-
         var sub = new Subscription
         {
             UserId = userId,
@@ -59,19 +54,18 @@ internal class SubscriptionService(
             BaseDir = dto.BaseDir,
             Metadata = dto.Metadata,
             Provider = dto.Provider,
-            RefreshFrequency = dto.RefreshFrequency,
-            LastRun = DateTime.MinValue,
-            LastRunSuccess = true
+            Status = dto.Status,
         };
-
-        sub.NextRun = sub.NextRunTime(hour);
 
         unitOfWork.SubscriptionRepository.Add(sub);
 
         await unitOfWork.CommitAsync();
 
-        // Start subscription after subscribing
-        await RunOnce(userId, sub.Id);
+        if (sub.Status == SubscriptionStatus.Enabled)
+        {
+            // Start subscription after subscribing
+            await RunOnce(userId, sub.Id);
+        }
     }
 
     public async Task RunOnce(Guid userId, Guid subId)
@@ -127,7 +121,7 @@ internal class SubscriptionService(
                     Key = "provider",
                     Field = "provider",
                     Type = FormType.DropDown,
-                    ValueType = ValueType.Integer,
+                    ValueType = FormValueType.Integer,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .Build(),
@@ -135,20 +129,20 @@ internal class SubscriptionService(
                         .Select(provider => new FormControlOption(provider.ToString().ToLower(), provider))
                         .ToList(),
                 },
-                new FormControlDefinition
+                new FormControlDefinition()
                 {
-                    Key = "refresh-frequency",
-                    Field = "refreshFrequency",
+                    Key = "status",
+                    Field = "status",
                     Type = FormType.DropDown,
-                    ValueType = ValueType.Integer,
+                    ValueType = FormValueType.Integer,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .Build(),
-                    DefaultOption = RefreshFrequency.Week,
-                    Options = Enum.GetValues<RefreshFrequency>()
-                        .Select(rf => new FormControlOption(rf.ToString().ToLower(), rf))
+                    DefaultOption = SubscriptionStatus.Enabled,
+                    Options = Enum.GetValues<SubscriptionStatus>()
+                        .Select(status => new FormControlOption(status.ToString().ToLower(), status))
                         .ToList(),
-                },
+                }
             ]
         };
     }

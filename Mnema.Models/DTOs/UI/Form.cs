@@ -29,10 +29,10 @@ public sealed record FormControlDefinition
 
     /// <summary>
     ///     Only relevant if <see cref="Type" /> is <see cref="FormType.DropDown" /> or <see cref="FormType.MultiSelect" />.
-    ///     Defaults to <see cref="UI.ValueType.String" />
+    ///     Defaults to <see cref="FormValueType.String" />
     /// </summary>
-    /// <remarks>This must be <see cref="UI.ValueType.String" /> if <see cref="Field" /> is `metadata`</remarks>
-    public ValueType ValueType { get; set; } = ValueType.String;
+    /// <remarks>This must be <see cref="FormValueType.String" /> if <see cref="Field" /> is `metadata`</remarks>
+    public FormValueType ValueType { get; set; } = FormValueType.String;
 
     public bool Advanced { get; set; } = false;
     public bool ForceSingle { get; set; } = false;
@@ -79,7 +79,7 @@ public enum FormType
     Directory = 4
 }
 
-public enum ValueType
+public enum FormValueType
 {
     Boolean = 1,
     Integer = 2,

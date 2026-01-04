@@ -12,7 +12,6 @@ namespace Mnema.API;
 public interface ISubscriptionScheduler
 {
     Task EnsureScheduledAsync();
-    Task RescheduleAsync(int hour);
 }
 
 public interface ISubscriptionRepository

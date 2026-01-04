@@ -13,7 +13,6 @@ using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.External;
-using ValueType = Mnema.Models.DTOs.UI.ValueType;
 
 namespace Mnema.Services.External;
 
@@ -104,7 +103,7 @@ internal class ExternalConnectionService(
                     Key = "followed-events",
                     Field = "followedEvents",
                     Type = FormType.MultiSelect,
-                    ValueType = ValueType.Integer,
+                    ValueType = FormValueType.Integer,
                     Options = service.SupportedEvents
                         .Select(@event => new FormControlOption(@event.ToString(), @event))
                         .ToList()
