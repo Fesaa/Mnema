@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Mnema.Models.Publication;
 
@@ -33,11 +34,15 @@ public sealed record Chapter
         return $"OneShot: {Title}";
     }
 
+    private const NumberStyles NumberStyle = NumberStyles.AllowDecimalPoint
+                                             | NumberStyles.AllowLeadingSign
+                                             | NumberStyles.Float;
+
     public float? VolumeNumber()
     {
         if (string.IsNullOrEmpty(VolumeMarker)) return null;
 
-        if (float.TryParse(VolumeMarker, out var volume)) return volume;
+        if (float.TryParse(VolumeMarker, NumberStyle, CultureInfo.InvariantCulture, out var volume)) return volume;
 
         return null;
     }
@@ -46,7 +51,7 @@ public sealed record Chapter
     {
         if (string.IsNullOrEmpty(ChapterMarker)) return null;
 
-        if (float.TryParse(ChapterMarker, out var chapter)) return chapter;
+        if (float.TryParse(ChapterMarker, NumberStyle, CultureInfo.InvariantCulture, out var chapter)) return chapter;
 
         return null;
     }

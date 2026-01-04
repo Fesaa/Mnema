@@ -74,8 +74,9 @@ internal partial class Publication
             // Sort chapters
             volumeChapters.Sort((a, b) =>
             {
-                if (a.VolumeMarker != b.VolumeMarker) return (int)((b.VolumeNumber() ?? -1) - (a.VolumeNumber() ?? -1));
-                return (int)((b.ChapterNumber() ?? -1) - (a.ChapterNumber() ?? -1));
+                if (a.VolumeMarker != b.VolumeMarker) return (a.VolumeNumber() ?? -1).CompareTo(b.VolumeNumber() ?? -1);
+
+                return (a.ChapterNumber() ?? -1).CompareTo(b.ChapterNumber() ?? -1);
             });
 
             return volumeChapters.Select(chapter => new ListContentData
