@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -6,8 +7,10 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
+using ValueType = Mnema.Models.DTOs.UI.ValueType;
 
 namespace Mnema.Services;
 
@@ -18,7 +21,7 @@ internal class SubscriptionService(
     ISettingsService settingsService
 ) : ISubscriptionService
 {
-    public async Task UpdateSubscription(Guid userId, SubscriptionDto dto)
+    public async Task UpdateSubscription(Guid userId, CreateOrUpdateSubscriptionDto dto)
     {
         var sub = await unitOfWork.SubscriptionRepository.GetSubscription(dto.Id);
         if (sub == null) throw new NotFoundException();
@@ -44,7 +47,7 @@ internal class SubscriptionService(
         await unitOfWork.CommitAsync();
     }
 
-    public async Task CreateSubscription(Guid userId, SubscriptionDto dto)
+    public async Task CreateSubscription(Guid userId, CreateOrUpdateSubscriptionDto dto)
     {
         var hour = await settingsService.GetSettingsAsync<int>(ServerSettingKey.SubscriptionRefreshHour);
 
@@ -82,5 +85,71 @@ internal class SubscriptionService(
         var manager = scope.ServiceProvider.GetRequiredKeyedService<IContentManager>(sub.Provider);
 
         await manager.Download(sub.AsDownloadRequestDto());
+    }
+
+    public FormDefinition GetForm()
+    {
+        return new FormDefinition
+        {
+            Key = "edit-subscription-modal",
+            Controls =
+            [
+                new FormControlDefinition
+                {
+                    Key = "title",
+                    Field = "title",
+                    Type = FormType.Text,
+                    ForceSingle = true,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "content-id",
+                    Field = "contentId",
+                    Type = FormType.Text,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "base-dir",
+                    Field = "baseDir",
+                    Type = FormType.Directory,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "provider",
+                    Field = "provider",
+                    Type = FormType.DropDown,
+                    ValueType = ValueType.Integer,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                    Options = ISubscriptionService.SubscriptionProviders
+                        .Select(provider => new FormControlOption(provider.ToString().ToLower(), provider))
+                        .ToList(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "refresh-frequency",
+                    Field = "refreshFrequency",
+                    Type = FormType.DropDown,
+                    ValueType = ValueType.Integer,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                    DefaultOption = RefreshFrequency.Week,
+                    Options = Enum.GetValues<RefreshFrequency>()
+                        .Select(rf => new FormControlOption(rf.ToString().ToLower(), rf))
+                        .ToList(),
+                },
+            ]
+        };
     }
 }

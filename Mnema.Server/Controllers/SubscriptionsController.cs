@@ -60,7 +60,7 @@ public class SubscriptionsController(
     }
 
     [HttpPost("update")]
-    public async Task<IActionResult> UpdateSubscription([FromBody] SubscriptionDto updateDto)
+    public async Task<IActionResult> UpdateSubscription([FromBody] CreateOrUpdateSubscriptionDto updateDto)
     {
         await subscriptionService.UpdateSubscription(UserId, updateDto);
 
@@ -68,7 +68,7 @@ public class SubscriptionsController(
     }
 
     [HttpPost("new")]
-    public async Task<IActionResult> CreateSubscription([FromBody] SubscriptionDto createDto)
+    public async Task<IActionResult> CreateSubscription([FromBody] CreateOrUpdateSubscriptionDto createDto)
     {
         await subscriptionService.CreateSubscription(UserId, createDto);
 
@@ -93,66 +93,6 @@ public class SubscriptionsController(
     [HttpGet("form")]
     public ActionResult<FormDefinition> GetForm()
     {
-        return Ok(new FormDefinition
-        {
-            Key = "edit-subscription-modal",
-            Controls = [
-                new FormControlDefinition
-                {
-                    Key = "title",
-                    Field = "title",
-                    Type = FormType.Text,
-                    ForceSingle = true,
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
-                },
-                new FormControlDefinition
-                {
-                    Key = "content-id",
-                    Field = "contentId",
-                    Type = FormType.Text,
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
-                },
-                new FormControlDefinition
-                {
-                    Key = "base-dir",
-                    Field = "baseDir",
-                    Type = FormType.Directory,
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
-                },
-                new FormControlDefinition
-                {
-                    Key = "provider",
-                    Field = "provider",
-                    Type = FormType.DropDown,
-                    ValueType = ValueType.Integer,
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
-                    Options = ISubscriptionService.SubscriptionProviders
-                        .Select(provider => new FormControlOption(provider.ToString().ToLower(), provider))
-                        .ToList(),
-                },
-                new FormControlDefinition
-                {
-                    Key = "refresh-frequency",
-                    Field = "refreshFrequency",
-                    Type = FormType.DropDown,
-                    ValueType = ValueType.Integer,
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
-                    DefaultOption = RefreshFrequency.Week,
-                    Options = Enum.GetValues<RefreshFrequency>()
-                        .Select(rf => new FormControlOption(rf.ToString().ToLower(), rf))
-                        .ToList(),
-                },
-            ]
-        });
+        return Ok(subscriptionService.GetForm());
     }
 }

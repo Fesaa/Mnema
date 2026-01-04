@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.API;
@@ -34,7 +35,8 @@ public interface ISubscriptionService
         Provider.Mangadex, Provider.Webtoons
     ];
 
-    public Task UpdateSubscription(Guid userId, SubscriptionDto dto);
-    public Task CreateSubscription(Guid userId, SubscriptionDto dto);
+    public Task UpdateSubscription(Guid userId, CreateOrUpdateSubscriptionDto dto);
+    public Task CreateSubscription(Guid userId, CreateOrUpdateSubscriptionDto dto);
     public Task RunOnce(Guid userId, Guid subId);
+    public FormDefinition GetForm();
 }
