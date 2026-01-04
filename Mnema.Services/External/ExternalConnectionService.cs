@@ -54,7 +54,7 @@ internal class ExternalConnectionService(
         if (service == null)
         {
             logger.LogWarning(
-                "Could not find external connection service {ExternalConnectionType}, while one was configured",
+                "Could not find external connection service for {ExternalConnectionType}, while one was configured",
                 connection.Type.ToString());
             throw new NotFoundException();
         }
@@ -151,8 +151,8 @@ internal class ExternalConnectionService(
                         }
                         catch (Exception ex)
                         {
-                            logger.LogError(ex, "Failed communicating with external connection {Type}",
-                                connection.Type.ToString());
+                            logger.LogError(ex, "Failed communicating with external connection {Type} for {Event}",
+                                connection.Type.ToString(), @event.ToString());
                         }
                     }));
                 }

@@ -9,7 +9,7 @@ public interface IOpenIdConnectService
     public const string RefreshToken = "refresh_token";
     public const string IdToken = "id_token";
     public const string ExpiresAt = "expires_at";
-    public const string CookieName = ".AspNetCore.Cookies";
+    public const string CookieName = ".Mnema.Auth";
     public const string PreferredUsername = "preferred_username";
 
     Task RefreshCookieToken(CookieValidatePrincipalContext ctx);

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Mnema.API;
 using Mnema.Common.Exceptions;
 using Mnema.Database;
 using Mnema.Models.Internal;
@@ -49,6 +50,7 @@ public static class OpenIdConnectServiceExtensions
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
 
+                options.Cookie.Name = IOpenIdConnectService.CookieName;
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
                 options.Cookie.MaxAge = TimeSpan.FromDays(30);
