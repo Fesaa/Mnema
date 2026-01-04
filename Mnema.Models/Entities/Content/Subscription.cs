@@ -1,4 +1,5 @@
 using System;
+using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.User;
 
@@ -27,7 +28,7 @@ public class Subscription
     public required string BaseDir { get; set; }
 
     public required Provider Provider { get; set; }
-    public required DownloadMetadataDto Metadata { get; set; }
+    public required MetadataBag Metadata { get; set; }
 
     /// <summary>
     ///     When the last run took place
@@ -104,7 +105,11 @@ public class Subscription
             Id = ContentId,
             BaseDir = BaseDir,
             TempTitle = Title,
-            DownloadMetadata = Metadata,
+            DownloadMetadata = new DownloadMetadataDto
+            {
+                Extra = Metadata,
+                StartImmediately = true,
+            },
             UserId = UserId,
             SubscriptionId = Id
         };

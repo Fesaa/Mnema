@@ -111,18 +111,79 @@
     "general": "General",
     "options": "Options",
     "advanced": "Advanced",
+    "close": "{{common.close}}",
 
-    "title-label": "Title",
+    "title-title": "Title",
     "title-tooltip": "This title is only visual and does not effect the underlying download",
-    "content-id-label": "Content Id",
+    "content-id-title": "Content Id",
     "content-id-tooltip": "The id from your provider, must be correct",
-    "base-dir-label": "Download directory",
-    "last-download-dir-label": "Last download directory",
+    "base-dir-title": "Download directory",
+    "base-dir-tooltip": "",
+    "last-download-dir-title": "Last download directory",
     "last-download-dir-tooltip": "Used to adjust for title changes in the providers metadata",
-    "provider-label": "Provider",
+    "provider-title": "Provider",
     "provider-tooltip": "Which provider is this subscription using",
-    "refresh-frequency-label": "Refresh frequency",
-    "refresh-frequency-tooltip": "How often should this subscription be downloaded"
+    "refresh-frequency-title": "Refresh frequency",
+    "refresh-frequency-tooltip": "How often should this subscription be downloaded",
+    "refresh-frequency": {
+      "day": "{{refresh-frequency-pipe.day}}",
+      "week": "{{refresh-frequency-pipe.week}}",
+      "month": "{{refresh-frequency-pipe.month}}"
+    },
+    "provider": {
+      "nyaa": "{{provider-name-pipe.nyaa}}",
+      "mangadex": "{{provider-name-pipe.mangadex}}",
+      "dynasty": "{{provider-name-pipe.dynasty}}",
+      "webtoon": "{{provider-name-pipe.webtoon}}",
+      "bato": "{{provider-name-pipe.bato}}"
+    },
+    "tl-lang-title": "Language",
+    "tl-lang-tooltip": "Will only download chapters in the selected language",
+
+    "scanlation_group-title": "Scanlation group",
+    "scanlation_group-tooltip": "Prioritise chapters from this group, fallback is controlled in the advanced section",
+
+    "download_one_shot-title": "Download OneShot",
+    "download_one_shot-tooltip": "A chapter is a OneShot if it has no chapter number",
+
+    "include_cover-title": "Include cover",
+    "include_cover-tooltip": "Adds a cover image, can be nice to turn off for webtoons",
+
+    "update_cover-title": "Update cover",
+    "update_cover-tooltip": "Checks if the currently downloaded cover is outdated",
+
+    "include_not_matched_tags-title": "Add not matched tags to ComicInfo",
+    "include_not_matched_tags-tooltip": "Tags not configured to be a genre, will be added as tags instead",
+
+    "no-sub-dir-title": "Download into parent",
+    "no-sub-dir-tooltip": "Content will be copied in your selected dir, instead of creating child directory first",
+
+    "title_override-title": "Override title",
+    "title_override-tooltip": "Set a specific title",
+
+    "allow_non_matching_scanlation_group-title": "Scanlation group fallback",
+    "allow_non_matching_scanlation_group-tooltip": "Use chapters from different scanlation groups, default to true",
+
+    "assign_empty_volumes-title": "Assign empty volumes",
+    "assign_empty_volumes-tooltip": "Assign volume 1 to chapters without a volume, if at least one other volume is present",
+
+    "skip_volume_without_chapter-title": "Skip volumes without chapter",
+    "skip_volume_without_chapter-tooltip": "Do not download chapters that are assigned a volume, but do not have a chapter marker"
+
+  },
+
+  "refresh-frequency-pipe": {
+    "day": "Day",
+    "week": "Week",
+    "month": "Month"
+  },
+
+  "provider-name-pipe": {
+    "nyaa": "Nyaa",
+    "mangadex": "Mangadex",
+    "dynasty": "Dynasty",
+    "webtoon": "Webtoon",
+    "bato": "Bato"
   },
 
   "confirm-modal": {
@@ -649,7 +710,7 @@
         "avatar-tooltip": "Optional custom avatar",
         "followed-events-title": "Followed Events",
         "followed-events-tooltip": "Events to act on",
-        "event": {
+        "followed-events": {
           "DownloadStarted": "{{settings.external-connections.shared.event.DownloadStarted}}",
           "DownloadFinished": "{{settings.external-connections.shared.event.DownloadFinished}}",
           "DownloadFailure": "{{settings.external-connections.shared.event.DownloadFailure}}"
@@ -664,7 +725,7 @@
         "url-tooltip": "The URL pointing to your Kavita instance",
         "followed-events-title": "Followed Events",
         "followed-events-tooltip": "Events to act on",
-        "event": {
+        "followed-events": {
           "DownloadStarted": "{{settings.external-connections.shared.event.DownloadStarted}}",
           "DownloadFinished": "{{settings.external-connections.shared.event.DownloadFinished}}",
           "DownloadFailure": "{{settings.external-connections.shared.event.DownloadFailure}}"

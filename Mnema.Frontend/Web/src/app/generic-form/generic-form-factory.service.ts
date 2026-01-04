@@ -14,7 +14,7 @@ export const GENERIC_METADATA_FIELD = "metadata";
 export class GenericFormFactoryService {
 
   createTypeAheadSettings(obj: any, control: FormControlDefinition): TypeaheadSettings<FormControlOption> {
-    if (control.type !== FormType.MULTI)
+    if (control.type !== FormType.MultiSelect)
       throw new Error(`Invalid control type for ${control.type}`);
 
     const settings = new TypeaheadSettings<FormControlOption>();
@@ -60,16 +60,22 @@ export class GenericFormFactoryService {
     return obj;
   }
 
-  genericMetadataGroup(metadata: GenericBag, controls: FormControlDefinition[], fb: FormBuilder | NonNullableFormBuilder): FormGroup {
-    const group = fb.group({});
+  genericMetadataGroup(
+    metadata: GenericBag,
+    controls: FormControlDefinition[],
+    fb: FormBuilder | NonNullableFormBuilder,
+    formGroup?: FormGroup
+  ): FormGroup {
+    const group = formGroup ?? fb.group({});
 
     for (let control of controls) {
       const currentValues = metadata[control.key];
       const initialValue = currentValues && currentValues.length > 0 ? currentValues : control.defaultOption;
+      const initialValues = Array.isArray(initialValue) ? initialValue : [initialValue];
 
-      const controlValue = control.type === FormType.MULTI
-        ? Array.isArray(initialValue) ? initialValue.map(v => this.transFormValue(v, control.valueType)) : [this.transFormValue(initialValue, control.valueType)]
-        : this.transFormValue(initialValue[0] ?? '', control.valueType);
+      const controlValue = control.type === FormType.MultiSelect
+        ? initialValues.map(v => this.transFormValue(v, control.valueType))
+        : this.transFormValue(initialValues[0] ?? '', control.valueType);
 
       const formControl = fb.control(controlValue, this.validators(control.validators));
 
@@ -130,13 +136,14 @@ export class GenericFormFactoryService {
     const value = (obj && obj.hasOwnProperty(fieldName)) ? obj[fieldName] : control.defaultOption;
 
     switch (control.type) {
-      case FormType.SWITCH:
+      case FormType.Switch:
         return this.transFormValue(value, ValueType.Boolean);
-      case FormType.DROPDOWN:
+      case FormType.DropDown:
         return this.transFormValue(value, control.valueType);
-      case FormType.MULTI:
+      case FormType.MultiSelect:
         return Array.isArray(value) ? value.map(v => this.transFormValue(v, control.valueType)) : [this.transFormValue(value, control.valueType)];
-      case FormType.TEXT:
+      case FormType.Text:
+      case FormType.Directory:
         return this.transFormValue(value, ValueType.String);
     }
   }

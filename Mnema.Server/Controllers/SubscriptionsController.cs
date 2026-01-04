@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
+using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
+using ValueType = Mnema.Models.DTOs.UI.ValueType;
 
 namespace Mnema.Server.Controllers;
 
@@ -16,7 +21,8 @@ namespace Mnema.Server.Controllers;
 public class SubscriptionsController(
     ILogger<SubscriptionsController> logger,
     IUnitOfWork unitOfWork,
-    ISubscriptionService subscriptionService
+    ISubscriptionService subscriptionService,
+    IServiceProvider serviceProvider
 ) : BaseApiController
 {
     [HttpGet("providers")]
@@ -82,5 +88,71 @@ public class SubscriptionsController(
         await unitOfWork.CommitAsync();
 
         return Ok();
+    }
+
+    [HttpGet("form")]
+    public ActionResult<FormDefinition> GetForm()
+    {
+        return Ok(new FormDefinition
+        {
+            Key = "edit-subscription-modal",
+            Controls = [
+                new FormControlDefinition
+                {
+                    Key = "title",
+                    Field = "title",
+                    Type = FormType.Text,
+                    ForceSingle = true,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "content-id",
+                    Field = "contentId",
+                    Type = FormType.Text,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "base-dir",
+                    Field = "baseDir",
+                    Type = FormType.Directory,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "provider",
+                    Field = "provider",
+                    Type = FormType.DropDown,
+                    ValueType = ValueType.Integer,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                    Options = ISubscriptionService.SubscriptionProviders
+                        .Select(provider => new FormControlOption(provider.ToString().ToLower(), provider))
+                        .ToList(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "refresh-frequency",
+                    Field = "refreshFrequency",
+                    Type = FormType.DropDown,
+                    ValueType = ValueType.Integer,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                    DefaultOption = RefreshFrequency.Week,
+                    Options = Enum.GetValues<RefreshFrequency>()
+                        .Select(rf => new FormControlOption(rf.ToString().ToLower(), rf))
+                        .ToList(),
+                },
+            ]
+        });
     }
 }

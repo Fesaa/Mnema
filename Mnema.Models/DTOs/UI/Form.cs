@@ -38,7 +38,7 @@ public sealed record FormControlDefinition
     public bool ForceSingle { get; set; } = false;
     public bool Disabled { get; set; } = false;
 
-    public string DefaultOption { get; set; } = string.Empty;
+    public object DefaultOption { get; set; } = string.Empty;
 
     public List<FormControlOption> Options { get; set; } = [];
 }
@@ -73,7 +73,8 @@ public enum FormType
     Switch = 0,
     DropDown = 1,
     MultiSelect = 2,
-    Text = 3
+    Text = 3,
+    Directory = 4
 }
 
 public enum ValueType

@@ -22,7 +22,7 @@
         <div class="row">
           @for (modifier of modifiers(); track trackModifier($index, modifier)) {
             <div class="col-md-6 mb-3">
-              @if (modifier.type === FormType.SWITCH) {
+              @if (modifier.type === FormType.Switch) {
                 <div class="form-check form-switch d-flex align-items-center">
                   <input
                     (change)="onModifierSwitchChange(modifier, $event)"

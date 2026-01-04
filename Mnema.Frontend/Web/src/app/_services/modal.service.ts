@@ -39,6 +39,13 @@ export class ModalService {
     this.modal.dismissAll(reason);
   }
 
+  getDirectory$(
+    root: string,
+    options: Partial<{ create: boolean; copy: boolean; filter: boolean; showFiles: boolean, width: string }> = {}
+  ) {
+    return from(this.getDirectory(root, options));
+  }
+
   getDirectory(
     root: string,
     options: Partial<{ create: boolean; copy: boolean; filter: boolean; showFiles: boolean, width: string }> = {}

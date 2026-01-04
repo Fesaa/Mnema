@@ -16,7 +16,7 @@ export type FormControlDefinition = {
   pipe?: FormPipe,
   disabled: boolean;
 
-  defaultOption: string;
+  defaultOption: any;
   options: FormControlOption[];
 }
 export type FormControlOption = {
@@ -26,10 +26,11 @@ export type FormControlOption = {
 }
 
 export enum FormType {
-  SWITCH,
-  DROPDOWN,
-  MULTI,
-  TEXT
+  Switch,
+  DropDown,
+  MultiSelect,
+  Text,
+  Directory
 }
 
 export enum ValueType {

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, model, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, model, OnInit, signal} from '@angular/core';
 import {RefreshFrequencies, Subscription} from "../../../_models/subscription";
 import {DownloadMetadata, Provider} from "../../../_models/page";
 import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
@@ -13,7 +13,10 @@ import {RefreshFrequencyPipe} from "../../../_pipes/refresh-frequency.pipe";
 import {SubscriptionExternalUrlPipe} from "../../../_pipes/subscription-external-url.pipe";
 import {SubscriptionService} from "../../../_services/subscription.service";
 import {NgTemplateOutlet} from "@angular/common";
-import {FormControlDefinition, FormType} from "../../../generic-form/form";
+import {FormControlDefinition, FormDefinition, FormType} from "../../../generic-form/form";
+import {tap} from "rxjs";
+import {GenericFormComponent} from "../../../generic-form/generic-form.component";
+import {GenericFormFactoryService} from "../../../generic-form/generic-form-factory.service";
 
 @Component({
   selector: 'app-edit-subscription-modal',
@@ -29,7 +32,8 @@ import {FormControlDefinition, FormType} from "../../../generic-form/form";
     NgbNavOutlet,
     ProviderNamePipe,
     RefreshFrequencyPipe,
-    NgTemplateOutlet
+    NgTemplateOutlet,
+    GenericFormComponent
   ],
   templateUrl: './edit-subscription-modal.component.html',
   styleUrl: './edit-subscription-modal.component.scss',
@@ -42,60 +46,42 @@ export class EditSubscriptionModalComponent implements OnInit {
   private readonly subscriptionService = inject(SubscriptionService);
   private readonly modal = inject(NgbActiveModal);
   private readonly externalUrlPipe = inject(SubscriptionExternalUrlPipe);
+  private readonly genericFormFactoryService = inject(GenericFormFactoryService);
 
   subscription = model.required<Subscription>();
   providers = model.required<Provider[]>();
   metadata = model.required<DownloadMetadata>();
+
+  formDefinition = signal<FormDefinition | undefined>(undefined);
+  optionsFormDefinition = computed(() => {
+    const form = this.formDefinition();
+    if (!form) return null;
+
+    return {
+      key: form.key,
+      descriptionKey: '',
+      controls: this.metadata().definitions.filter(d => !d.advanced),
+    }
+  });
+  advancedFormDefinition = computed(() => {
+    const form = this.formDefinition();
+    if (!form) return null;
+
+    return {
+      key: form.key,
+      descriptionKey: '',
+      controls: this.metadata().definitions.filter(d => d.advanced),
+    }
+  });
 
   activeTab: 'general' | 'options' | 'advanced' = 'general';
 
   subscriptionForm = new FormGroup({});
 
   ngOnInit(): void {
-    const subscription = this.subscription();
-    const metadata = this.metadata();
-
-    this.subscriptionForm.addControl('id', new FormControl(subscription.id));
-    this.subscriptionForm.addControl('provider', new FormControl(subscription.provider));
-    this.subscriptionForm.addControl('contentId', new FormControl(subscription.contentId));
-    this.subscriptionForm.addControl('refreshFrequency', new FormControl(subscription.refreshFrequency));
-    this.subscriptionForm.addControl('title', new FormControl(subscription.title));
-    this.subscriptionForm.addControl('baseDir', new FormControl(subscription.baseDir));
-
-    const metadataFormGroup = new FormGroup<any>({
-      startImmediately: new FormControl(subscription.metadata.startImmediately),
-    });
-
-    for (let definition of metadata.definitions) {
-      metadataFormGroup.addControl(definition.key, new FormControl(this.getDefaultValue(subscription, definition)));
-    }
-
-    this.subscriptionForm.addControl('metadata', metadataFormGroup);
-  }
-
-  private getDefaultValue(sub: Subscription, def: FormControlDefinition) {
-    const values = (sub.metadata.extra || {})[def.key]
-    const value = (values && values.length > 0) ? values[0] : def.defaultOption;
-
-    switch (def.type) {
-      case FormType.SWITCH:
-        return value.toLowerCase() === 'true';
-      case FormType.TEXT:
-        return value;
-      case FormType.DROPDOWN:
-        return value;
-    }
-    return null;
-  }
-
-  getValue(def: FormControlDefinition, key: string) {
-    if (!def.options) return key;
-
-    const opt = def.options.find(d => d.key === key);
-    if (opt) {
-      return opt.value;
-    }
-    return key;
+    this.subscriptionService.getForm().pipe(
+      tap(form => this.formDefinition.set(form)),
+    ).subscribe();
   }
 
   async pickDirectory() {
@@ -115,33 +101,13 @@ export class EditSubscriptionModalComponent implements OnInit {
     this.modal.dismiss();
   }
 
-  private packData() {
-    const data = this.subscriptionForm.value as Subscription;
-
-    // Get extra's in the expected format
-    const extras: { [key: string]: string[] } = {}
-    Object.keys(data.metadata)
-      .filter(key => key !== 'startImmediately' &&
-        (data.metadata as any)[key] !== undefined &&
-        (data.metadata as any)[key] !== null)
-      .forEach(key => {
-        const val = (data.metadata as any)[key];
-        extras[key] = Array.isArray(val) ? val.map(v => v+'') : [val+''];
-      });
-
-    data.metadata = {
-      startImmediately: true,
-      extra: extras,
+  save() {
+    const sub = {
+      ...this.subscription(),
+      ...this.genericFormFactoryService.adjustForGenericMetadata(this.subscriptionForm.value),
     };
 
-    data.provider = parseInt(data.provider+'');
-    data.refreshFrequency = parseInt(data.refreshFrequency+'');
-
-    return data;
-  }
-
-  save() {
-    const sub = this.packData();
+    console.log(this.genericFormFactoryService.adjustForGenericMetadata(this.subscriptionForm.value));
 
     const actions$ = this.subscription().id === ''
       ? this.subscriptionService.new(sub)
@@ -155,18 +121,7 @@ export class EditSubscriptionModalComponent implements OnInit {
       error: err => {
         this.toastService.errorLoco(`subscriptions.toasts.${kind}.error`, {name: sub.title}, {msg: err.error.message});
       }
-    }).add(() => this.close())
+    }).add(() => this.close());
   }
-
-  openExternal() {
-    const data = this.subscriptionForm.value as any;
-    const contentId = data.contentId;
-    const provider = parseInt(data.provider)
-
-    window.open(this.externalUrlPipe.transform(contentId, provider), '_blank', 'noopener noreferrer');
-  }
-
-  protected readonly DownloadMetadataFormType = FormType;
-  protected readonly RefreshFrequencies = RefreshFrequencies;
 
 }

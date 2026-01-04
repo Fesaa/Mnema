@@ -55,9 +55,9 @@ internal partial class Publication
             if (_subscription == null) throw new MnemaException("Invalid subscription linked to download");
 
             if (Preferences.PinSubscriptionTitles &&
-                !_subscription.Metadata.Extra.ContainsKey(RequestConstants.TitleOverride))
+                !_subscription.Metadata.ContainsKey(RequestConstants.TitleOverride))
             {
-                _subscription.Metadata.Extra.SetValue(RequestConstants.TitleOverride, Title);
+                _subscription.Metadata.SetValue(RequestConstants.TitleOverride, Title);
                 await _unitOfWork.CommitAsync();
             }
         }

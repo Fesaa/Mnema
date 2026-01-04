@@ -78,11 +78,11 @@ export class DownloadModalComponent implements OnInit {
 
   private getDefaultValue(def: FormControlDefinition) {
     switch (def.type) {
-      case FormType.SWITCH:
+      case FormType.Switch:
         return Boolean(def.defaultOption);
-      case FormType.TEXT:
+      case FormType.Text:
         return def.defaultOption;
-      case FormType.DROPDOWN:
+      case FormType.DropDown:
         return def.defaultOption;
     }
     return null;

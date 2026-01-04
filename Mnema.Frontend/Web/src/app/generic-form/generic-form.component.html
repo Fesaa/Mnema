@@ -7,7 +7,7 @@
 
     <div [formGroup]="getFormGroup(control)" class="{{ (double() && !control.forceSingle) ? 'col-md-6' : 'col-md-12' }} col-sm-12 pt-4">
       @switch (control.type) {
-        @case (FormType.SWITCH) {
+        @case (FormType.Switch) {
           <app-settings-switch
             [control]="formControl"
             [labelId]="control.key"
@@ -22,7 +22,7 @@
 
           </app-settings-switch>
         }
-        @case (FormType.TEXT) {
+        @case (FormType.Text) {
           <app-settings-item
             [control]="formControl"
             [labelId]="control.key"
@@ -37,7 +37,7 @@
             </ng-template>
           </app-settings-item>
         }
-        @case (FormType.DROPDOWN) {
+        @case (FormType.Directory) {
           <app-settings-item
             [control]="formControl"
             [labelId]="control.key"
@@ -45,7 +45,28 @@
             [tooltip]="t(control.key + '-tooltip')"
           >
             <ng-template #view>
-              {{ t(formControl.value) | defaultValue }}
+              <div class="d-flex align-items-center">
+                <div role="button" class="btn btn-primary me-2" (click)="$event.stopPropagation(); pickDirectory(formControl)">
+                  <i class="fa fa-folder"></i>
+                </div>
+                <span>{{formControl.value | defaultValue}}</span>
+              </div>
+            </ng-template>
+            <ng-template #edit>
+              <input class="form-control" type="text" [formControlName]="formControlName">
+            </ng-template>
+          </app-settings-item>
+        }
+        @case (FormType.DropDown) {
+          <app-settings-item
+            [control]="formControl"
+            [labelId]="control.key"
+            [title]="t(control.key + '-title')"
+            [tooltip]="t(control.key + '-tooltip')"
+          >
+            <ng-template #view>
+              @let option = getFormOption(control, formControl.value);
+              {{ option ? t(control.key + '.' + option.key) : null | defaultValue }}
             </ng-template>
             <ng-template #edit>
               <select class="form-select" [formControlName]="formControlName">
@@ -56,7 +77,7 @@
             </ng-template>
           </app-settings-item>
         }
-        @case (FormType.MULTI) {
+        @case (FormType.MultiSelect) {
           <app-settings-item
             [control]="formControl"
             [labelId]="control.key"
@@ -71,10 +92,10 @@
                 (selectedData)="patchTypeAheadControlValue($event, formControl)"
               >
                 <ng-template #optionItem let-option>
-                  {{ t(option.key) }}
+                  {{ t(control.key + '.' + option.key) }}
                 </ng-template>
                 <ng-template #badgeItem let-item>
-                  {{ t(item.key) }}
+                  {{ t(control.key + '.' + item.key) }}
                 </ng-template>
               </app-type-ahead>
             </ng-template>

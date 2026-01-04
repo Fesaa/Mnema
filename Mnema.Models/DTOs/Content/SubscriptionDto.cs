@@ -1,4 +1,5 @@
 using System;
+using Mnema.Common;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.Models.DTOs.Content;
@@ -24,7 +25,7 @@ public class SubscriptionDto
     public Provider Provider { get; set; }
 
     /// <inheritdoc cref="Subscription.Metadata" />
-    public required DownloadMetadataDto Metadata { get; set; }
+    public required MetadataBag Metadata { get; set; }
 
     /// <inheritdoc cref="Subscription.LastRun" />
     public DateTime LastRun { get; set; }

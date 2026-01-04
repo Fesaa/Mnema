@@ -78,19 +78,9 @@ internal class SubscriptionService(
 
         if (sub.UserId != userId) throw new UnauthorizedAccessException();
 
-        var downloadRequest = new DownloadRequestDto
-        {
-            Provider = sub.Provider,
-            Id = sub.ContentId,
-            BaseDir = sub.BaseDir,
-            TempTitle = sub.Title,
-            DownloadMetadata = sub.Metadata,
-            UserId = userId
-        };
-
         using var scope = scopeFactory.CreateScope();
         var manager = scope.ServiceProvider.GetRequiredKeyedService<IContentManager>(sub.Provider);
 
-        await manager.Download(downloadRequest);
+        await manager.Download(sub.AsDownloadRequestDto());
     }
 }

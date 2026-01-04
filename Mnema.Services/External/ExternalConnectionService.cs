@@ -106,7 +106,7 @@ internal class ExternalConnectionService(
                     Type = FormType.MultiSelect,
                     ValueType = ValueType.Integer,
                     Options = service.SupportedEvents
-                        .Select(@event => new FormControlOption($"event.{@event}", @event))
+                        .Select(@event => new FormControlOption(@event.ToString(), @event))
                         .ToList()
                 },
                 ..controls
