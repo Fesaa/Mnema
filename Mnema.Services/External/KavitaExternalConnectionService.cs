@@ -31,6 +31,7 @@ internal class KavitaExternalConnectionService(
 {
     private const string ApiKey = "api-key";
     private const string UrlKey = "url";
+    private const string BaseDirKey = "basedir";
 
     public List<ExternalConnectionEvent> SupportedEvents { get; } = [ExternalConnectionEvent.DownloadFinished];
 
@@ -49,10 +50,13 @@ internal class KavitaExternalConnectionService(
             return;
         }
 
+        var baseDirOverride = connection.Metadata.GetString(BaseDirKey);
+        var baseDir = string.IsNullOrEmpty(baseDirOverride) ? applicationConfiguration.BaseDir : baseDirOverride;
+
         var dto = new ScanFolderDto
         {
             ApiKey = authKey,
-            FolderPath = Path.Join(applicationConfiguration.BaseDir, info.DownloadDir),
+            FolderPath = Path.Join(baseDir, info.DownloadDir),
             AbortOnNoSeriesMatch = true
         };
 
@@ -92,7 +96,12 @@ internal class KavitaExternalConnectionService(
                 Validators = new FormValidatorsBuilder()
                     .WithIsUrl()
                     .Build()
-            }
+            },
+            new FormControlDefinition
+            {
+                Key = BaseDirKey,
+                Type = FormType.Text
+            },
         ]);
     }
 }

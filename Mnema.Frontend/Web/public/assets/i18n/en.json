@@ -729,6 +729,8 @@
         "api-key-tooltip": "Auth key generated from an Admin account",
         "url-title": "Kavita URL",
         "url-tooltip": "The URL pointing to your Kavita instance",
+        "basedir-title": "Base Dir",
+        "basedir-tooltip": "A base dir to use in place of applications content dir when sending paths to kavita",
         "followed-events-title": "Followed Events",
         "followed-events-tooltip": "Events to act on",
         "followed-events": {
