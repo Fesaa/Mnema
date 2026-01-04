@@ -105,11 +105,8 @@ public class Subscription
             Id = ContentId,
             BaseDir = BaseDir,
             TempTitle = Title,
-            DownloadMetadata = new DownloadMetadataDto
-            {
-                Extra = Metadata,
-                StartImmediately = true,
-            },
+            DownloadMetadata = Metadata,
+            StartImmediately = true,
             UserId = UserId,
             SubscriptionId = Id
         };

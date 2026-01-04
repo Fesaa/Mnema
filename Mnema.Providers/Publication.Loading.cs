@@ -64,7 +64,7 @@ internal partial class Publication
 
         FilterAlreadyDownloadedContent(cancellationToken);
 
-        if (_queuedChapters.Count == 0 && (Request.DownloadMetadata.StartImmediately || Request.IsSubscription))
+        if (_queuedChapters.Count == 0 && (Request.StartImmediately || Request.IsSubscription))
         {
             _logger.LogDebug("No chapters to download for {Title}, stopping download", Title);
             State = ContentState.Cancel;
@@ -72,7 +72,7 @@ internal partial class Publication
             return;
         }
 
-        State = Request.DownloadMetadata.StartImmediately || Request.IsSubscription
+        State = Request.StartImmediately || Request.IsSubscription
             ? ContentState.Ready
             : ContentState.Waiting;
         await _messageService.UpdateContent(Request.UserId, DownloadInfo);

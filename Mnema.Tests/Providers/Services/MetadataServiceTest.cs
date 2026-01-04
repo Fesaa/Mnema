@@ -28,12 +28,9 @@ public class MetadataServiceTest
             Id = string.Empty,
             BaseDir = string.Empty,
             TempTitle = string.Empty,
-            DownloadMetadata = new DownloadMetadataDto
+            DownloadMetadata = new MetadataBag
             {
-                Extra = new MetadataBag
-                {
-                    [RequestConstants.IncludeNotMatchedTagsKey] = ["true"]
-                }
+                [RequestConstants.IncludeNotMatchedTagsKey] = ["true"]
             }
         };
     }
@@ -321,7 +318,7 @@ public class MetadataServiceTest
         };
 
         var req = Request();
-        req.DownloadMetadata.Extra[RequestConstants.IncludeNotMatchedTagsKey] = ["true"];
+        req.DownloadMetadata[RequestConstants.IncludeNotMatchedTagsKey] = ["true"];
         var (_, processedTags) = sut.ProcessTags(preferences, tags, req);
 
         Assert.Contains("action", processedTags);

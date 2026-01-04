@@ -48,7 +48,7 @@ public class ContentController(
             Id = id,
             BaseDir = string.Empty,
             TempTitle = string.Empty,
-            DownloadMetadata = new DownloadMetadataDto()
+            DownloadMetadata = new MetadataBag(),
         };
 
         return Ok(await repository.SeriesInfo(request, HttpContext.RequestAborted));
