@@ -13,7 +13,6 @@ public static class Seed
     [
         new() { Key = ServerSettingKey.MaxConcurrentTorrents, Value = "5" },
         new() { Key = ServerSettingKey.MaxConcurrentImages, Value = "5" },
-        new() { Key = ServerSettingKey.RootDir, Value = "" },
         new() { Key = ServerSettingKey.InstalledVersion, Value = "" },
         new() { Key = ServerSettingKey.FirstInstalledVersion, Value = "" },
         new() { Key = ServerSettingKey.InstallDate, Value = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture) },

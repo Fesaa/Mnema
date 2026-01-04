@@ -35,9 +35,6 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                 case ServerSettingKey.MaxConcurrentImages:
                     dto.MaxConcurrentImages = DeserializeSetting<int>(serverSetting);
                     break;
-                case ServerSettingKey.RootDir:
-                    dto.RootDir = DeserializeSetting<string>(serverSetting);
-                    break;
                 case ServerSettingKey.InstalledVersion:
                     dto.InstalledVersion = DeserializeSetting<string>(serverSetting);
                     break;
@@ -71,7 +68,6 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             {
                 ServerSettingKey.MaxConcurrentTorrents => dto.MaxConcurrentTorrents,
                 ServerSettingKey.MaxConcurrentImages => dto.MaxConcurrentImages,
-                ServerSettingKey.RootDir => dto.RootDir,
                 ServerSettingKey.InstalledVersion => null,
                 ServerSettingKey.FirstInstalledVersion => null,
                 ServerSettingKey.InstallDate => null,
@@ -95,7 +91,6 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
         {
             ServerSettingKey.MaxConcurrentTorrents => int.Parse(setting.Value),
             ServerSettingKey.MaxConcurrentImages => int.Parse(setting.Value),
-            ServerSettingKey.RootDir => setting.Value,
             ServerSettingKey.InstalledVersion => setting.Value,
             ServerSettingKey.FirstInstalledVersion => setting.Value,
             ServerSettingKey.InstallDate => DateTime.Parse(setting.Value, CultureInfo.InvariantCulture),
@@ -119,7 +114,6 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
         {
             ServerSettingKey.MaxConcurrentTorrents => setting.ToString(),
             ServerSettingKey.MaxConcurrentImages => setting.ToString(),
-            ServerSettingKey.RootDir => setting.ToString(),
             ServerSettingKey.InstalledVersion => setting.ToString(),
             ServerSettingKey.FirstInstalledVersion => setting.ToString(),
             ServerSettingKey.InstallDate => setting.ToString(),
@@ -148,7 +142,6 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
         {
             { ServerSettingKey.MaxConcurrentTorrents, typeof(int) },
             { ServerSettingKey.MaxConcurrentImages, typeof(int) },
-            { ServerSettingKey.RootDir, typeof(string) },
             { ServerSettingKey.InstalledVersion, typeof(string) },
             { ServerSettingKey.FirstInstalledVersion, typeof(string) },
             { ServerSettingKey.InstallDate, typeof(DateTime) },

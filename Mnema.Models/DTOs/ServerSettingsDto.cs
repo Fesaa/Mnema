@@ -6,7 +6,6 @@ public class ServerSettingsDto
 {
     public int MaxConcurrentTorrents { get; set; }
     public int MaxConcurrentImages { get; set; }
-    public string RootDir { get; set; }
     public string InstalledVersion { get; set; }
     public string FirstInstalledVersion { get; set; }
     public DateTime InstallDate { get; set; }
@@ -18,6 +17,5 @@ public class UpdateServerSettingsDto
 {
     public int MaxConcurrentTorrents { get; set; }
     public int MaxConcurrentImages { get; set; }
-    public string RootDir { get; set; }
     public int SubscriptionRefreshHour { get; set; }
 }

@@ -7,19 +7,6 @@
           <h2 class="h2 fw-bold mt-4 mb-4">{{ t('title') }}</h2>
 
           <div class="d-flex flex-column gap-3">
-            @if (getFormControl('rootDir'); as rootDir) {
-              <app-settings-item [control]="rootDir" [title]="t('root-dir')">
-                <ng-template #view>{{ rootDir.value }}</ng-template>
-                <ng-template #edit>
-                  <input
-                    type="text"
-                    class="form-control"
-                    formControlName="rootDir"
-                  />
-                </ng-template>
-              </app-settings-item>
-            }
-
             @if (settingsForm.get('subscriptionRefreshHour'); as control) {
               <app-settings-item [control]="control" [title]="t('sub-refresh.label')" [tooltip]="t('sub-refresh.tooltip')">
                 <ng-template #view>{{control.value}}</ng-template>
