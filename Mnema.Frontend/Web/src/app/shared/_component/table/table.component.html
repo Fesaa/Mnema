@@ -4,6 +4,7 @@
                [noResultsKey]="null"
                (currentItems)="currentItems.emit($event)"
                [reloader]="reloader()"
+               [pageSize]="pageSize()"
 >
 
   <ng-template #items let-items>

@@ -11,6 +11,7 @@
     (currentItems)="hasAny.set($event.length > 0)"
     [trackByIdFunc]="trackBy"
     [reloader]="pageReloader"
+    [pageSize]="10"
   >
     <ng-template #mobile let-sub>
       <div class="card mobile-card">

@@ -42,6 +42,7 @@ export class TableComponent<T> {
   pageLoader = input<PageLoader<T>>();
   items = input<Array<T>>();
   reloader = input<EventEmitter<void>>(new EventEmitter());
+  pageSize = input(20);
 
   dragAble = input(false);
   dragTableId = input<string>();

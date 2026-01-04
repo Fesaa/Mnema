@@ -29,7 +29,7 @@ internal class LoadVolumesHook : IPreDownloadHook
         var lastCover = coverImages.Data.LastOrDefault(LangFilter) ?? coverImages.Data.LastOrDefault();
 
         var coversByVolume = coverImages.Data
-            .GroupBy(c => c.Attributes.Volume)
+            .GroupBy(c => string.IsNullOrEmpty(c.Attributes.Volume) ? string.Empty : c.Attributes.Volume)
             .ToDictionary(g => g.Key, g => g.ToList());
 
         foreach (var chapter in publication.Series.Chapters)
