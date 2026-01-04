@@ -23,11 +23,11 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
     private readonly IFileSystem _fileSystem;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ApplicationConfiguration _configuration;
-    
+
     private readonly ConcurrentDictionary<string, IPublication> _content = new();
     private readonly Channel<IPublication> _loadingChannel;
     private readonly Channel<IPublication> _downloadingChannel;
-    
+
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _workerTask;
 
@@ -47,12 +47,12 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         {
             FullMode = BoundedChannelFullMode.Wait
         };
-        
+
         _loadingChannel = Channel.CreateBounded<IPublication>(channelOptions);
         _downloadingChannel = Channel.CreateBounded<IPublication>(channelOptions);
 
         _workerTask = Task.Run(WorkerAsync);
-        
+
         _logger.LogTrace("PublicationManager initialized");
     }
 
@@ -60,14 +60,14 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
     {
         using var scope = _scopeFactory.CreateScope();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
-        
+
         if (_content.ContainsKey(request.Id))
         {
             throw new MnemaException("Content already exists");
         }
 
         var publication = CreatePublication(request);
-        
+
         if (!_content.TryAdd(publication.Id, publication))
         {
             throw new MnemaException("Failed to add content");
@@ -100,13 +100,13 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         }
 
         if (publication.State != ContentState.Cancel)
-            _logger.LogInformation("Removing content: {Id} - {Title}, SavingFiles: {!DeleteFiles}",
-                publication.Id, publication.Title, request.DeleteFiles);
+            _logger.LogInformation("Removing content: {Id} - {Title}, SavingFiles: {DeleteFiles}",
+                publication.Id, publication.Title, !request.DeleteFiles);
 
         publication.Cancel();
 
         Task.Run(() => CleanupAfterDownload(publication, request.DeleteFiles));
-        
+
         return Task.CompletedTask;
     }
 
@@ -131,7 +131,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         {
             throw new NotFoundException();
         }
-        
+
         return publication.ProcessMessage(message);
     }
 
@@ -279,7 +279,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         catch (OperationCanceledException)
         {
             _logger.LogTrace("Download for {Id} - {Title} was caught in a cancel", publication.Id, publication.Title);
-            
+
         }
         catch (Exception ex)
         {
@@ -307,7 +307,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
     private Publication CreatePublication(DownloadRequestDto request)
     {
         var scope = _scopeFactory.CreateScope();
-        
+
         var publication = new Publication(scope, request.Provider, request);
 
         return publication;
@@ -340,9 +340,9 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
     private async Task AddNotification(Notification notification, IUnitOfWork? unitOfWork = null)
     {
         using var scope = _scopeFactory.CreateScope();
-        unitOfWork ??= scope.ServiceProvider.GetRequiredService<IUnitOfWork>(); 
-        
+        unitOfWork ??= scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
         unitOfWork.NotificationRepository.AddNotification(notification);
         await unitOfWork.CommitAsync();
-    } 
+    }
 }
