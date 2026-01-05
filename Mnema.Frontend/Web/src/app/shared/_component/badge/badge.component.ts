@@ -16,6 +16,8 @@ import {ChangeDetectionStrategy, Component, computed, input} from '@angular/core
 export class BadgeComponent {
 
   colour = input<'primary' | 'secondary' | 'error' | 'warning'>('primary');
+  padding = input('');
 
-  badgeClass = computed(() => `badge badge--${this.colour()}`);
+  badgeClass = computed(() => `badge badge--${this.colour()} ${this.padding()}`);
+
 }

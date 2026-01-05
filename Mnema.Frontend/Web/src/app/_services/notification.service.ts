@@ -1,16 +1,36 @@
-import {Injectable} from '@angular/core';
+import {inject, Injectable, signal} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {environment} from "../../environments/environment";
 import {Notification} from "../_models/notifications";
 import {PagedList} from "../_models/paged-list";
+import {EventType, SignalRService} from "./signal-r.service";
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationService {
   private baseUrl = environment.apiUrl + "notifications";
+  private readonly http = inject(HttpClient);
+  private readonly signalR = inject(SignalRService);
 
-  constructor(private http: HttpClient) {}
+  notificationsCount = signal(0);
+
+  constructor() {
+    this.amount().subscribe(amount => {
+      this.notificationsCount.set(amount);
+    });
+
+    this.signalR.events$.subscribe(event => {
+      if (event.type === EventType.NotificationAdd) {
+        const amount: number = event.data.amount;
+        this.notificationsCount.update(n => n + amount);
+      }
+      if (event.type === EventType.NotificationRead) {
+        const amount: number = event.data.amount;
+        this.notificationsCount.update(n => Math.max(0, n - amount));
+      }
+    });
+  }
 
   all(pageNumber: number, pageSize: number) {
     const params = new HttpParams().set("pageNumber", pageNumber).set("pageSize", pageSize);

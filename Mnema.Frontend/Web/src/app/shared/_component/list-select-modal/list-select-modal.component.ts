@@ -59,7 +59,7 @@ export class ListSelectModalComponent<T> {
   multiSelect = model(false);
   hideItemsWhenInvalid = model(false);
 
-  itemTemplate = input<TemplateRef<any> | null>(null);
+  itemTemplate = model<TemplateRef<any> | null>(null);
 
   loading = model(false);
 

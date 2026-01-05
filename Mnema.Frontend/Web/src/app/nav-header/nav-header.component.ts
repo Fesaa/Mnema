@@ -7,49 +7,24 @@ import {
   OnInit,
   signal, ViewChild
 } from '@angular/core';
+import {toSignal} from "@angular/core/rxjs-interop";
+import {Breakpoint, UtilityService} from "../_services/utility.service";
 import {PageService} from "../_services/page.service";
 import {ActivatedRoute, RouterLink} from "@angular/router";
 import {AccountService} from "../_services/account.service";
 import {NavService} from "../_services/nav.service";
 import {NotificationService} from "../_services/notification.service";
 import {EventType, SignalRService} from "../_services/signal-r.service";
-import {TranslocoService} from "@jsverse/transloco";
+import {ButtonGroupService, Button, ButtonGroup} from "../button-grid/button-group.service";
+import {translate, TranslocoService} from "@jsverse/transloco";
 import {Role, User} from "../_models/user";
 import {Page, Provider} from "../_models/page";
 import {AsyncPipe, TitleCasePipe} from "@angular/common";
 import {animate, style, transition, trigger} from "@angular/animations";
 import {catchError, filter, fromEvent, of, take, tap, timeout} from "rxjs";
-
-interface NavItem {
-  label: string;
-  icon?: string;
-  routerLink?: string;
-  queryParams?: Record<string, any>;
-  command?: () => void;
-  roles?: Role[];
-}
-
-const drawerAnimation = trigger('drawerAnimation', [
-  transition(':enter', [
-    style({ transform: 'translateX(-100%)', opacity: 0 }),
-    animate('250ms ease-out', style({ transform: 'translateX(0)', opacity: 1 })),
-  ]),
-  transition(':leave', [
-    animate('200ms ease-in', style({ transform: 'translateX(-100%)', opacity: 0 })),
-  ]),
-]);
-
-const dropdownAnimation = trigger('dropdownAnimation', [
-  transition(':enter', [
-    style({ opacity: 0, transform: 'translateY(-8px)' }),
-    animate('150ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
-  ]),
-  transition(':leave', [
-    animate('100ms ease-in', style({ opacity: 0, transform: 'translateY(-8px)' })),
-  ]),
-]);
-
-
+import {ButtonGridComponent} from "../button-grid/button-grid.component";
+import {MobileGridComponent} from "../button-grid/mobile-grid/mobile-grid.component";
+import {TranslocoDirective, TranslocoPipe} from "@jsverse/transloco";
 
 @Component({
   selector: 'app-nav-header',
@@ -57,67 +32,97 @@ const dropdownAnimation = trigger('dropdownAnimation', [
   styleUrls: ['./nav-header.component.scss'],
   imports: [
     RouterLink,
-    AsyncPipe,
-    TitleCasePipe
+    TitleCasePipe,
+    MobileGridComponent,
+    TranslocoPipe
   ],
-  animations: [drawerAnimation, dropdownAnimation],
+  animations: [
+    trigger('dropdownAnimation', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(-8px)' }),
+        animate('150ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
+      ]),
+      transition(':leave', [
+        animate('100ms ease-in', style({ opacity: 0, transform: 'translateY(-8px)' })),
+      ]),
+    ])
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NavHeaderComponent implements OnInit {
 
-  private readonly pageService = inject(PageService);
   private readonly route = inject(ActivatedRoute);
-  private readonly cdRef = inject(ChangeDetectorRef);
   private readonly accountService = inject(AccountService);
   protected readonly navService = inject(NavService);
-  private readonly notificationService = inject(NotificationService);
-  private readonly signalR = inject(SignalRService);
-  private readonly transLoco = inject(TranslocoService);
+  protected readonly notificationService = inject(NotificationService);
+  protected readonly buttonGroupService = inject(ButtonGroupService);
+  protected readonly utilityService = inject(UtilityService);
 
-  @ViewChild('mobileDrawer') mobileDrawerElement!: ElementRef<HTMLDivElement>;
-
-  notifications = signal(0);
   currentUser = this.accountService.currentUser;
-  pageItems = signal<Page[]>([]);
-  accountItems = signal<NavItem[]>([]);
-  visibleAccountItems = computed(() => {
-    const items = this.accountItems();
-    const roles = this.accountService.currentUser()?.roles;
-    if (!roles) return [];
+  showNav = toSignal(this.navService.showNav$, {initialValue: false});
 
-    return items.filter(item => !item.roles || item.roles.filter(r => !roles.includes(r)).length === 0);
-  })
-
-  isMobileMenuOpen = signal(false);
+  isMobileGridOpen = signal(false);
   isAccountDropdownOpen = signal(false);
 
+  isMobile = computed(() => this.showNav() && this.utilityService.breakPoint() <= Breakpoint.Mobile);
+  isDesktop = computed(() => this.showNav() && this.utilityService.breakPoint() > Breakpoint.Mobile);
+
+  mobileButtonGroups = computed<ButtonGroup[]>(() => [
+    {
+      title: '',
+      icon: '',
+      buttons: [
+        {
+          title: translate('nav-bar.home'),
+          icon: 'fa fa-home',
+          navUrl: 'home',
+          standAlone: true,
+        }
+      ]
+    },
+    ...this.buttonGroupService.dashboardGroups(),
+  ])
+
+  navPageButtons = computed<Button[]>(() => {
+    return [
+      {
+        title: translate('nav-bar.home'),
+        icon: 'fa fa-home',
+        navUrl: 'home'
+      },
+      ...this.buttonGroupService.pageGroup().buttons
+    ];
+  });
+
+  navActionButtons = computed<Button[]>(() => {
+    const buttons = [...this.buttonGroupService.actionGroup().buttons];
+    // Find logout button to insert settings before it
+    const logoutIndex = buttons.findIndex(b => b.onClick && b.onClick.toString().includes('logout'));
+
+    const settingsButton: Button = {
+      title: translate('button-groups.settings.title'),
+      icon: 'fa fa-cog',
+      navUrl: 'settings',
+      standAlone: true,
+    };
+
+    if (logoutIndex !== -1) {
+      buttons.splice(logoutIndex, 0, settingsButton);
+    } else {
+      buttons.push(settingsButton);
+    }
+
+    return buttons;
+  });
+
   severity = computed((): 'info' | 'warn' | 'danger' => {
-    const count = this.notifications();
+    const count = this.notificationService.notificationsCount();
     if (count < 4) return 'info';
     if (count < 10) return 'warn';
     return 'danger';
   });
 
   constructor() {
-    effect(() => {
-      const user = this.currentUser();
-      if (!user) return;
-
-      this.transLoco.events$.pipe(
-        filter(e => e.type === "translationLoadSuccess"),
-        take(1),
-        timeout(3000),
-        catchError(() => of(null)),
-        tap(() => {
-          this.loadPages();
-          this.setAccountItems(user);
-        })
-      ).subscribe();
-
-      this.notificationService.amount().subscribe(amount => {
-        this.notifications.set(amount);
-      });
-    });
   }
 
   ngOnInit(): void {
@@ -127,80 +132,14 @@ export class NavHeaderComponent implements OnInit {
         // Not used here, preserved for logic continuity
       }
     });
-
-    this.signalR.events$.subscribe(event => {
-      if (event.type === EventType.NotificationAdd) {
-        const amount: number = event.data.amount;
-        this.notifications.update(n => n + amount);
-      }
-      if (event.type === EventType.NotificationRead) {
-        const amount: number = event.data.amount;
-        this.notifications.update(n => Math.max(0, n - amount));
-      }
-    });
-  }
-
-  @HostListener('document:touchend', ['$event'])
-  onDocumentClick(event: Event) {
-    if (!this.isMobileMenuOpen()) return;
-
-    const clickedElement = event.target as Node;
-    if (!this.mobileDrawerElement.nativeElement.contains(clickedElement)) {
-      this.isMobileMenuOpen.set(false);
-    }
-  }
-
-  loadPages() {
-    const pages = this.pageService.pages();
-    this.pageItems.set([
-      {
-        title: this.transLoco.translate("nav-bar.home"),
-        id: "",
-        icon: "fa-home",
-        customRootDir: '',
-        modifiers: [],
-        provider: Provider.MANGADEX,
-        sortValue: -100,
-        metadata: [],
-      },
-      ...pages
-    ]);
-  }
-
-  setAccountItems(user: User) {
-    const items: NavItem[] = [
-      {
-        label: this.transLoco.translate("nav-bar.subscriptions"),
-        icon: "fa-bell",
-        routerLink: "/subscriptions",
-        roles: [Role.Subscriptions],
-      },
-      {
-        label: this.transLoco.translate("nav-bar.notifications"),
-        icon: "fa-inbox",
-        routerLink: "/notifications"
-      },
-      {
-        label: this.transLoco.translate("nav-bar.settings"),
-        icon: "fa-cog",
-        routerLink: "/settings"
-      },
-      {
-        label: this.transLoco.translate("nav-bar.sign-out"),
-        icon: "fa-user-minus",
-        command: () => this.logout()
-      }
-    ];
-
-    this.accountItems.set(items);
   }
 
   logout() {
     this.accountService.logout();
   }
 
-  toggleMobileMenu() {
-    this.isMobileMenuOpen.update(v => !v);
+  toggleMobileGrid() {
+    this.isMobileGridOpen.update(v => !v);
   }
 
   toggleAccountDropdown() {

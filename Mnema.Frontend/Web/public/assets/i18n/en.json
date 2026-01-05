@@ -16,6 +16,27 @@
     "selected": "Selected"
   },
 
+  "button-groups": {
+    "pages": {
+      "title": "Pages"
+    },
+    "actions": {
+      "title": "Actions",
+      "downloads": "Downloads",
+      "subscriptions": "Subscriptions",
+      "notifications": "Notifications",
+      "audit-log": "Audit log"
+    },
+    "settings": {
+      "title": "Settings",
+      "preferences": "Preferences",
+      "pages": "Pages",
+      "server": "Server",
+      "external-connections": "External Connections",
+      "logout": "Logout"
+    }
+  },
+
   "paginator": {
     "pages": "Page {{currentPage}} of {{totalPages}}",
     "prev": "Previous",
@@ -297,7 +318,8 @@
     "subscriptions": "Subscriptions",
     "notifications": "Notifications",
     "settings": "Settings",
-    "sign-out": "Log out"
+    "sign-out": "Log out",
+    "navigation": "Navigation"
   },
 
   "login": {

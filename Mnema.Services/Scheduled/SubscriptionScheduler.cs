@@ -89,8 +89,8 @@ internal class SubscriptionScheduler(
 
         logger.LogInformation(
             "Found {TotalReleases} releases, {NewReleases} have not been processed. Started {StartedDownloads} downloads, {FailedDownloads} downloads failed",
-            newReleases.Count,
             releases.Count,
+            newReleases.Count,
             subsResult.StartedDownloads,
             subsResult.FailedDownloads
         );
