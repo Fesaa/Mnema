@@ -1,0 +1,66 @@
+@for (group of groups(); track $index) {
+
+  @if (buttonGroupService.anyVisible(group.buttons)) {
+    <div class="group-grid">
+      @if (!mobileMode() && group.title) {
+        <h2 class="group-title">{{group.title}}</h2>
+      }
+
+      <div class="grid-container">
+
+        @let groupedButtonsValue = buttonGroupService.groupedButtons(group);
+        @let standAloneButtonsValue = buttonGroupService.standAloneButtons(group);
+
+        @if (groupedButtonsValue.length > 0) {
+          <button
+            class="grid-button"
+            type="button"
+            (click)="buttonGroupService.handleGroupClick(group, listSelectTemplate())"
+          >
+            @let groupBadge = buttonGroupService.groupBadge(group);
+            @if (groupBadge) {
+              <app-badge class="grid-button-badge" [padding]="'p-2'">{{groupBadge}}</app-badge>
+            }
+            <div class="grid-button-content">
+              <div class="grid-button-icon">
+                <i [class]="group.icon || 'fas fa-circle'" aria-hidden="true"></i>
+              </div>
+              <span class="grid-button-text">{{group.title}}</span>
+            </div>
+          </button>
+        }
+
+        @for (button of standAloneButtonsValue; track $index) {
+          <button
+            class="grid-button"
+            type="button"
+            (click)="buttonGroupService.handleButtonClick(button)"
+          >
+            @if (button.badge) {
+              <app-badge class="grid-button-badge" [padding]="'p-2'">{{button.badge}}</app-badge>
+            }
+            <div class="grid-button-content">
+              <div class="grid-button-icon">
+                <i [class]="button.icon || 'fas fa-circle'" aria-hidden="true"></i>
+              </div>
+              <span class="grid-button-text">{{button.title}}</span>
+            </div>
+          </button>
+        }
+
+      </div>
+    </div>
+  }
+}
+
+<ng-template #listSelectOption let-item>
+  <div class="d-flex align-items-center justify-content-between w-100">
+    <div class="d-flex align-items-center">
+      <i [class]="item.value.icon || 'fas fa-circle'" aria-hidden="true"></i>
+      <span class="grid-button-text ms-2">{{item.value.title}}</span>
+    </div>
+    @if (item.value.badge) {
+      <app-badge>{{item.value.badge}}</app-badge>
+    }
+  </div>
+</ng-template>

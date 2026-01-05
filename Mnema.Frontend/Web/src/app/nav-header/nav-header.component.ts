@@ -13,7 +13,8 @@ import {AccountService} from "../_services/account.service";
 import {NavService} from "../_services/nav.service";
 import {NotificationService} from "../_services/notification.service";
 import {EventType, SignalRService} from "../_services/signal-r.service";
-import {TranslocoService} from "@jsverse/transloco";
+import {ButtonGroupService, Button} from "../button-grid/button-group.service";
+import {translate, TranslocoService} from "@jsverse/transloco";
 import {Role, User} from "../_models/user";
 import {Page, Provider} from "../_models/page";
 import {AsyncPipe, TitleCasePipe} from "@angular/common";
@@ -67,57 +68,58 @@ export class NavHeaderComponent implements OnInit {
 
   private readonly pageService = inject(PageService);
   private readonly route = inject(ActivatedRoute);
-  private readonly cdRef = inject(ChangeDetectorRef);
   private readonly accountService = inject(AccountService);
   protected readonly navService = inject(NavService);
-  private readonly notificationService = inject(NotificationService);
-  private readonly signalR = inject(SignalRService);
-  private readonly transLoco = inject(TranslocoService);
+  protected readonly notificationService = inject(NotificationService);
+  protected readonly buttonGroupService = inject(ButtonGroupService);
 
   @ViewChild('mobileDrawer') mobileDrawerElement!: ElementRef<HTMLDivElement>;
 
-  notifications = signal(0);
   currentUser = this.accountService.currentUser;
-  pageItems = signal<Page[]>([]);
-  accountItems = signal<NavItem[]>([]);
-  visibleAccountItems = computed(() => {
-    const items = this.accountItems();
-    const roles = this.accountService.currentUser()?.roles;
-    if (!roles) return [];
-
-    return items.filter(item => !item.roles || item.roles.filter(r => !roles.includes(r)).length === 0);
-  })
 
   isMobileMenuOpen = signal(false);
   isAccountDropdownOpen = signal(false);
 
+  navPageButtons = computed<Button[]>(() => {
+    return [
+      {
+        title: translate('nav-bar.home'),
+        icon: 'fa fa-home',
+        navUrl: 'home'
+      },
+      ...this.buttonGroupService.pageGroup().buttons
+    ];
+  });
+
+  navActionButtons = computed<Button[]>(() => {
+    const buttons = [...this.buttonGroupService.actionGroup().buttons];
+    // Find logout button to insert settings before it
+    const logoutIndex = buttons.findIndex(b => b.onClick && b.onClick.toString().includes('logout'));
+
+    const settingsButton: Button = {
+      title: translate('button-groups.settings.title'),
+      icon: 'fa fa-cog',
+      navUrl: 'settings',
+      standAlone: true,
+    };
+
+    if (logoutIndex !== -1) {
+      buttons.splice(logoutIndex, 0, settingsButton);
+    } else {
+      buttons.push(settingsButton);
+    }
+
+    return buttons;
+  });
+
   severity = computed((): 'info' | 'warn' | 'danger' => {
-    const count = this.notifications();
+    const count = this.notificationService.notificationsCount();
     if (count < 4) return 'info';
     if (count < 10) return 'warn';
     return 'danger';
   });
 
   constructor() {
-    effect(() => {
-      const user = this.currentUser();
-      if (!user) return;
-
-      this.transLoco.events$.pipe(
-        filter(e => e.type === "translationLoadSuccess"),
-        take(1),
-        timeout(3000),
-        catchError(() => of(null)),
-        tap(() => {
-          this.loadPages();
-          this.setAccountItems(user);
-        })
-      ).subscribe();
-
-      this.notificationService.amount().subscribe(amount => {
-        this.notifications.set(amount);
-      });
-    });
   }
 
   ngOnInit(): void {
@@ -125,17 +127,6 @@ export class NavHeaderComponent implements OnInit {
       const index = params['index'];
       if (index) {
         // Not used here, preserved for logic continuity
-      }
-    });
-
-    this.signalR.events$.subscribe(event => {
-      if (event.type === EventType.NotificationAdd) {
-        const amount: number = event.data.amount;
-        this.notifications.update(n => n + amount);
-      }
-      if (event.type === EventType.NotificationRead) {
-        const amount: number = event.data.amount;
-        this.notifications.update(n => Math.max(0, n - amount));
       }
     });
   }
@@ -148,51 +139,6 @@ export class NavHeaderComponent implements OnInit {
     if (!this.mobileDrawerElement.nativeElement.contains(clickedElement)) {
       this.isMobileMenuOpen.set(false);
     }
-  }
-
-  loadPages() {
-    const pages = this.pageService.pages();
-    this.pageItems.set([
-      {
-        title: this.transLoco.translate("nav-bar.home"),
-        id: "",
-        icon: "fa-home",
-        customRootDir: '',
-        modifiers: [],
-        provider: Provider.MANGADEX,
-        sortValue: -100,
-        metadata: [],
-      },
-      ...pages
-    ]);
-  }
-
-  setAccountItems(user: User) {
-    const items: NavItem[] = [
-      {
-        label: this.transLoco.translate("nav-bar.subscriptions"),
-        icon: "fa-bell",
-        routerLink: "/subscriptions",
-        roles: [Role.Subscriptions],
-      },
-      {
-        label: this.transLoco.translate("nav-bar.notifications"),
-        icon: "fa-inbox",
-        routerLink: "/notifications"
-      },
-      {
-        label: this.transLoco.translate("nav-bar.settings"),
-        icon: "fa-cog",
-        routerLink: "/settings"
-      },
-      {
-        label: this.transLoco.translate("nav-bar.sign-out"),
-        icon: "fa-user-minus",
-        command: () => this.logout()
-      }
-    ];
-
-    this.accountItems.set(items);
   }
 
   logout() {

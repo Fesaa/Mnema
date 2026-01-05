@@ -1,0 +1,164 @@
+
+.group-grid {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .group-title {
+    font-family: 'Spectral', serif;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+
+    @media (min-width: 768px) {
+      font-size: 2rem;
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+  }
+}
+
+.grid-container {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+
+  // Mobile first - single column
+  @media (min-width: 576px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  // Tablet - 2 columns
+  @media (min-width: 768px) {
+    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  // Desktop - 3 columns
+  @media (min-width: 992px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  // Large desktop - 4 columns
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.grid-button {
+  background: var(--surface-card);
+  border: 2px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 0;
+  min-height: 120px;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Spectral', serif;
+  position: relative;
+  overflow: hidden;
+
+  // Enhanced mobile sizing
+  @media (max-width: 575px) {
+    min-height: 100px;
+  }
+
+  @media (min-width: 768px) {
+    min-height: 140px;
+  }
+
+  // Hover and focus states
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--shadow-medium);
+    border-color: var(--secondary-color);
+    background: var(--surface-hover);
+
+    .grid-button-icon i {
+      color: var(--secondary-color);
+      transform: scale(1.1);
+    }
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
+    border-color: var(--secondary-color);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px var(--shadow-light);
+  }
+
+  .grid-button-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 1;
+  }
+
+  // Accessibility - reduced motion
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+.grid-button-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 1rem;
+  gap: 0.75rem;
+
+  @media (min-width: 768px) {
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+}
+
+.grid-button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-color-light));
+
+  @media (min-width: 768px) {
+    width: 56px;
+    height: 56px;
+  }
+
+  i {
+    font-size: 1.5rem;
+    color: var(--text-light);
+    transition: all 0.3s ease;
+
+    @media (min-width: 768px) {
+      font-size: 1.75rem;
+    }
+  }
+}
+
+.grid-button-text {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.3;
+  transition: color 0.3s ease;
+
+  @media (min-width: 768px) {
+    font-size: 1.1rem;
+  }
+}

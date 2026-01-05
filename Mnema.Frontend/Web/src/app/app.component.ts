@@ -5,7 +5,7 @@ import {Title} from "@angular/platform-browser";
 import {Event, EventType, SignalRService} from "./_services/signal-r.service";
 import {Notification, NotificationColour} from "./_models/notifications";
 import {ToastrService} from "ngx-toastr";
-import {UtilityService} from "./_services/utility.service";
+import {Breakpoint, UtilityService} from "./_services/utility.service";
 import {translate, TranslocoService} from "@jsverse/transloco";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {filter, tap} from "rxjs";
@@ -21,7 +21,7 @@ export class AppComponent implements OnInit {
   private readonly toastr = inject(ToastrService);
   private readonly titleService = inject(Title);
   private readonly signalR = inject(SignalRService);
-  private readonly utilityService = inject(UtilityService);
+  protected readonly utilityService = inject(UtilityService);
   private readonly translocoService = inject(TranslocoService);
   private readonly destroyRef$ = inject(DestroyRef);
 
@@ -76,4 +76,6 @@ export class AppComponent implements OnInit {
     document.documentElement.style.setProperty('--vh', `${vh}px`);
     this.utilityService.updateBreakPoint();
   }
+
+  protected readonly Breakpoint = Breakpoint;
 }

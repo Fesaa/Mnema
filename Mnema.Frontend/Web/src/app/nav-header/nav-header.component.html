@@ -7,26 +7,25 @@
         </button>
 
         <div class="nav-links desktop-only">
-          @for (page of pageItems(); track page.id) {
+          @for (btn of navPageButtons(); track btn.title) {
             <a
               class="nav-link"
-              [class.selected]="navService.pageIndex() === page.id"
-              [routerLink]="page.id === '' ? '/home' : '/page'"
-              [queryParams]="page.id === '' ? {} : { id: page.id }"
+              (click)="buttonGroupService.handleButtonClick(btn, $event)"
+              style="cursor: pointer"
             >
-              @if (page.icon) {
-                <i class="fa {{ page.icon }}"></i>
+              @if (btn.icon) {
+                <i class="{{ btn.icon }}"></i>
               }
-              <span>{{ page.title }}</span>
+              <span>{{ btn.title }}</span>
             </a>
           }
         </div>
       </div>
 
       <div class="nav-right">
-        @if (notifications() > 0) {
+        @if (notificationService.notificationsCount() > 0) {
           <span routerLink="/notifications" class="notification-badge clickable" [class]="severity()">
-            {{ notifications() }}
+            {{ notificationService.notificationsCount() }}
           </span>
         }
 
@@ -38,28 +37,17 @@
 
             @if (isAccountDropdownOpen()) {
               <ul class="account-dropdown" @dropdownAnimation>
-                @for (item of visibleAccountItems(); track item.label) {
+                @for (item of buttonGroupService.standAloneButtons({title: '', icon: '', buttons: navActionButtons()}); track item.title) {
                   <li>
-                    @if (item.routerLink) {
                       <a
-                        [routerLink]="item.routerLink"
-                        (click)="isAccountDropdownOpen.set(false)"
+                        (click)="buttonGroupService.handleButtonClick(item, $event); isAccountDropdownOpen.set(false)"
+                        style="cursor: pointer"
                       >
                         @if (item.icon) {
-                          <i class="fa {{ item.icon }}"></i>
+                          <i class="{{ item.icon }}"></i>
                         }
-                        {{ item.label }}
+                        {{ item.title }}
                       </a>
-                    } @else if (item.command) {
-                      <a
-                        (click)="item.command(); isAccountDropdownOpen.set(false)"
-                      >
-                        @if (item.icon) {
-                          <i class="fa {{ item.icon }}"></i>
-                        }
-                        {{ item.label }}
-                      </a>
-                    }
                   </li>
                 }
               </ul>
@@ -76,17 +64,16 @@
           <button (click)="toggleMobileMenu()">✕</button>
         </div>
         <div class="drawer-links">
-          @for (page of pageItems(); track page.id) {
+          @for (btn of navPageButtons(); track btn.title) {
             <a
               class="nav-link"
-              [routerLink]="page.id === '' ? '/home' : '/page'"
-              [queryParams]="page.id === '' ? {} : { index: page.id }"
-              (click)="toggleMobileMenu()"
+              (click)="buttonGroupService.handleButtonClick(btn, $event); toggleMobileMenu()"
+              style="cursor: pointer"
             >
-              @if (page.icon) {
-                <i class="fa {{ page.icon }}"></i>
+              @if (btn.icon) {
+                <i class="{{ btn.icon }}"></i>
               }
-              {{ page.title }}
+              {{ btn.title }}
             </a>
           }
         </div>

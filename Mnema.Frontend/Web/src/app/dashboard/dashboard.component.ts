@@ -1,6 +1,5 @@
-import {Component, computed, DestroyRef, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {NavService} from "../_services/nav.service";
-import {SuggestionDashboardComponent} from "./_components/suggestion-dashboard/suggestion-dashboard.component";
 import {ContentService} from "../_services/content.service";
 import {ContentState, InfoStat} from "../_models/stats";
 import {ContentTitlePipe} from "../_pipes/content-title.pipe";
@@ -14,7 +13,6 @@ import {EventType, SignalRService} from "../_services/signal-r.service";
 import {ContentProgressUpdate, ContentSizeUpdate, ContentStateUpdate, DeleteContent} from "../_models/signalr";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {RecentlyDownloadedComponent} from "./_components/recently-downloaded/recently-downloaded.component";
 import {TableComponent} from "../shared/_component/table/table.component";
 import {LoadingSpinnerComponent} from "../shared/_component/loading-spinner/loading-spinner.component";
 import {ModalService} from "../_services/modal.service";
@@ -25,27 +23,29 @@ import {DefaultModalOptions} from "../_models/default-modal-options";
 import {
   ManualContentAddModalComponent
 } from "./_components/manual-content-add-modal/manual-content-add-modal.component";
+import {ButtonGridComponent} from "../button-grid/button-grid.component";
+import {PageService} from "../_services/page.service";
+import {Button, ButtonGroup, ButtonGroupService} from "../button-grid/button-group.service";
 
 @Component({
   selector: 'app-dashboard',
   imports: [
-    SuggestionDashboardComponent,
     ContentTitlePipe,
     SpeedPipe,
     SpeedTypePipe,
     TimePipe,
     ContentStatePipe,
     TranslocoDirective,
-    RecentlyDownloadedComponent,
     TableComponent,
     LoadingSpinnerComponent,
     BadgeComponent,
-    NgbTooltip
+    NgbTooltip,
+    ButtonGridComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
 
   private readonly modalService = inject(ModalService);
   private readonly navService = inject(NavService);
@@ -54,6 +54,7 @@ export class DashboardComponent implements OnInit {
   private readonly contentTitle = inject(ContentTitlePipe);
   private readonly signalR = inject(SignalRService);
   private readonly destroyRef = inject(DestroyRef);
+  protected readonly buttonGroupService = inject(ButtonGroupService);
 
   loading = signal(true);
   items = signal<InfoStat[]>([]);
@@ -66,9 +67,11 @@ export class DashboardComponent implements OnInit {
     return b.contentState - a.contentState;
   }));
 
-  protected readonly ContentState = ContentState;
-
   constructor() {
+    this.navService.setNavVisibility(false);
+  }
+
+  ngOnDestroy() {
     this.navService.setNavVisibility(true);
   }
 
@@ -207,4 +210,6 @@ export class DashboardComponent implements OnInit {
   manualAdd() {
     this.modalService.open(ManualContentAddModalComponent, DefaultModalOptions);
   }
+
+  protected readonly ContentState = ContentState;
 }

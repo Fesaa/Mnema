@@ -16,6 +16,26 @@
     "selected": "Selected"
   },
 
+  "button-groups": {
+    "pages": {
+      "title": "Pages"
+    },
+    "actions": {
+      "title": "Actions",
+      "subscriptions": "Subscriptions",
+      "notifications": "Notifications",
+      "audit-log": "Audit log"
+    },
+    "settings": {
+      "title": "Settings",
+      "preferences": "Preferences",
+      "pages": "Pages",
+      "server": "Server",
+      "external-connections": "External Connections",
+      "logout": "Logout"
+    }
+  },
+
   "paginator": {
     "pages": "Page {{currentPage}} of {{totalPages}}",
     "prev": "Previous",

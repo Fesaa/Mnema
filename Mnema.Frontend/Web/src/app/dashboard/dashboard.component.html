@@ -3,8 +3,7 @@
 } @else {
   <div class="w-100" *transloco="let t;prefix:'dashboard'">
     @if (dashboardItems().length === 0) {
-      <app-suggestion-dashboard></app-suggestion-dashboard>
-      <app-recently-downloaded></app-recently-downloaded>
+      <app-button-grid [groups]="buttonGroupService.dashboardGroups()" />
     } @else {
       <div class="pt-1 pt-md-3 m-3">
 
