@@ -67,7 +67,7 @@ export class ButtonGroupService {
       buttons: this.pageService.pages().map<Button>(page => ({
         title: page.title,
         icon: `fa ${page.icon}`,
-        navUrl: 'page',
+        navUrl: '/page',
         navExtras: { queryParams: { id: page.id } }
       })),
     };
@@ -84,14 +84,14 @@ export class ButtonGroupService {
           title: translate('button-groups.actions.subscriptions'),
           icon: 'fa fa-bell',
           requiredRoles: [Role.Subscriptions],
-          navUrl: 'subscriptions',
+          navUrl: '/subscriptions',
           standAlone: true,
         },
         {
           title: translate('button-groups.actions.downloads'),
           icon: 'fa fa-download',
           requiredRoles: [Role.Subscriptions],
-          navUrl: 'active-downloads',
+          navUrl: '/active-downloads',
           standAlone: true,
           badge: this.activeDownloadsService.items().length > 0
             ? `${this.activeDownloadsService.items().length}` : undefined,
@@ -99,14 +99,14 @@ export class ButtonGroupService {
         {
           title: translate('button-groups.actions.notifications'),
           icon: 'fa fa-inbox',
-          navUrl: 'notifications',
+          navUrl: '/notifications',
           badge: this.notificationService.notificationsCount() > 0
             ? `${this.notificationService.notificationsCount()}` : undefined,
         },
         {
           title: translate('button-groups.actions.audit-log'),
           icon: 'fa fa-user-secret',
-          navUrl: 'audit-log',
+          navUrl: '/audit-log',
         },
         {
           title: translate('button-groups.settings.logout'),
@@ -127,28 +127,28 @@ export class ButtonGroupService {
         {
           title: translate('button-groups.settings.preferences'),
           icon: 'fa fa-heart',
-          navUrl: 'settings',
+          navUrl: '/settings',
           navExtras: { fragment: SettingsID.Preferences },
           id: SettingsID.Preferences
         },
         {
           title: translate('button-groups.settings.pages'),
           icon: 'fa fa-thumbtack',
-          navUrl: 'settings',
+          navUrl: '/settings',
           navExtras: { fragment: SettingsID.Pages },
           id: SettingsID.Pages
         },
         {
           title: translate('button-groups.settings.server'),
           icon: 'fa fa-server',
-          navUrl: 'settings',
+          navUrl: '/settings',
           navExtras: { fragment: SettingsID.Server },
           id: SettingsID.Server
         },
         {
           title: translate('button-groups.settings.external-connections'),
           icon: 'fa fa-user-secret',
-          navUrl: 'settings',
+          navUrl: '/settings',
           navExtras: { fragment: SettingsID.ExternalConnections },
           id: SettingsID.ExternalConnections
         },

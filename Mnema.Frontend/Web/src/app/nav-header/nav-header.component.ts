@@ -9,22 +9,16 @@ import {
 } from '@angular/core';
 import {toSignal} from "@angular/core/rxjs-interop";
 import {Breakpoint, UtilityService} from "../_services/utility.service";
-import {PageService} from "../_services/page.service";
 import {ActivatedRoute, RouterLink} from "@angular/router";
 import {AccountService} from "../_services/account.service";
 import {NavService} from "../_services/nav.service";
 import {NotificationService} from "../_services/notification.service";
-import {EventType, SignalRService} from "../_services/signal-r.service";
 import {ButtonGroupService, Button, ButtonGroup} from "../button-grid/button-group.service";
-import {translate, TranslocoService} from "@jsverse/transloco";
-import {Role, User} from "../_models/user";
-import {Page, Provider} from "../_models/page";
-import {AsyncPipe, TitleCasePipe} from "@angular/common";
+import {translate} from "@jsverse/transloco";
+import {TitleCasePipe} from "@angular/common";
 import {animate, style, transition, trigger} from "@angular/animations";
-import {catchError, filter, fromEvent, of, take, tap, timeout} from "rxjs";
-import {ButtonGridComponent} from "../button-grid/button-grid.component";
 import {MobileGridComponent} from "../button-grid/mobile-grid/mobile-grid.component";
-import {TranslocoDirective, TranslocoPipe} from "@jsverse/transloco";
+import {TranslocoPipe} from "@jsverse/transloco";
 
 @Component({
   selector: 'app-nav-header',
