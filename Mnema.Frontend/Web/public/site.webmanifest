@@ -1,0 +1,8 @@
+{
+    "name": "Mnema",
+    "short_name": "Mnema",
+    "icons": [],
+    "theme_color": "#000000",
+    "background_color": "#000000",
+    "display": "standalone"
+}
