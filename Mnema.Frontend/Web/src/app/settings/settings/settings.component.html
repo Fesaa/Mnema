@@ -17,8 +17,6 @@
     <nav
       id="settings-menu"
       class="settings-sidebar"
-      [class.open]="showMobileConfig()"
-      #mobileConfig
     >
       @for (setting of visibleSettings(); track setting.id) {
         <button
@@ -33,6 +31,15 @@
         </button>
       }
     </nav>
+
+    @if (showMobileConfig()) {
+      <app-mobile-grid
+        [title]="t('settings')"
+        [groups]="mobileSettingsGroup()"
+        [columns]="1"
+        (close)="toggleMobile()"
+      />
+    }
 
     <section class="settings-content" role="region" aria-live="polite">
 

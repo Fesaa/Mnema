@@ -43,11 +43,6 @@
   flex-direction: column;
   gap: 0.5rem;
   border-right: 1px solid #ddd;
-  transition: transform 0.3s ease;
-}
-
-.settings-sidebar.open {
-  transform: translateX(0);
 }
 
 .settings-btn {
@@ -85,12 +80,7 @@
     display: inline-block;
   }
   .settings-sidebar {
-    position: fixed;
-    top: 0; left: 0; bottom: 0;
-    background: #fff;
-    z-index: 1000;
-    transform: translateX(-100%);
-    box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+    display: none;
   }
   .settings-main {
     flex-direction: column;

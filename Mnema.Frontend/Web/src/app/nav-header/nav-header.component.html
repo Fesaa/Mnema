@@ -64,15 +64,11 @@
   </button>
 
   @if (isMobileGridOpen()) {
-    <div class="mobile-grid-backdrop" (click)="toggleMobileGrid()" @fadeAnimation></div>
-    <div class="mobile-grid-overlay" @drawerAnimation (click)="toggleMobileGrid()">
-      <div class="overlay-header">
-        <span class="overlay-title">{{ 'nav-bar.navigation' | transloco }}</span>
-        <button class="close-btn">✕</button>
-      </div>
-      <div class="overlay-content">
-        <app-button-grid [groups]="mobileButtonGroups()" [mobileColumns]="2" />
-      </div>
-    </div>
+    <app-mobile-grid
+      [title]="'nav-bar.navigation' | transloco"
+      [groups]="mobileButtonGroups()"
+      [columns]="2"
+      (close)="toggleMobileGrid()"
+    />
   }
 }

@@ -23,48 +23,8 @@ import {AsyncPipe, TitleCasePipe} from "@angular/common";
 import {animate, style, transition, trigger} from "@angular/animations";
 import {catchError, filter, fromEvent, of, take, tap, timeout} from "rxjs";
 import {ButtonGridComponent} from "../button-grid/button-grid.component";
+import {MobileGridComponent} from "../button-grid/mobile-grid/mobile-grid.component";
 import {TranslocoDirective, TranslocoPipe} from "@jsverse/transloco";
-
-interface NavItem {
-  label: string;
-  icon?: string;
-  routerLink?: string;
-  queryParams?: Record<string, any>;
-  command?: () => void;
-  roles?: Role[];
-}
-
-const drawerAnimation = trigger('drawerAnimation', [
-  transition(':enter', [
-    style({ transform: 'translateY(100%)', opacity: 0 }),
-    animate('250ms ease-out', style({ transform: 'translateY(0)', opacity: 1 })),
-  ]),
-  transition(':leave', [
-    animate('200ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 })),
-  ]),
-]);
-
-const dropdownAnimation = trigger('dropdownAnimation', [
-  transition(':enter', [
-    style({ opacity: 0, transform: 'translateY(-8px)' }),
-    animate('150ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
-  ]),
-  transition(':leave', [
-    animate('100ms ease-in', style({ opacity: 0, transform: 'translateY(-8px)' })),
-  ]),
-]);
-
-
-
-const fadeAnimation = trigger('fadeAnimation', [
-  transition(':enter', [
-    style({ opacity: 0 }),
-    animate('200ms ease-out', style({ opacity: 1 })),
-  ]),
-  transition(':leave', [
-    animate('150ms ease-in', style({ opacity: 0 })),
-  ]),
-]);
 
 @Component({
   selector: 'app-nav-header',
@@ -73,10 +33,20 @@ const fadeAnimation = trigger('fadeAnimation', [
   imports: [
     RouterLink,
     TitleCasePipe,
-    ButtonGridComponent,
+    MobileGridComponent,
     TranslocoPipe
   ],
-  animations: [drawerAnimation, dropdownAnimation, fadeAnimation],
+  animations: [
+    trigger('dropdownAnimation', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(-8px)' }),
+        animate('150ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
+      ]),
+      transition(':leave', [
+        animate('100ms ease-in', style({ opacity: 0, transform: 'translateY(-8px)' })),
+      ]),
+    ])
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NavHeaderComponent implements OnInit {

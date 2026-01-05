@@ -2,12 +2,9 @@ import {
   Component,
   computed,
   effect,
-  ElementRef,
-  HostListener,
   inject,
   linkedSignal,
-  signal,
-  ViewChild
+  signal
 } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NavService} from '../../_services/nav.service';
@@ -19,7 +16,8 @@ import {TranslocoDirective} from "@jsverse/transloco";
 import {
   ExternalConnectionSettingsComponent
 } from "./_components/external-connection-settings/external-connection-settings.component";
-import {Button, ButtonGroupService, SettingsID} from "../../button-grid/button-group.service";
+import {Button, ButtonGroup, ButtonGroupService, SettingsID} from "../../button-grid/button-group.service";
+import {MobileGridComponent} from "../../button-grid/mobile-grid/mobile-grid.component";
 
 @Component({
   selector: 'app-settings',
@@ -30,6 +28,7 @@ import {Button, ButtonGroupService, SettingsID} from "../../button-grid/button-g
     ServerSettingsComponent,
     TranslocoDirective,
     ExternalConnectionSettingsComponent,
+    MobileGridComponent,
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']
@@ -42,14 +41,27 @@ export class SettingsComponent {
   private route = inject(ActivatedRoute);
   private readonly buttonGroupService = inject(ButtonGroupService);
 
-  @ViewChild('mobileConfig') mobileDrawerElement!: ElementRef<HTMLDivElement>;
-
   user = this.accountService.currentUser;
   showMobileConfig = signal(false);
 
   readonly visibleSettings = computed(() =>
     this.buttonGroupService.settingsGroup().buttons
       .filter(btn => btn.id && this.buttonGroupService.shouldRender(btn)));
+
+  readonly mobileSettingsGroup = computed<ButtonGroup[]>(() => [
+    {
+      title: '',
+      icon: '',
+      buttons: this.visibleSettings().map(btn => ({
+        ...btn,
+        standAlone: true,
+        onClick: () => {
+          this.setSettings(btn.id as SettingsID);
+          this.toggleMobile();
+        },
+      }))
+    }
+  ]);
 
   readonly selected = linkedSignal<Button[], SettingsID>({
     source: this.visibleSettings,
@@ -79,16 +91,6 @@ export class SettingsComponent {
     effect(() => {
       this.router.navigate([], { fragment: this.selected() });
     });
-  }
-
-  @HostListener('document:touchend', ['$event'])
-  onDocumentClick(event: Event) {
-    if (!this.showMobileConfig()) return;
-
-    const clickedElement = event.target as Node;
-    if (!this.mobileDrawerElement.nativeElement.contains(clickedElement)) {
-      this.showMobileConfig.set(false);
-    }
   }
 
   toggleMobile() {
