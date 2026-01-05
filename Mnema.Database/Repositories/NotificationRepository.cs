@@ -21,7 +21,7 @@ public class NotificationRepository(MnemaDataContext ctx, IMapper mapper) : INot
         return ctx.Notifications
             .Where(n => n.UserId == userId && (read == null || n.Read == read))
             .ProjectTo<NotificationDto>(mapper.ConfigurationProvider)
-            .OrderBy(n => n.CreatedUtc)
+            .OrderByDescending(n => n.CreatedUtc)
             .AsPagedList(pagination);
     }
 

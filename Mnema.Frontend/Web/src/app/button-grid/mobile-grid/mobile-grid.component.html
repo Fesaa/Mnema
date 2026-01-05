@@ -1,10 +1,10 @@
 <div class="mobile-grid-backdrop" (click)="onClose()" @fadeAnimation></div>
-<div class="mobile-grid-overlay" @drawerAnimation>
+<div class="mobile-grid-overlay" (click)="onClose()" @drawerAnimation>
   <div class="overlay-header">
     <span class="overlay-title">{{ title() }}</span>
-    <button class="close-btn" (click)="onClose()">✕</button>
+    <button class="close-btn">✕</button>
   </div>
   <div class="overlay-content">
-    <app-button-grid [groups]="groups()" [mobileColumns]="columns()" (click)="onClose()"/>
+    <app-button-grid [groups]="groups()" [mobileColumns]="columns()" />
   </div>
 </div>
