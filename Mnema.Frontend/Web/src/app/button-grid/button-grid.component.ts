@@ -25,6 +25,7 @@ export class ButtonGridComponent {
   protected readonly buttonGroupService = inject(ButtonGroupService);
 
   groups = input.required<ButtonGroup[]>();
+  mobileColumns = input<number>(1);
   mobileMode = computed(() => this.utilityService.breakPoint() < Breakpoint.Desktop );
 
   listSelectTemplate = viewChild.required<TemplateRef<ListSelectionItem<Button>>>('listSelectOption');

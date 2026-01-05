@@ -1,12 +1,8 @@
-@if (navService.showNav$ | async) {
+@if (isDesktop()) {
   <div class="nav-wrapper">
     <nav class="nav-header">
       <div class="nav-left">
-        <button class="hamburger" (click)="toggleMobileMenu()">
-          &#9776;
-        </button>
-
-        <div class="nav-links desktop-only">
+        <div class="nav-links">
           @for (btn of navPageButtons(); track btn.title) {
             <a
               class="nav-link"
@@ -57,28 +53,24 @@
         </div>
       </div>
     </nav>
-
-    @if (isMobileMenuOpen()) {
-      <div class="mobile-drawer" @drawerAnimation #mobileDrawer>
-        <div class="drawer-header">
-          <button (click)="toggleMobileMenu()">✕</button>
-        </div>
-        <div class="drawer-links">
-          @for (btn of navPageButtons(); track btn.title) {
-            <a
-              class="nav-link"
-              (click)="buttonGroupService.handleButtonClick(btn, $event); toggleMobileMenu()"
-              style="cursor: pointer"
-            >
-              @if (btn.icon) {
-                <i class="{{ btn.icon }}"></i>
-              }
-              {{ btn.title }}
-            </a>
-          }
-        </div>
-      </div>
-    }
-
   </div>
+}
+
+@if (isMobile()) {
+  <button class="mobile-fab" (click)="toggleMobileGrid()">
+    <i class="fas fa-th"></i>
+  </button>
+
+  @if (isMobileGridOpen()) {
+    <div class="mobile-grid-backdrop" (click)="toggleMobileGrid()" @fadeAnimation></div>
+    <div class="mobile-grid-overlay" @drawerAnimation>
+      <div class="overlay-header">
+        <span class="overlay-title">{{ 'nav-bar.navigation' | transloco }}</span>
+        <button class="close-btn" (click)="toggleMobileGrid()">✕</button>
+      </div>
+      <div class="overlay-content">
+        <app-button-grid [groups]="buttonGroupService.dashboardGroups()" [mobileColumns]="2" (click)="toggleMobileGrid()" />
+      </div>
+    </div>
+  }
 }

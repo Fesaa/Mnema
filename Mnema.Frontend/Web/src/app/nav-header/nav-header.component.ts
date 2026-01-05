@@ -7,19 +7,23 @@ import {
   OnInit,
   signal, ViewChild
 } from '@angular/core';
+import {toSignal} from "@angular/core/rxjs-interop";
+import {Breakpoint, UtilityService} from "../_services/utility.service";
 import {PageService} from "../_services/page.service";
 import {ActivatedRoute, RouterLink} from "@angular/router";
 import {AccountService} from "../_services/account.service";
 import {NavService} from "../_services/nav.service";
 import {NotificationService} from "../_services/notification.service";
 import {EventType, SignalRService} from "../_services/signal-r.service";
-import {ButtonGroupService, Button} from "../button-grid/button-group.service";
+import {ButtonGroupService, Button, ButtonGroup} from "../button-grid/button-group.service";
 import {translate, TranslocoService} from "@jsverse/transloco";
 import {Role, User} from "../_models/user";
 import {Page, Provider} from "../_models/page";
 import {AsyncPipe, TitleCasePipe} from "@angular/common";
 import {animate, style, transition, trigger} from "@angular/animations";
 import {catchError, filter, fromEvent, of, take, tap, timeout} from "rxjs";
+import {ButtonGridComponent} from "../button-grid/button-grid.component";
+import {TranslocoDirective, TranslocoPipe} from "@jsverse/transloco";
 
 interface NavItem {
   label: string;
@@ -32,11 +36,11 @@ interface NavItem {
 
 const drawerAnimation = trigger('drawerAnimation', [
   transition(':enter', [
-    style({ transform: 'translateX(-100%)', opacity: 0 }),
-    animate('250ms ease-out', style({ transform: 'translateX(0)', opacity: 1 })),
+    style({ transform: 'translateY(100%)', opacity: 0 }),
+    animate('250ms ease-out', style({ transform: 'translateY(0)', opacity: 1 })),
   ]),
   transition(':leave', [
-    animate('200ms ease-in', style({ transform: 'translateX(-100%)', opacity: 0 })),
+    animate('200ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 })),
   ]),
 ]);
 
@@ -52,33 +56,46 @@ const dropdownAnimation = trigger('dropdownAnimation', [
 
 
 
+const fadeAnimation = trigger('fadeAnimation', [
+  transition(':enter', [
+    style({ opacity: 0 }),
+    animate('200ms ease-out', style({ opacity: 1 })),
+  ]),
+  transition(':leave', [
+    animate('150ms ease-in', style({ opacity: 0 })),
+  ]),
+]);
+
 @Component({
   selector: 'app-nav-header',
   templateUrl: './nav-header.component.html',
   styleUrls: ['./nav-header.component.scss'],
   imports: [
     RouterLink,
-    AsyncPipe,
-    TitleCasePipe
+    TitleCasePipe,
+    ButtonGridComponent,
+    TranslocoPipe
   ],
-  animations: [drawerAnimation, dropdownAnimation],
+  animations: [drawerAnimation, dropdownAnimation, fadeAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NavHeaderComponent implements OnInit {
 
-  private readonly pageService = inject(PageService);
   private readonly route = inject(ActivatedRoute);
   private readonly accountService = inject(AccountService);
   protected readonly navService = inject(NavService);
   protected readonly notificationService = inject(NotificationService);
   protected readonly buttonGroupService = inject(ButtonGroupService);
-
-  @ViewChild('mobileDrawer') mobileDrawerElement!: ElementRef<HTMLDivElement>;
+  protected readonly utilityService = inject(UtilityService);
 
   currentUser = this.accountService.currentUser;
+  showNav = toSignal(this.navService.showNav$, {initialValue: false});
 
-  isMobileMenuOpen = signal(false);
+  isMobileGridOpen = signal(false);
   isAccountDropdownOpen = signal(false);
+
+  isMobile = computed(() => this.showNav() && this.utilityService.breakPoint() <= Breakpoint.Mobile);
+  isDesktop = computed(() => this.showNav() && this.utilityService.breakPoint() > Breakpoint.Mobile);
 
   navPageButtons = computed<Button[]>(() => {
     return [
@@ -131,22 +148,12 @@ export class NavHeaderComponent implements OnInit {
     });
   }
 
-  @HostListener('document:touchend', ['$event'])
-  onDocumentClick(event: Event) {
-    if (!this.isMobileMenuOpen()) return;
-
-    const clickedElement = event.target as Node;
-    if (!this.mobileDrawerElement.nativeElement.contains(clickedElement)) {
-      this.isMobileMenuOpen.set(false);
-    }
-  }
-
   logout() {
     this.accountService.logout();
   }
 
-  toggleMobileMenu() {
-    this.isMobileMenuOpen.update(v => !v);
+  toggleMobileGrid() {
+    this.isMobileGridOpen.update(v => !v);
   }
 
   toggleAccountDropdown() {

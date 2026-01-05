@@ -1,7 +1,7 @@
 @for (group of groups(); track $index) {
 
   @if (buttonGroupService.anyVisible(group.buttons)) {
-    <div class="group-grid">
+    <div class="group-grid" [style.--mobile-cols]="mobileColumns()">
       @if (!mobileMode() && group.title) {
         <h2 class="group-title">{{group.title}}</h2>
       }

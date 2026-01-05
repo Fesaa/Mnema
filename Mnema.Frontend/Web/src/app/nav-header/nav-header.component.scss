@@ -1,3 +1,4 @@
+// Desktop only styles
 .nav-wrapper {
   padding: 1rem;
   position: relative;
@@ -18,14 +19,6 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-
-    .hamburger {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      color: var(--text-primary);
-      display: none;
-    }
 
     .nav-links {
       display: flex;
@@ -138,68 +131,84 @@
   }
 }
 
-// Mobile drawer styles
-.mobile-drawer {
+// Mobile FAB styles
+.mobile-fab {
+  display: flex;
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px var(--shadow-medium);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+// Mobile Grid Overlay styles
+.mobile-grid-backdrop {
   position: fixed;
   top: 0;
   left: 0;
-  width: 280px;
+  width: 100vw;
   height: 100vh;
-  background: var(--surface-card);
-  box-shadow: 2px 0 8px var(--shadow-medium);
-  padding: 1rem;
-  z-index: 2000;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+}
+
+.mobile-grid-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--surface-ground); // Use ground background for overlay
+  z-index: 10000;
   display: flex;
   flex-direction: column;
+  padding: 1rem;
+  overflow-y: auto;
 
-  .drawer-header {
+  .overlay-header {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between; // Space for a title if needed
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: var(--surface-card);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px var(--shadow-light);
 
-    button {
+    .overlay-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 1.1rem;
+    }
+
+    .close-btn {
       background: none;
       border: none;
       font-size: 1.5rem;
       color: var(--text-primary);
+      cursor: pointer;
+      padding: 0.5rem;
+      line-height: 1;
     }
   }
 
-  .drawer-links {
-    display: flex;
-    flex-direction: column;
-    margin-top: 1rem;
-    gap: 1rem;
-
-    .nav-link {
-      text-decoration: none;
-      color: var(--text-secondary);
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-
-      &:hover {
-        color: var(--primary-color);
-      }
-    }
-  }
-}
-
-// Responsive behavior
-@media (max-width: 768px) {
-  .nav-header {
-    .nav-left {
-      .hamburger {
-        display: inline;
-      }
-
-      .nav-links {
-        display: none;
-      }
-    }
-  }
-
-  .desktop-only {
-    display: none !important;
+  .overlay-content {
+    flex: 1;
   }
 }

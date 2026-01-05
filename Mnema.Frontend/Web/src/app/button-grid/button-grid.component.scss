@@ -23,7 +23,7 @@
 .grid-container {
   display: grid;
   gap: 1rem;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(var(--mobile-cols, 1), 1fr);
 
   // Mobile first - single column
   @media (min-width: 576px) {

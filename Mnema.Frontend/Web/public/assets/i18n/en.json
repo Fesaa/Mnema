@@ -318,7 +318,8 @@
     "subscriptions": "Subscriptions",
     "notifications": "Notifications",
     "settings": "Settings",
-    "sign-out": "Log out"
+    "sign-out": "Log out",
+    "navigation": "Navigation"
   },
 
   "login": {
