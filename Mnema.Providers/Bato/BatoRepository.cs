@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -322,7 +323,7 @@ internal class BatoRepository : IRepository
             .ToList();
     }
 
-    public async Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken)
+    public async Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken)
     {
         var result = await Client.GetCachedStringAsync("v3x", _cache, cancellationToken: cancellationToken);
         if (result.IsErr)
@@ -330,10 +331,27 @@ internal class BatoRepository : IRepository
 
         var document = result.Unwrap().ToHtmlDocument();
 
-        return document.DocumentNode.QuerySelectorAll("div.flex.border-b.border-b-base-200.pb-5 > div > a:first-child")
-            .Select(node => node.GetAttributeValue("href", string.Empty))
-            .Where(x => !string.IsNullOrEmpty(x))
-            .Select(x => x.RemovePrefix("/title/"))
+        return document.DocumentNode.QuerySelectorAll("div.flex.border-b.border-b-base-200.pb-5")
+            .Select(node =>
+            {
+                var contentNode = node.QuerySelector("div.group.space-y-1 a");
+                var releaseNode = node.QuerySelector("span.line-clamp-1.space-x-1.grow a");
+
+                var releaseTime = node.QuerySelector("time").GetAttributeValue("time", string.Empty);
+                var releaseDate = string.IsNullOrEmpty(releaseTime)
+                    ? DateTime.UtcNow
+                    : DateTime.Parse(releaseTime, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
+                return new ContentRelease
+                {
+                    ReleaseId = releaseNode.GetAttributeValue("href", string.Empty).RemovePrefix("/title/"),
+                    ReleaseName = releaseNode.QuerySelector("span")?.InnerText ?? string.Empty,
+                    ContentId = contentNode.GetAttributeValue("href", string.Empty).RemovePrefix("/title/"),
+                    ContentName = contentNode.QuerySelector("span")?.InnerText ?? string.Empty,
+                    ReleaseDate = releaseDate,
+                };
+            })
+            .Where(x => !string.IsNullOrEmpty(x.ContentId))
             .Distinct()
             .ToList();
     }

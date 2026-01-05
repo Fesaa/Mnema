@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Flurl;
@@ -124,7 +125,7 @@ internal class MangadexRepository : IRepository
             Title = chapter.Attributes.Title,
             VolumeMarker = chapter.Attributes.Volume ?? string.Empty,
             ChapterMarker = chapter.Attributes.Chapter ?? string.Empty,
-            ReleaseDate = chapter.Attributes.PublishedAt,
+            ReleaseDate = chapter.Attributes.PublishAt,
             Tags = [],
             People = [],
             TranslationGroups = chapter.RelationShips
@@ -179,11 +180,12 @@ internal class MangadexRepository : IRepository
         }).ToList();
     }
 
-    public async Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken)
+    public async Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken)
     {
         var url = "chapter"
             .SetQueryParam("limit", 32)
             .SetQueryParam("offset", 0)
+            .SetQueryParam("includes[]", "manga")
             .AddAllContentRatings()
             .SetQueryParam("order[readableAt]", "desc");
 
@@ -193,10 +195,24 @@ internal class MangadexRepository : IRepository
 
         return result.Unwrap()
             .Data
-            .Select(chapter => chapter.RelationShips.FirstOrDefault(r => r.Type == "manga"))
+            .Select(chapter =>
+            {
+                var relationShip = chapter.RelationShips.FirstOrDefault(r => r.Type == "manga");
+                if (relationShip == null) return null;
+
+                var json = JsonSerializer.Serialize(relationShip.Attributes);
+                var mangaAttr = JsonSerializer.Deserialize<MangaAttributes>(json, HttpClientExtensions.JsonSerializerOptions);
+
+                return new ContentRelease
+                {
+                    ReleaseId = chapter.Id,
+                    ReleaseName = chapter.Attributes.Title,
+                    ContentId = relationShip.Id,
+                    ContentName = mangaAttr?.LangTitle("en") ?? string.Empty,
+                    ReleaseDate = chapter.Attributes.PublishAt,
+                };
+            })
             .WhereNotNull()
-            .Select(r => r.Id)
-            .Distinct()
             .ToList();
     }
 

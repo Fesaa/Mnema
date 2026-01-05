@@ -20,5 +20,6 @@ public class AutoMapperProfiles : Profile
         CreateMap<Notification, NotificationDto>();
         CreateMap<UserPreferences, UserPreferencesDto>();
         CreateMap<ExternalConnection, ExternalConnectionDto>();
+        CreateMap<ContentRelease, ContentReleaseDto>();
     }
 }

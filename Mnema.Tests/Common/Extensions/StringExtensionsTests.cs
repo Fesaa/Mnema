@@ -148,7 +148,7 @@ public class StringExtensionsTests
         var result = input.AsDateTime(format);
 
         Assert.NotNull(result);
-        Assert.Equal(new DateTime(year, month, day, hour, minute, second), result);
+        Assert.Equal(new DateTime(year, month, day, hour, minute, second).ToUniversalTime(), result);
     }
 
     [Theory]

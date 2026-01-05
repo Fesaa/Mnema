@@ -107,7 +107,7 @@ internal class DiscordExternalConnectionService(
                 new DiscordEmbedField
                 {
                     Name = "Size",
-                    Value = info.Size,
+                    Value = $"{info.Size} / {info.TotalSize}",
                     Inline = true
                 },
                 new DiscordEmbedField
@@ -153,7 +153,7 @@ internal class DiscordExternalConnectionService(
                 new DiscordEmbedField
                 {
                     Name = "Size",
-                    Value = info.Size,
+                    Value = $"{info.Size} / {info.TotalSize}",
                     Inline = true
                 },
                 new DiscordEmbedField

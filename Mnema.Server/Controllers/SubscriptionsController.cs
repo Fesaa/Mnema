@@ -42,7 +42,8 @@ public class SubscriptionsController(
     [HttpGet("{subscriptionId:guid}")]
     public async Task<ActionResult<SubscriptionDto>> GetSubscription(Guid subscriptionId)
     {
-        var sub = await unitOfWork.SubscriptionRepository.GetSubscriptionDto(subscriptionId);
+        var sub = await unitOfWork.SubscriptionRepository
+            .GetSubscriptionDto(subscriptionId, HttpContext.RequestAborted);
         if (sub == null) return NotFound();
 
         if (sub.UserId != UserId) return Forbid();
@@ -61,7 +62,7 @@ public class SubscriptionsController(
     [HttpPost("update")]
     public async Task<IActionResult> UpdateSubscription([FromBody] CreateOrUpdateSubscriptionDto updateDto)
     {
-        await subscriptionService.UpdateSubscription(UserId, updateDto);
+        await subscriptionService.UpdateSubscription(UserId, updateDto, HttpContext.RequestAborted);
 
         return Ok();
     }
@@ -69,7 +70,7 @@ public class SubscriptionsController(
     [HttpPost("new")]
     public async Task<IActionResult> CreateSubscription([FromBody] CreateOrUpdateSubscriptionDto createDto)
     {
-        await subscriptionService.CreateSubscription(UserId, createDto);
+        await subscriptionService.CreateSubscription(UserId, createDto, HttpContext.RequestAborted);
 
         return Ok();
     }
@@ -77,7 +78,8 @@ public class SubscriptionsController(
     [HttpDelete("{subscriptionId:guid}")]
     public async Task<IActionResult> DeleteSubscription(Guid subscriptionId)
     {
-        var sub = await unitOfWork.SubscriptionRepository.GetSubscription(subscriptionId);
+        var sub = await unitOfWork.SubscriptionRepository
+            .GetSubscription(subscriptionId, HttpContext.RequestAborted);
         if (sub == null) return NotFound();
 
         if (sub.UserId != UserId) return Forbid();

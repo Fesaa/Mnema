@@ -11,6 +11,7 @@ public interface IUnitOfWork
     ISettingsRepository SettingsRepository { get; }
     INotificationRepository NotificationRepository { get; }
     IExternalConnectionRepository ExternalConnectionRepository { get; }
+    IContentReleaseRepository ContentReleaseRepository { get; }
 
     Task<bool> CommitAsync();
     bool HasChanges();

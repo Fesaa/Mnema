@@ -121,25 +121,49 @@ internal class DynastyRepository(
             .ToList() ?? [];
     }
 
-    public async Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken)
+    public async Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken)
     {
-        var result = await Client.GetCachedStringAsync(string.Empty, cache, cancellationToken: cancellationToken);
+        var result = await Client.GetCachedStringAsync("chapters/added", cache, cancellationToken: cancellationToken);
         if (result.IsErr)
             throw new MnemaException("Failed to retrieve recently updated chapters", result.Error);
 
         var document = result.Unwrap().ToHtmlDocument();
 
-        return document.DocumentNode.QuerySelectorAll(".chapter")
-            .Select(node => node.GetAttributeValue("href", string.Empty))
-            .Where(x => !string.IsNullOrEmpty(x))
-            .Select(x =>
+        return document.DocumentNode.QuerySelectorAll(".chapter-list dd")
+            .Select(node =>
             {
-                // Chapter belonging to a series end in _chXXX, transform into the series id
-                var idx = x.LastIndexOf("_ch", StringComparison.InvariantCulture);
-                return idx < 0 ? x : x[..idx].Replace("chapters", "series");
+                var id = ExtractId(node.QuerySelector(".name"));
+                if (string.IsNullOrEmpty(id)) return null;
+
+                //var title = node.QuerySelector(".title").InnerText;
+                var dateNode = node.QuerySelectorAll("small").LastOrDefault();
+
+                return new ContentRelease
+                {
+                    ReleaseId = node.QuerySelector(".name").GetAttributeValue("href", string.Empty),
+                    ContentId = id,
+                    ContentName = string.Empty, // TODO: Need parser
+                    ReleaseName = string.Empty, // TODO: Need parser
+                    ReleaseDate = dateNode?
+                        .InnerText?
+                        .RemovePrefix("released ")
+                        .Trim()
+                        .AsDateTime(SeriesReleaseDateFormat) ?? DateTime.UtcNow,
+                };
             })
-            .Distinct()
+            .WhereNotNull()
+            .Where(x => !string.IsNullOrEmpty(x.ReleaseId))
             .ToList();
+
+        string ExtractId(HtmlNode node)
+        {
+            var href = node.GetAttributeValue("href", string.Empty);
+            if (string.IsNullOrWhiteSpace(href)) return string.Empty;
+
+            // Chapter belonging to a series end in _chXXX, transform into the series id
+            var idx = href.LastIndexOf("_ch", StringComparison.InvariantCulture);
+            return idx < 0 ? href : href[..idx].Replace("chapters", "series");
+        }
     }
 
     public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)

@@ -29,7 +29,7 @@ internal partial class Publication
         var preferences = await _unitOfWork.UserRepository.GetPreferences(Request.UserId);
         if (preferences == null)
         {
-            _logger.LogWarning("Failed to load user preferences for {UserId}, stopping downloading", Request.UserId);
+            _logger.LogWarning("[{Title}/{Id}] Failed to load user preferences for {UserId}, stopping downloading", Title, Id, Request.UserId);
             State = ContentState.Cancel;
             await Cancel();
             return;
@@ -43,7 +43,7 @@ internal partial class Publication
         }
         catch (MnemaException e)
         {
-            _logger.LogError(e, "An error occured while loading series info for {Id}", Id);
+            _logger.LogError(e, "[{Title}/{Id}] An error occured while loading series info", Title, Id);
             State = ContentState.Cancel;
             await Cancel();
             return;
@@ -66,7 +66,7 @@ internal partial class Publication
 
         if (_queuedChapters.Count == 0 && (Request.StartImmediately || Request.IsSubscription))
         {
-            _logger.LogDebug("No chapters to download for {Title}, stopping download", Title);
+            _logger.LogDebug("[{Title}/{Id}] No chapters to download, stopping download", Title, Id);
             State = ContentState.Cancel;
             await Cancel();
             return;
@@ -77,13 +77,13 @@ internal partial class Publication
             : ContentState.Waiting;
         await _messageService.UpdateContent(Request.UserId, DownloadInfo);
 
-        _logger.LogDebug("Loading metadata for {Title}, {ToDownload}/{Total} chapters in {Elapsed}ms",
-            Title, _queuedChapters.Count, Series!.Chapters.Count, sw.ElapsedMilliseconds);
+        _logger.LogDebug("[{Title}/{Id}] Loading metadata, {ToDownload}/{Total} chapters in {Elapsed}ms",
+            Title, Id, _queuedChapters.Count, Series!.Chapters.Count, sw.ElapsedMilliseconds);
     }
 
     private void FilterAlreadyDownloadedContent(CancellationToken cancellationToken)
     {
-        _logger.LogTrace("Checking disk for content: {DownloadDir}", DownloadDir);
+        _logger.LogTrace("[{Title}/{Id}] Checking disk for content: {DownloadDir}", Title, Id, DownloadDir);
 
         var sw = Stopwatch.StartNew();
 
@@ -93,7 +93,7 @@ internal partial class Publication
         _queuedChapters = Series!.Chapters.Where(ShouldDownloadChapter).Select(c => c.Id).ToList();
 
         if (sw.Elapsed.Seconds > 5)
-            _logger.LogWarning("Checking for existing content took a long time: {Elapsed}s", sw.Elapsed.Seconds);
+            _logger.LogWarning("[{Title}/{Id}] Checking for existing content took a long time: {Elapsed}s", Title, Id, sw.Elapsed.Seconds);
     }
 
     private bool ShouldDownloadChapter(Chapter chapter)
@@ -125,8 +125,8 @@ internal partial class Publication
 
         if (volumeChanged)
         {
-            _logger.LogDebug("Redownloading chapter {ChapterMarker} as volume changed from {Old} to {New}",
-                chapter.ChapterMarker, onDiskVolume, chapter.ChapterMarker);
+            _logger.LogDebug("[{Title}/{Id}] Redownloading chapter {ChapterMarker} as volume changed from {Old} to {New}",
+                Title, Id, chapter.ChapterMarker, onDiskVolume, chapter.ChapterMarker);
             ToRemovePaths.Add(content.Path);
         }
 
@@ -142,8 +142,8 @@ internal partial class Publication
         if (string.IsNullOrWhiteSpace(Series.Title)) throw new MnemaException("No series title is set");
 
         _logger.LogDebug(
-            "Successfully loaded series information for {SeriesName} with {Chapters} chapters in {Elapsed}ms",
-            Series.Title, Series.Chapters.Count, sw.ElapsedMilliseconds);
+            "[{Title}/{Id}] Successfully loaded series information with {Chapters} chapters in {Elapsed}ms",
+            Title, Id, Series.Chapters.Count, sw.ElapsedMilliseconds);
 
         if (!Request.GetBool(RequestConstants.AssignEmptyVolumes)) return;
 

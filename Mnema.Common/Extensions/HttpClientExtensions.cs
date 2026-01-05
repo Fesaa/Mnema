@@ -12,7 +12,7 @@ namespace Mnema.Common.Extensions;
 
 public static class HttpClientExtensions
 {
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,

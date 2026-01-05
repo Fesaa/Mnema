@@ -74,7 +74,7 @@ public static class StringExtensions
 
             if (!s.EndsWith(other)) return s;
 
-            return s[..(s.Length - other.Length)];
+            return s[..^other.Length];
         }
 
         public int AsInt()
@@ -88,7 +88,7 @@ public static class StringExtensions
         {
             return DateTime.TryParseExact(s.Trim(), format, CultureInfo.InvariantCulture, DateTimeStyles.None,
                 out var result)
-                ? result
+                ? result.ToUniversalTime()
                 : null;
         }
     }

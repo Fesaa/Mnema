@@ -5,7 +5,7 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Models.Entities.Content;
 
-public class Subscription
+public class Subscription: IEntityDate
 {
     public Guid Id { get; set; }
 
@@ -46,6 +46,9 @@ public class Subscription
             SubscriptionId = Id
         };
     }
+
+    public DateTime CreatedUtc { get; set; }
+    public DateTime LastModifiedUtc { get; set; }
 }
 
 public enum SubscriptionStatus
