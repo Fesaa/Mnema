@@ -10,6 +10,7 @@ import {ListSelectModalComponent} from "../shared/_component/list-select-modal/l
 import {filter, tap} from "rxjs";
 import {NotificationService} from "../_services/notification.service";
 import {toSignal} from "@angular/core/rxjs-interop";
+import {ActiveDownloadsService} from "../dashboard/active-downloads/active-downloads.service";
 
 export enum SettingsID {
   Server = "server",
@@ -44,9 +45,10 @@ export interface ButtonGroup {
 })
 export class ButtonGroupService {
 
-  private readonly transloco = inject(TranslocoService);
   private readonly notificationService = inject(NotificationService);
   private readonly accountService = inject(AccountService);
+  private readonly activeDownloadsService = inject(ActiveDownloadsService);
+  private readonly transloco = inject(TranslocoService);
   private readonly utilityService = inject(UtilityService);
   private readonly modalService = inject(ModalService);
   private readonly pageService = inject(PageService);
@@ -91,6 +93,8 @@ export class ButtonGroupService {
           requiredRoles: [Role.Subscriptions],
           navUrl: 'active-downloads',
           standAlone: true,
+          badge: this.activeDownloadsService.items().length > 0
+            ? `${this.activeDownloadsService.items().length}` : undefined,
         },
         {
           title: translate('button-groups.actions.notifications'),
