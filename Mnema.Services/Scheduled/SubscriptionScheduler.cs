@@ -15,7 +15,9 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services.Scheduled;
 
-public class SubscriptionScheduler(
+internal sealed record ProcessResult(List<ContentRelease> Releases, int StartedDownloads, int FailedDownloads);
+
+internal class SubscriptionScheduler(
     ILogger<SubscriptionScheduler> logger,
     IServiceScopeFactory scopeFactory,
     IRecurringJobManagerV2 recurringJobManager,
@@ -53,6 +55,7 @@ public class SubscriptionScheduler(
     {
         using var scope = scopeFactory.CreateScope();
 
+        var downloadService = scope.ServiceProvider.GetRequiredService<IDownloadService>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
         var subscriptions = (await unitOfWork.SubscriptionRepository
@@ -70,39 +73,42 @@ public class SubscriptionScheduler(
 
         logger.LogTrace("Searching for recent updated for {Providers} providers", providers.Count);
 
-        var releases = await FindReleases(scope, providers);
+        var releases = await FindReleases(scope, providers, cancellationToken);
         if (releases.Count == 0)
         {
             logger.LogDebug("No releases found across {Providers} providers", providers.Count);
             return;
         }
 
-        var oldestRelease = releases.Min(r => r.ReleaseDate);
+        var newReleases = await FilterProcessedReleases(unitOfWork, releases, cancellationToken);
 
-        var processedReleases = await unitOfWork.ContentReleaseRepository
-            .GetReleasesSince(oldestRelease, cancellationToken);
+        var subsResult = await ProcessSubscriptions(downloadService, newReleases, subscriptions, cancellationToken);
+        unitOfWork.ContentReleaseRepository.AddRange(subsResult.Releases);
 
-        var processedReleaseIds = processedReleases
-            .Select(x => x.ContentId)
-            .WhereNotNull()
-            .Distinct()
-            .ToHashSet();
-
-        var newReleases = releases
-            .Where(r => !string.IsNullOrEmpty(r.ContentId) && !processedReleaseIds.Contains(r.ContentId))
-            .ToList();
-
-        var startedSubs = await ProcessSubscriptions(scope, newReleases, subscriptions);
+        await unitOfWork.CommitAsync();
 
         logger.LogInformation(
-            "Found {NewReports}/{TotalReports} reports, started {StartedDownloads} downloads",
+            "Found {TotalReleases} releases, {NewReleases} have not been processed. Started {StartedDownloads} downloads, {FailedDownloads} downloads failed",
             newReleases.Count,
             releases.Count,
-            startedSubs
+            subsResult.StartedDownloads,
+            subsResult.FailedDownloads
         );
     }
 
-    private async Task<List<ContentRelease>> FindReleases(IServiceScope scope, List<Provider> providers)
+    public static async Task<List<ContentRelease>> FilterProcessedReleases(IUnitOfWork unitOfWork,
+        List<ContentRelease> releases, CancellationToken cancellationToken)
+    {
+        var releaseIds = releases.Select(r => r.ReleaseId).ToList();
+
+        var newIds = await unitOfWork.ContentReleaseRepository
+            .FilterReleases(releaseIds, cancellationToken);
+
+        return releases.Where(r => newIds.Contains(r.ReleaseId)).ToList();
+    }
+
+    public async Task<List<ContentRelease>> FindReleases(
+        IServiceScope scope, List<Provider> providers, CancellationToken cancellationToken)
     {
         List<ContentRelease> releases = [];
 
@@ -116,7 +122,7 @@ public class SubscriptionScheduler(
                 continue;
             }
 
-            var recentlyUpdated = await repository.GetRecentlyUpdated(CancellationToken.None);
+            var recentlyUpdated = await repository.GetRecentlyUpdated(cancellationToken);
 
             releases.AddRange(recentlyUpdated);
         }
@@ -124,11 +130,10 @@ public class SubscriptionScheduler(
         return releases;
     }
 
-    private static async Task<int> ProcessSubscriptions(
-        IServiceScope scope, List<ContentRelease> releases, List<Subscription> subscriptions)
+    public async Task<ProcessResult> ProcessSubscriptions(
+        IDownloadService downloadService, List<ContentRelease> releases,
+        List<Subscription> subscriptions, CancellationToken cancellationToken)
     {
-        var downloadService = scope.ServiceProvider.GetRequiredService<IDownloadService>();
-
         var contentIds = releases
             .Select(x => x.ContentId)
             .WhereNotNull()
@@ -138,14 +143,36 @@ public class SubscriptionScheduler(
         var toStartSubs = subscriptions
             .Where(sub => contentIds.Contains(sub.ContentId))
             .DistinctBy(sub => sub.Id);
+        var actedOnIds = new HashSet<string?>();
 
-        var totalProcessed = 0;
+        var processedSubs = 0;
+        var failedSubs = 0;
+
         foreach (var sub in toStartSubs)
         {
-            await downloadService.StartDownload(sub.AsDownloadRequestDto());
-            totalProcessed++;
+            if (cancellationToken.IsCancellationRequested)
+                break;
+
+            try
+            {
+                await downloadService.StartDownload(sub.AsDownloadRequestDto());
+
+                actedOnIds.Add(sub.ContentId);
+                processedSubs++;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error downloading content {ContentId}", sub.ContentId);
+                failedSubs++;
+            }
         }
 
-        return totalProcessed;
+        // This will include all releases, while only one per content is used.
+        // This is correct as we don't want to start a new download for these. They'll have been downloaded already
+        return new ProcessResult(
+            releases.Where(r => actedOnIds.Contains(r.ContentId)).ToList(),
+            processedSubs,
+            failedSubs
+            );
     }
 }

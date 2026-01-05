@@ -16,11 +16,21 @@ public class ContentReleaseRepository(MnemaDataContext ctx, IMapper mapper): ICo
     {
         return ctx.ProcessedContentReleases
             .Where(r => r.ReleaseDate >= since)
-            .ToListAsync(cancellationToken: cancellationToken);
+            .ToListAsync(cancellationToken);
     }
 
-    public void Add(ContentRelease release)
+    public async Task<HashSet<string>> FilterReleases(List<string> releaseIds, CancellationToken cancellationToken = default)
     {
-        ctx.ProcessedContentReleases.Add(release).State = EntityState.Added;
+        var idsOnDatabase = await ctx.ProcessedContentReleases
+            .Where(r => releaseIds.Contains(r.ReleaseId))
+            .Select(r => r.ReleaseId)
+            .ToListAsync(cancellationToken);
+
+        return releaseIds.Except(idsOnDatabase).ToHashSet();
+    }
+
+    public void AddRange(ICollection<ContentRelease> releases)
+    {
+        ctx.ProcessedContentReleases.AddRange(releases);
     }
 }

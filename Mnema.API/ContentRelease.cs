@@ -9,6 +9,13 @@ namespace Mnema.API;
 public interface IContentReleaseRepository
 {
     Task<List<ContentRelease>> GetReleasesSince(DateTime since, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Returns the ids that are not already present in the database
+    /// </summary>
+    /// <param name="releaseIds"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<HashSet<string>> FilterReleases(List<string> releaseIds, CancellationToken cancellationToken = default);
 
-    void Add(ContentRelease release);
+    void AddRange(ICollection<ContentRelease> release);
 }
