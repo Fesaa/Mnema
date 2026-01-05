@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 
 namespace Mnema.API.Content;
@@ -46,7 +47,7 @@ public interface IRepository
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IList<string>> GetRecentlyUpdated(CancellationToken cancellationToken);
+    Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken);
 
     /// <summary>
     ///     Get <see cref="DownloadMetadata" /> for the provider

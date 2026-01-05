@@ -22,6 +22,7 @@ public sealed class MnemaDataContext(DbContextOptions options) : DbContext(optio
     public DbSet<ServerSetting> ServerSettings { get; set; }
     public DbSet<ExternalConnection> ExternalConnections { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+    public DbSet<ContentRelease> ProcessedContentReleases { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

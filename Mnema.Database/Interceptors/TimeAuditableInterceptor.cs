@@ -20,7 +20,15 @@ public class TimeAuditableInterceptor : SaveChangesInterceptor
 
         foreach (var entry in entries)
         {
-            if (entry.State == EntityState.Added) entry.Entity.CreatedAtUtc = DateTime.UtcNow;
+            if (entry.State == EntityState.Added)
+            {
+                entry.Entity.CreatedAtUtc = DateTime.UtcNow;
+            }
+
+            if (entry.Entity.CreatedAtUtc == default)
+            {
+                entry.Entity.CreatedAtUtc = DateTime.UtcNow;
+            }
 
             entry.Entity.LastModifiedAtUtc = DateTime.UtcNow;
         }

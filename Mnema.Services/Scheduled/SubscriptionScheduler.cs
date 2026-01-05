@@ -99,8 +99,8 @@ public class SubscriptionScheduler(
             totalUpdated += recentlyUpdated.Count;
 
             var matching = recentlyUpdated
-                .Where(id => subsById.TryGetValue(id, out _))
-                .Select(id => subsById[id])
+                .Where(release => subsById.TryGetValue(release.ContentId ?? string.Empty, out _))
+                .Select(release => subsById[release.ContentId ?? string.Empty])
                 .ToList();
 
             if (matching.Count == 0)

@@ -88,7 +88,7 @@ public static class StringExtensions
         {
             return DateTime.TryParseExact(s.Trim(), format, CultureInfo.InvariantCulture, DateTimeStyles.None,
                 out var result)
-                ? result
+                ? result.ToUniversalTime()
                 : null;
         }
     }

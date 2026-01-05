@@ -27,7 +27,7 @@ public class ContentController(
     }
 
     [HttpGet("recently-updated")]
-    public async Task<ActionResult<IList<string>>> GetRecentlyUpdated([FromQuery] Provider provider)
+    public async Task<ActionResult<IList<ContentRelease>>> GetRecentlyUpdated([FromQuery] Provider provider)
     {
         var repository = serviceProvider.GetKeyedService<IRepository>(provider);
         if (repository == null)

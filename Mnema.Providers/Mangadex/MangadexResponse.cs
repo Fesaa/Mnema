@@ -132,7 +132,7 @@ internal sealed record ChapterAttributes
     public string? Chapter { get; set; } = string.Empty;
     public string TranslatedLanguage { get; set; } = string.Empty;
     public string ExternalUrl { get; set; } = string.Empty;
-    public DateTime PublishedAt { get; set; }
+    public DateTime PublishAt { get; set; }
     public DateTime ReadableAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
