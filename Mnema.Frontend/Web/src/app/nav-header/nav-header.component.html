@@ -69,7 +69,7 @@
         <button class="close-btn" (click)="toggleMobileGrid()">✕</button>
       </div>
       <div class="overlay-content">
-        <app-button-grid [groups]="buttonGroupService.dashboardGroups()" [mobileColumns]="2" (click)="toggleMobileGrid()" />
+        <app-button-grid [groups]="mobileButtonGroups()" [mobileColumns]="2" (click)="toggleMobileGrid()" />
       </div>
     </div>
   }

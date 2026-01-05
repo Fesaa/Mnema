@@ -97,6 +97,22 @@ export class NavHeaderComponent implements OnInit {
   isMobile = computed(() => this.showNav() && this.utilityService.breakPoint() <= Breakpoint.Mobile);
   isDesktop = computed(() => this.showNav() && this.utilityService.breakPoint() > Breakpoint.Mobile);
 
+  mobileButtonGroups = computed<ButtonGroup[]>(() => [
+    {
+      title: '',
+      icon: '',
+      buttons: [
+        {
+          title: translate('nav-bar.home'),
+          icon: 'fa fa-home',
+          navUrl: 'home',
+          standAlone: true,
+        }
+      ]
+    },
+    ...this.buttonGroupService.dashboardGroups(),
+  ])
+
   navPageButtons = computed<Button[]>(() => {
     return [
       {
