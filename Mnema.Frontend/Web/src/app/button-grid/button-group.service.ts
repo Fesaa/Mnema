@@ -3,12 +3,13 @@ import {AccountService} from "../_services/account.service";
 import {NavigationExtras, Router, UrlTree} from "@angular/router";
 import {Role} from "../_models/user";
 import {PageService} from "../_services/page.service";
-import {translate} from "@jsverse/transloco";
+import {translate, TranslocoService} from "@jsverse/transloco";
 import {Breakpoint, UtilityService} from "../_services/utility.service";
 import {ModalService} from "../_services/modal.service";
 import {ListSelectModalComponent} from "../shared/_component/list-select-modal/list-select-modal.component";
-import {tap} from "rxjs";
+import {filter, tap} from "rxjs";
 import {NotificationService} from "../_services/notification.service";
+import {toSignal} from "@angular/core/rxjs-interop";
 
 export enum SettingsID {
   Server = "server",
@@ -43,92 +44,113 @@ export interface ButtonGroup {
 })
 export class ButtonGroupService {
 
+  private readonly transloco = inject(TranslocoService);
   private readonly notificationService = inject(NotificationService);
   private readonly accountService = inject(AccountService);
   private readonly utilityService = inject(UtilityService);
   private readonly modalService = inject(ModalService);
   private readonly pageService = inject(PageService);
-  private readonly router = inject(Router)
+  private readonly router = inject(Router);
 
-  pageGroup = computed<ButtonGroup>(() => ({
-    title: translate('button-groups.pages.title'),
-    icon: 'fa fa-thumbtack',
-    buttons: this.pageService.pages().map<Button>(page => ({
-      title: page.title,
-      icon: `fa ${page.icon}`,
-      navUrl: 'page',
-      navExtras: { queryParams: { id: page.id } }
-    })),
-  }));
+  translationReloaded = toSignal(this.transloco.events$.pipe(
+    filter(event => event.type === 'translationLoadSuccess')
+  ))
 
-  actionGroup = computed<ButtonGroup>(() => ({
-    title: translate('button-groups.actions.title'),
-    icon: '',
-    buttons: [
-      {
-        title: translate('button-groups.actions.subscriptions'),
-        icon: 'fa fa-bell',
-        requiredRoles: [Role.Subscriptions],
-        navUrl: 'subscriptions',
-        standAlone: true,
-      },
-      {
-        title: translate('button-groups.actions.notifications'),
-        icon: 'fa fa-inbox',
-        navUrl: 'notifications',
-        standAlone: true,
-        badge: this.notificationService.notificationsCount() > 0
-          ? `${this.notificationService.notificationsCount()}` : undefined,
-      },
-      {
-        title: translate('button-groups.actions.audit-log'),
-        icon: 'fa fa-user-secret',
-        navUrl: 'audit-log',
-        standAlone: true,
-      },
-      {
-        title: translate('button-groups.settings.logout'),
-        icon: 'fa fa-user-minus',
-        onClick: () => this.accountService.logout(),
-        standAlone: true,
-      },
-    ],
-  }));
+  pageGroup = computed<ButtonGroup>(() => {
+    this.translationReloaded();
 
-  settingsGroup = computed<ButtonGroup>(() => ({
-    title: translate('button-groups.settings.title'),
-    icon: 'fa fa-cogs',
-    buttons: [
-      {
-        title: translate('button-groups.settings.preferences'),
-        icon: 'fa fa-heart',
-        navUrl: 'settings',
-        navExtras: { fragment: SettingsID.Preferences },
-        id: SettingsID.Preferences
-      },
-      {
-        title: translate('button-groups.settings.pages'),
-        icon: 'fa fa-thumbtack',
-        navUrl: 'settings',
-        navExtras: { fragment: SettingsID.Pages },
-        id: SettingsID.Pages
-      },
-      {
-        title: translate('button-groups.settings.server'),
-        icon: 'fa fa-server',
-        navUrl: 'settings',
-        navExtras: { fragment: SettingsID.Server },
-        id: SettingsID.Server
-      },
-      {
-        title: translate('button-groups.settings.external-connections'),
-        icon: 'fa fa-user-secret',
-        navUrl: 'settings',
-        navExtras: { fragment: SettingsID.ExternalConnections },
-        id: SettingsID.ExternalConnections
-      },
-    ],
-  }));
+    return {
+      title: translate('button-groups.pages.title'),
+      icon: 'fa fa-thumbtack',
+      buttons: this.pageService.pages().map<Button>(page => ({
+        title: page.title,
+        icon: `fa ${page.icon}`,
+        navUrl: 'page',
+        navExtras: { queryParams: { id: page.id } }
+      })),
+    };
+  });
+
+  actionGroup = computed<ButtonGroup>(() => {
+    this.translationReloaded();
+
+    return {
+      title: translate('button-groups.actions.title'),
+      icon: 'fa fa-exclamation',
+      buttons: [
+        {
+          title: translate('button-groups.actions.subscriptions'),
+          icon: 'fa fa-bell',
+          requiredRoles: [Role.Subscriptions],
+          navUrl: 'subscriptions',
+          standAlone: true,
+        },
+        {
+          title: translate('button-groups.actions.downloads'),
+          icon: 'fa fa-download',
+          requiredRoles: [Role.Subscriptions],
+          navUrl: 'active-downloads',
+          standAlone: true,
+        },
+        {
+          title: translate('button-groups.actions.notifications'),
+          icon: 'fa fa-inbox',
+          navUrl: 'notifications',
+          badge: this.notificationService.notificationsCount() > 0
+            ? `${this.notificationService.notificationsCount()}` : undefined,
+        },
+        {
+          title: translate('button-groups.actions.audit-log'),
+          icon: 'fa fa-user-secret',
+          navUrl: 'audit-log',
+        },
+        {
+          title: translate('button-groups.settings.logout'),
+          icon: 'fa fa-user-minus',
+          onClick: () => this.accountService.logout(),
+        },
+      ],
+    };
+  });
+
+  settingsGroup = computed<ButtonGroup>(() => {
+    this.translationReloaded();
+
+    return {
+      title: translate('button-groups.settings.title'),
+      icon: 'fa fa-cogs',
+      buttons: [
+        {
+          title: translate('button-groups.settings.preferences'),
+          icon: 'fa fa-heart',
+          navUrl: 'settings',
+          navExtras: { fragment: SettingsID.Preferences },
+          id: SettingsID.Preferences
+        },
+        {
+          title: translate('button-groups.settings.pages'),
+          icon: 'fa fa-thumbtack',
+          navUrl: 'settings',
+          navExtras: { fragment: SettingsID.Pages },
+          id: SettingsID.Pages
+        },
+        {
+          title: translate('button-groups.settings.server'),
+          icon: 'fa fa-server',
+          navUrl: 'settings',
+          navExtras: { fragment: SettingsID.Server },
+          id: SettingsID.Server
+        },
+        {
+          title: translate('button-groups.settings.external-connections'),
+          icon: 'fa fa-user-secret',
+          navUrl: 'settings',
+          navExtras: { fragment: SettingsID.ExternalConnections },
+          id: SettingsID.ExternalConnections
+        },
+      ],
+    };
+  });
 
   dashboardGroups = computed<ButtonGroup[]>(() => [
     this.pageGroup(),
