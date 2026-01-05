@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Common.Extensions;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services.Scheduled;
@@ -32,32 +33,35 @@ public class SubscriptionScheduler(
     {
         const string cron = "*/15 * * * *";
 
-        logger.LogDebug("Registering subscription watcher task with cron {cron}", cron);
         if (environment.IsDevelopment())
+        {
+            logger.LogDebug("Removing subscription watcher in development as recurring job");
             recurringJobManager.RemoveIfExists(WatcherJobId);
+        }
         else
+        {
+            logger.LogDebug("Registering subscription watcher task with cron {cron}", cron);
             recurringJobManager.AddOrUpdate<SubscriptionScheduler>(WatcherJobId,
-                j => j.RunWatcher(),
+                j => j.RunWatcher(CancellationToken.None),
                 cron, RecurringJobOptions);
+        }
+
         return Task.CompletedTask;
     }
 
-    public async Task RunWatcher()
+    public async Task RunWatcher(CancellationToken cancellationToken)
     {
         using var scope = scopeFactory.CreateScope();
 
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        var downloadService = scope.ServiceProvider.GetRequiredService<IDownloadService>();
 
-        var subscriptions = (await unitOfWork.SubscriptionRepository.GetAllSubscriptions())
+        var subscriptions = (await unitOfWork.SubscriptionRepository
+                .GetAllSubscriptions(cancellationToken))
             .Where(sub => sub.Status == SubscriptionStatus.Enabled)
             .ToList();
+
         if (subscriptions.Count == 0)
             return;
-
-        var subsById = subscriptions
-            .GroupBy(s => s.ContentId)
-            .ToDictionary(g => g.Key, g => g.First());
 
         var providers = subscriptions
             .Select(s => s.Provider)
@@ -66,24 +70,41 @@ public class SubscriptionScheduler(
 
         logger.LogTrace("Searching for recent updated for {Providers} providers", providers.Count);
 
-        var (total, subscriptionsToStart) = await ProcessRecentlyUpdated(scope, providers, subsById);
+        var releases = await FindReleases(scope, providers);
+        if (releases.Count == 0)
+        {
+            logger.LogDebug("No releases found across {Providers} providers", providers.Count);
+            return;
+        }
+
+        var oldestRelease = releases.Min(r => r.ReleaseDate);
+
+        var processedReleases = await unitOfWork.ContentReleaseRepository
+            .GetReleasesSince(oldestRelease, cancellationToken);
+
+        var processedReleaseIds = processedReleases
+            .Select(x => x.ContentId)
+            .WhereNotNull()
+            .Distinct()
+            .ToHashSet();
+
+        var newReleases = releases
+            .Where(r => !string.IsNullOrEmpty(r.ContentId) && !processedReleaseIds.Contains(r.ContentId))
+            .ToList();
+
+        var startedSubs = await ProcessSubscriptions(scope, newReleases, subscriptions);
 
         logger.LogInformation(
-            "Found {Reports} updated reports, starting download for {ToStart}",
-            total,
-            subscriptionsToStart.Count
+            "Found {NewReports}/{TotalReports} reports, started {StartedDownloads} downloads",
+            newReleases.Count,
+            releases.Count,
+            startedSubs
         );
-
-        foreach (var subscription in subscriptionsToStart)
-            await downloadService.StartDownload(subscription.AsDownloadRequestDto());
     }
 
-    private async Task<(int, List<Subscription>)> ProcessRecentlyUpdated(
-        IServiceScope scope, List<Provider> providers, Dictionary<string, Subscription> subsById
-    )
+    private async Task<List<ContentRelease>> FindReleases(IServiceScope scope, List<Provider> providers)
     {
-        var totalUpdated = 0;
-        var subscriptionsToStart = new List<Subscription>();
+        List<ContentRelease> releases = [];
 
         foreach (var provider in providers)
         {
@@ -96,24 +117,35 @@ public class SubscriptionScheduler(
             }
 
             var recentlyUpdated = await repository.GetRecentlyUpdated(CancellationToken.None);
-            totalUpdated += recentlyUpdated.Count;
 
-            var matching = recentlyUpdated
-                .Where(release => subsById.TryGetValue(release.ContentId ?? string.Empty, out _))
-                .Select(release => subsById[release.ContentId ?? string.Empty])
-                .ToList();
-
-            if (matching.Count == 0)
-                continue;
-
-            logger.LogDebug(
-                "Found {Amount} subscriptions that have updated for provider {Provider}",
-                matching.Count, provider
-            );
-
-            subscriptionsToStart.AddRange(matching);
+            releases.AddRange(recentlyUpdated);
         }
 
-        return (totalUpdated, subscriptionsToStart);
+        return releases;
+    }
+
+    private static async Task<int> ProcessSubscriptions(
+        IServiceScope scope, List<ContentRelease> releases, List<Subscription> subscriptions)
+    {
+        var downloadService = scope.ServiceProvider.GetRequiredService<IDownloadService>();
+
+        var contentIds = releases
+            .Select(x => x.ContentId)
+            .WhereNotNull()
+            .Distinct()
+            .ToHashSet();
+
+        var toStartSubs = subscriptions
+            .Where(sub => contentIds.Contains(sub.ContentId))
+            .DistinctBy(sub => sub.Id);
+
+        var totalProcessed = 0;
+        foreach (var sub in toStartSubs)
+        {
+            await downloadService.StartDownload(sub.AsDownloadRequestDto());
+            totalProcessed++;
+        }
+
+        return totalProcessed;
     }
 }

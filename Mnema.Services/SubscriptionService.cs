@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -19,9 +20,10 @@ internal class SubscriptionService(
     ISettingsService settingsService
 ) : ISubscriptionService
 {
-    public async Task UpdateSubscription(Guid userId, CreateOrUpdateSubscriptionDto dto)
+    public async Task UpdateSubscription(Guid userId, CreateOrUpdateSubscriptionDto dto,
+        CancellationToken cancellationToken = default)
     {
-        var sub = await unitOfWork.SubscriptionRepository.GetSubscription(dto.Id);
+        var sub = await unitOfWork.SubscriptionRepository.GetSubscription(dto.Id, cancellationToken);
         if (sub == null) throw new NotFoundException();
 
         if (sub.UserId != userId) throw new ForbiddenException();
@@ -44,9 +46,10 @@ internal class SubscriptionService(
         await unitOfWork.CommitAsync();
     }
 
-    public async Task CreateSubscription(Guid userId, CreateOrUpdateSubscriptionDto dto)
+    public async Task CreateSubscription(Guid userId, CreateOrUpdateSubscriptionDto dto,
+        CancellationToken cancellationToken = default)
     {
-        var other = await unitOfWork.SubscriptionRepository.GetSubscriptionByContentId(dto.ContentId);
+        var other = await unitOfWork.SubscriptionRepository.GetSubscriptionByContentId(dto.ContentId, cancellationToken);
         if (other != null && other.UserId == userId)
             throw new MnemaException($"You already have a subscription on {dto.ContentId}");
 
