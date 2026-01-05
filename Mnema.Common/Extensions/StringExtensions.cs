@@ -74,7 +74,7 @@ public static class StringExtensions
 
             if (!s.EndsWith(other)) return s;
 
-            return s[..(s.Length - other.Length)];
+            return s[..^other.Length];
         }
 
         public int AsInt()

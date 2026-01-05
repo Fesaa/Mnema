@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Mnema.Common;
 using Mnema.Database.Extensions;
-using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.External;
@@ -12,8 +13,15 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Database;
 
-public sealed class MnemaDataContext(DbContextOptions options) : DbContext(options), IDataProtectionKeyContext
+public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
 {
+
+    public MnemaDataContext(DbContextOptions options) : base(options)
+    {
+        ChangeTracker.Tracked += OnEntityTracked;
+        ChangeTracker.StateChanged += OnEntityStateChanged;
+    }
+
     public DbSet<MnemaUser> Users { get; set; }
     public DbSet<UserPreferences> UserPreferences { get; set; }
     public DbSet<Page> Pages { get; set; }
@@ -60,5 +68,29 @@ public sealed class MnemaDataContext(DbContextOptions options) : DbContext(optio
         builder.Entity<ExternalConnection>()
             .PrimitiveCollection(c => c.FollowedEvents)
             .HasDefaultValue(new List<ExternalConnectionEvent>());
+    }
+
+    private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)
+    {
+        if (e.FromQuery || e.Entry.State != EntityState.Added || e.Entry.Entity is not IEntityDate entity) return;
+
+        entity.LastModifiedUtc = DateTime.UtcNow;
+
+        if (entity.CreatedUtc == DateTime.MinValue)
+        {
+            entity.CreatedUtc = DateTime.UtcNow;
+        }
+    }
+
+    private static void OnEntityStateChanged(object? sender, EntityStateChangedEventArgs e)
+    {
+        if (e.NewState != EntityState.Modified || e.Entry.Entity is not IEntityDate entity) return;
+
+        entity.LastModifiedUtc = DateTime.UtcNow;
+
+        if (entity.CreatedUtc == DateTime.MinValue)
+        {
+            entity.CreatedUtc = DateTime.UtcNow;
+        }
     }
 }
