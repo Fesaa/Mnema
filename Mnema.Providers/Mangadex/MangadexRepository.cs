@@ -209,7 +209,7 @@ internal class MangadexRepository : IRepository
                     ReleaseName = chapter.Attributes.Title,
                     ContentId = relationShip.Id,
                     ContentName = mangaAttr?.LangTitle("en") ?? string.Empty,
-                    ReleaseDate = chapter.Attributes.PublishAt,
+                    ReleaseDate = chapter.Attributes.PublishAt.ToUniversalTime(),
                 };
             })
             .WhereNotNull()

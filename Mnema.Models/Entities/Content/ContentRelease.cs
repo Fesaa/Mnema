@@ -33,6 +33,7 @@ public class ContentRelease: IEntityDate
     /// <summary>
     /// Time this release was published
     /// </summary>
+    /// <remarks>This must be UTC</remarks>
     public DateTime ReleaseDate { get; set; }
 
     public DateTime CreatedUtc { get; set; }
