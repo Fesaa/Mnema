@@ -1,4 +1,5 @@
 using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace Mnema.Models.Entities.User;
 
@@ -10,6 +11,7 @@ public enum NotificationColour
     Error = 3
 }
 
+[Index(nameof(CreatedUtc)), Index(nameof(UserId))]
 public class Notification : IEntityDate
 {
     public Guid Id { get; set; }

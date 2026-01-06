@@ -1,7 +1,9 @@
 using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace Mnema.Models.Entities.Content;
 
+[Index(nameof(ReleaseId), IsUnique = true)]
 public class ContentRelease: IEntityDate
 {
     /// <summary>

@@ -315,8 +315,11 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
     {
         using var scope = _scopeFactory.CreateScope();
         unitOfWork ??= scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        var messageService =  scope.ServiceProvider.GetRequiredService<IMessageService>();
 
         unitOfWork.NotificationRepository.AddNotification(notification);
         await unitOfWork.CommitAsync();
+
+        await messageService.NotificationAdded(notification.UserId, 1);
     }
 }
