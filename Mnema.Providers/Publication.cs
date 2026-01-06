@@ -236,6 +236,8 @@ internal partial class Publication(
         _unitOfWork.NotificationRepository.AddNotification(notification);
         await _unitOfWork.CommitAsync();
 
+        await _messageService.NotificationAdded(Request.UserId, 1);
+
         var dto = _mapper.Map<NotificationDto>(notification);
         await _messageService.Notify(Request.UserId, dto);
     }
