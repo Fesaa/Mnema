@@ -152,10 +152,6 @@ internal class DiscordExternalConnectionService(
             [
                 new DiscordEmbedField
                 {
-
-                },
-                new DiscordEmbedField
-                {
                     Name = "Provider",
                     Value = info.Provider.ToString(),
                     Inline = true
