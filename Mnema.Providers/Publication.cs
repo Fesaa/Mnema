@@ -248,6 +248,9 @@ internal partial class Publication(
 
     private OnDiskContent? GetContentByVolumeAndChapter(string volume, string chapter)
     {
+        // OneShot can't be matched like this, needs to match on FileName
+        if (string.IsNullOrEmpty(chapter)) return null;
+
         return ExistingContent.FirstOrDefault(c =>
         {
             if (c.Volume == volume && c.Chapter == chapter) return true;

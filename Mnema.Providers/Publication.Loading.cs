@@ -51,7 +51,8 @@ internal partial class Publication
 
         if (Request.SubscriptionId != null)
         {
-            _subscription = await _unitOfWork.SubscriptionRepository.GetSubscription(Request.SubscriptionId.Value);
+            _subscription = await _unitOfWork.SubscriptionRepository
+                .GetSubscription(Request.SubscriptionId.Value, cancellationToken);
             if (_subscription == null) throw new MnemaException("Invalid subscription linked to download");
 
             if (Preferences.PinSubscriptionTitles &&
@@ -90,7 +91,10 @@ internal partial class Publication
         ExistingContent =
             _scannerService.ScanDirectoryAsync(_extensions.ParseOnDiskFile, DownloadDir, cancellationToken);
 
-        _queuedChapters = Series!.Chapters.Where(ShouldDownloadChapter).Select(c => c.Id).ToList();
+        _queuedChapters = Series!.Chapters
+            .Where(ShouldDownloadChapter)
+            .Select(c => c.Id)
+            .ToList();
 
         if (sw.Elapsed.Seconds > 5)
             _logger.LogWarning("[{Title}/{Id}] Checking for existing content took a long time: {Elapsed}s", Title, Id, sw.Elapsed.Seconds);
@@ -98,6 +102,9 @@ internal partial class Publication
 
     private bool ShouldDownloadChapter(Chapter chapter)
     {
+        var downloadOneShots = Request.GetBool(RequestConstants.DownloadOneShotKey);
+        if (!downloadOneShots && string.IsNullOrEmpty(chapter.ChapterMarker)) return false;
+
         // Chapter is present as a download
         if (GetContentByName(VolumeDir(chapter)) != null) return false;
 

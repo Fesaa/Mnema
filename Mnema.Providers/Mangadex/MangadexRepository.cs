@@ -357,13 +357,11 @@ internal class MangadexRepository : IRepository
     {
         var scanlationGroup = request.GetStringOrDefault(RequestConstants.ScanlationGroupKey, string.Empty);
         var allowNonMatching = request.GetBool(RequestConstants.AllowNonMatchingScanlationGroupKey, true);
-        var downloadOneShots = request.GetBool(RequestConstants.DownloadOneShotKey);
 
         return chapters
             .GroupBy(c => string.IsNullOrEmpty(c.Attributes.Chapter)
                 ? string.Empty
                 : $"{c.Attributes.Chapter} - {c.Attributes.Volume}")
-            .WhereIf(!downloadOneShots, g => !string.IsNullOrEmpty(g.Key))
             .SelectMany(g =>
             {
                 if (string.IsNullOrEmpty(g.Key)) return g.ToList();
