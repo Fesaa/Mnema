@@ -1,10 +1,12 @@
 using System;
+using Microsoft.EntityFrameworkCore;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Models.Entities.Content;
 
+[Index(nameof(UserId))]
 public class Subscription: IEntityDate
 {
     public Guid Id { get; set; }
