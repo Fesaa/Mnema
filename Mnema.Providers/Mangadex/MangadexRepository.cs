@@ -186,6 +186,7 @@ internal class MangadexRepository : IRepository
             .SetQueryParam("limit", 32)
             .SetQueryParam("offset", 0)
             .SetQueryParam("includes[]", "manga")
+            .SetQueryParam("translatedLanguage[]", "en")
             .AddAllContentRatings()
             .SetQueryParam("order[readableAt]", "desc");
 

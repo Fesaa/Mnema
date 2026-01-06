@@ -107,8 +107,14 @@ internal class DiscordExternalConnectionService(
                 new DiscordEmbedField
                 {
                     Name = "Size",
-                    Value = $"{info.Size} / {info.TotalSize}",
+                    Value = info.Size,
                     Inline = true
+                },
+                new DiscordEmbedField
+                {
+                  Name  = "Total size",
+                  Value = info.TotalSize,
+                  Inline = true
                 },
                 new DiscordEmbedField
                 {
@@ -146,6 +152,10 @@ internal class DiscordExternalConnectionService(
             [
                 new DiscordEmbedField
                 {
+
+                },
+                new DiscordEmbedField
+                {
                     Name = "Provider",
                     Value = info.Provider.ToString(),
                     Inline = true
@@ -153,7 +163,13 @@ internal class DiscordExternalConnectionService(
                 new DiscordEmbedField
                 {
                     Name = "Size",
-                    Value = $"{info.Size} / {info.TotalSize}",
+                    Value = info.Size,
+                    Inline = true
+                },
+                new DiscordEmbedField
+                {
+                    Name  = "Total size",
+                    Value = info.TotalSize,
                     Inline = true
                 },
                 new DiscordEmbedField
