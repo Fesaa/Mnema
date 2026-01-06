@@ -16,9 +16,7 @@ export class NotificationService {
   notificationsCount = signal(0);
 
   constructor() {
-    this.amount().subscribe(amount => {
-      this.notificationsCount.set(amount);
-    });
+    this.reload();
 
     this.signalR.events$.subscribe(event => {
       if (event.type === EventType.NotificationAdd) {
@@ -29,6 +27,12 @@ export class NotificationService {
         const amount: number = event.data.amount;
         this.notificationsCount.update(n => Math.max(0, n - amount));
       }
+    });
+  }
+
+  reload() {
+    this.amount().subscribe(amount => {
+      this.notificationsCount.set(amount);
     });
   }
 

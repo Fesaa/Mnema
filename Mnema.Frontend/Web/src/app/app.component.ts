@@ -9,6 +9,8 @@ import {Breakpoint, UtilityService} from "./_services/utility.service";
 import {translate, TranslocoService} from "@jsverse/transloco";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {filter, tap} from "rxjs";
+import {ActiveDownloadsService} from "./dashboard/active-downloads/active-downloads.service";
+import {NotificationService} from "./_services/notification.service";
 
 @Component({
   selector: 'app-root',
@@ -24,6 +26,8 @@ export class AppComponent implements OnInit {
   protected readonly utilityService = inject(UtilityService);
   private readonly translocoService = inject(TranslocoService);
   private readonly destroyRef$ = inject(DestroyRef);
+  private readonly activeDownloadService = inject(ActiveDownloadsService);
+  private readonly notificationService = inject(NotificationService);
 
   ngOnInit() {
     this.translocoService.events$.pipe(
@@ -61,6 +65,15 @@ export class AppComponent implements OnInit {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
     return tempDiv.textContent || '';
+  }
+
+  @HostListener('window:visibilitychange')
+  onUserReturn() {
+    // Get some SignalR tracked things back in sync
+    if (document.visibilityState === 'visible') {
+      this.activeDownloadService.reload();
+      this.notificationService.reload();
+    }
   }
 
 

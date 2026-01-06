@@ -52,7 +52,7 @@
                     aria-valuemax="100"
                   ></div>
                 </div>
-                <div class="card-progress-info">
+                <div class="card-progress-info d-flex justify-content-between">
                   <span class="card-progress-text">{{ info.speed | speed:info.speedType }} {{ info.speedType | speedType }}</span>
                   @if (info.estimated) {
                     <span class="card-progress-text">{{ info.estimated | time }}</span>

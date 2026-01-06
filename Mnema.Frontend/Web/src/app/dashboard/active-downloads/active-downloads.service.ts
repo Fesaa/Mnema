@@ -17,10 +17,7 @@ export class ActiveDownloadsService {
   readonly items = signal<InfoStat[]>([]);
 
   constructor() {
-    this.contentService.infoStats().subscribe(info => {
-      this.loading.set(false);
-      this.items.set(info || []);
-    })
+    this.reload();
 
     this.signalR.events$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
       switch (event.type) {
@@ -43,7 +40,15 @@ export class ActiveDownloadsService {
           this.updateInfo(event.data as InfoStat);
           break;
       }
-    })
+    });
+  }
+
+  reload() {
+    this.loading.set(true);
+    this.contentService.infoStats().subscribe(info => {
+      this.loading.set(false);
+      this.items.set(info || []);
+    });
   }
 
   private updateInfo(info: InfoStat) {
