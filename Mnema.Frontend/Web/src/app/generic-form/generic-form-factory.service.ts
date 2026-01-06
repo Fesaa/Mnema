@@ -71,13 +71,11 @@ export class GenericFormFactoryService {
     for (let control of controls) {
       const currentValues = metadata[control.key];
       const initialValue = currentValues && currentValues.length > 0 ? currentValues : control.defaultOption;
-      const initialValues = Array.isArray(initialValue) ? initialValue : [initialValue];
 
-      const controlValue = control.type === FormType.MultiSelect
-        ? initialValues.map(v => this.transFormValue(v, control.valueType))
-        : this.transFormValue(initialValues[0] ?? '', control.valueType);
-
-      const formControl = fb.control(controlValue, this.validators(control.validators));
+      const formControl = fb.control(
+        this.transFormValueForFormType(initialValue, control),
+        this.validators(control.validators),
+      );
 
       group.addControl(control.key, formControl);
     }
@@ -135,6 +133,10 @@ export class GenericFormFactoryService {
 
     const value = (obj && obj.hasOwnProperty(fieldName)) ? obj[fieldName] : control.defaultOption;
 
+    return this.transFormValueForFormType(value, control);
+  }
+
+  private transFormValueForFormType(value: any, control: FormControlDefinition) {
     switch (control.type) {
       case FormType.Switch:
         return this.transFormValue(value, ValueType.Boolean);
