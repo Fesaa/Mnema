@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.IO;
 using System.Text.RegularExpressions;
 
 namespace Mnema.Common.Extensions;
@@ -51,7 +52,7 @@ public static class StringExtensions
         {
             if (string.IsNullOrEmpty(s)) return string.Empty;
 
-            if (s.Length < n) return s;
+            if (s.Length < n || n < 3) return s;
 
             return s[(n - 3)..] + "...";
         }
@@ -90,6 +91,11 @@ public static class StringExtensions
                 out var result)
                 ? result.ToUniversalTime()
                 : null;
+        }
+
+        public string GetFileType()
+        {
+            return Path.GetExtension(new Uri(s).AbsolutePath);
         }
     }
 }

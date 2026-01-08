@@ -45,7 +45,7 @@ internal partial class Publication
         {
             _logger.LogError(e, "[{Title}/{Id}] An error occured while loading series info", Title, Id);
             State = ContentState.Cancel;
-            await Cancel();
+            await Cancel(e);
             return;
         }
 

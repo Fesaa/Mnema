@@ -6,8 +6,10 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Helpers;
+using Mnema.Models.Entities.User;
 using Mnema.Models.External;
 
 namespace Mnema.Providers;
@@ -28,7 +30,7 @@ internal interface IPreDownloadHook
     Task PreDownloadHook(Publication publication, IServiceScope scope, CancellationToken cancellationToken);
 }
 
-internal partial class MangaPublicationExtensions : IPublicationExtensions
+internal partial class MangaPublicationExtensions(IImageService imageService) : IPublicationExtensions
 {
     private static readonly Regex ContentVolumeAndChapterRegex = MyContentVolumeAndChapterRegex();
 
@@ -40,15 +42,16 @@ internal partial class MangaPublicationExtensions : IPublicationExtensions
     {
         if (cancellationToken.IsCancellationRequested) return string.Empty;
 
-        var fileType = Path.GetExtension(new Uri(ioWork.Url).AbsolutePath);
+        var fileType = ioWork.Preferences.ImageFormat.GetFileExtension(ioWork.Url);
 
         var fileCounter = $"{ioWork.Idx}".PadLeft(4, '0');
         var filePath = Path.Join(ioWork.FilePath, $"page {fileCounter}{fileType}");
 
-        await using (ioWork.Stream)
+        var stream = imageService.ConvertFromStream(ioWork.Stream, ioWork.Preferences.ImageFormat);
+        await using (stream)
         {
             await using var file = File.Create(filePath);
-            await ioWork.Stream.CopyToAsync(file, cancellationToken);
+            await stream.CopyToAsync(file, cancellationToken);
         }
 
         return filePath;
