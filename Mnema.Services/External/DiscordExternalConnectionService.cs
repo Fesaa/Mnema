@@ -106,7 +106,7 @@ internal class DiscordExternalConnectionService(
                 },
                 new DiscordEmbedField
                 {
-                    Name = "Size",
+                    Name = "Newly downloaded",
                     Value = info.Size,
                     Inline = true
                 },
@@ -158,7 +158,7 @@ internal class DiscordExternalConnectionService(
                 },
                 new DiscordEmbedField
                 {
-                    Name = "Size",
+                    Name = "Newly downloaded",
                     Value = info.Size,
                     Inline = true
                 },
@@ -201,7 +201,7 @@ internal class DiscordExternalConnectionService(
         var embed = new DiscordEmbed
         {
             Title = "Download Failed",
-            Description = $"**{info.Name}**\n\n{info.Description}".Limit(MaxDescriptionLength),
+            Description = $"**{info.Name}**\n\n{ex.StackTrace}".Limit(MaxDescriptionLength),
             Color = 0xe74c3c, // Red
             Timestamp = DateTime.UtcNow,
             Fields =
@@ -212,18 +212,6 @@ internal class DiscordExternalConnectionService(
                     Value = info.Provider.ToString(),
                     Inline = true
                 },
-                new DiscordEmbedField
-                {
-                    Name = "Progress",
-                    Value = progressText,
-                    Inline = true
-                },
-                new DiscordEmbedField
-                {
-                    Name = "Error",
-                    Value = $"```{ex.Message}```",
-                    Inline = false
-                }
             ],
             Footer = new DiscordEmbedFooter
             {
@@ -279,8 +267,8 @@ internal class DiscordExternalConnectionService(
 
         var message = new DiscordMessage
         {
-            Username = connection.Metadata.GetString(UsernameKey),
-            AvatarUrl = connection.Metadata.GetString(AvatarKey),
+            Username = connection.Metadata.GetStringOrDefault(UsernameKey, null),
+            AvatarUrl = connection.Metadata.GetStringOrDefault(AvatarKey, null),
             Embeds = embeds
         };
 

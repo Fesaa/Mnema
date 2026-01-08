@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Mnema.Common;
@@ -18,7 +19,7 @@ public class MetadataBag : GenericBag<string>
         return string.IsNullOrEmpty(fallback) ? null : fallback;
     }
 
-    public string GetStringOrDefault(string key, string fallback)
+    [return:NotNullIfNotNull(nameof(fallback))] public string? GetStringOrDefault(string key, string? fallback)
     {
         var value = GetString(key);
 

@@ -15,11 +15,12 @@ using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.User;
 using Mnema.Models.Publication;
 
 namespace Mnema.Providers;
 
-internal sealed record IoWork(Stream Stream, string FilePath, string Url, int Idx);
+internal sealed record IoWork(UserPreferences Preferences, Stream Stream, string FilePath, string Url, int Idx);
 
 internal sealed record DownloadWork(int Idx, DownloadUrl Url);
 
@@ -55,7 +56,7 @@ internal partial class Publication
         catch (Exception ex)
         {
             _logger.LogError(ex, "[{Title}/{Id}] An exception occurring download", Title, Id);
-            return Cancel();
+            return Cancel(ex);
         }
     }
 
@@ -145,7 +146,7 @@ internal partial class Publication
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[{Title}/{Id}] An exception occured while handling I/O", Title, Id);
-                await Cancel();
+                await Cancel(ex);
             }
     }
 
@@ -276,7 +277,7 @@ internal partial class Publication
 
                 _speedTracker!.IncrementIntermediate();
 
-                await ctx.Writer.WriteAsync(new IoWork(stream, ChapterPath(ctx.Chapter), url, task.Idx));
+                await ctx.Writer.WriteAsync(new IoWork(Preferences, stream, ChapterPath(ctx.Chapter), url, task.Idx));
             }
             catch (Exception ex)
             {

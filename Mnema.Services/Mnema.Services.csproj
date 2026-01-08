@@ -12,6 +12,8 @@
         <PackageReference Include="Hangfire.Core" Version="1.8.22"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.1"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1"/>
+        <PackageReference Include="NetVips" Version="3.2.0" />
+        <PackageReference Include="NetVips.Native" Version="8.18.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4"/>
         <PackageReference Include="System.IO.Abstractions" Version="22.1.0"/>
     </ItemGroup>

@@ -178,11 +178,19 @@ internal partial class Publication(
 
     public string DownloadDir => Series != null ? Path.Join(Request.BaseDir, Title) : Request.BaseDir;
 
-    public async Task Cancel()
+    public Task Cancel() => Cancel(null);
+
+    private async Task Cancel(Exception? reason = null)
     {
         _logger.LogTrace("[{Title}/{Id}] Stopping download", Title, Id);
 
         await _tokenSource.CancelAsync();
+
+        if (reason != null)
+        {
+            _externalConnectionService.CommunicateDownloadFailure(DownloadInfo, reason);
+
+        }
 
         if (await _publicationManager.GetPublicationById(Id) == null) return;
 
