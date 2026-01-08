@@ -106,7 +106,7 @@ internal class DiscordExternalConnectionService(
                 },
                 new DiscordEmbedField
                 {
-                    Name = "Size",
+                    Name = "Newly downloaded",
                     Value = info.Size,
                     Inline = true
                 },
@@ -158,7 +158,7 @@ internal class DiscordExternalConnectionService(
                 },
                 new DiscordEmbedField
                 {
-                    Name = "Size",
+                    Name = "Newly downloaded",
                     Value = info.Size,
                     Inline = true
                 },
