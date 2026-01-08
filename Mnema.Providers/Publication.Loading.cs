@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
+using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Publication;
 
@@ -133,7 +134,7 @@ internal partial class Publication
         if (volumeChanged)
         {
             _logger.LogDebug("[{Title}/{Id}] Redownloading chapter {ChapterMarker} as volume changed from {Old} to {New}",
-                Title, Id, chapter.ChapterMarker, onDiskVolume, chapter.ChapterMarker);
+                Title, Id, chapter.ChapterMarker, onDiskVolume.I(), chapter.VolumeMarker);
             ToRemovePaths.Add(content.Path);
         }
 

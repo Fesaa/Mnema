@@ -10,6 +10,8 @@ public static class StringExtensions
     private const RegexOptions MatchOptions =
         RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant;
 
+    private const string EmptyString = "<empty string>";
+
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(500);
 
     private static readonly Regex NormalizeRegex = new(@"[^\p{L}0-9\+!＊！＋]",
@@ -55,6 +57,11 @@ public static class StringExtensions
             if (s.Length < n || n < 3) return s;
 
             return s[(n - 3)..] + "...";
+        }
+
+        public string I()
+        {
+            return string.IsNullOrEmpty(s) ? EmptyString : s;
         }
     }
 
