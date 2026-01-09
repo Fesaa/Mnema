@@ -96,33 +96,7 @@ internal class DiscordExternalConnectionService(
             Description = $"**{info.Name}**\n\n{info.Description}".Limit(MaxDescriptionLength),
             Color = 0x3498db, // Blue
             Timestamp = DateTime.UtcNow,
-            Fields =
-            [
-                new DiscordEmbedField
-                {
-                    Name = "Provider",
-                    Value = info.Provider.ToString(),
-                    Inline = true
-                },
-                new DiscordEmbedField
-                {
-                    Name = "Newly downloaded",
-                    Value = info.Size,
-                    Inline = true
-                },
-                new DiscordEmbedField
-                {
-                  Name  = "Total size",
-                  Value = info.TotalSize,
-                  Inline = true
-                },
-                new DiscordEmbedField
-                {
-                    Name = "Destination",
-                    Value = $"`{info.DownloadDir}`",
-                    Inline = false
-                }
-            ],
+            Fields = BuildDefaultEmbedFields(info).ToArray(),
             Footer = new DiscordEmbedFooter
             {
                 Text = $"ID: {info.Id}"
@@ -148,33 +122,7 @@ internal class DiscordExternalConnectionService(
             Description = $"**{info.Name}**\n\n{info.Description}".Limit(MaxDescriptionLength),
             Color = 0x2ecc71, // Green
             Timestamp = DateTime.UtcNow,
-            Fields =
-            [
-                new DiscordEmbedField
-                {
-                    Name = "Provider",
-                    Value = info.Provider.ToString(),
-                    Inline = true
-                },
-                new DiscordEmbedField
-                {
-                    Name = "Newly downloaded",
-                    Value = info.Size,
-                    Inline = true
-                },
-                new DiscordEmbedField
-                {
-                    Name  = "Total size",
-                    Value = info.TotalSize,
-                    Inline = true
-                },
-                new DiscordEmbedField
-                {
-                    Name = "Location",
-                    Value = $"`{info.DownloadDir}`",
-                    Inline = false
-                }
-            ],
+            Fields = BuildDefaultEmbedFields(info).ToArray(),
             Footer = new DiscordEmbedFooter
             {
                 Text = $"ID: {info.Id}"
@@ -190,6 +138,40 @@ internal class DiscordExternalConnectionService(
             };
 
         return SendMessage(connection, [embed]);
+    }
+
+    private List<DiscordEmbedField> BuildDefaultEmbedFields(DownloadInfo info)
+    {
+        var embeds = new List<DiscordEmbedField>
+        {
+            new()
+            {
+                Name = "Provider",
+                Value = info.Provider.ToString(),
+                Inline = true
+            },
+            new()
+            {
+                Name = "Newly downloaded",
+                Value = info.Size,
+                Inline = true
+            },
+            new()
+            {
+                Name  = "Total available",
+                Value = info.TotalSize,
+                Inline = true
+            },
+            new()
+            {
+                Name = "Location",
+                Value = $"`{info.DownloadDir}`",
+                Inline = false
+            }
+        };
+
+
+        return embeds;
     }
 
     public Task CommunicateDownloadFailure(ExternalConnection connection, DownloadInfo info, Exception ex)

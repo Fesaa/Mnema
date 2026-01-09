@@ -40,7 +40,7 @@ internal partial class MangaPublicationExtensions(IImageService imageService) : 
 
     public async Task<string> DownloadCallback(IoWork ioWork, CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested) return string.Empty;
+        if (cancellationToken.IsCancellationRequested || !Path.Exists(ioWork.FilePath)) return string.Empty;
 
         var fileType = ioWork.Preferences.ImageFormat.GetFileExtension(ioWork.Url);
 

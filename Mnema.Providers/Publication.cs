@@ -111,7 +111,7 @@ internal partial class Publication(
 
             try
             {
-                _fileSystem.File.Delete(_fileSystem.Path.Join(_configuration.BaseDir, path));
+                _fileSystem.File.Delete(path);
             }
             catch (IOException ex)
             {
