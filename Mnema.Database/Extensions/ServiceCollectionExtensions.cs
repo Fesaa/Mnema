@@ -10,13 +10,13 @@ public static class ServiceCollectionExtensions
 {
     extension(IServiceCollection serviceCollection)
     {
-        public IServiceCollection AddMnemaPostgresDatabase(IConfiguration configuration, bool isDevelopment)
+        public IServiceCollection AddMnemaPostgresDatabase(IConfiguration configuration)
         {
             return serviceCollection.AddDbContextFactory<MnemaDataContext>(options => options
                 .UseNpgsql(configuration.GetConnectionString(ConfigurationKeys.PostgresConnectionKey), b => b
                     .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
                 .EnableDetailedErrors()
-                .EnableSensitiveDataLogging(isDevelopment)
+                .EnableSensitiveDataLogging()
 
             );
         }

@@ -207,7 +207,7 @@ internal class MangadexRepository : IRepository
                 return new ContentRelease
                 {
                     ReleaseId = chapter.Id,
-                    ReleaseName = chapter.Attributes.Title,
+                    ReleaseName = string.IsNullOrEmpty(chapter.Attributes.Title) ? string.Empty : chapter.Attributes.Title,
                     ContentId = relationShip.Id,
                     ContentName = mangaAttr?.LangTitle("en") ?? string.Empty,
                     ReleaseDate = chapter.Attributes.PublishAt.ToUniversalTime(),

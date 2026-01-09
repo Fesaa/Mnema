@@ -85,7 +85,14 @@ internal class SubscriptionScheduler(
         var subsResult = await ProcessSubscriptions(downloadService, newReleases, subscriptions, cancellationToken);
         unitOfWork.ContentReleaseRepository.AddRange(subsResult.Releases);
 
-        await unitOfWork.CommitAsync();
+        try
+        {
+            await unitOfWork.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while saving processed releases to the database. Duplicate downloads may start. Report this!");
+        }
 
         logger.LogInformation(
             "Found {TotalReleases} releases, {NewReleases} have not been processed. Started {StartedDownloads} downloads, {FailedDownloads} downloads failed",

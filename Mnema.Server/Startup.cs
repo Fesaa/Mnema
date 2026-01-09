@@ -119,7 +119,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddAutoMapper(cfg => cfg.LicenseKey = autoMapperLicense,
             typeof(AutoMapperProfiles).Assembly);
 
-        services.AddMnemaPostgresDatabase(configuration, env.IsDevelopment());
+        services.AddMnemaPostgresDatabase(configuration);
         services.AddDatabaseServices();
         services.AddAndConfigureHangFire(configuration);
         services.AddIdentityServices(configuration, env);
