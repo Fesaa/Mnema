@@ -1,5 +1,8 @@
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.External;
 using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities.User;
 using Mnema.Models.Publication;
@@ -33,4 +36,25 @@ public interface IMetadataService
     /// <param name="mappings"></param>
     /// <returns></returns>
     List<Tag> MapTags(IList<Tag> tags, IList<TagMappingDto> mappings);
+}
+
+public interface IMetadataProviderService
+{
+    /// <summary>
+    /// Given the search parameters, return the results for the external provider
+    /// </summary>
+    /// <param name="search"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <remarks>This may be cached</remarks>
+    Task<List<Series>> Search(MetadataSearchDto search, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Return all known metadata for a given entity from the external provider
+    /// </summary>
+    /// <param name="externalId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <remarks>It is assumed this is cached</remarks>
+    Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken);
 }

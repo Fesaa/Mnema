@@ -1,0 +1,7 @@
+projects:
+  hardcover:
+    schema:
+      - "https://api.hardcover.app/v1/graphql":
+          headers:
+            Authorization: "Bearer ${HARDCOVER_TOKEN}"
+    documents: "Hardcover/**/*.graphql"

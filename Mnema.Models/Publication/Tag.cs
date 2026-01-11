@@ -1,3 +1,5 @@
+using Mnema.Models.Entities.Content;
+
 namespace Mnema.Models.Publication;
 
 public sealed record Tag
@@ -26,4 +28,6 @@ public sealed record Tag
     ///     True if the source has explicitly marked the tag as genre
     /// </summary>
     public bool IsMarkedAsGenre { get; set; }
+
+    public MetadataProvider? MetadataProvider { get; set; } = null;
 }

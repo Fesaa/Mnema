@@ -9,3 +9,8 @@ public enum Provider
     Bato = 4,
     MangaBuddy = 5
 }
+
+public enum MetadataProvider
+{
+    Hardcover = 0,
+}

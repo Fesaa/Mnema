@@ -1,3 +1,4 @@
+using System;
 using System.Xml.Serialization;
 using Mnema.Models.Publication;
 
@@ -82,6 +83,20 @@ public class ComicInfo
             case PersonRole.Editor:
                 Editor = value;
                 break;
+            case PersonRole.Translator:
+                Translator = value;
+                break;
+            case PersonRole.Publisher:
+                Publisher = value;
+                break;
+            case PersonRole.Imprint:
+                Imprint = value;
+                break;
+            case PersonRole.Character:
+                Characters = value;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(role), role, null);
         }
     }
 }
