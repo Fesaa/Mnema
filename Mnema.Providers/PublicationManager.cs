@@ -101,7 +101,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         }
     }
 
-    public Task StopDownload(StopRequestDto request)
+    public async Task StopDownload(StopRequestDto request)
     {
         if (!_content.TryRemove(request.Id, out var publication)) throw new NotFoundException();
 
@@ -111,11 +111,9 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
             _logger.LogInformation("Removing content: {Id} - {Title}, SavingFiles: {DeleteFiles}",
                 publication.Id, publication.Title, !request.DeleteFiles);
 
-        publication.Cancel();
+        await publication.Cancel();
 
-        Task.Run(() => CleanupAfterDownload(publication, request.DeleteFiles));
-
-        return Task.CompletedTask;
+        _ = Task.Run(() => CleanupAfterDownload(publication, request.DeleteFiles));
     }
 
     public async Task MoveToDownloadQueue(string id)
