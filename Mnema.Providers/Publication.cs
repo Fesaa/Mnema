@@ -186,6 +186,9 @@ internal partial class Publication(
 
         await _tokenSource.CancelAsync();
 
+        if (IOTask != null)
+            await Task.WhenAny(IOTask, Task.Delay(5000)); // Wait at most 5s for I/O, it's been cancelled
+
         if (reason != null)
         {
             _externalConnectionService.CommunicateDownloadFailure(DownloadInfo, reason);

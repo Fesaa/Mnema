@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Mnema.Models.Entities.User;
 
@@ -7,6 +8,7 @@ namespace Mnema.API;
 public interface IImageService
 {
 
-    Stream ConvertFromStream(Stream stream, ImageFormat format);
+    Task ConvertAndSave(Stream stream, ImageFormat format, string filePath,
+        CancellationToken cancellationToken = default);
 
 }

@@ -50,12 +50,7 @@ internal partial class MangaPublicationExtensions(IImageService imageService) : 
         var fileCounter = $"{ioWork.Idx}".PadLeft(4, '0');
         var filePath = Path.Join(ioWork.FilePath, $"page {fileCounter}{fileType}");
 
-        var stream = imageService.ConvertFromStream(ioWork.Stream, ioWork.Preferences.ImageFormat);
-        await using (stream)
-        {
-            await using var file = File.Create(filePath);
-            await stream.CopyToAsync(file, cancellationToken);
-        }
+        await imageService.ConvertAndSave(ioWork.Stream, ioWork.Preferences.ImageFormat, filePath, cancellationToken);
 
         return filePath;
     }

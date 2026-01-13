@@ -36,6 +36,8 @@ internal partial class Publication
     private readonly IHttpClientFactory _httpClientFactory =
         scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
 
+    private Task? IOTask;
+
     public Task DownloadContentAsync(CancellationTokenSource tokenSource)
     {
         if (State != ContentState.Waiting && State != ContentState.Ready)
@@ -119,7 +121,9 @@ internal partial class Publication
 
         _ = Task.Run(SignalRUpdateLoop, _tokenSource.Token);
 
-        await Task.WhenAll(workers);
+        IOTask = Task.WhenAll(workers);
+
+        await IOTask;
 
         _logger.LogInformation("[{Title}/{Id}] Downloaded all chapters in {Elapsed}ms",
             Title, Id, sw.ElapsedMilliseconds);
