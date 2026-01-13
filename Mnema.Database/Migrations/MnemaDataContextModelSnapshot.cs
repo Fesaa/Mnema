@@ -80,6 +80,33 @@ namespace Mnema.Database.Migrations
                     b.ToTable("ProcessedContentReleases");
                 });
 
+            modelBuilder.Entity("Mnema.Models.Entities.Content.DownloadClient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("{}");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Type")
+                        .IsUnique();
+
+                    b.ToTable("DownloadClients");
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.Content.Subscription", b =>
                 {
                     b.Property<Guid>("Id")

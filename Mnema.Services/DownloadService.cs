@@ -12,12 +12,12 @@ namespace Mnema.Services;
 
 internal class DownloadService(ILogger<DownloadService> logger, IServiceScopeFactory scopeFactory) : IDownloadService
 {
-    public Task StartDownload(DownloadRequestDto request)
+    public async Task StartDownload(DownloadRequestDto request)
     {
         using var scope = scopeFactory.CreateScope();
         var contentManager = scope.ServiceProvider.GetRequiredKeyedService<IContentManager>(request.Provider);
 
-        return contentManager.Download(request);
+        await contentManager.Download(request);
     }
 
     public Task CancelDownload(StopRequestDto request)
@@ -42,11 +42,18 @@ internal class DownloadService(ILogger<DownloadService> logger, IServiceScopeFac
                 continue;
             }
 
-            var content = await contentManager.GetAllContent();
+            try
+            {
+                var content = await contentManager.GetAllContent(provider);
 
-            downloads.AddRange(content
-                .Where(c => c.Request.UserId == userId)
-                .Select(c => c.DownloadInfo));
+                downloads.AddRange(content
+                    .Where(c => c.Request.UserId == userId)
+                    .Select(c => c.DownloadInfo));
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Failed to include content from {Provider}", provider.ToString());
+            }
         }
 
         return downloads;

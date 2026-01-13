@@ -78,7 +78,7 @@ internal class BatoRepository : IRepository
 
     private HttpClient Client => _httpClientFactory.CreateClient(nameof(Provider.Bato));
 
-    public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination,
+    public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
         var includeGenres = string.Join(',', request.Modifiers.GetStrings("genres"));

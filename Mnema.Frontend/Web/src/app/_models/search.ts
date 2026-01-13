@@ -11,6 +11,7 @@ export type SearchRequest = {
 export type DownloadRequest = {
   provider: Provider;
   id: string;
+  downloadUrl: string;
   baseDir: string;
   title: string;
   startImmediately: boolean;

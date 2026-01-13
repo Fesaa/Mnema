@@ -66,6 +66,12 @@
           <app-external-connection-settings />
         }
       }
+
+      @defer (when selected() === SettingsID.DownloadClients; prefetch on idle) {
+        @if (selected() === SettingsID.DownloadClients && canSee(SettingsID.DownloadClients)) {
+          <app-download-client-settings />
+        }
+      }
     </section>
 
   </main>

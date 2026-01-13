@@ -29,7 +29,7 @@ public class ContentController(
     [HttpGet("recently-updated")]
     public async Task<ActionResult<IList<ContentRelease>>> GetRecentlyUpdated([FromQuery] Provider provider)
     {
-        var repository = serviceProvider.GetKeyedService<IRepository>(provider);
+        var repository = serviceProvider.GetKeyedService<IContentRepository>(provider);
         if (repository == null)
             return NotFound();
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
@@ -32,6 +33,8 @@ internal interface IPreDownloadHook
 
 internal partial class MangaPublicationExtensions(IImageService imageService) : IPublicationExtensions
 {
+    private static readonly XmlSerializer XmlSerializer = new(typeof(ComicInfo));
+
     private static readonly Regex ContentVolumeAndChapterRegex = MyContentVolumeAndChapterRegex();
 
     private static readonly Regex ContentChapterRegex = MyContentChapterRegex();
@@ -110,7 +113,7 @@ internal partial class MangaPublicationExtensions(IImageService imageService) : 
 
         if (archiveEntry == null) return null;
 
-        var comicInfo = XmlHelper.Deserialize<ComicInfo>(archiveEntry.Open());
+        var comicInfo = XmlHelper.Deserialize<ComicInfo>(XmlSerializer, archiveEntry.Open());
 
         return comicInfo?.Volume;
     }

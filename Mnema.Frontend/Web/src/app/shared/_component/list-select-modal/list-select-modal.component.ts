@@ -27,7 +27,6 @@ export type ListSelectionItem<T> = {
   imports: [
     TranslocoDirective,
     ReactiveFormsModule,
-    SentenceCasePipe,
     NgTemplateOutlet,
     LoadingSpinnerComponent,
   ],

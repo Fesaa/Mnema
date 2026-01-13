@@ -12,6 +12,7 @@ public interface IUnitOfWork
     INotificationRepository NotificationRepository { get; }
     IExternalConnectionRepository ExternalConnectionRepository { get; }
     IContentReleaseRepository ContentReleaseRepository { get; }
+    IDownloadClientRepository DownloadClientRepository { get; }
 
     Task<bool> CommitAsync();
     bool HasChanges();

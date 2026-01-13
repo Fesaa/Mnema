@@ -62,6 +62,7 @@ export class DownloadModalComponent implements OnInit {
   baseRequest = computed<DownloadRequest>(() => ({
     id: this.info().id,
     provider: this.info().provider,
+    downloadUrl: this.info().downloadUrl,
     title: this.info().name,
     startImmediately: true,
     metadata: {},

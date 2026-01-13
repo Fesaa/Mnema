@@ -59,7 +59,7 @@ internal class MangadexRepository : IRepository
 
     private HttpClient Client => _httpClientFactory.CreateClient(nameof(Provider.Mangadex));
 
-    public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination,
+    public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
         var url = "/manga".SetQueryParam("title", request.Query)

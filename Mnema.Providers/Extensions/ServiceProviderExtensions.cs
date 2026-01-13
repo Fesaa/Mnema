@@ -1,11 +1,15 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Providers.Bato;
+using Mnema.Providers.Cleanup;
 using Mnema.Providers.Dynasty;
 using Mnema.Providers.Mangadex;
+using Mnema.Providers.Nyaa;
+using Mnema.Providers.QBit;
 using Mnema.Providers.Services;
 using Mnema.Providers.Webtoon;
 
@@ -17,17 +21,46 @@ public static class ServiceProviderExtensions
     {
         services.AddScoped<IMetadataService, MetadataService>();
         services.AddScoped<IScannerService, ScannerService>();
+        services.AddScoped<ICleanupService, CleanupService>();
+        services.AddScoped<PublicationCleanupService>();
+        services.AddScoped<TorrentCleanupService>();
+
+        #region qBit Torrent
+
+        services.AddSingleton<QBitContentManager>();
+        services.AddKeyedSingleton<IConfigurationProvider>(DownloadClientType.QBittorrent,
+            (s, _) => s.GetRequiredService<QBitContentManager>());
+
+        #endregion
 
         #region Nyaa
 
-        services.AddKeyedSingleton<IContentManager, NoOpContentManager>(Provider.Nyaa);
+        services.AddKeyedSingleton<IContentManager>(Provider.Nyaa,
+            (s, _) => s.GetRequiredService<QBitContentManager>());
+        services.AddScoped<NyaaRepository>();
+
+        services.AddKeyedScoped<IContentRepository>(Provider.Nyaa,
+            (s, _) => s.GetRequiredService<NyaaRepository>());
+
+        services.AddHttpClient(nameof(Provider.Nyaa), client =>
+        {
+            client.BaseAddress = new Uri("https://nyaa.si");
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
+        });
 
         #endregion
 
         #region Mangadex
 
         services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Mangadex);
-        services.AddKeyedScoped<IRepository, MangadexRepository>(Provider.Mangadex);
+
+        services.AddScoped<MangadexRepository>();
+        services.AddKeyedScoped<IContentRepository>(Provider.Mangadex,
+            (s, _) => s.GetRequiredService<MangadexRepository>());
+        services.AddKeyedScoped<IRepository>(Provider.Mangadex,
+            (s, _) => s.GetRequiredService<MangadexRepository>());
+
         services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Mangadex);
         services.AddKeyedScoped<IPreDownloadHook, LoadVolumesHook>(Provider.Mangadex);
         services.AddHttpClient(nameof(Provider.Mangadex), client =>
@@ -42,7 +75,13 @@ public static class ServiceProviderExtensions
         #region Webtoons
 
         services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Webtoons);
-        services.AddKeyedScoped<IRepository, WebtoonRepository>(Provider.Webtoons);
+
+        services.AddScoped<WebtoonRepository>();
+        services.AddKeyedScoped<IContentRepository>(Provider.Webtoons,
+            (s, _) => s.GetRequiredService<WebtoonRepository>());
+        services.AddKeyedScoped<IRepository>(Provider.Webtoons,
+            (s, _) => s.GetRequiredService<WebtoonRepository>());
+
         services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Webtoons);
         services.AddHttpClient(nameof(Provider.Webtoons), client =>
         {
@@ -57,7 +96,13 @@ public static class ServiceProviderExtensions
         #region Dynasty
 
         services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Dynasty);
-        services.AddKeyedScoped<IRepository, DynastyRepository>(Provider.Dynasty);
+
+        services.AddScoped<DynastyRepository>();
+        services.AddKeyedScoped<IContentRepository>(Provider.Dynasty,
+            (s, _) => s.GetRequiredService<DynastyRepository>());
+        services.AddKeyedScoped<IRepository>(Provider.Dynasty,
+            (s, _) => s.GetRequiredService<DynastyRepository>());
+
         services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Dynasty);
         services.AddHttpClient(nameof(Provider.Dynasty), client =>
         {
@@ -71,7 +116,13 @@ public static class ServiceProviderExtensions
         #region Bato
 
         services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Bato);
-        services.AddKeyedScoped<IRepository, BatoRepository>(Provider.Bato);
+
+        services.AddScoped<BatoRepository>();
+        services.AddKeyedScoped<IContentRepository>(Provider.Bato,
+            (s, _) => s.GetRequiredService<BatoRepository>());
+        services.AddKeyedScoped<IRepository>(Provider.Bato,
+            (s, _) => s.GetRequiredService<BatoRepository>());
+
         services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Bato);
         services.AddHttpClient(nameof(Provider.Bato), client =>
         {
@@ -79,13 +130,6 @@ public static class ServiceProviderExtensions
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
         });
-
-        #endregion
-
-        #region MangaBuddy
-
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.MangaBuddy);
-        services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.MangaBuddy);
 
         #endregion
 

@@ -18,6 +18,7 @@ import {
 } from "./_components/external-connection-settings/external-connection-settings.component";
 import {Button, ButtonGroup, ButtonGroupService, SettingsID} from "../../button-grid/button-group.service";
 import {MobileGridComponent} from "../../button-grid/mobile-grid/mobile-grid.component";
+import {DownloadClientSettingsComponent} from "./_components/download-client/download-client-settings.component";
 
 @Component({
   selector: 'app-settings',
@@ -29,6 +30,7 @@ import {MobileGridComponent} from "../../button-grid/mobile-grid/mobile-grid.com
     TranslocoDirective,
     ExternalConnectionSettingsComponent,
     MobileGridComponent,
+    DownloadClientSettingsComponent,
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']

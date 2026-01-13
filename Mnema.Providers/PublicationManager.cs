@@ -12,6 +12,7 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
 using Mnema.Models.Internal;
 
@@ -125,7 +126,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         await AddToDownloadQueueAsync(publication);
     }
 
-    public Task<IEnumerable<IContent>> GetAllContent()
+    public Task<IEnumerable<IContent>> GetAllContent(Provider provider)
     {
         return Task.FromResult<IEnumerable<IContent>>(_content.Values.ToList());
     }

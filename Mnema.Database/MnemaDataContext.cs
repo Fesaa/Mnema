@@ -31,6 +31,7 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<ExternalConnection> ExternalConnections { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
     public DbSet<ContentRelease> ProcessedContentReleases { get; set; }
+    public DbSet<DownloadClient> DownloadClients { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -68,6 +69,12 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
         builder.Entity<ExternalConnection>()
             .PrimitiveCollection(c => c.FollowedEvents)
             .HasDefaultValue(new List<ExternalConnectionEvent>());
+
+        builder.Entity<DownloadClient>()
+            .Property(d => d.Metadata)
+            .HasJsonConversion([])
+            .HasColumnType("TEXT")
+            .HasDefaultValue(new MetadataBag());
     }
 
     private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)

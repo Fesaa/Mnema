@@ -33,6 +33,7 @@
       "pages": "Pages",
       "server": "Server",
       "external-connections": "External Connections",
+      "download-clients": "Download Clients",
       "logout": "Logout"
     }
   },
@@ -760,7 +761,44 @@
           "DownloadFailure": "{{settings.external-connections.shared.event.DownloadFailure}}"
         }
       }
+    },
+    "download-clients": {
+      "title": "Download Clients",
+      "header": {
+        "name": "Name",
+        "type": "Type",
+        "actions": "Actions"
+      },
+      "empty": {
+        "title": "Nothing here yet",
+        "description": "You don’t have any download clients setup yet"
+      },
+      "edit": {
+        "select-type-title": "Pick your client type",
+        "title": "Edit Client",
+        "close": "{{common.close}}",
+        "save": "{{common.save}}"
+      },
+      "QBittorrent": {
+        "name-title": "Name",
+        "name-tooltip": "Optional custom name",
+        "type-title": "Type",
+        "type-tooltip": "The type of the download client you're configuring. Generally does not change",
+        "url-title": "URL",
+        "url-tooltip": "Must be accessible from Mnema",
+        "username-title": "Username",
+        "username-tooltip": "Username",
+        "password-title": "Password",
+        "password-tooltip": "Password, leave empty if not required",
+        "type": {
+          "qbittorrent": "{{download-client-pipe.qbit-torrent}}"
+        }
+      }
     }
+  },
+
+  "download-client-pipe": {
+    "qbit-torrent": "qBit Torrent"
   },
 
   "directory-selector":{

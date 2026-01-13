@@ -17,13 +17,13 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
     {
         using var scope = serviceScopeFactory.CreateScope();
 
-        var repository = scope.ServiceProvider.GetKeyedService<IRepository>(searchRequest.Provider);
+        var repository = scope.ServiceProvider.GetKeyedService<IContentRepository>(searchRequest.Provider);
         if (repository == null)
         {
             logger.LogWarning("No repository found for {Provider}, cannot search", searchRequest.Provider.ToString());
             throw new MnemaException($"Unsupported provider {searchRequest.Provider}");
         }
 
-        return repository.SearchPublications(searchRequest, paginationParams, cancellationToken);
+        return repository.Search(searchRequest, paginationParams, cancellationToken);
     }
 }

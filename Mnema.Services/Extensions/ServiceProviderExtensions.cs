@@ -28,6 +28,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<ISubscriptionScheduler, SubscriptionScheduler>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IImageService, ImageService>();
+        services.AddScoped<IDownloadClientService, DownloadClientService>();
 
         #region External Connection
 

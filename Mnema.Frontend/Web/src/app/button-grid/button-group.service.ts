@@ -16,6 +16,7 @@ export enum SettingsID {
   Server = "server",
   Preferences = "preferences",
   Pages = "pages",
+  DownloadClients = "download_clients",
   ExternalConnections = "external_connections",
 }
 
@@ -151,6 +152,13 @@ export class ButtonGroupService {
           navUrl: '/settings',
           navExtras: { fragment: SettingsID.ExternalConnections },
           id: SettingsID.ExternalConnections
+        },
+        {
+          title: translate('button-groups.settings.download-clients'),
+          icon: 'fa fa-user-secret',
+          navUrl: '/settings',
+          navExtras: { fragment: SettingsID.DownloadClients },
+          id: SettingsID.DownloadClients
         },
       ],
     };
