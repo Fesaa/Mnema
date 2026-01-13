@@ -1,38 +1,49 @@
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Mnema.API;
 using Mnema.Models.Entities.User;
 using NetVips;
 
 namespace Mnema.Services;
 
-public class ImageService: IImageService
+public class ImageService : IImageService
 {
-    public Stream ConvertFromStream(Stream stream, ImageFormat format)
-    {
-        return format switch
-        {
-            ImageFormat.Upstream => stream,
-            ImageFormat.Webp => ConvertToWebp(stream),
-            _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
-        };
-
-    }
-
-    private static MemoryStream ConvertToWebp(Stream stream)
+    public async Task ConvertAndSave(Stream stream, ImageFormat format, string filePath, CancellationToken cancellationToken = default)
     {
         if (stream.CanSeek)
             stream.Position = 0;
 
-        using var image = Image.NewFromStream(stream);
+        switch (format)
+        {
+            case ImageFormat.Upstream:
+            {
+                await using var file = new FileStream(
+                    filePath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 1024 * 64,
+                    useAsync: true
+                );
 
-        var output = new MemoryStream();
+                await stream.CopyToAsync(file, cancellationToken);
+                break;
+            }
 
-        image.WebpsaveStream(output, lossless: true, q: 80);
+            case ImageFormat.Webp:
+            {
+                using var image = Image.NewFromStream(stream, access: Enums.Access.Sequential);
+                if (cancellationToken.IsCancellationRequested) return;
 
-        if (output.CanSeek)
-            output.Position = 0;
+                image.Webpsave(filePath, lossless: true, q: 80);
+                break;
+            }
 
-        return output;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(format), format, null);
+        }
     }
 }
+
