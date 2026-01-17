@@ -20,7 +20,7 @@ public interface IPublication : IContent
 
 public class OnDiskContent
 {
-    public string Name { get; init; }
+    public string SeriesName { get; init; }
     public string Path { get; init; }
     public string? Chapter { get; init; }
     public string? Volume { get; init; }

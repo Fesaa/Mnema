@@ -24,6 +24,5 @@ public interface IDownloadClientRepository
 public interface IDownloadClientService
 {
     Task UpdateDownloadClientAsync(DownloadClientDto dto, CancellationToken cancellationToken);
-    Task<List<DownloadClientType>> GetFreeTypesAsync(CancellationToken cancellationToken);
     Task<FormDefinition?> GetFormDefinitionForType(DownloadClientType type, CancellationToken cancellationToken);
 }

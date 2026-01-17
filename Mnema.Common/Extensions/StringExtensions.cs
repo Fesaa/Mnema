@@ -64,6 +64,11 @@ public static class StringExtensions
         {
             return string.IsNullOrEmpty(s) ? EmptyString : s;
         }
+
+        public float AsFloat(float defaultValue = 0.0f)
+        {
+            return string.IsNullOrEmpty(s) ? defaultValue : float.Parse(s, CultureInfo.InvariantCulture);
+        }
     }
 
     extension(string s)

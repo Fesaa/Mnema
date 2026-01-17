@@ -107,10 +107,7 @@ internal partial class QBitContentManager(
 
     }
 
-    public Task MoveToDownloadQueue(string id)
-    {
-        throw new NotImplementedException();
-    }
+    public Task MoveToDownloadQueue(string id) => StartDownload(id);
 
     public async Task<IEnumerable<IContent>> GetAllContent(Provider provider)
     {

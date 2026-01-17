@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.RateLimiting;
@@ -33,9 +34,6 @@ internal partial class Publication(
 {
     private readonly ApplicationConfiguration _configuration =
         scope.ServiceProvider.GetRequiredService<ApplicationConfiguration>();
-
-    private readonly IPublicationExtensions _extensions =
-        scope.ServiceProvider.GetRequiredKeyedService<IPublicationExtensions>(provider);
 
     private readonly IExternalConnectionService _externalConnectionService =
         scope.ServiceProvider.GetRequiredService<IExternalConnectionService>();
@@ -135,7 +133,13 @@ internal partial class Publication(
                 var src = _fileSystem.Path.Join(_configuration.DownloadDir, path);
                 var dest = _fileSystem.Path.Join(_configuration.BaseDir, path);
 
-                await _extensions.Cleanup(src, dest);
+                if (File.Exists(dest))
+                    File.Delete(dest);
+
+                await ZipFile.CreateFromDirectoryAsync(src, dest + ".cbz",
+                    CompressionLevel.SmallestSize, false);
+
+                Directory.Delete(src, true);
             }
             catch (Exception ex)
             {
@@ -186,8 +190,8 @@ internal partial class Publication(
 
         await _tokenSource.CancelAsync();
 
-        if (IOTask != null)
-            await Task.WhenAny(IOTask, Task.Delay(5000)); // Wait at most 5s for I/O, it's been cancelled
+        if (_ioTask != null)
+            await Task.WhenAny(_ioTask, Task.Delay(5000)); // Wait at most 5s for I/O, it's been cancelled
 
         if (reason != null)
         {
@@ -256,7 +260,7 @@ internal partial class Publication(
     private OnDiskContent? GetContentByName(string name)
     {
         return ExistingContent.FirstOrDefault(c
-            => c.Name == name);
+            => c.SeriesName == name);
     }
 
     private OnDiskContent? GetContentByVolumeAndChapter(string volume, string chapter)

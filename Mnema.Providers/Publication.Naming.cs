@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.Publication;
 
@@ -9,80 +11,24 @@ namespace Mnema.Providers;
 
 internal partial class Publication
 {
+    private readonly INamingService _namingService = scope.ServiceProvider.GetRequiredService<INamingService>();
+
     private string VolumeDir(Chapter chapter)
-    {
-        return $"{Title} Vol. {chapter.VolumeMarker}";
-    }
+        => _namingService.GetVolumeDirectoryName(Title, chapter.VolumeMarker);
 
     private string ChapterPath(Chapter chapter)
-    {
-        var basePath = Path.Join(_configuration.DownloadDir, Request.BaseDir, Title);
-
-        if (!string.IsNullOrEmpty(chapter.VolumeMarker) && !true) // TODO: Port config switches
-            basePath = Path.Join(basePath, VolumeDir(chapter));
-
-        return Path.Join(basePath, ChapterFileName(chapter));
-    }
+        => _namingService.GetChapterFilePath(
+            Request.BaseDir,
+            Title,
+            ChapterFileName(chapter));
 
     private string ChapterFileName(Chapter chapter)
-    {
-        return chapter.IsOneShot ? OneShotFileName(chapter) : DefaultFileName(chapter);
-    }
-
-    private string DefaultFileName(Chapter chapter)
-    {
-        var fileName = Title;
-
-        if (!string.IsNullOrEmpty(chapter.VolumeMarker) && ShouldIncludeVolumeMarker())
-            fileName += $" Vol. {chapter.VolumeMarker}";
-
-        if (chapter.ChapterNumber() == null)
-        {
-            _logger.LogWarning("[{Title}/{Id}] Failed to parse chapter for {ChapterId} not padding", Title, Id, chapter.Id);
-            return $"{fileName} Ch. {chapter.ChapterMarker}";
-        }
-
-        return $"{fileName} Ch. {chapter.ChapterMarker.PadFloat(4)}";
-    }
-
-    private bool ShouldIncludeVolumeMarker()
-    {
-        // TODO: Port config switches
-        if (true) return true;
-
-        if (_hasDuplicateVolumes != null) return _hasDuplicateVolumes.Value;
-
-        _hasDuplicateVolumes = Series.Chapters
-            .GroupBy(c => c.ChapterMarker)
-            .Select(g => g.Count())
-            .Any(amount => amount > 1);
-
-        return _hasDuplicateVolumes.Value;
-    }
-
-    private string OneShotFileName(Chapter chapter)
-    {
-        var fileName = $"{Title} {chapter.Title}".Trim();
-
-        if (false) // TODO: Port config switches
-            fileName += " (OneShot)";
-
-        var idx = 0;
-        var finalFileName = fileName;
-        while (DownloadedPaths.Contains(finalFileName))
-        {
-            finalFileName = $"{fileName} ({idx})";
-
-            if (idx >= 25)
-            {
-                _logger.LogWarning("[{Title}/{Id}] More than 25 oneshots with the same name, generating random number", Title, Id);
-                finalFileName = $"{fileName} ({Random.Shared.Next()})";
-                break;
-            }
-
-            idx++;
-        }
-
-        return finalFileName;
-    }
+        => _namingService.GetChapterFileName(
+            Title,
+            chapter.VolumeMarker,
+            chapter.ChapterMarker,
+            chapter.ChapterNumber(),
+            chapter.IsOneShot,
+            chapter.Title,
+            DownloadedPaths.AsReadOnly());
 }

@@ -10,6 +10,7 @@ using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
@@ -35,8 +36,9 @@ internal partial class Publication
 {
     private readonly IHttpClientFactory _httpClientFactory =
         scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
+    private readonly IImageService _imageService = scope.ServiceProvider.GetRequiredService<IImageService>();
 
-    private Task? IOTask;
+    private Task? _ioTask;
 
     public Task DownloadContentAsync(CancellationTokenSource tokenSource)
     {
@@ -121,9 +123,9 @@ internal partial class Publication
 
         _ = Task.Run(SignalRUpdateLoop, _tokenSource.Token);
 
-        IOTask = Task.WhenAll(workers);
+        _ioTask = Task.WhenAll(workers);
 
-        await IOTask;
+        await _ioTask;
 
         _logger.LogInformation("[{Title}/{Id}] Downloaded all chapters in {Elapsed}ms",
             Title, Id, sw.ElapsedMilliseconds);
@@ -141,7 +143,14 @@ internal partial class Publication
             {
                 await using (ioWork.Stream)
                 {
-                    var filePath = await _extensions.DownloadCallback(ioWork, _tokenSource.Token);
+                    if (_tokenSource.IsCancellationRequested || !Path.Exists(ioWork.FilePath)) continue;
+
+                    var fileType = ioWork.Preferences.ImageFormat.GetFileExtension(ioWork.Url);
+
+                    var fileCounter = $"{ioWork.Idx}".PadLeft(4, '0');
+                    var filePath = Path.Join(ioWork.FilePath, $"page {fileCounter}{fileType}");
+
+                    await _imageService.ConvertAndSave(ioWork.Stream, ioWork.Preferences.ImageFormat, filePath, _tokenSource.Token);
 
                     _logger.LogTrace("[{Title}/{Id}] Wrote {FilePath} / {Idx} to disk", Title, Id, filePath, ioWork.Idx);
                 }

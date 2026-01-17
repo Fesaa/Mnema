@@ -8,6 +8,7 @@ using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 
 namespace Mnema.Providers;
@@ -90,7 +91,7 @@ internal partial class Publication
         var sw = Stopwatch.StartNew();
 
         ExistingContent =
-            _scannerService.ScanDirectoryAsync(_extensions.ParseOnDiskFile, DownloadDir, cancellationToken);
+            _scannerService.ScanDirectoryAsync(DownloadDir, ContentFormat.Manga, Format.Archive, cancellationToken);
 
         _queuedChapters = Series!.Chapters
             .Where(ShouldDownloadChapter)
@@ -106,7 +107,7 @@ internal partial class Publication
         var downloadOneShots = Request.GetBool(RequestConstants.DownloadOneShotKey);
         if (!downloadOneShots && string.IsNullOrEmpty(chapter.ChapterMarker)) return false;
 
-        // Chapter is present as a download
+        // Chapter is present as a download (backwards compat with Media-Provider's old behavior)
         if (GetContentByName(VolumeDir(chapter)) != null) return false;
 
         var content = GetContentByName(ChapterFileName(chapter));
@@ -124,17 +125,14 @@ internal partial class Publication
             }
         }
 
-        var onDiskVolume = string.IsNullOrEmpty(content.Volume)
-            ? _extensions.ParseVolumeFromFile(content)
-            : content.Volume;
-        if (onDiskVolume == null) return false;
+        if (string.IsNullOrEmpty(content.Volume)) return false;
 
-        var volumeChanged = !string.IsNullOrEmpty(chapter.VolumeMarker) && chapter.VolumeMarker != onDiskVolume;
+        var volumeChanged = !string.IsNullOrEmpty(chapter.VolumeMarker) && chapter.VolumeMarker != content.Volume;
 
         if (volumeChanged)
         {
             _logger.LogDebug("[{Title}/{Id}] Redownloading chapter {ChapterMarker} as volume changed from {Old} to {New}",
-                Title, Id, chapter.ChapterMarker, onDiskVolume.I(), chapter.VolumeMarker);
+                Title, Id, chapter.ChapterMarker, content.Volume.I(), chapter.VolumeMarker);
             ToRemovePaths.Add(content.Path);
         }
 

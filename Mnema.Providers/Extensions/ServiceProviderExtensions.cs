@@ -61,7 +61,6 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.Mangadex,
             (s, _) => s.GetRequiredService<MangadexRepository>());
 
-        services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Mangadex);
         services.AddKeyedScoped<IPreDownloadHook, LoadVolumesHook>(Provider.Mangadex);
         services.AddHttpClient(nameof(Provider.Mangadex), client =>
         {
@@ -82,7 +81,6 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.Webtoons,
             (s, _) => s.GetRequiredService<WebtoonRepository>());
 
-        services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Webtoons);
         services.AddHttpClient(nameof(Provider.Webtoons), client =>
         {
             client.BaseAddress = new Uri("https://www.webtoons.com");
@@ -103,7 +101,6 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.Dynasty,
             (s, _) => s.GetRequiredService<DynastyRepository>());
 
-        services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Dynasty);
         services.AddHttpClient(nameof(Provider.Dynasty), client =>
         {
             client.BaseAddress = new Uri("https://dynasty-scans.com/");
@@ -123,7 +120,6 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.Bato,
             (s, _) => s.GetRequiredService<BatoRepository>());
 
-        services.AddKeyedScoped<IPublicationExtensions, MangaPublicationExtensions>(Provider.Bato);
         services.AddHttpClient(nameof(Provider.Bato), client =>
         {
             client.BaseAddress = new Uri("https://jto.to");
