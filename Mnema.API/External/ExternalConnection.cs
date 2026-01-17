@@ -15,6 +15,7 @@ public interface IExternalConnectionService
     void CommunicateDownloadStarted(DownloadInfo info);
     void CommunicateDownloadFinished(DownloadInfo info);
     void CommunicateDownloadFailure(DownloadInfo info, Exception ex);
+    void CommunicateSubscriptionExhausted(DownloadInfo info);
 
     Task UpdateConnection(ExternalConnectionDto connection, CancellationToken cancellationToken);
     Task<FormDefinition> GetForm(ExternalConnectionType type, CancellationToken cancellationToken);
@@ -27,6 +28,7 @@ public interface IExternalConnectionHandlerService
     Task CommunicateDownloadStarted(ExternalConnection connection, DownloadInfo info);
     Task CommunicateDownloadFinished(ExternalConnection connection, DownloadInfo info);
     Task CommunicateDownloadFailure(ExternalConnection connection, DownloadInfo info, Exception ex);
+    Task CommunicateSubscriptionExhausted(ExternalConnection connection, DownloadInfo info);
 
     /// <summary>
     ///     Returns the form for configuration this specific external service

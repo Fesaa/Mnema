@@ -36,5 +36,10 @@ public enum ExternalConnectionEvent
     /// <summary>
     ///     Fired when a Download unexpectedly fails
     /// </summary>
-    DownloadFailure = 2
+    DownloadFailure = 2,
+
+    /// <summary>
+    ///     Fired when a subscription has downloaded everything it can find
+    /// </summary>
+    SubscriptionExhausted = 3
 }

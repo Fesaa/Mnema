@@ -21,12 +21,15 @@ internal class NativeExternalConnectionService(
     IMapper mapper
 ) : IExternalConnectionHandlerService
 {
+    private const int MaxSummaryLength = 512;
+    private const int MaxBodyLength = 4096;
 
     public List<ExternalConnectionEvent> SupportedEvents { get; } =
     [
         ExternalConnectionEvent.DownloadStarted,
         ExternalConnectionEvent.DownloadFinished,
-        ExternalConnectionEvent.DownloadFailure
+        ExternalConnectionEvent.DownloadFailure,
+        ExternalConnectionEvent.SubscriptionExhausted
     ];
 
     public Task CommunicateDownloadStarted(ExternalConnection connection, DownloadInfo info)
@@ -59,8 +62,20 @@ internal class NativeExternalConnectionService(
         {
             Title = "Download Failed",
             Summary = $"Download for {info.Name} has failed.",
-            Body = ex.Message,
+            Body = ex.Message.Limit(MaxBodyLength),
             Colour = NotificationColour.Error,
+            UserId = info.UserId
+        });
+    }
+
+    public Task CommunicateSubscriptionExhausted(ExternalConnection connection, DownloadInfo info)
+    {
+        return SendNotification(new Notification
+        {
+            Title = "Subscription Completed",
+            Summary = $"The subscription for {info.Name} has downloaded everything.",
+            Body = info.Description,
+            Colour = NotificationColour.Primary,
             UserId = info.UserId
         });
     }

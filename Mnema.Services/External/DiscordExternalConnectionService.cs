@@ -85,7 +85,8 @@ internal class DiscordExternalConnectionService(
     [
         ExternalConnectionEvent.DownloadStarted,
         ExternalConnectionEvent.DownloadFinished,
-        ExternalConnectionEvent.DownloadFailure
+        ExternalConnectionEvent.DownloadFailure,
+        ExternalConnectionEvent.SubscriptionExhausted
     ];
 
     public Task CommunicateDownloadStarted(ExternalConnection connection, DownloadInfo info)
@@ -121,6 +122,32 @@ internal class DiscordExternalConnectionService(
             Title = "Download Complete",
             Description = $"**{info.Name}**\n\n{info.Description}".Limit(MaxDescriptionLength),
             Color = 0x2ecc71, // Green
+            Timestamp = DateTime.UtcNow,
+            Fields = BuildDefaultEmbedFields(info).ToArray(),
+            Footer = new DiscordEmbedFooter
+            {
+                Text = $"ID: {info.Id}"
+            }
+        };
+
+        if (!string.IsNullOrEmpty(info.RefUrl)) embed.Url = info.RefUrl;
+
+        if (!string.IsNullOrEmpty(info.ImageUrl))
+            embed.Image = new DiscordEmbedImage
+            {
+                Url = info.ImageUrl
+            };
+
+        return SendMessage(connection, [embed]);
+    }
+
+    public Task CommunicateSubscriptionExhausted(ExternalConnection connection, DownloadInfo info)
+    {
+        var embed = new DiscordEmbed
+        {
+            Title = "Subscription Exhausted",
+            Description = $"**{info.Name}**\n\n{info.Description}".Limit(MaxDescriptionLength),
+            Color = 0xf1c40f, // Yellow
             Timestamp = DateTime.UtcNow,
             Fields = BuildDefaultEmbedFields(info).ToArray(),
             Footer = new DiscordEmbedFooter

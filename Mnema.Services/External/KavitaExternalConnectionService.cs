@@ -81,6 +81,11 @@ internal class KavitaExternalConnectionService(
         throw new NotImplementedException();
     }
 
+    public Task CommunicateSubscriptionExhausted(ExternalConnection connection, DownloadInfo info)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
     {
         return Task.FromResult<List<FormControlDefinition>>([

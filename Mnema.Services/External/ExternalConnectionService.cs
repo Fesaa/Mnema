@@ -41,6 +41,12 @@ internal class ExternalConnectionService(
             => service.CommunicateDownloadFailure(connection, info, ex));
     }
 
+    public void CommunicateSubscriptionExhausted(DownloadInfo info)
+    {
+        DoForAll(ExternalConnectionEvent.SubscriptionExhausted, (service, connection)
+            => service.CommunicateSubscriptionExhausted(connection, info));
+    }
+
     public async Task UpdateConnection(ExternalConnectionDto dto, CancellationToken cancellationToken)
     {
         var connection = await unitOfWork.ExternalConnectionRepository.GetConnectionById(dto.Id, cancellationToken) ??
