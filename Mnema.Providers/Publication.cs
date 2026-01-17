@@ -171,7 +171,8 @@ internal partial class Publication(
         Estimated = _speedTracker?.EstimatedTimeRemaining() ?? 0,
         SpeedType = SpeedType.Images,
         Speed = Math.Floor(_speedTracker?.IntermediateSpeed() ?? 0),
-        DownloadDir = DownloadDir
+        DownloadDir = DownloadDir,
+        UserId = Request.UserId,
     };
 
     public string Id => Series != null ? Series.Id : Request.Id;
@@ -214,47 +215,6 @@ internal partial class Publication(
     private async Task CleanupNotifications()
     {
         _externalConnectionService.CommunicateDownloadFinished(DownloadInfo);
-
-        if (!Request.IsSubscription)
-            return;
-
-        if (DownloadedPaths.Count == 0)
-            return;
-
-        var info = DownloadInfo;
-
-        var summary =
-            $"<a class=\"hover:pointer hover:underline\" href=\"{info.RefUrl}\" target=\"_blank\">{Title}</a> finished downloading {DownloadedPaths.Count} item(s).";
-        if (_failedDownloadsTracker > 0)
-        {
-            summary += $"{_failedDownloadsTracker} failed on the first try.";
-        }
-
-        var body = $"<bold>{Title}</bold><br>";
-        foreach (var chapterId in _queuedChapters)
-        {
-            var chapter = Series!.Chapters.FirstOrDefault(c => c.Id == chapterId);
-            if (chapter == null) continue;
-
-            body += $"• {ChapterFileName(chapter)}\n";
-        }
-
-        var notification = new Notification
-        {
-            Title = "Download completed",
-            UserId = Request.UserId,
-            Summary = summary,
-            Body = body,
-            Colour = NotificationColour.Primary,
-        };
-
-        _unitOfWork.NotificationRepository.AddNotification(notification);
-        await _unitOfWork.CommitAsync();
-
-        await _messageService.NotificationAdded(Request.UserId, 1);
-
-        var dto = _mapper.Map<NotificationDto>(notification);
-        await _messageService.Notify(Request.UserId, dto);
     }
 
     private OnDiskContent? GetContentByName(string name)

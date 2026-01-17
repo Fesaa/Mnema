@@ -39,6 +39,8 @@ public static class ServiceProviderExtensions
             ExternalConnectionType.Discord);
         services.AddKeyedScoped<IExternalConnectionHandlerService, KavitaExternalConnectionService>(
             ExternalConnectionType.Kavita);
+        services.AddKeyedScoped<IExternalConnectionHandlerService, NativeExternalConnectionService>(
+            ExternalConnectionType.Native);
 
         #endregion
 

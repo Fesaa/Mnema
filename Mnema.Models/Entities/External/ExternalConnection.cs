@@ -17,7 +17,8 @@ public class ExternalConnection
 public enum ExternalConnectionType
 {
     Discord = 0,
-    Kavita = 1
+    Kavita = 1,
+    Native = 2
 }
 
 public enum ExternalConnectionEvent

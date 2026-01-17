@@ -57,5 +57,6 @@ public class QBitTorrent(DownloadRequestDto request, TorrentInfo torrentInfo) : 
         SpeedType = SpeedType.Bytes,
         Speed = torrentInfo.DownloadSpeed,
         DownloadDir = Request.BaseDir,
+        UserId = Request.UserId,
     };
 }

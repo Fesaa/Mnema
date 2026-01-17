@@ -30,7 +30,7 @@ internal partial class QBitContentManager(
     private const string UrlKey = "url";
     private const string UsernameKey = "username";
     private const string PasswordKey = "password";
-    public const string RequestCacheKey = "QBitTorrent-Request-";
+    private const string RequestCacheKey = "QBitTorrent-Request-";
 
     private static readonly List<Provider> SupportedProviders = [Provider.Nyaa];
     private static readonly DistributedCacheEntryOptions RequestCacheKeyOptions = new();
