@@ -139,9 +139,12 @@ internal partial class Publication
         await foreach (var ioWork in channel.Reader.ReadAllAsync(_tokenSource.Token))
             try
             {
-                var filePath = await _extensions.DownloadCallback(ioWork, _tokenSource.Token);
+                await using (ioWork.Stream)
+                {
+                    var filePath = await _extensions.DownloadCallback(ioWork, _tokenSource.Token);
 
-                _logger.LogTrace("[{Title}/{Id}] Wrote {FilePath} / {Idx} to disk", Title, Id, filePath, ioWork.Idx);
+                    _logger.LogTrace("[{Title}/{Id}] Wrote {FilePath} / {Idx} to disk", Title, Id, filePath, ioWork.Idx);
+                }
             }
             catch (TaskCanceledException)
             {
