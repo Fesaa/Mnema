@@ -6,13 +6,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Mnema.API.External;
+using Mnema.API;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
-using Mnema.Models.Entities.External;
+using Mnema.Models.Entities;
 
-namespace Mnema.Services.External;
+namespace Mnema.Services.Connections;
 
 internal sealed record DiscordMessage
 {
@@ -65,10 +65,10 @@ internal sealed record DiscordEmbedField
     public bool? Inline { get; set; }
 }
 
-internal class DiscordExternalConnectionService(
-    ILogger<DiscordExternalConnectionService> logger,
+internal class DiscordConnectionService(
+    ILogger<DiscordConnectionService> logger,
     HttpClient httpClient
-) : IExternalConnectionHandlerService
+) : IConnectionHandlerService
 {
     private const string WebhookKey = "webhook";
     private const string UsernameKey = "username";
@@ -81,15 +81,15 @@ internal class DiscordExternalConnectionService(
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    public List<ExternalConnectionEvent> SupportedEvents { get; } =
+    public List<ConnectionEvent> SupportedEvents { get; } =
     [
-        ExternalConnectionEvent.DownloadStarted,
-        ExternalConnectionEvent.DownloadFinished,
-        ExternalConnectionEvent.DownloadFailure,
-        ExternalConnectionEvent.SubscriptionExhausted
+        ConnectionEvent.DownloadStarted,
+        ConnectionEvent.DownloadFinished,
+        ConnectionEvent.DownloadFailure,
+        ConnectionEvent.SubscriptionExhausted
     ];
 
-    public Task CommunicateDownloadStarted(ExternalConnection connection, DownloadInfo info)
+    public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
     {
         var embed = new DiscordEmbed
         {
@@ -115,7 +115,7 @@ internal class DiscordExternalConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public Task CommunicateDownloadFinished(ExternalConnection connection, DownloadInfo info)
+    public Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
     {
         var embed = new DiscordEmbed
         {
@@ -141,7 +141,7 @@ internal class DiscordExternalConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public Task CommunicateSubscriptionExhausted(ExternalConnection connection, DownloadInfo info)
+    public Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
     {
         var embed = new DiscordEmbed
         {
@@ -201,7 +201,7 @@ internal class DiscordExternalConnectionService(
         return embeds;
     }
 
-    public Task CommunicateDownloadFailure(ExternalConnection connection, DownloadInfo info, Exception ex)
+    public Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
     {
         var progressText = info.Progress > 0
             ? $"{info.Progress:F1}% complete before failure"
@@ -265,7 +265,7 @@ internal class DiscordExternalConnectionService(
         ]);
     }
 
-    private async Task SendMessage(ExternalConnection connection, DiscordEmbed[] embeds)
+    private async Task SendMessage(Connection connection, DiscordEmbed[] embeds)
     {
         var url = connection.Metadata.GetString(WebhookKey);
         if (string.IsNullOrEmpty(url))

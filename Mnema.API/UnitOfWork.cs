@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Mnema.API.External;
 
 namespace Mnema.API;
 
@@ -10,7 +9,7 @@ public interface IUnitOfWork
     IUserRepository UserRepository { get; }
     ISettingsRepository SettingsRepository { get; }
     INotificationRepository NotificationRepository { get; }
-    IExternalConnectionRepository ExternalConnectionRepository { get; }
+    IConnectionRepository ConnectionRepository { get; }
     IContentReleaseRepository ContentReleaseRepository { get; }
     IDownloadClientRepository DownloadClientRepository { get; }
 

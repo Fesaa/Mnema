@@ -2,26 +2,26 @@ using System;
 using System.Collections.Generic;
 using Mnema.Common;
 
-namespace Mnema.Models.Entities.External;
+namespace Mnema.Models.Entities;
 
-public class ExternalConnection
+public class Connection
 {
     public Guid Id { get; set; }
 
-    public ExternalConnectionType Type { get; set; }
+    public ConnectionType Type { get; set; }
     public string Name { get; set; }
-    public List<ExternalConnectionEvent> FollowedEvents { get; set; }
+    public List<ConnectionEvent> FollowedEvents { get; set; }
     public MetadataBag Metadata { get; set; }
 }
 
-public enum ExternalConnectionType
+public enum ConnectionType
 {
     Discord = 0,
     Kavita = 1,
     Native = 2
 }
 
-public enum ExternalConnectionEvent
+public enum ConnectionEvent
 {
     /// <summary>
     ///     Fired when Content starts to download, after metadata has loaded and something new will start

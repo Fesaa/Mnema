@@ -95,7 +95,7 @@ internal partial class Publication
 
         _hasNotifiedSubscriptionExhausted = true;
 
-        _externalConnectionService.CommunicateSubscriptionExhausted(DownloadInfo);
+        _connectionService.CommunicateSubscriptionExhausted(DownloadInfo);
 
         return ci;
     }

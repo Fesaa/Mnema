@@ -6,56 +6,55 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
-using Mnema.API.External;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
-using Mnema.Models.Entities.External;
+using Mnema.Models.Entities;
 
-namespace Mnema.Services.External;
+namespace Mnema.Services.Connections;
 
-internal class ExternalConnectionService(
-    ILogger<ExternalConnectionService> logger,
+internal class ConnectionService(
+    ILogger<ConnectionService> logger,
     IServiceScopeFactory scopeFactory,
     IUnitOfWork unitOfWork,
     IServiceProvider serviceProvider
-) : IExternalConnectionService
+) : IConnectionService
 {
     public void CommunicateDownloadStarted(DownloadInfo info)
     {
-        DoForAll(ExternalConnectionEvent.DownloadStarted, (service, connection)
+        DoForAll(ConnectionEvent.DownloadStarted, (service, connection)
             => service.CommunicateDownloadStarted(connection, info));
     }
 
     public void CommunicateDownloadFinished(DownloadInfo info)
     {
-        DoForAll(ExternalConnectionEvent.DownloadFinished, (service, connection)
+        DoForAll(ConnectionEvent.DownloadFinished, (service, connection)
             => service.CommunicateDownloadFinished(connection, info));
     }
 
     public void CommunicateDownloadFailure(DownloadInfo info, Exception ex)
     {
-        DoForAll(ExternalConnectionEvent.DownloadFailure, (service, connection)
+        DoForAll(ConnectionEvent.DownloadFailure, (service, connection)
             => service.CommunicateDownloadFailure(connection, info, ex));
     }
 
     public void CommunicateSubscriptionExhausted(DownloadInfo info)
     {
-        DoForAll(ExternalConnectionEvent.SubscriptionExhausted, (service, connection)
+        DoForAll(ConnectionEvent.SubscriptionExhausted, (service, connection)
             => service.CommunicateSubscriptionExhausted(connection, info));
     }
 
     public async Task UpdateConnection(ExternalConnectionDto dto, CancellationToken cancellationToken)
     {
-        var connection = await unitOfWork.ExternalConnectionRepository.GetConnectionById(dto.Id, cancellationToken) ??
-                         new ExternalConnection { Type = dto.Type, Metadata = new MetadataBag() };
+        var connection = await unitOfWork.ConnectionRepository.GetConnectionById(dto.Id, cancellationToken) ??
+                         new Connection { Type = dto.Type, Metadata = new MetadataBag() };
 
         connection.Name = dto.Name;
         connection.FollowedEvents = dto.FollowedEvents;
 
-        var service = serviceProvider.GetKeyedService<IExternalConnectionHandlerService>(connection.Type);
+        var service = serviceProvider.GetKeyedService<IConnectionHandlerService>(connection.Type);
         if (service == null)
         {
             logger.LogWarning(
@@ -69,16 +68,16 @@ internal class ExternalConnectionService(
             connection.Metadata[control.Key] = dto.Metadata.GetStrings(control.Key).ToList();
 
         if (connection.Id.Equals(Guid.Empty))
-            unitOfWork.ExternalConnectionRepository.Add(connection);
+            unitOfWork.ConnectionRepository.Add(connection);
         else
-            unitOfWork.ExternalConnectionRepository.Update(connection);
+            unitOfWork.ConnectionRepository.Update(connection);
 
         await unitOfWork.CommitAsync();
     }
 
-    public async Task<FormDefinition> GetForm(ExternalConnectionType type, CancellationToken cancellationToken)
+    public async Task<FormDefinition> GetForm(ConnectionType type, CancellationToken cancellationToken)
     {
-        var service = serviceProvider.GetKeyedService<IExternalConnectionHandlerService>(type);
+        var service = serviceProvider.GetKeyedService<IConnectionHandlerService>(type);
         if (service == null)
         {
             logger.LogWarning(
@@ -91,7 +90,7 @@ internal class ExternalConnectionService(
 
         return new FormDefinition
         {
-            Key = $"settings.external-connections.{type}",
+            Key = $"settings.connections.{type}",
             Controls =
             [
                 new FormControlDefinition
@@ -119,8 +118,8 @@ internal class ExternalConnectionService(
         };
     }
 
-    private void DoForAll(ExternalConnectionEvent @event,
-        Func<IExternalConnectionHandlerService, ExternalConnection, Task> consumer)
+    private void DoForAll(ConnectionEvent @event,
+        Func<IConnectionHandlerService, Connection, Task> consumer)
     {
         Task.Run(async () =>
         {
@@ -129,7 +128,7 @@ internal class ExternalConnectionService(
                 using var scope = scopeFactory.CreateScope();
                 var scopedUnitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-                var connections = await scopedUnitOfWork.ExternalConnectionRepository
+                var connections = await scopedUnitOfWork.ConnectionRepository
                     .GetAllConnections(CancellationToken.None);
 
                 List<Task> tasks = [];
@@ -137,7 +136,7 @@ internal class ExternalConnectionService(
                 foreach (var connection in connections.Where(c => c.FollowedEvents.Contains(@event)))
                 {
                     var service =
-                        scope.ServiceProvider.GetKeyedService<IExternalConnectionHandlerService>(connection.Type);
+                        scope.ServiceProvider.GetKeyedService<IConnectionHandlerService>(connection.Type);
                     if (service == null)
                     {
                         logger.LogWarning(

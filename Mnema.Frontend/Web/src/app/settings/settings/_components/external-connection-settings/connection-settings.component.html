@@ -1,4 +1,4 @@
-<div class="mt-4" *transloco="let t; prefix: 'settings.external-connections'">
+<div class="mt-4" *transloco="let t; prefix: 'settings.connections'">
 
   <h2 class="h2 fw-bold mt-4 mb-3">{{ t('title') }}</h2>
 
@@ -29,14 +29,14 @@
       </td>
 
       <td class="table-cell">
-        {{ item.type | externalConnectionType }}
+        {{ item.type | connectionType }}
       </td>
 
       <td class="table-cell">
         <div class="d-flex flex-wrap gap-1">
           @for (event of item.followedEvents; track event) {
             <span class="badge bg-secondary">
-              {{ event | externalConnectionEvent }}
+              {{ event | ConnectionEvent }}
             </span>
           }
           @if (item.followedEvents.length === 0) {

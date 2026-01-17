@@ -7,7 +7,6 @@ using Mnema.Common;
 using Mnema.Database.Extensions;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
-using Mnema.Models.Entities.External;
 using Mnema.Models.Entities.UI;
 using Mnema.Models.Entities.User;
 
@@ -28,7 +27,7 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<Subscription> Subscriptions { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<ServerSetting> ServerSettings { get; set; }
-    public DbSet<ExternalConnection> ExternalConnections { get; set; }
+    public DbSet<Connection> Connections { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
     public DbSet<ContentRelease> ProcessedContentReleases { get; set; }
     public DbSet<DownloadClient> DownloadClients { get; set; }
@@ -61,14 +60,14 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
             .HasColumnType("TEXT")
             .HasDefaultValue(new MetadataBag());
 
-        builder.Entity<ExternalConnection>()
+        builder.Entity<Connection>()
             .Property(c => c.Metadata)
             .HasJsonConversion([])
             .HasColumnType("TEXT")
             .HasDefaultValue(new MetadataBag());
-        builder.Entity<ExternalConnection>()
+        builder.Entity<Connection>()
             .PrimitiveCollection(c => c.FollowedEvents)
-            .HasDefaultValue(new List<ExternalConnectionEvent>());
+            .HasDefaultValue(new List<ConnectionEvent>());
 
         builder.Entity<DownloadClient>()
             .Property(d => d.Metadata)

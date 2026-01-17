@@ -1,15 +1,15 @@
 import {ChangeDetectionStrategy, Component, computed, EventEmitter, inject} from '@angular/core';
 import {ModalService} from "../../../../_services/modal.service";
 import {
-  ExternalConnection,
-  ExternalConnectionService,
-  ExternalConnectionType,
-  ExternalConnectionTypes
-} from "./external-connection.service";
+  Connection,
+  ConnectionService,
+  ConnectionType,
+  ConnectionTypes
+} from "./connection.service";
 import {TableComponent} from "../../../../shared/_component/table/table.component";
 import {PageLoader} from "../../../../shared/_component/paginator/paginator.component";
-import {ExternalConnectionTypePipe} from "./_pipes/external-connection-type.pipe";
-import {ExternalConnectionEventPipe} from "./_pipes/external-connection-event.pipe";
+import {ConnectionTypePipe} from "./_pipes/connection-type.pipe";
+import {ConnectionEventPipe} from "./_pipes/connection-event.pipe";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {GenericFormModalComponent} from "../../../../generic-form/generic-form-modal/generic-form-modal.component";
 import {DefaultModalOptions} from "../../../../_models/default-modal-options";
@@ -20,37 +20,37 @@ import {ListSelectModalComponent} from "../../../../shared/_component/list-selec
   selector: 'app-external-connection-settings',
   imports: [
     TableComponent,
-    ExternalConnectionTypePipe,
-    ExternalConnectionEventPipe,
+    ConnectionTypePipe,
+    ConnectionEventPipe,
     TranslocoDirective
   ],
-  templateUrl: './external-connection-settings.component.html',
-  styleUrl: './external-connection-settings.component.scss',
+  templateUrl: './connection-settings.component.html',
+  styleUrl: './connection-settings.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExternalConnectionSettingsComponent {
+export class ConnectionSettingsComponent {
 
-  private readonly externalConnectionService = inject(ExternalConnectionService);
+  private readonly connectionService = inject(ConnectionService);
   private readonly modalService = inject(ModalService);
 
   protected pageReloader = new EventEmitter<void>();
 
-  pageLoader = computed<PageLoader<ExternalConnection>>(() => {
+  pageLoader = computed<PageLoader<Connection>>(() => {
     return (pageNumber: number, pageSize: number) => {
-      return this.externalConnectionService.getExternalConnections(pageNumber, pageSize);
+      return this.connectionService.getConnections(pageNumber, pageSize);
     };
   });
 
-  trackBy(_: number, connection: ExternalConnection) {
+  trackBy(_: number, connection: Connection) {
     return connection.id;
   }
 
-  edit(connection: ExternalConnection | null) {
+  edit(connection: Connection | null) {
     const type$ = connection == null
       ? this.promptForConnectionType() : of(connection.type);
 
     type$.pipe(
-    switchMap(type => this.externalConnectionService.getConnectionForm(type).pipe(
+    switchMap(type => this.connectionService.getConnectionForm(type).pipe(
       map(form => ({form, type}))
     )),
     switchMap(({form, type}) => {
@@ -59,35 +59,35 @@ export class ExternalConnectionSettingsComponent {
         component.double.set(true);
         component.formDefinition.set(form);
         component.initialValue.set(connection ?? {type: type, metadata: {}});
-        component.translationKey.set('settings.external-connections.edit');
+        component.translationKey.set('settings.connections.edit');
 
-        return this.modalService.onClose$<ExternalConnection>(modal);
+        return this.modalService.onClose$<Connection>(modal);
       }),
-      switchMap(c => this.externalConnectionService.updateExternalConnection(c)),
+      switchMap(c => this.connectionService.updateConnection(c)),
       finalize(() => this.pageReloader.emit()),
     ).subscribe()
   }
 
   private promptForConnectionType() {
-    const typePipe = new ExternalConnectionTypePipe();
+    const typePipe = new ConnectionTypePipe();
 
-    const [modal, component] = this.modalService.open(ListSelectModalComponent<ExternalConnectionType>, {
+    const [modal, component] = this.modalService.open(ListSelectModalComponent<ConnectionType>, {
       size: "lg", centered: true,
     });
-    component.title.set(translate('settings.external-connections.edit.select-type-title'));
-    component.inputItems.set(ExternalConnectionTypes.map(type => ({
+    component.title.set(translate('settings.connections.edit.select-type-title'));
+    component.inputItems.set(ConnectionTypes.map(type => ({
       label: typePipe.transform(type),
       value: type
     })));
 
-    return this.modalService.onClose$<ExternalConnectionType>(modal);
+    return this.modalService.onClose$<ConnectionType>(modal);
   }
 
-  remove(connection: ExternalConnection) {
-    this.modalService.confirm$({question: translate('settings.external-connections.delete.title'),
+  remove(connection: Connection) {
+    this.modalService.confirm$({question: translate('settings.connections.delete.title'),
     }, true)
       .pipe(
-        switchMap(() => this.externalConnectionService.deleteExternalConnection(connection.id)),
+        switchMap(() => this.connectionService.deleteConnection(connection.id)),
         finalize(() => this.pageReloader.emit()),
     ).subscribe();
 

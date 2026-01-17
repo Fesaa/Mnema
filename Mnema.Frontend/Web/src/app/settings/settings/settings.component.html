@@ -61,8 +61,8 @@
         }
       }
 
-      @defer (when selected() === SettingsID.ExternalConnections; prefetch on idle) {
-        @if (selected() === SettingsID.ExternalConnections && canSee(SettingsID.ExternalConnections)) {
+      @defer (when selected() === SettingsID.Connections; prefetch on idle) {
+        @if (selected() === SettingsID.Connections && canSee(SettingsID.Connections)) {
           <app-external-connection-settings />
         }
       }

@@ -13,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
-using Mnema.API.External;
 using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
@@ -35,8 +34,8 @@ internal partial class Publication(
     private readonly ApplicationConfiguration _configuration =
         scope.ServiceProvider.GetRequiredService<ApplicationConfiguration>();
 
-    private readonly IExternalConnectionService _externalConnectionService =
-        scope.ServiceProvider.GetRequiredService<IExternalConnectionService>();
+    private readonly IConnectionService _connectionService =
+        scope.ServiceProvider.GetRequiredService<IConnectionService>();
 
     private readonly IFileSystem _fileSystem = scope.ServiceProvider.GetRequiredService<IFileSystem>();
 
@@ -196,7 +195,7 @@ internal partial class Publication(
 
         if (reason != null)
         {
-            _externalConnectionService.CommunicateDownloadFailure(DownloadInfo, reason);
+            _connectionService.CommunicateDownloadFailure(DownloadInfo, reason);
 
         }
 
@@ -214,7 +213,7 @@ internal partial class Publication(
 
     private async Task CleanupNotifications()
     {
-        _externalConnectionService.CommunicateDownloadFinished(DownloadInfo);
+        _connectionService.CommunicateDownloadFinished(DownloadInfo);
     }
 
     private OnDiskContent? GetContentByName(string name)

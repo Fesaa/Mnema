@@ -1,38 +1,36 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Mnema.API;
-using Mnema.API.External;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.DTOs.User;
-using Mnema.Models.Entities.External;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.User;
 
-namespace Mnema.Services.External;
+namespace Mnema.Services.Connections;
 
-internal class NativeExternalConnectionService(
+internal class NativeConnectionService(
     IUnitOfWork unitOfWork,
     IMessageService messageService,
     IMapper mapper
-) : IExternalConnectionHandlerService
+) : IConnectionHandlerService
 {
     private const int MaxSummaryLength = 512;
     private const int MaxBodyLength = 4096;
 
-    public List<ExternalConnectionEvent> SupportedEvents { get; } =
+    public List<ConnectionEvent> SupportedEvents { get; } =
     [
-        ExternalConnectionEvent.DownloadStarted,
-        ExternalConnectionEvent.DownloadFinished,
-        ExternalConnectionEvent.DownloadFailure,
-        ExternalConnectionEvent.SubscriptionExhausted
+        ConnectionEvent.DownloadStarted,
+        ConnectionEvent.DownloadFinished,
+        ConnectionEvent.DownloadFailure,
+        ConnectionEvent.SubscriptionExhausted
     ];
 
-    public Task CommunicateDownloadStarted(ExternalConnection connection, DownloadInfo info)
+    public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
     {
         return SendNotification(new Notification
         {
@@ -44,7 +42,7 @@ internal class NativeExternalConnectionService(
         });
     }
 
-    public Task CommunicateDownloadFinished(ExternalConnection connection, DownloadInfo info)
+    public Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
     {
         return SendNotification(new Notification
         {
@@ -56,7 +54,7 @@ internal class NativeExternalConnectionService(
         });
     }
 
-    public Task CommunicateDownloadFailure(ExternalConnection connection, DownloadInfo info, Exception ex)
+    public Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
     {
         return SendNotification(new Notification
         {
@@ -68,7 +66,7 @@ internal class NativeExternalConnectionService(
         });
     }
 
-    public Task CommunicateSubscriptionExhausted(ExternalConnection connection, DownloadInfo info)
+    public Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
     {
         return SendNotification(new Notification
         {

@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
-using Mnema.API.External;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
@@ -284,7 +283,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
             _logger.LogError(ex, "Unhandled exceptions while downloading {Title}", publication.Title);
 
             using var scope = _scopeFactory.CreateScope();
-            var externalConnectionService = scope.ServiceProvider.GetRequiredService<IExternalConnectionService>();
+            var externalConnectionService = scope.ServiceProvider.GetRequiredService<IConnectionService>();
             externalConnectionService.CommunicateDownloadFailure(publication.DownloadInfo, ex);
 
             await StopDownload(new StopRequestDto

@@ -6,11 +6,11 @@ using Mnema.Common;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
-using Mnema.Models.Entities.External;
+using Mnema.Models.Entities;
 
-namespace Mnema.API.External;
+namespace Mnema.API;
 
-public interface IExternalConnectionService
+public interface IConnectionService
 {
     void CommunicateDownloadStarted(DownloadInfo info);
     void CommunicateDownloadFinished(DownloadInfo info);
@@ -18,17 +18,17 @@ public interface IExternalConnectionService
     void CommunicateSubscriptionExhausted(DownloadInfo info);
 
     Task UpdateConnection(ExternalConnectionDto connection, CancellationToken cancellationToken);
-    Task<FormDefinition> GetForm(ExternalConnectionType type, CancellationToken cancellationToken);
+    Task<FormDefinition> GetForm(ConnectionType type, CancellationToken cancellationToken);
 }
 
-public interface IExternalConnectionHandlerService
+public interface IConnectionHandlerService
 {
-    List<ExternalConnectionEvent> SupportedEvents { get; }
+    List<ConnectionEvent> SupportedEvents { get; }
 
-    Task CommunicateDownloadStarted(ExternalConnection connection, DownloadInfo info);
-    Task CommunicateDownloadFinished(ExternalConnection connection, DownloadInfo info);
-    Task CommunicateDownloadFailure(ExternalConnection connection, DownloadInfo info, Exception ex);
-    Task CommunicateSubscriptionExhausted(ExternalConnection connection, DownloadInfo info);
+    Task CommunicateDownloadStarted(Connection connection, DownloadInfo info);
+    Task CommunicateDownloadFinished(Connection connection, DownloadInfo info);
+    Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex);
+    Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info);
 
     /// <summary>
     ///     Returns the form for configuration this specific external service
@@ -39,17 +39,17 @@ public interface IExternalConnectionHandlerService
     Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken);
 }
 
-public interface IExternalConnectionRepository
+public interface IConnectionRepository
 {
-    Task<List<ExternalConnection>> GetAllConnections(CancellationToken cancellationToken);
+    Task<List<Connection>> GetAllConnections(CancellationToken cancellationToken);
 
     Task<PagedList<ExternalConnectionDto>> GetAllConnectionDtos(PaginationParams pagintation,
         CancellationToken cancellationToken);
 
-    Task<ExternalConnection?> GetConnectionById(Guid connectionId, CancellationToken cancellationToken);
+    Task<Connection?> GetConnectionById(Guid connectionId, CancellationToken cancellationToken);
     Task DeleteConnectionById(Guid connectionId, CancellationToken cancellationToken);
 
 
-    void Add(ExternalConnection connection);
-    void Update(ExternalConnection connection);
+    void Add(Connection connection);
+    void Update(Connection connection);
 }

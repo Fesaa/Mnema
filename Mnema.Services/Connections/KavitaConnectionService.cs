@@ -7,14 +7,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Mnema.API.External;
+using Mnema.API;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
-using Mnema.Models.Entities.External;
+using Mnema.Models.Entities;
 using Mnema.Models.Internal;
 
-namespace Mnema.Services.External;
+namespace Mnema.Services.Connections;
 
 internal sealed record ScanFolderDto
 {
@@ -23,25 +23,25 @@ internal sealed record ScanFolderDto
     public bool AbortOnNoSeriesMatch { get; set; } = true;
 }
 
-internal class KavitaExternalConnectionService(
-    ILogger<KavitaExternalConnectionService> logger,
+internal class KavitaConnectionService(
+    ILogger<KavitaConnectionService> logger,
     HttpClient httpClient,
     ApplicationConfiguration applicationConfiguration
-) : IExternalConnectionHandlerService
+) : IConnectionHandlerService
 {
     private const string ApiKey = "api-key";
     private const string UrlKey = "url";
     private const string BaseDirSrcKey = "basedir-src";
     private const string BaseDirDestKey = "basedir-dest";
 
-    public List<ExternalConnectionEvent> SupportedEvents { get; } = [ExternalConnectionEvent.DownloadFinished];
+    public List<ConnectionEvent> SupportedEvents { get; } = [ConnectionEvent.DownloadFinished];
 
-    public Task CommunicateDownloadStarted(ExternalConnection connection, DownloadInfo info)
+    public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
     {
         throw new NotImplementedException();
     }
 
-    public async Task CommunicateDownloadFinished(ExternalConnection connection, DownloadInfo info)
+    public async Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
     {
         var url = connection.Metadata.GetString(UrlKey);
         var authKey = connection.Metadata.GetString(ApiKey);
@@ -76,12 +76,12 @@ internal class KavitaExternalConnectionService(
         response.EnsureSuccessStatusCode();
     }
 
-    public Task CommunicateDownloadFailure(ExternalConnection connection, DownloadInfo info, Exception ex)
+    public Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
     {
         throw new NotImplementedException();
     }
 
-    public Task CommunicateSubscriptionExhausted(ExternalConnection connection, DownloadInfo info)
+    public Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
     {
         throw new NotImplementedException();
     }

@@ -32,7 +32,7 @@
       "preferences": "Preferences",
       "pages": "Pages",
       "server": "Server",
-      "external-connections": "External Connections",
+      "connections": "Connections",
       "download-clients": "Download Clients",
       "logout": "Logout"
     }
@@ -699,8 +699,8 @@
         }
       }
     },
-    "external-connections": {
-      "title": "External Connections",
+    "connections": {
+      "title": "Connections",
       "no-events": "No events",
       "header": {
         "name": "Name",
@@ -710,18 +710,19 @@
       },
       "empty": {
         "title": "Nothing here yet",
-        "description": "You don’t have any external connections set up yet"
+        "description": "You don’t have any connections set up yet"
       },
       "shared": {
         "event": {
           "DownloadStarted": "Download Started",
           "DownloadFinished": "Download Finished",
-          "DownloadFailure": "Download Failure"
+          "DownloadFailure": "Download Failure",
+          "SubscriptionExhausted": "Subscription Exhausted"
         }
       },
       "edit": {
         "select-type-title": "Pick your connection type",
-        "title": "Edit External Connection",
+        "title": "Edit Connection",
         "close": "{{common.close}}",
         "save": "{{common.save}}"
       },
@@ -737,9 +738,10 @@
         "followed-events-title": "Followed Events",
         "followed-events-tooltip": "Events to act on",
         "followed-events": {
-          "DownloadStarted": "{{settings.external-connections.shared.event.DownloadStarted}}",
-          "DownloadFinished": "{{settings.external-connections.shared.event.DownloadFinished}}",
-          "DownloadFailure": "{{settings.external-connections.shared.event.DownloadFailure}}"
+          "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
+          "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
+          "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
+          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}"
         }
       },
       "Kavita": {
@@ -756,9 +758,22 @@
         "followed-events-title": "Followed Events",
         "followed-events-tooltip": "Events to act on",
         "followed-events": {
-          "DownloadStarted": "{{settings.external-connections.shared.event.DownloadStarted}}",
-          "DownloadFinished": "{{settings.external-connections.shared.event.DownloadFinished}}",
-          "DownloadFailure": "{{settings.external-connections.shared.event.DownloadFailure}}"
+          "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
+          "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
+          "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
+          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}"
+        }
+      },
+      "Native": {
+        "name-title": "Name",
+        "name-tooltip": "Your custom name for this connection",
+        "followed-events-title": "Followed Events",
+        "followed-events-tooltip": "Events to act on",
+        "followed-events": {
+          "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
+          "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
+          "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
+          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}"
         }
       }
     },

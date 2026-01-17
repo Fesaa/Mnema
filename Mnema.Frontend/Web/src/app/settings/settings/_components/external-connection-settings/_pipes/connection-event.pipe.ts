@@ -1,20 +1,20 @@
 import {Pipe, PipeTransform} from '@angular/core';
-import {ExternalConnectionEvent} from "../external-connection.service";
+import {ConnectionEvent} from "../connection.service";
 import {translate} from "@jsverse/transloco";
 
 @Pipe({
-  name: 'externalConnectionEvent',
+  name: 'ConnectionEvent',
   standalone: true
 })
-export class ExternalConnectionEventPipe implements PipeTransform {
+export class ConnectionEventPipe implements PipeTransform {
 
-  transform(event: ExternalConnectionEvent): string {
+  transform(event: ConnectionEvent): string {
     switch (event) {
-      case ExternalConnectionEvent.DownloadStarted:
+      case ConnectionEvent.DownloadStarted:
         return translate('settings.external-connections.shared.event.DownloadStarted');
-      case ExternalConnectionEvent.DownloadFinished:
+      case ConnectionEvent.DownloadFinished:
         return translate('settings.external-connections.shared.event.DownloadFinished');
-      case ExternalConnectionEvent.DownloadFailure:
+      case ConnectionEvent.DownloadFailure:
         return translate('settings.external-connections.shared.event.DownloadFailure');
       default:
         return 'Unknown';
