@@ -108,6 +108,12 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
                 Key = RequestConstants.HardcoverSeriesIdKey,
                 Type = FormType.Text,
                 ValueType = FormValueType.Integer,
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.MangaBakaKey,
+                Type = FormType.Text,
+                ValueType = FormValueType.Integer,
             }
         ]);
     }

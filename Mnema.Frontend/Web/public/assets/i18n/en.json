@@ -121,7 +121,9 @@
       "comic": "Comic"
     },
     "hardcover_series_id-title": "{{provider-metadata.hardcover_series_id-title}}",
-    "hardcover_series_id-tooltip": "{{provider-metadata.hardcover_series_id-tooltip}}"
+    "hardcover_series_id-tooltip": "{{provider-metadata.hardcover_series_id-tooltip}}",
+    "manga_baka_id-title": "{{provider-metadata.manga_baka_id-title}}",
+    "manga_baka_id-tooltip": "{{provider-metadata.manga_baka_id-tooltip}}"
   },
 
   "edit-subscription-modal": {
@@ -217,7 +219,9 @@
     "content_format-title": "Content Format",
     "content_format-tooltip": "",
     "hardcover_series_id-title": "Hardcover series id",
-    "hardcover_series_id-tooltip": "The numerical id, not the slug"
+    "hardcover_series_id-tooltip": "The numerical id, not the slug",
+    "manga_baka_id-title": "Mangabaka id",
+    "manga_baka_id-tooltip": "Series id on mangabaka.org"
   },
 
   "refresh-frequency-pipe": {

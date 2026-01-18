@@ -41,5 +41,5 @@ public static class RequestConstants
     public const string FormatKey = "format";
     public const string ContentFormatKey = "content_format";
     public const string HardcoverSeriesIdKey = "hardcover_series_id";
-    public const string MangaBakaKey = "manga_baka_key";
+    public const string MangaBakaKey = "manga_baka_id";
 }
