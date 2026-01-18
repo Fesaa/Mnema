@@ -129,9 +129,16 @@ internal class SubscriptionScheduler(
                 continue;
             }
 
-            var recentlyUpdated = await repository.GetRecentlyUpdated(cancellationToken);
+            try
+            {
+                var recentlyUpdated = await repository.GetRecentlyUpdated(cancellationToken);
 
-            releases.AddRange(recentlyUpdated);
+                releases.AddRange(recentlyUpdated);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to search for recently updated releases: {Provider}", provider.ToString());
+            }
         }
 
         return releases;
