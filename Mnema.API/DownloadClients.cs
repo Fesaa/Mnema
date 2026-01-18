@@ -23,6 +23,8 @@ public interface IDownloadClientRepository
 
 public interface IDownloadClientService
 {
+    Task MarkAsFailed(Guid id, CancellationToken cancellationToken);
+    Task ReleaseFailedLock(Guid id, CancellationToken cancellationToken);
     Task UpdateDownloadClientAsync(DownloadClientDto dto, CancellationToken cancellationToken);
     Task<FormDefinition?> GetFormDefinitionForType(DownloadClientType type, CancellationToken cancellationToken);
 }

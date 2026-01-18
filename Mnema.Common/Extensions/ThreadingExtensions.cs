@@ -13,7 +13,7 @@ public static class ThreadingExtensions
         ILogger logger,
         TimeSpan timeSpan,
         Func<Task> taskFactory,
-        bool catchErrors = true)
+        Func<Exception, Task<bool>> exceptionCatcher)
     {
         while (!tokenSource.IsCancellationRequested)
         {
@@ -29,10 +29,9 @@ public static class ThreadingExtensions
             }
             catch (Exception ex)
             {
-                if (catchErrors)
-                    logger.LogWarning(ex, "An unhandled exceptions occurred inside the operation");
-                else
-                    throw;
+                logger.LogError(ex, "An error occurred in task loop");
+                if (!await exceptionCatcher(ex))
+                    return;
             }
         }
     }

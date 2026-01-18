@@ -42,6 +42,15 @@
 
         <button
           type="button"
+          class="btn btn-small"
+          (click)="releaseLock(item)"
+          [disabled]="!item.isFailed"
+        >
+          <i class="fa {{item.isFailed ? 'fa-lock' : 'fa-lock-open'}}"></i>
+        </button>
+
+        <button
+          type="button"
           class="btn btn-small text-danger"
           (click)="remove(item)"
         >

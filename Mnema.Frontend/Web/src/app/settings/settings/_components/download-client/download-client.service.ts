@@ -8,6 +8,8 @@ import {FormDefinition} from "../../../../generic-form/form";
 export interface DownloadClient {
   id: string;
   name: string;
+  isFailed: boolean;
+  failedAt: Date;
   type: DownloadClientType,
   metadata: MetadataBag,
 }
@@ -42,6 +44,10 @@ export class DownloadClientService {
 
   deleteDownloadClient(id: string) {
     return this.httpClient.delete(this.baseUrl + `DownloadClient/${id}`);
+  }
+
+  releaseLock(id: string) {
+    return this.httpClient.delete(this.baseUrl + `DownloadClient/${id}/failed-lock`);
   }
 
 

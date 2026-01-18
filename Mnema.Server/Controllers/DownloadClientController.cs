@@ -38,6 +38,14 @@ public class DownloadClientController(IUnitOfWork unitOfWork, IDownloadClientSer
         return Ok(free);
     }
 
+    [HttpDelete("{id:guid}/failed-lock")]
+    public async Task<IActionResult> ReleaseFailedLock(Guid id)
+    {
+        await downloadClientService.ReleaseFailedLock(id, HttpContext.RequestAborted);
+
+        return Ok();
+    }
+
     [HttpPost]
     public async Task<IActionResult> UpdateOrCreat(DownloadClientDto downloadClientDto)
     {

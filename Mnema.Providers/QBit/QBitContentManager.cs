@@ -35,6 +35,7 @@ internal partial class QBitContentManager(
     private static readonly List<Provider> SupportedProviders = [Provider.Nyaa];
     private static readonly DistributedCacheEntryOptions RequestCacheKeyOptions = new();
 
+    private DownloadClient? _downloadClient;
     private QBittorrentClient? _qBittorrentClient;
 
     public async Task Download(DownloadRequestDto request)
@@ -139,12 +140,20 @@ internal partial class QBitContentManager(
 
         using var scope = scopeFactory.CreateScope();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        var downloadClientService = scope.ServiceProvider.GetRequiredService<IDownloadClientService>();
 
         var downloadClient = await unitOfWork.DownloadClientRepository
             .GetDownloadClientAsync(DownloadClientType.QBittorrent, CancellationToken.None);
 
         if (downloadClient == null)
             return null;
+
+        if (downloadClient.IsFailed)
+        {
+            logger.LogWarning("Download client {Id} is in a failed state until {Until}",
+                downloadClient.Id, downloadClient.FailedAt?.AddHours(1));
+            return null;
+        }
 
         var url = downloadClient.Metadata.GetString(UrlKey);
         var username = downloadClient.Metadata.GetString(UsernameKey);
@@ -156,11 +165,24 @@ internal partial class QBitContentManager(
             return null;
         }
 
-        _qBittorrentClient = new QBittorrentClient(new Uri(url));
-        await _qBittorrentClient.LoginAsync(username, password);
+        try
+        {
+            _qBittorrentClient = new QBittorrentClient(new Uri(url));
+            await _qBittorrentClient.LoginAsync(username, password);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to connect to the configured download client");
+
+            _qBittorrentClient = null;
+            await downloadClientService.MarkAsFailed(downloadClient.Id, CancellationToken.None);
+
+            return null;
+        }
 
         EnsureWatcherInitialized();
 
+        _downloadClient = downloadClient;
         return _qBittorrentClient;
     }
 

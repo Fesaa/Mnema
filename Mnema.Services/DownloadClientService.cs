@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
@@ -16,6 +17,35 @@ namespace Mnema.Services;
 
 public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitOfWork unitOfWork, IServiceProvider serviceProvider): IDownloadClientService
 {
+    public async Task MarkAsFailed(Guid id, CancellationToken cancellationToken)
+    {
+        var client = await unitOfWork.DownloadClientRepository.GetDownloadClientAsync(id, cancellationToken);
+        if (client == null) return;
+
+        client.IsFailed = true;
+        client.FailedAt = DateTime.UtcNow;
+
+        unitOfWork.DownloadClientRepository.Update(client);
+        await unitOfWork.CommitAsync();
+
+        BackgroundJob.Schedule(
+            ()  => ReleaseFailedLock(id, CancellationToken.None),
+            TimeSpan.FromHours(1));
+    }
+
+    public async Task ReleaseFailedLock(Guid id, CancellationToken cancellationToken)
+    {
+        var client = await unitOfWork.DownloadClientRepository.GetDownloadClientAsync(id, cancellationToken);
+        if (client is not { IsFailed: true }) return;
+
+        logger.LogInformation("Releasing failed lock on Download client {Id} of type {Type}", client.Id, client.Type);
+
+        client.IsFailed = false;
+        client.FailedAt = null;
+
+        unitOfWork.DownloadClientRepository.Update(client);
+        await unitOfWork.CommitAsync();
+    }
 
     public async Task UpdateDownloadClientAsync(DownloadClientDto dto, CancellationToken cancellationToken)
     {

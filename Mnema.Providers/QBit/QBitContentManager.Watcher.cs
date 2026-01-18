@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +31,30 @@ internal partial class QBitContentManager: IAsyncDisposable
         _watcherTask = Task.Run(() => _tokenSource.DoWhile(
             logger,
             TimeSpan.FromSeconds(2),
-            TorrentWatcher));
+            TorrentWatcher,
+            TorrentWatcherExceptionCacther));
+    }
+
+    private async Task<bool> TorrentWatcherExceptionCacther(Exception ex)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var downloadClientService = scope.ServiceProvider.GetRequiredService<IDownloadClientService>();
+
+        switch (ex)
+        {
+            case HttpRequestException:
+                if (_downloadClient != null)
+                {
+                    await downloadClientService.MarkAsFailed(_downloadClient.Id, _tokenSource.Token);
+                }
+
+                _qBittorrentClient = null;
+                _watcherTask = null;
+                return false;
+
+            default:
+                return false;
+        }
     }
 
     private async Task TorrentWatcher()

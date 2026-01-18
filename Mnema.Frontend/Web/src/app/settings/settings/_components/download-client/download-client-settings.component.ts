@@ -79,6 +79,15 @@ export class DownloadClientSettingsComponent {
     );
   }
 
+  releaseLock(client: DownloadClient) {
+    this.modalService.confirm$({question: translate('settings.external-connections.release-lock.title'),
+    }, true)
+      .pipe(
+        switchMap(() => this.downloadClientService.releaseLock(client.id)),
+        finalize(() => this.pageReloader.emit()),
+      ).subscribe();
+  }
+
   remove(client: DownloadClient) {
     this.modalService.confirm$({question: translate('settings.external-connections.delete.title'),
     }, true)
@@ -86,7 +95,6 @@ export class DownloadClientSettingsComponent {
         switchMap(() => this.downloadClientService.deleteDownloadClient(client.id)),
         finalize(() => this.pageReloader.emit()),
       ).subscribe();
-
   }
 
 }
