@@ -22,6 +22,13 @@ public class ContentRelease: IEntityDate
     public required string ReleaseId { get; set; }
 
     /// <summary>
+    /// Required for torrents
+    /// </summary>
+    public string DownloadUrl { get; set; } = string.Empty;
+
+    public required Provider Provider { get; set; }
+
+    /// <summary>
     /// The id that uniquely defines the content this release is part of (I.e. series id)
     /// </summary>
     /// <remarks>This is not required, releases from RSS feeds do not have this</remarks>
@@ -30,12 +37,12 @@ public class ContentRelease: IEntityDate
     /// <summary>
     /// Name of the release (I.e. chapter name)
     /// </summary>
-    public string ReleaseName { get; set; }
+    public string ReleaseName { get; set; } = string.Empty;
 
     /// <summary>
     /// Name of the content (I.e. series name)
     /// </summary>
-    public string ContentName { get; set; }
+    public string ContentName { get; set; } = string.Empty;
 
     /// <summary>
     /// Time this release was published

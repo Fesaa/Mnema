@@ -91,7 +91,7 @@ internal partial class Publication
         var sw = Stopwatch.StartNew();
 
         ExistingContent =
-            _scannerService.ScanDirectoryAsync(DownloadDir, ContentFormat.Manga, Format.Archive, cancellationToken);
+            _scannerService.ScanDirectory(DownloadDir, ContentFormat.Manga, Format.Archive, cancellationToken);
 
         _queuedChapters = Series!.Chapters
             .Where(ShouldDownloadChapter)

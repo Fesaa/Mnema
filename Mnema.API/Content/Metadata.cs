@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.DTOs.User;
@@ -75,7 +76,7 @@ public interface IMetadataProviderService
 
 public interface IMetadataResolver
 {
-    Task<Series?> ResolveSeriesAsync(DownloadRequestDto request, CancellationToken cancellationToken = default);
+    Task<Series?> ResolveSeriesAsync(MetadataBag metadata, CancellationToken cancellationToken = default);
     ChapterResolutionResult ResolveChapter(string fileName, Series? series, ContentFormat contentFormat);
 }
 

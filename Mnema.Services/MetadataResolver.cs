@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
@@ -14,10 +15,10 @@ public class MetadataResolver(
     [FromKeyedServices(key: MetadataProvider.Hardcover)] IMetadataProviderService hardcoverMetadataProvider
     ): IMetadataResolver
 {
-    public Task<Series?> ResolveSeriesAsync(DownloadRequestDto request, CancellationToken cancellationToken = default)
+    public Task<Series?> ResolveSeriesAsync(MetadataBag metadata, CancellationToken cancellationToken = default)
     {
-        var hardCoverId = request.Metadata.GetString(RequestConstants.HardcoverSeriesIdKey);
-        var mangaBakaId = request.Metadata.GetString(RequestConstants.MangaBakaKey);
+        var hardCoverId = metadata.GetString(RequestConstants.HardcoverSeriesIdKey);
+        var mangaBakaId = metadata.GetString(RequestConstants.MangaBakaKey);
 
         if (!string.IsNullOrEmpty(mangaBakaId))
             return Task.FromResult<Series?>(null);

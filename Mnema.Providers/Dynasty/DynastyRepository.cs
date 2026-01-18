@@ -149,6 +149,7 @@ internal class DynastyRepository(
                         .RemovePrefix("released ")
                         .Trim()
                         .AsDateTime(SeriesReleaseDateFormat) ?? DateTime.UtcNow,
+                    Provider = Provider.Dynasty,
                 };
             })
             .WhereNotNull()

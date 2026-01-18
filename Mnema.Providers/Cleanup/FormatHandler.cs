@@ -62,7 +62,7 @@ internal class ArchiveFormatHandler(
         var foundCover = false;
         var coverLock = new Lock();
 
-        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 2 };
+        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 4 };
         await Parallel.ForEachAsync(sourceFiles, parallelOptions, async (file, _) =>
         {
             var fileName = fileSystem.Path.GetFileName(file);

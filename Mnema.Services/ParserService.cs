@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.Entities.Content;
@@ -68,6 +69,8 @@ public partial class ParserService: IParserService
     private static readonly char[] LeadingZeroesTrimChars = ['0'];
 
     private static readonly char[] SpacesAndSeparators = ['\0', '\t', '\r', ' ', '-', ','];
+
+    private static readonly char[] SeriesSplitCharacters = ['|'];
 
 
     private const string Number = @"\d+(\.\d)?";
@@ -877,6 +880,25 @@ public partial class ParserService: IParserService
         };
     }
 
+    public List<string> ParseSeriesCollection(string series)
+    {
+        const StringSplitOptions splitOptions = StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries;
+        var matchedSeries = new List<string>();
+
+        foreach (var splitCharacter in SeriesSplitCharacters)
+        {
+            if (!series.Contains(splitCharacter)) continue;
+
+            var split = series.Split(splitCharacter, splitOptions);
+
+            matchedSeries.AddRange(split);
+        }
+
+        var res = matchedSeries.Distinct().ToList();
+
+        return res.Count > 0 ? res : [series];
+    }
+
     public string ParseVolume(string filename, ContentFormat type)
     {
         return type switch
@@ -1057,6 +1079,20 @@ public partial class ParserService: IParserService
         {
             return 0.0f;
         }
+    }
+
+    public ParseResult FullParse(string input, ContentFormat type)
+    {
+        var series = ParseSeriesCollection(ParseSeries(input, type));
+        var volume = ParseVolume(input, type);
+        var chapter = ParseChapter(input, type);
+
+        return new ParseResult(
+            input,
+            series,
+            new NumberRange(volume, MinNumberFromRange(volume), MaxNumberFromRange(volume)),
+            new NumberRange(chapter, MinNumberFromRange(chapter), MaxNumberFromRange(chapter))
+            );
     }
 
     /// <summary>

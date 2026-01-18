@@ -18,6 +18,7 @@ public class UnitOfWork(ILogger<UnitOfWork> logger, MnemaDataContext ctx, IMappe
     public IContentReleaseRepository ContentReleaseRepository { get; } = new ContentReleaseRepository(ctx, mapper);
     public IDownloadClientRepository DownloadClientRepository { get; } = new DownloadClientRepository(ctx, mapper);
     public IContentReleaseRepository ImportedReleaseRepository { get; } = new ImportedContentReleaseRepository(ctx, mapper);
+    public IMonitoredSeriesRepository MonitoredSeriesRepository { get; } = new MonitoredSeriesRepository(ctx, mapper);
 
     public async Task<bool> CommitAsync()
     {

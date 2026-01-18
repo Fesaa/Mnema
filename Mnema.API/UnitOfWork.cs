@@ -13,6 +13,7 @@ public interface IUnitOfWork
     IContentReleaseRepository ContentReleaseRepository { get; }
     IDownloadClientRepository DownloadClientRepository { get; }
     IContentReleaseRepository ImportedReleaseRepository { get; }
+    IMonitoredSeriesRepository MonitoredSeriesRepository { get; }
 
     Task<bool> CommitAsync();
     bool HasChanges();

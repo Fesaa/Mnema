@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +8,7 @@ using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services;
 
@@ -25,5 +27,28 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
         }
 
         return repository.Search(searchRequest, paginationParams, cancellationToken);
+    }
+
+    public async Task<List<ContentRelease>> SearchReleases(List<Provider> providers, CancellationToken cancellationToken)
+    {
+        var scope = serviceScopeFactory.CreateScope();
+
+        List<ContentRelease> releases = [];
+
+        foreach (var provider in providers)
+        {
+            var repository = scope.ServiceProvider.GetKeyedService<IContentRepository>(provider);
+            if (repository == null)
+            {
+                logger.LogWarning("Repository for {Provider} not found, cannot find recently updated", provider.ToString());
+                continue;
+            }
+
+            var recentlyUpdated = await repository.GetRecentlyUpdated(cancellationToken);
+
+            releases.AddRange(recentlyUpdated);
+        }
+
+        return releases;
     }
 }

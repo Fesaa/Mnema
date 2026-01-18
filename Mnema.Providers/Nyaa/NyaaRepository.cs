@@ -78,6 +78,8 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
                 ReleaseId = item.InfoHash,
                 ReleaseName = item.Title,
                 ReleaseDate = item.PubDate.AsDateTime(DateTimeFormat) ?? DateTime.UtcNow,
+                DownloadUrl =  item.Link,
+                Provider = Provider.Nyaa,
             })
             .ToList();
     }

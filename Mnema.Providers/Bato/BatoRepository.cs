@@ -349,6 +349,7 @@ internal class BatoRepository : IRepository
                     ContentId = contentNode.GetAttributeValue("href", string.Empty).RemovePrefix("/title/"),
                     ContentName = contentNode.QuerySelector("span")?.InnerText ?? string.Empty,
                     ReleaseDate = releaseDate.ToUniversalTime(),
+                    Provider = Provider.Bato,
                 };
             })
             .Where(x => !string.IsNullOrEmpty(x.ContentId))

@@ -25,12 +25,14 @@ public static class ServiceProviderExtensions
         services.AddScoped<ISearchService, SearchService>();
         services.AddScoped<IDownloadService, DownloadService>();
         services.AddScoped<ISubscriptionScheduler, SubscriptionScheduler>();
+        services.AddScoped<IMonitoredSeriesScheduler, MonitoredSeriesScheduler>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IDownloadClientService, DownloadClientService>();
         services.AddScoped<IParserService, ParserService>();
         services.AddScoped<INamingService, NamingService>();
         services.AddScoped<IMetadataResolver, MetadataResolver>();
+        services.AddScoped<IMonitoredSeriesService, MonitoredSeriesService>();
 
         #region External Connection
 

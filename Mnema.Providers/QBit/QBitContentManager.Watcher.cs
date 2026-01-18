@@ -30,7 +30,7 @@ internal partial class QBitContentManager: IAsyncDisposable
 
         _watcherTask = Task.Run(async () => await _tokenSource.DoWhile(
             logger,
-            TimeSpan.FromSeconds(2),
+            TimeSpan.FromSeconds(5),
             TorrentWatcher,
             _ => Task.FromResult(true)));
     }

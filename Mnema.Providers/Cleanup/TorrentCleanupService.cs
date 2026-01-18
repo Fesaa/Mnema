@@ -47,7 +47,7 @@ internal class TorrentCleanupService(
 
     private async Task<CleanupContext> BuildCleanupContextAsync(DownloadRequestDto request, QBitTorrent torrent)
     {
-        var series = await metadataResolver.ResolveSeriesAsync(request);
+        var series = await metadataResolver.ResolveSeriesAsync(request.Metadata);
         var preferences = await unitOfWork.UserRepository.GetPreferences(request.UserId);
 
         var format = request.Metadata.GetEnum<Format>(RequestConstants.FormatKey) ?? Format.Archive;
@@ -104,6 +104,8 @@ internal class TorrentCleanupService(
 
     private async Task ProcessSingleFileAsync(CleanupContext context, string sourceFile)
     {
+        logger.LogDebug("Processing file {FileName} for cleanup", sourceFile);
+
         var fileName = fileSystem.Path.GetFileName(sourceFile);
         var resolution = metadataResolver.ResolveChapter(fileName, context.Series, context.ContentFormat);
 

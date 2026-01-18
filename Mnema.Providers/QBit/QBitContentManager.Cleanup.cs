@@ -47,7 +47,8 @@ internal partial class QBitContentManager
                         ReleaseName = torrent.Title,
                         ContentName = torrent.Title,
                         Type = ReleaseType.Imported,
-                        ReleaseDate = DateTime.UtcNow
+                        ReleaseDate = DateTime.UtcNow,
+                        Provider = torrent.Request.Provider,
                     }
                 ]);
 

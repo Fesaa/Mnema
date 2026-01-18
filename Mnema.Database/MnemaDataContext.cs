@@ -31,6 +31,7 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
     public DbSet<ContentRelease> ContentReleases { get; set; }
     public DbSet<DownloadClient> DownloadClients { get; set; }
+    public DbSet<MonitoredSeries> MonitoredSeries { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -74,6 +75,18 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
             .HasJsonConversion([])
             .HasColumnType("TEXT")
             .HasDefaultValue(new MetadataBag());
+
+        builder.Entity<MonitoredSeries>()
+            .Property(m => m.Metadata)
+            .HasJsonConversion([])
+            .HasColumnType("TEXT")
+            .HasDefaultValue(new MetadataBag());
+
+        builder.Entity<MonitoredSeries>()
+            .PrimitiveCollection(m => m.ValidTitles);
+
+        builder.Entity<MonitoredSeries>()
+            .PrimitiveCollection(m => m.Providers);
     }
 
     private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)
