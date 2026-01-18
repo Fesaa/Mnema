@@ -38,6 +38,9 @@ public class NamingService(ILogger<NamingService> logger, ApplicationConfigurati
         if (!string.IsNullOrEmpty(volumeMarker))
             fileName += $" Vol. {volumeMarker}";
 
+        if (string.IsNullOrEmpty(chapterMarker))
+            return fileName;
+
         if (chapterNumber == null)
         {
             logger.LogWarning("Failed to parse chapter number for marker {ChapterMarker}, not padding", chapterMarker);

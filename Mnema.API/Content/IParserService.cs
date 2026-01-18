@@ -10,4 +10,6 @@ public interface IParserService
     string ParseSeries(string filename, ContentFormat type);
     string ParseVolume(string filename, ContentFormat type);
     string ParseChapter(string filename, ContentFormat type);
+    bool IsDefaultChapter(string? chapterNumber);
+    bool IsLooseLeafVolume(string? volumeNumber);
 }

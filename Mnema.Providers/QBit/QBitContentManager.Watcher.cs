@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
@@ -46,7 +47,7 @@ internal partial class QBitContentManager: IAsyncDisposable
 
             var content = new QBitTorrent(request, tInfo);
 
-            if (tInfo.State == TorrentState.Uploading)
+            if (tInfo.State is TorrentState.Uploading or TorrentState.StalledUpload)
             {
                 CleanupTorrent(content);
             }

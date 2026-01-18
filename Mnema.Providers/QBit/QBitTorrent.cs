@@ -52,7 +52,7 @@ public class QBitTorrent(DownloadRequestDto request, TorrentInfo torrentInfo) : 
         Size = torrentInfo.Size.AsHumanReadableSize(),
         TotalSize = torrentInfo.TotalSize?.AsHumanReadableSize() ?? string.Empty,
         Downloading = State == ContentState.Downloading,
-        Progress = torrentInfo.Progress * 100,
+        Progress = Math.Floor(torrentInfo.Progress * 100),
         Estimated = State == ContentState.Downloading ? torrentInfo.EstimatedTime?.TotalSeconds ?? 0 : 0,
         SpeedType = SpeedType.Bytes,
         Speed = torrentInfo.DownloadSpeed,
