@@ -32,10 +32,10 @@ internal partial class QBitContentManager: IAsyncDisposable
             logger,
             TimeSpan.FromSeconds(2),
             TorrentWatcher,
-            TorrentWatcherExceptionCacther));
+            TorrentWatcherExceptionCatcher));
     }
 
-    private async Task<bool> TorrentWatcherExceptionCacther(Exception ex)
+    private async Task<bool> TorrentWatcherExceptionCatcher(Exception ex)
     {
         using var scope = scopeFactory.CreateScope();
         var downloadClientService = scope.ServiceProvider.GetRequiredService<IDownloadClientService>();
@@ -48,8 +48,7 @@ internal partial class QBitContentManager: IAsyncDisposable
                     await downloadClientService.MarkAsFailed(_downloadClient.Id, _tokenSource.Token);
                 }
 
-                _qBittorrentClient = null;
-                _watcherTask = null;
+                await ReloadConfiguration(CancellationToken.None);
                 return false;
 
             default:
@@ -64,7 +63,12 @@ internal partial class QBitContentManager: IAsyncDisposable
 
         var listQuery = new TorrentListQuery { Category = MnemaCategory };
         var torrents = await client.GetTorrentListAsync(listQuery);
-        if (torrents == null) return;
+
+        if (torrents == null || torrents.Count == 0)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(30));
+            return;
+        }
 
         using var scope = scopeFactory.CreateScope();
 

@@ -174,7 +174,7 @@ internal partial class QBitContentManager(
         {
             logger.LogError(e, "Failed to connect to the configured download client");
 
-            _qBittorrentClient = null;
+            await ReloadConfiguration(CancellationToken.None);
             await downloadClientService.MarkAsFailed(downloadClient.Id, CancellationToken.None);
 
             return null;
@@ -220,6 +220,7 @@ internal partial class QBitContentManager(
     public Task ReloadConfiguration(CancellationToken cancellationToken)
     {
         _qBittorrentClient = null;
+        _downloadClient = null;
         return Task.CompletedTask;
     }
 }
