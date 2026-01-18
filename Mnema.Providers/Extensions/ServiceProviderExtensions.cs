@@ -28,6 +28,7 @@ public static class ServiceProviderExtensions
 
         #region qBit Torrent
 
+        services.AddSingleton<IQBitClient, QBitClient>();
         services.AddSingleton<QBitContentManager>();
         services.AddKeyedSingleton<IConfigurationProvider>(DownloadClientType.QBittorrent,
             (s, _) => s.GetRequiredService<QBitContentManager>());

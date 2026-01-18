@@ -23,7 +23,8 @@ internal partial class QBitContentManager(
     ILogger<QBitContentManager> logger,
     ApplicationConfiguration configuration,
     IDistributedCache cache,
-    IServiceScopeFactory scopeFactory
+    IServiceScopeFactory scopeFactory,
+    IQBitClient qBitClient
     ): IContentManager, IConfigurationProvider
 {
     private const string MnemaCategory = "Mnema";
@@ -35,9 +36,6 @@ internal partial class QBitContentManager(
     private static readonly List<Provider> SupportedProviders = [Provider.Nyaa];
     private static readonly DistributedCacheEntryOptions RequestCacheKeyOptions = new();
 
-    private DownloadClient? _downloadClient;
-    private QBittorrentClient? _qBittorrentClient;
-
     public async Task Download(DownloadRequestDto request)
     {
         if (!SupportedProviders.Contains(request.Provider))
@@ -46,10 +44,6 @@ internal partial class QBitContentManager(
         if (string.IsNullOrEmpty(request.DownloadUrl))
             throw new MnemaException($"Download url is missing");
 
-        var client = await GetQBittorrentClient();
-        if (client == null)
-            return;
-
         var listQuery = new TorrentListQuery
         {
             Category = MnemaCategory,
@@ -57,22 +51,31 @@ internal partial class QBitContentManager(
             Hashes = [request.Id]
         };
 
-        var torrents = await client.GetTorrentListAsync(listQuery);
-        if (torrents != null && torrents.Any(t => t.Hash == request.Id))
+        try
         {
-            throw new MnemaException($"Torrent with hash {request.Id} has already been added");
+            var torrents = await qBitClient.GetTorrentsAsync(listQuery);
+            if (torrents != null && torrents.Any(t => t.Hash == request.Id))
+            {
+                throw new MnemaException($"Torrent with hash {request.Id} has already been added");
+            }
+
+            var addRequest = new AddTorrentUrlsRequest(new Uri(request.DownloadUrl))
+            {
+                Category = MnemaCategory,
+                Tags = [request.Provider.ToString()],
+                DownloadFolder = Path.Join(configuration.DownloadDir, request.BaseDir, request.TempTitle),
+                Paused = !request.StartImmediately,
+            };
+
+            await qBitClient.AddTorrentsAsync(addRequest);
+            await cache.SetAsJsonAsync(RequestCacheKey + request.Id, request, RequestCacheKeyOptions);
+
+            EnsureWatcherInitialized();
         }
-
-        var addRequest = new AddTorrentUrlsRequest(new Uri(request.DownloadUrl))
+        catch (InvalidOperationException)
         {
-            Category = MnemaCategory,
-            Tags = [request.Provider.ToString()],
-            DownloadFolder = Path.Join(configuration.DownloadDir, request.BaseDir, request.TempTitle),
-            Paused = !request.StartImmediately,
-        };
-
-        await client.AddTorrentsAsync(addRequest);
-        await cache.SetAsJsonAsync(RequestCacheKey + request.Id, request, RequestCacheKeyOptions);
+            // Client not available
+        }
     }
 
     public async Task StopDownload(StopRequestDto request)
@@ -80,16 +83,16 @@ internal partial class QBitContentManager(
         if (!SupportedProviders.Contains(request.Provider))
             throw new MnemaException($"Provider {request.Provider} is not supported");
 
-        var client = await GetQBittorrentClient();
-        if (client == null)
-            return;
-
         using var scope = scopeFactory.CreateScope();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
 
         try
         {
-            await client.DeleteAsync([request.Id], true);
+            await qBitClient.DeleteTorrentsAsync([request.Id], true);
+        }
+        catch (InvalidOperationException)
+        {
+            // Client not available
         }
         finally
         {
@@ -111,79 +114,29 @@ internal partial class QBitContentManager(
             Tag = provider.ToString(),
         };
 
-        var client = await GetQBittorrentClient();
-        if (client == null)
-            return [];
-
-        var torrents = await client.GetTorrentListAsync(listQuery);
-        if (torrents == null) return [];
-
-        List<IContent> contents = [];
-
-        foreach (var tInfo in torrents)
-        {
-            if (UploadStates.Contains(tInfo.State)) continue;
-
-            var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
-            if (request == null) continue;
-
-            contents.Add(new QBitTorrent(request, tInfo));
-        }
-
-        return contents;
-    }
-
-    private async Task<IQBittorrentClient2?> GetQBittorrentClient()
-    {
-        if (_qBittorrentClient != null)
-            return _qBittorrentClient;
-
-        using var scope = scopeFactory.CreateScope();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        var downloadClientService = scope.ServiceProvider.GetRequiredService<IDownloadClientService>();
-
-        var downloadClient = await unitOfWork.DownloadClientRepository
-            .GetDownloadClientAsync(DownloadClientType.QBittorrent, CancellationToken.None);
-
-        if (downloadClient == null)
-            return null;
-
-        if (downloadClient.IsFailed)
-        {
-            logger.LogWarning("Download client {Id} is in a failed state until {Until}",
-                downloadClient.Id, downloadClient.FailedAt?.AddHours(1));
-            return null;
-        }
-
-        var url = downloadClient.Metadata.GetString(UrlKey);
-        var username = downloadClient.Metadata.GetString(UsernameKey);
-        var password = downloadClient.Metadata.GetString(PasswordKey);
-        if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-        {
-            logger.LogDebug("An incomplete configuration was provided for {DownloadClientType}",
-                DownloadClientType.QBittorrent);
-            return null;
-        }
-
         try
         {
-            _qBittorrentClient = new QBittorrentClient(new Uri(url));
-            await _qBittorrentClient.LoginAsync(username, password);
+            var torrents = await qBitClient.GetTorrentsAsync(listQuery);
+            if (torrents.Count == 0) return [];
+
+            List<IContent> contents = [];
+
+            foreach (var tInfo in torrents)
+            {
+                if (UploadStates.Contains(tInfo.State)) continue;
+
+                var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
+                if (request == null) continue;
+
+                contents.Add(new QBitTorrent(request, tInfo));
+            }
+
+            return contents;
         }
-        catch (Exception e)
+        catch (InvalidOperationException)
         {
-            logger.LogError(e, "Failed to connect to the configured download client");
-
-            await ReloadConfiguration(CancellationToken.None);
-            await downloadClientService.MarkAsFailed(downloadClient.Id, CancellationToken.None);
-
-            return null;
+            return [];
         }
-
-        EnsureWatcherInitialized();
-
-        _downloadClient = downloadClient;
-        return _qBittorrentClient;
     }
 
     public Task<List<FormControlDefinition>> GetFormControls(CancellationToken cancellationToken)
@@ -219,8 +172,7 @@ internal partial class QBitContentManager(
 
     public Task ReloadConfiguration(CancellationToken cancellationToken)
     {
-        _qBittorrentClient = null;
-        _downloadClient = null;
+        qBitClient.Invalidate();
         return Task.CompletedTask;
     }
 }

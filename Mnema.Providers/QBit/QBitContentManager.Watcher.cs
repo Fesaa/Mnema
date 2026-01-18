@@ -28,43 +28,28 @@ internal partial class QBitContentManager: IAsyncDisposable
         if (_watcherTask != null)
             return;
 
-        _watcherTask = Task.Run(() => _tokenSource.DoWhile(
+        _watcherTask = Task.Run(async () => await _tokenSource.DoWhile(
             logger,
             TimeSpan.FromSeconds(2),
             TorrentWatcher,
-            TorrentWatcherExceptionCatcher));
-    }
-
-    private async Task<bool> TorrentWatcherExceptionCatcher(Exception ex)
-    {
-        using var scope = scopeFactory.CreateScope();
-        var downloadClientService = scope.ServiceProvider.GetRequiredService<IDownloadClientService>();
-
-        switch (ex)
-        {
-            case HttpRequestException:
-                if (_downloadClient != null)
-                {
-                    await downloadClientService.MarkAsFailed(_downloadClient.Id, _tokenSource.Token);
-                }
-
-                await ReloadConfiguration(CancellationToken.None);
-                return false;
-
-            default:
-                return false;
-        }
+            _ => Task.FromResult(true)));
     }
 
     private async Task TorrentWatcher()
     {
-        var client = await GetQBittorrentClient();
-        if (client == null) return;
+        IReadOnlyList<TorrentInfo> torrents;
+        try
+        {
+            var listQuery = new TorrentListQuery { Category = MnemaCategory };
+            torrents = await qBitClient.GetTorrentsAsync(listQuery);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or QBittorrentClientRequestException or InvalidOperationException)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(30));
+            return;
+        }
 
-        var listQuery = new TorrentListQuery { Category = MnemaCategory };
-        var torrents = await client.GetTorrentListAsync(listQuery);
-
-        if (torrents == null || torrents.Count == 0)
+        if (torrents.Count == 0)
         {
             await Task.Delay(TimeSpan.FromSeconds(30));
             return;
@@ -135,7 +120,6 @@ internal partial class QBitContentManager: IAsyncDisposable
         }
 
         _tokenSource.Dispose();
-
-        _qBittorrentClient?.Dispose();
+        qBitClient.Dispose();
     }
 }

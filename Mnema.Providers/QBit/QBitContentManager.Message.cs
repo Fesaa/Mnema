@@ -45,11 +45,15 @@ internal partial class QBitContentManager
         var ids = node?.Deserialize<List<string>>();
         if (ids == null) return null;
 
-        var client = await GetQBittorrentClient();
-        if (client == null) return null;
-
-        var files = await client.GetTorrentContentsAsync(hash);
-        if (files == null) return null;
+        IReadOnlyList<TorrentContent> files;
+        try
+        {
+            files = await qBitClient.GetTorrentContentsAsync(hash);
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
 
         var toDownload = new HashSet<int>();
         var toSkip = new HashSet<int>();
@@ -70,36 +74,50 @@ internal partial class QBitContentManager
             }
         }
 
-        if (toDownload.Count > 0)
-            await client.SetFilePriorityAsync(hash, toDownload, TorrentContentPriority.Minimal);
+        try
+        {
+            if (toDownload.Count > 0)
+                await qBitClient.SetFilePriorityAsync(hash, toDownload, TorrentContentPriority.Minimal);
 
-        if (toSkip.Count > 0)
-            await client.SetFilePriorityAsync(hash, toSkip, TorrentContentPriority.Skip);
+            if (toSkip.Count > 0)
+                await qBitClient.SetFilePriorityAsync(hash, toSkip, TorrentContentPriority.Skip);
+        }
+        catch (InvalidOperationException)
+        {
+            // Client not available
+        }
 
         return null;
     }
 
     private async Task<object?> StartDownload(string hash)
     {
-        var client = await GetQBittorrentClient();
-        if (client == null) return null;
-
-        await client.ResumeAsync([hash], CancellationToken.None);
+        try
+        {
+            await qBitClient.ResumeTorrentsAsync([hash], CancellationToken.None);
+        }
+        catch (InvalidOperationException)
+        {
+            // Client not available
+        }
 
         return null;
     }
 
     private async Task<List<ListContentData>?> ListContent(MessageDto message)
     {
-        var client = await GetQBittorrentClient();
-        if (client == null) return null;
-
         var hash = message.ContentId;
 
-        var content = await client.GetTorrentContentsAsync(hash);
-        if (content == null) return null;
+        try
+        {
+            var content = await qBitClient.GetTorrentContentsAsync(hash);
 
-        return BuildTree(content);
+            return BuildTree(content);
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
     }
 
     private List<ListContentData> BuildTree(IReadOnlyList<TorrentContent> files, int depth = 0)
