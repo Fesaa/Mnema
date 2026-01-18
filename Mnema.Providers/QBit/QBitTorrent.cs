@@ -2,6 +2,7 @@ using System;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.Content;
 using QBittorrent.Client;
 
 namespace Mnema.Providers.QBit;
@@ -16,19 +17,19 @@ public class QBitTorrent(DownloadRequestDto request, TorrentInfo torrentInfo) : 
     {
         TorrentState.Unknown => ContentState.Waiting,
         TorrentState.Error => ContentState.Cancel,
-        TorrentState.PausedUpload => ContentState.Ready,
+        TorrentState.PausedUpload => ContentState.Cleanup,
         TorrentState.PausedDownload => ContentState.Waiting,
-        TorrentState.QueuedUpload => ContentState.Ready,
+        TorrentState.QueuedUpload => ContentState.Cleanup,
         TorrentState.QueuedDownload => ContentState.Queued,
-        TorrentState.Uploading => ContentState.Ready,
-        TorrentState.StalledUpload => ContentState.Ready,
-        TorrentState.CheckingUpload => ContentState.Loading,
+        TorrentState.Uploading => ContentState.Cleanup,
+        TorrentState.StalledUpload => ContentState.Cleanup,
+        TorrentState.CheckingUpload => ContentState.Cleanup,
         TorrentState.CheckingDownload => ContentState.Loading,
         TorrentState.Downloading => ContentState.Downloading,
         TorrentState.StalledDownload => ContentState.Downloading,
         TorrentState.FetchingMetadata => ContentState.Loading,
         TorrentState.ForcedFetchingMetadata => ContentState.Loading,
-        TorrentState.ForcedUpload => ContentState.Ready,
+        TorrentState.ForcedUpload => ContentState.Cleanup,
         TorrentState.ForcedDownload => ContentState.Downloading,
         TorrentState.MissingFiles => ContentState.Cancel,
         TorrentState.Allocating => ContentState.Loading,

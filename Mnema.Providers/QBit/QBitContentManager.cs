@@ -121,7 +121,7 @@ internal partial class QBitContentManager(
 
         foreach (var tInfo in torrents)
         {
-            if (tInfo.State == TorrentState.Uploading) continue;
+            if (UploadStates.Contains(tInfo.State)) continue;
 
             var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
             if (request == null) continue;

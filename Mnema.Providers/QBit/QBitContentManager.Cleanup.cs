@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Models.Entities.Content;
 
 namespace Mnema.Providers.QBit;
 
@@ -21,6 +23,10 @@ internal partial class QBitContentManager
         {
             using var scope = scopeFactory.CreateScope();
 
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+            var sw = Stopwatch.StartNew();
+
             try
             {
                 var cleanupService = scope.ServiceProvider.GetRequiredService<ICleanupService>();
@@ -33,6 +39,21 @@ internal partial class QBitContentManager
             finally
             {
                 _cleanupTorrents.TryRemove(torrent.Id, out _);
+
+                unitOfWork.ImportedReleaseRepository.AddRange([
+                    new ContentRelease
+                    {
+                        ReleaseId = torrent.Id,
+                        ReleaseName = torrent.Title,
+                        ContentName = torrent.Title,
+                        Type = ReleaseType.Imported,
+                        ReleaseDate = DateTime.UtcNow
+                    }
+                ]);
+
+                await unitOfWork.CommitAsync();
+
+                logger.LogInformation("[{Title}/{Id}] Cleaned up in {Elapsed}ms",  torrent.Title, torrent.Id, sw.ElapsedMilliseconds);
             }
         });
     }

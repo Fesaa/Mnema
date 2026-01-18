@@ -104,7 +104,24 @@
     "assign_empty_volumes-title": "{{provider-metadata.assign_empty_volumes-title}}",
     "assign_empty_volumes-tooltip": "{{provider-metadata.assign_empty_volumes-tooltip}}",
     "skip_volume_without_chapter-title": "{{provider-metadata.skip_volume_without_chapter-title}}",
-    "skip_volume_without_chapter-tooltip": "{{provider-metadata.skip_volume_without_chapter-tooltip}}"
+    "skip_volume_without_chapter-tooltip": "{{provider-metadata.skip_volume_without_chapter-tooltip}}",
+    "format-title": "{{provider-metadata.format-title}}",
+    "format-tooltip": "{{provider-metadata.format-tooltip}}",
+    "format": {
+      "archive": "Archive",
+      "epub": "Epub",
+      "unsupported": "unsupported"
+    },
+    "content_format-title": "{{provider-metadata.content_format-title}}",
+    "content_format-tooltip": "{{provider-metadata.content_format-tooltip}}",
+    "content_format": {
+      "manga": "Manga",
+      "lightnovel": "Light novel",
+      "book": "Book",
+      "comic": "Comic"
+    },
+    "hardcover_series_id-title": "{{provider-metadata.hardcover_series_id-title}}",
+    "hardcover_series_id-tooltip": "{{provider-metadata.hardcover_series_id-tooltip}}"
   },
 
   "edit-subscription-modal": {
@@ -194,7 +211,13 @@
     "assign_empty_volumes-title": "Assign empty volumes",
     "assign_empty_volumes-tooltip": "Assign volume 1 to chapters without a volume, if at least one other volume is present",
     "skip_volume_without_chapter-title": "Skip volumes without chapter",
-    "skip_volume_without_chapter-tooltip": "Do not download chapters that are assigned a volume, but do not have a chapter marker"
+    "skip_volume_without_chapter-tooltip": "Do not download chapters that are assigned a volume, but do not have a chapter marker",
+    "format-title": "Format",
+    "format-tooltip": "",
+    "content_format-title": "Content Format",
+    "content_format-tooltip": "",
+    "hardcover_series_id-title": "Hardcover series id",
+    "hardcover_series_id-tooltip": "The numerical id, not the slug"
   },
 
   "refresh-frequency-pipe": {

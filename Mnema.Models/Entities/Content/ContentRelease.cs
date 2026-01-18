@@ -3,13 +3,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Mnema.Models.Entities.Content;
 
-[Index(nameof(ReleaseId), IsUnique = true)]
+public enum ReleaseType { Processed, Imported }
+
+[Index(nameof(Type))]
+[Index(nameof(Type), nameof(ReleaseId), IsUnique = true)]
 public class ContentRelease: IEntityDate
 {
     /// <summary>
     /// The id in the database, not required when loading from a provider
     /// </summary>
     public Guid Id { get; set; }
+
+    public ReleaseType Type { get; set; } = ReleaseType.Processed;
 
     /// <summary>
     /// The id that uniquely defines this content release (I.e. chapter id). Used to match duplicates

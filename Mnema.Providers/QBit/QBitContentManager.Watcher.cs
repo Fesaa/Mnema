@@ -45,22 +45,49 @@ internal partial class QBitContentManager: IAsyncDisposable
         using var scope = scopeFactory.CreateScope();
 
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        List<QBitTorrent> inUploadState = [];
+        List<QBitTorrent> queuedForSignalR = [];
 
         foreach (var tInfo in torrents)
         {
             var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
             if (request == null) continue;
 
-            var content = new QBitTorrent(request, tInfo);
+            (UploadStates.Contains(tInfo.State) ? inUploadState : queuedForSignalR).Add(new QBitTorrent(request, tInfo));
+        }
 
-            if (UploadStates.Contains(tInfo.State))
-            {
-                CleanupTorrent(content);
-            }
-            else
-            {
-                await messageService.UpdateContent(request.UserId, content.DownloadInfo);
-            }
+        var uploadHashes = inUploadState.Select(t => t.Id).ToList();
+        var nonImportedUploads = await unitOfWork.ImportedReleaseRepository.FilterReleases(uploadHashes);
+        if (nonImportedUploads.Count == 0)
+        {
+            await UpdateUi(messageService, queuedForSignalR);
+            return;
+        }
+
+        var dict = inUploadState.ToDictionary(t => t.Id);
+
+        foreach (var id in nonImportedUploads)
+        {
+            if (!dict.TryGetValue(id, out var torrent))
+                continue;
+
+            CleanupTorrent(torrent);
+
+            queuedForSignalR.Add(torrent);
+        }
+
+        await UpdateUi(messageService, queuedForSignalR);
+    }
+
+    private static async Task UpdateUi(IMessageService messageService, List<QBitTorrent> torrents)
+    {
+        var groups = torrents.GroupBy(t => t.Request.UserId);
+
+        foreach (var group in groups)
+        {
+            await messageService.BulkContentInfoUpdate(group.Key, group.Select(t => t.DownloadInfo).ToArray());
         }
     }
 
