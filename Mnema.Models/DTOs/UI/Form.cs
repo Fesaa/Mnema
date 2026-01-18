@@ -28,7 +28,7 @@ public sealed record FormControlDefinition
     public required FormType Type { get; set; }
 
     /// <summary>
-    ///     Only relevant if <see cref="Type" /> is <see cref="FormType.DropDown" /> or <see cref="FormType.MultiSelect" />.
+    ///     Only relevant if <see cref="Type" /> is <see cref="FormType.DropDown" />, <see cref="FormType.MultiSelect" /> or <see cref="FormType.MultiText" />.
     ///     Defaults to <see cref="FormValueType.String" />
     /// </summary>
     /// <remarks>This must be <see cref="FormValueType.String" /> if <see cref="Field" /> is `metadata`</remarks>
@@ -76,7 +76,8 @@ public enum FormType
     DropDown = 1,
     MultiSelect = 2,
     Text = 3,
-    Directory = 4
+    Directory = 4,
+    MultiText = 5
 }
 
 public enum FormValueType

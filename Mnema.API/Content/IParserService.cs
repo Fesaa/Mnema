@@ -26,4 +26,5 @@ public interface IParserService
     float MinNumberFromRange(string range);
     float MaxNumberFromRange(string range);
     ParseResult FullParse(string input, ContentFormat type);
+    Format ParseFormat(string filePath);
 }

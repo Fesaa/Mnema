@@ -90,6 +90,17 @@ public class MonitoredSeriesService(
                 },
                 new FormControlDefinition
                 {
+                    Key = "valid-titles",
+                    Field = "validTitles",
+                    Type = FormType.MultiText,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .WithMinLength(1)
+                        .Build(),
+                    ForceSingle = true,
+                },
+                new FormControlDefinition
+                {
                     Key = "base-dir",
                     Field = "baseDir",
                     Type = FormType.Directory,
@@ -109,7 +120,7 @@ public class MonitoredSeriesService(
                     Options = IMonitoredSeriesService.SupportedProviders
                         .Select(provider => new FormControlOption(provider.ToString().ToLower(), provider))
                         .ToList(),
-                }
+                },
             ]
         };
     }
@@ -150,7 +161,7 @@ public class MonitoredSeriesService(
 
         if (toDownloadFiles.Count == 0)
         {
-            logger.LogDebug("No files to download for {Title} - {Id}", monitoredSeries.Title, release.Id);
+            logger.LogTrace("No files to download for {Title} - {Id}", monitoredSeries.Title, release.ReleaseName);
             return false;
         }
 
@@ -190,6 +201,9 @@ public class MonitoredSeriesService(
 
         bool ShouldDownload(Chapter chapter)
         {
+            if (parserService.ParseFormat(chapter.Title) != monitoredSeries.Format)
+                return false;
+
             if (string.IsNullOrEmpty(chapter.VolumeMarker) && string.IsNullOrEmpty(chapter.ChapterMarker))
             {
                 logger.LogDebug("Skipping download for {Title} because it had no volume or chapter", chapter.Title);

@@ -1011,6 +1011,8 @@
     "providers": {
       "nyaa": "{{provider-name-pipe.nyaa}}"
     },
+    "valid-titles-title": "Valid titles",
+    "valid-titles-tooltip": "Titles that parsed content can match on to be considered this series",
     "content-format-title": "Content Format",
     "content-format-tooltip": "",
     "content-format": {
