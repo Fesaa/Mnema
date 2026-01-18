@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,9 +45,17 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
                 continue;
             }
 
-            var recentlyUpdated = await repository.GetRecentlyUpdated(cancellationToken);
+            try
+            {
+                var recentlyUpdated = await repository.GetRecentlyUpdated(cancellationToken);
 
-            releases.AddRange(recentlyUpdated);
+                releases.AddRange(recentlyUpdated);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to search for recently updated {Provider}", provider.ToString());
+            }
+
         }
 
         return releases;
