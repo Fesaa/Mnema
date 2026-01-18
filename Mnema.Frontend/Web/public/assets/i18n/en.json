@@ -501,7 +501,9 @@
     "genres": "Genres",
     "ignored_genres": "Ignored Genres",
     "upload": "Upload Status",
-    "search_type": "Search Type"
+    "search_type": "Search Type",
+    "category": "Category",
+    "filter": "Filter"
   },
 
   "series-info-modal": {

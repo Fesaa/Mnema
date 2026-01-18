@@ -24,6 +24,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<ICleanupService, CleanupService>();
         services.AddScoped<PublicationCleanupService>();
         services.AddScoped<TorrentCleanupService>();
+        services.AddScoped<IFormatHandler, ArchiveFormatHandler>();
 
         #region qBit Torrent
 

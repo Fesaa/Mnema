@@ -88,11 +88,6 @@ internal partial class QBitContentManager(
 
         try
         {
-            if (request.SaveDownload)
-            {
-                await CleanupTorrent(request);
-            }
-
             await client.DeleteAsync([request.Id], true);
         }
         finally
@@ -100,11 +95,6 @@ internal partial class QBitContentManager(
             await cache.RemoveAsync(RequestCacheKey + request.Id);
             await messageService.DeleteContent(request.UserId, request.Id);
         }
-    }
-
-    private async Task CleanupTorrent(StopRequestDto request)
-    {
-
     }
 
     public Task MoveToDownloadQueue(string id) => StartDownload(id);

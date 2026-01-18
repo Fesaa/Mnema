@@ -500,8 +500,8 @@ internal class BatoRepository : IRepository
         }
 
         return new BatoSearchOptions(
-            genresOptions.Values.Select(si => new FormControlOption(si.File, si.Text)).ToList(),
-            releaseStatusOptions.Values.Select(si => new FormControlOption(si.File, si.Text)).ToList()
+            genresOptions.Values.Select(si => new FormControlOption(si.Text, si.File)).ToList(),
+            releaseStatusOptions.Values.Select(si => new FormControlOption(si.Text, si.File)).ToList()
         );
     }
 }

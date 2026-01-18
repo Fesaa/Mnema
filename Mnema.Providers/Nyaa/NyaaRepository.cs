@@ -28,8 +28,8 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
     {
         var url = "/"
             .SetQueryParam("page", "rss")
-            .SetQueryParam("c", "3_1")
-            .SetQueryParam("f", "0")
+            .SetQueryParam("c", request.Modifiers.GetStringOrDefault("category", "3_1"))
+            .SetQueryParam("f", request.Modifiers.GetStringOrDefault("filter", "0"))
             .SetQueryParam("q", request.Query);
 
         var stream = await HttpClient.GetStreamAsync(url, cancellationToken);
@@ -115,6 +115,33 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
     public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
     {
         return Task.FromResult<List<FormControlDefinition>>([
+            new FormControlDefinition
+            {
+                Key = "category",
+                Type = FormType.DropDown,
+                Options = [
+                    new FormControlOption("All", "0"),
+                    new FormControlOption("Anime", "1_0"),
+                    new FormControlOption("Anime - AMV", "1_1"),
+                    new FormControlOption("Anime - English Translated", "1_2"),
+                    new FormControlOption("Anime - Non English Translated", "1_3"),
+                    new FormControlOption("Anime - Raw", "1_4"),
+                    FormControlOption.DefaultValue("Literature", "3_0"),
+                    new FormControlOption("Literature - English Translated", "3_1"),
+                    new FormControlOption("Literature - Non English Translated", "3_2"),
+                    new FormControlOption("Literature - Raw", "3_3"),
+                ],
+            },
+            new FormControlDefinition
+            {
+                Key = "filter",
+                Type = FormType.DropDown,
+                Options = [
+                    FormControlOption.DefaultValue("No Filter", "0"),
+                    new FormControlOption("No Remakes", "1"),
+                    new FormControlOption("Only Trusted", "2"),
+                ],
+            },
         ]);
     }
 }

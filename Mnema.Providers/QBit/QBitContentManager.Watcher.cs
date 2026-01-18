@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
@@ -12,6 +13,11 @@ namespace Mnema.Providers.QBit;
 
 internal partial class QBitContentManager: IAsyncDisposable
 {
+
+    private static readonly IReadOnlyList<TorrentState> UploadStates = [
+        TorrentState.Uploading, TorrentState.ForcedUpload, TorrentState.StalledUpload,
+        TorrentState.PausedUpload, TorrentState.QueuedUpload,
+    ];
 
     private readonly CancellationTokenSource _tokenSource = new();
     private Task? _watcherTask;
@@ -32,7 +38,7 @@ internal partial class QBitContentManager: IAsyncDisposable
         var client = await GetQBittorrentClient();
         if (client == null) return;
 
-        var listQuery = new TorrentListQuery() { Category = MnemaCategory };
+        var listQuery = new TorrentListQuery { Category = MnemaCategory };
         var torrents = await client.GetTorrentListAsync(listQuery);
         if (torrents == null) return;
 
@@ -47,7 +53,7 @@ internal partial class QBitContentManager: IAsyncDisposable
 
             var content = new QBitTorrent(request, tInfo);
 
-            if (tInfo.State is TorrentState.Uploading or TorrentState.StalledUpload or TorrentState.ForcedUpload)
+            if (UploadStates.Contains(tInfo.State))
             {
                 CleanupTorrent(content);
             }

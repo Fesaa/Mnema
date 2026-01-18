@@ -49,7 +49,7 @@ export class SearchFormComponent {
         return;
       }
 
-      defaultSelections[modifier.key] = Array.isArray(defaults) ? defaults.map(mv => mv.key) : [defaults.key];
+      defaultSelections[modifier.key] = Array.isArray(defaults) ? defaults.map(mv => mv.value) : [defaults.value];
     });
 
     this.modifierSelections.set(defaultSelections);
@@ -78,7 +78,8 @@ export class SearchFormComponent {
       if (mod.type === FormType.DropDown) return of(mod.options);
 
       const filtered = mod.options
-        .filter(v => v.value.toLowerCase().includes(f.toLowerCase()));
+        .filter(v => v.key.toLowerCase().includes(f.toLowerCase())
+          || v.value.toLowerCase().includes(f.toLowerCase()));
 
       return of(filtered);
     }
@@ -106,7 +107,7 @@ export class SearchFormComponent {
 
   onModifierSelection(mod: FormControlDefinition, event: FormControlOption[] | FormControlOption) {
     this.modifierSelections.update(s => {
-      s[mod.key] = Array.isArray(event) ? event.map(mv => mv.key) : [event.key];
+      s[mod.key] = Array.isArray(event) ? event.map(mv => mv.value) : [event.value];
       return s;
     })
   }

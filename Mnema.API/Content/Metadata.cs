@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.DTOs.User;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
 using Mnema.Models.External;
 using Mnema.Models.Publication;
@@ -71,3 +72,11 @@ public interface IMetadataProviderService
     /// <remarks>It is assumed this is cached</remarks>
     Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken);
 }
+
+public interface IMetadataResolver
+{
+    Task<Series?> ResolveSeriesAsync(DownloadRequestDto request, CancellationToken cancellationToken = default);
+    ChapterResolutionResult ResolveChapter(string fileName, Series? series, ContentFormat contentFormat);
+}
+
+public record ChapterResolutionResult(string? Volume, string? Chapter, Chapter? ChapterEntity);

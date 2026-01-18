@@ -30,6 +30,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<IDownloadClientService, DownloadClientService>();
         services.AddScoped<IParserService, ParserService>();
         services.AddScoped<INamingService, NamingService>();
+        services.AddScoped<IMetadataResolver, MetadataResolver>();
 
         #region External Connection
 

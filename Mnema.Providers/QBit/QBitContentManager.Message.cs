@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
@@ -83,7 +84,7 @@ internal partial class QBitContentManager
         var client = await GetQBittorrentClient();
         if (client == null) return null;
 
-        await client.SetForceStartAsync([hash], true);
+        await client.ResumeAsync([hash], CancellationToken.None);
 
         return null;
     }
