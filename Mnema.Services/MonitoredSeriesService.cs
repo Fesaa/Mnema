@@ -11,6 +11,7 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
@@ -24,9 +25,120 @@ public class MonitoredSeriesService(
     IDownloadService downloadService,
     IMetadataResolver metadataResolver,
     ApplicationConfiguration configuration,
+    IUnitOfWork unitOfWork,
     IServiceProvider serviceProvider
 ): IMonitoredSeriesService
 {
+    public async Task UpdateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var series = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(dto.Id, cancellationToken);
+        if (series == null) throw new Mnema.Common.Exceptions.NotFoundException();
+
+        if (series.UserId != userId) throw new Mnema.Common.Exceptions.ForbiddenException();
+
+        series.Title = dto.Title;
+        series.BaseDir = dto.BaseDir;
+        series.Providers = dto.Providers;
+        series.ContentFormat = dto.ContentFormat;
+        series.Format = dto.Format;
+        series.ValidTitles = dto.ValidTitles;
+        series.Metadata = dto.Metadata;
+
+        unitOfWork.MonitoredSeriesRepository.Update(series);
+
+        await unitOfWork.CommitAsync();
+    }
+
+    public async Task CreateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var series = new MonitoredSeries
+        {
+            UserId = userId,
+            Title = dto.Title,
+            BaseDir = dto.BaseDir,
+            Providers = dto.Providers,
+            ContentFormat = dto.ContentFormat,
+            Format = dto.Format,
+            ValidTitles = dto.ValidTitles,
+            Metadata = dto.Metadata,
+        };
+
+        unitOfWork.MonitoredSeriesRepository.Add(series);
+
+        await unitOfWork.CommitAsync();
+    }
+
+    public FormDefinition GetForm()
+    {
+        return new FormDefinition
+        {
+            Key = "edit-monitored-series-modal",
+            Controls =
+            [
+                new FormControlDefinition
+                {
+                    Key = "title",
+                    Field = "title",
+                    Type = FormType.Text,
+                    ForceSingle = true,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "base-dir",
+                    Field = "baseDir",
+                    Type = FormType.Directory,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "providers",
+                    Field = "providers",
+                    Type = FormType.MultiSelect,
+                    ValueType = FormValueType.Integer,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                    Options = IMonitoredSeriesService.SupportedProviders
+                        .Select(provider => new FormControlOption(provider.ToString().ToLower(), provider))
+                        .ToList(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "content-format",
+                    Field = "contentFormat",
+                    Type = FormType.DropDown,
+                    ValueType = FormValueType.Integer,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                    Options = Enum.GetValues<ContentFormat>()
+                        .Select(format => new FormControlOption(format.ToString().ToLower(), format))
+                        .ToList(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "format",
+                    Field = "format",
+                    Type = FormType.DropDown,
+                    ValueType = FormValueType.Integer,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                    Options = Enum.GetValues<Format>()
+                        .Select(format => new FormControlOption(format.ToString().ToLower(), format))
+                        .ToList(),
+                }
+            ]
+        };
+    }
+
     public async Task<bool> DownloadFromRelease(MonitoredSeries monitoredSeries, ContentRelease release, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(release.DownloadUrl))

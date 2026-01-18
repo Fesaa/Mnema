@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.API;
@@ -28,5 +30,13 @@ public interface IMonitoredSeriesRepository
 
 public interface IMonitoredSeriesService
 {
+    public static readonly ImmutableArray<Provider> SupportedProviders =
+    [
+        Provider.Nyaa,
+    ];
+
+    Task UpdateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
+    Task CreateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     Task<bool> DownloadFromRelease(MonitoredSeries series, ContentRelease release, CancellationToken cancellationToken = default);
+    FormDefinition GetForm();
 }
