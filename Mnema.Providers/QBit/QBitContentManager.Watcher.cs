@@ -47,7 +47,7 @@ internal partial class QBitContentManager: IAsyncDisposable
 
             var content = new QBitTorrent(request, tInfo);
 
-            if (tInfo.State is TorrentState.Uploading or TorrentState.StalledUpload)
+            if (tInfo.State is TorrentState.Uploading or TorrentState.StalledUpload or TorrentState.ForcedUpload)
             {
                 CleanupTorrent(content);
             }

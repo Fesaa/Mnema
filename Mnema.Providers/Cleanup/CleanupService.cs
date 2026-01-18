@@ -13,16 +13,16 @@ internal class CleanupService(
     PublicationCleanupService publicationCleanupService
     ): ICleanupService
 {
-    public Task Cleanup(IContent content)
+    public async Task Cleanup(IContent content)
     {
         switch (content)
         {
             case Publication publication:
-                publicationCleanupService.Cleanup(publication);
-                break;
+                await publicationCleanupService.Cleanup(publication);
+                return;
             case QBitTorrent torrent:
-                torrentCleanupService.Cleanup(torrent);
-                break;
+                await torrentCleanupService.Cleanup(torrent);
+                return;
         }
 
         throw new ArgumentOutOfRangeException(nameof(content), $"No matching cleanup service found for {content.GetType()}");

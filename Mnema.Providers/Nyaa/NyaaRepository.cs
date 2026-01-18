@@ -85,12 +85,6 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
     public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
         return Task.FromResult<List<FormControlDefinition>>([
-        ]);
-    }
-
-    public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
-    {
-        return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
                 Key = RequestConstants.FormatKey,
@@ -115,6 +109,12 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
                 Type = FormType.Text,
                 ValueType = FormValueType.Integer,
             }
+        ]);
+    }
+
+    public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    {
+        return Task.FromResult<List<FormControlDefinition>>([
         ]);
     }
 }
