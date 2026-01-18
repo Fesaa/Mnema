@@ -22,5 +22,6 @@ public class AutoMapperProfiles : Profile
         CreateMap<Connection, ExternalConnectionDto>();
         CreateMap<ContentRelease, ContentReleaseDto>();
         CreateMap<DownloadClient, DownloadClientDto>();
+        CreateMap<MonitoredSeries, MonitoredSeriesDto>();
     }
 }

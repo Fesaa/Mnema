@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
@@ -59,8 +60,8 @@ public class MonitoredSeriesService(
             Title = dto.Title,
             BaseDir = dto.BaseDir,
             Providers = dto.Providers,
-            ContentFormat = dto.ContentFormat,
-            Format = dto.Format,
+            ContentFormat = dto.Metadata.GetEnum<ContentFormat>(RequestConstants.FormatKey) ?? throw new MnemaException("A content format must be provided"),
+            Format = dto.Metadata.GetEnum<Format>(RequestConstants.FormatKey) ?? throw new MnemaException("A format must be provided"),
             ValidTitles = dto.ValidTitles,
             Metadata = dto.Metadata,
         };
@@ -107,32 +108,6 @@ public class MonitoredSeriesService(
                         .Build(),
                     Options = IMonitoredSeriesService.SupportedProviders
                         .Select(provider => new FormControlOption(provider.ToString().ToLower(), provider))
-                        .ToList(),
-                },
-                new FormControlDefinition
-                {
-                    Key = "content-format",
-                    Field = "contentFormat",
-                    Type = FormType.DropDown,
-                    ValueType = FormValueType.Integer,
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
-                    Options = Enum.GetValues<ContentFormat>()
-                        .Select(format => new FormControlOption(format.ToString().ToLower(), format))
-                        .ToList(),
-                },
-                new FormControlDefinition
-                {
-                    Key = "format",
-                    Field = "format",
-                    Type = FormType.DropDown,
-                    ValueType = FormValueType.Integer,
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
-                    Options = Enum.GetValues<Format>()
-                        .Select(format => new FormControlOption(format.ToString().ToLower(), format))
                         .ToList(),
                 }
             ]

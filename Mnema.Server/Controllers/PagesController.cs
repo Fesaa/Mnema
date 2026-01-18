@@ -51,7 +51,7 @@ public class PagesController(
     [ResponseCache(CacheProfileName = CacheProfiles.OneHour, VaryByQueryKeys = ["provider"])]
     public async Task<ActionResult<List<FormControlDefinition>>> DownloadMetadata([FromQuery] Provider provider)
     {
-        var repository = serviceProvider.GetKeyedService<IRepository>(provider);
+        var repository = serviceProvider.GetKeyedService<IContentRepository>(provider);
         if (repository == null)
             return NotFound();
 

@@ -89,6 +89,13 @@ export class ButtonGroupService {
           standAlone: true,
         },
         {
+          title: translate('button-groups.actions.monitored-series'),
+          icon: 'fa fa-television',
+          requiredRoles: [Role.Subscriptions],
+          navUrl: '/monitored-series',
+          standAlone: true,
+        },
+        {
           title: translate('button-groups.actions.downloads'),
           icon: 'fa fa-download',
           requiredRoles: [Role.Subscriptions],

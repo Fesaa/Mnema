@@ -17,16 +17,23 @@ public sealed record MonitoredSeriesDto
     public required string Title { get; set; }
 
     /// <summary>
-    /// Titles that are considered valid for this release. I.e. Translated, original, romanized, etc
+    /// Providers this release may be found on
     /// </summary>
-    /// <remarks>You can use the auto complete in the UI to load from metadata providers</remarks>
-    public List<string> ValidTitles { get; set; }
-
     public List<Provider> Providers { get; set; }
+
+    /// <summary>
+    ///     The directory to download the content in
+    /// </summary>
+    public required string BaseDir { get; set; }
 
     public ContentFormat ContentFormat { get; set; }
     public Format Format { get; set; }
 
+    /// <summary>
+    /// Titles that are considered valid for this release. I.e. Translated, original, romanized, etc
+    /// </summary>
+    /// <remarks>You can use the auto complete in the UI to load from metadata providers</remarks>
+    public List<string> ValidTitles { get; set; }
 
     /// <summary>
     /// Contains ids of <see cref="MetadataProvider"/>

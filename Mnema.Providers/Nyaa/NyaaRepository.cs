@@ -95,6 +95,10 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
                 Options = Enum.GetValues<Format>()
                     .Select(f => new FormControlOption(f.ToString().ToLower(), f))
                     .ToList(),
+                Validators = new FormValidatorsBuilder()
+                    .WithRequired()
+                    .Build(),
+                DefaultOption = Format.Archive,
             },
             new FormControlDefinition
             {
@@ -104,6 +108,10 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
                 Options = Enum.GetValues<ContentFormat>()
                     .Select(f => new FormControlOption(f.ToString().ToLower(), f))
                     .ToList(),
+                Validators = new FormValidatorsBuilder()
+                    .WithRequired()
+                    .Build(),
+                DefaultOption = ContentFormat.Manga
             },
             new FormControlDefinition
             {

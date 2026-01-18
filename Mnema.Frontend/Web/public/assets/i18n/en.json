@@ -24,6 +24,7 @@
       "title": "Actions",
       "downloads": "Downloads",
       "subscriptions": "Subscriptions",
+      "monitored-series": "Monitored Series",
       "notifications": "Notifications",
       "audit-log": "Audit log"
     },
@@ -939,6 +940,105 @@
       "title": "Nothing here yet",
       "description": "You don’t have any subscriptions yet.<br>Start a search and click the <strong>bell icon</strong> to create one — we’ll keep an eye on things for you."
     }
+  },
+  "monitored-series": {
+    "title": "Title",
+    "filter": "Filter...",
+    "providers": "Providers",
+    "base-dir": "Base dir",
+    "actions": {
+      "label": "Actions",
+      "edit": "Edit",
+      "delete": "Delete",
+      "add": "Add Series"
+    },
+    "confirm-delete": "Are you sure you want to remove monitored series {{title}}?",
+    "toasts": {
+      "delete": {
+        "success": {
+          "title": "Deleted {{name}}",
+          "summary": ""
+        },
+        "error": {
+          "title": "Failed to delete {{name}}",
+          "summary": "{{msg}}"
+        }
+      },
+      "update": {
+        "success": {
+          "title": "Updated {{name}}",
+          "summary": ""
+        },
+        "error": {
+          "title": "Failed to update {{name}}",
+          "summary": "{{msg}}"
+        }
+      },
+      "new": {
+        "success": {
+          "title": "Created monitored series {{name}}",
+          "summary": ""
+        },
+        "error": {
+          "title": "Failed to create monitored series {{name}}",
+          "summary": "{{msg}}"
+        }
+      }
+    },
+    "empty": {
+      "title": "Nothing here yet",
+      "description": "You don’t have any monitored series yet. Click the 'Add Series' button above to get started."
+    }
+  },
+
+  "edit-monitored-series-modal": {
+    "title": "Edit monitored series: {{name}}",
+    "new-series-title": "Add a new monitored series",
+    "cancel": "{{common.cancel}}",
+    "save": "{{common.save}}",
+    "create": "Create",
+    "general": "General",
+    "options": "Options",
+    "advanced": "Advanced",
+    "close": "{{common.close}}",
+
+    "title-title": "Title",
+    "title-tooltip": "This title is only visual and does not effect the underlying download",
+    "base-dir-title": "Download directory",
+    "base-dir-tooltip": "",
+    "providers-title": "Providers",
+    "providers-tooltip": "Which providers to check for this series",
+    "providers": {
+      "nyaa": "{{provider-name-pipe.nyaa}}"
+    },
+    "content-format-title": "Content Format",
+    "content-format-tooltip": "",
+    "content-format": {
+      "manga": "Manga",
+      "lightnovel": "Light novel",
+      "book": "Book",
+      "comic": "Comic"
+    },
+    "format-title": "{{provider-metadata.format-title}}",
+    "format-tooltip": "{{provider-metadata.format-tooltip}}",
+    "format": {
+      "archive": "Archive",
+      "epub": "Epub",
+      "unsupported": "unsupported"
+    },
+    "content_format-title": "{{provider-metadata.content_format-title}}",
+    "content_format-tooltip": "{{provider-metadata.content_format-tooltip}}",
+    "content_format": {
+      "manga": "Manga",
+      "lightnovel": "Light novel",
+      "book": "Book",
+      "comic": "Comic"
+    },
+    "hardcover_series_id-title": "{{provider-metadata.hardcover_series_id-title}}",
+    "hardcover_series_id-tooltip": "{{provider-metadata.hardcover_series_id-tooltip}}",
+    "manga_baka_id-title": "{{provider-metadata.manga_baka_id-title}}",
+    "manga_baka_id-tooltip": "{{provider-metadata.manga_baka_id-tooltip}}"
+
   },
 
   "input": {
