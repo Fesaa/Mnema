@@ -30,7 +30,7 @@ public static class StringExtensions
             return string.IsNullOrEmpty(s) ? string.Empty : s.Replace("\n", string.Empty).Replace("\r", string.Empty);
         }
 
-        public string OrNonEmpty(params string[] other)
+        public string OrNonEmpty(params string?[] other)
         {
             if (!string.IsNullOrEmpty(s)) return s;
 

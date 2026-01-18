@@ -46,9 +46,9 @@ public class UserRepository(MnemaDataContext ctx, IMapper mapper) : IUserReposit
             .FirstOrDefaultAsync(u => u.Id == id);
     }
 
-    public Task<UserPreferences?> GetPreferences(Guid id)
+    public Task<UserPreferences> GetPreferences(Guid id)
     {
-        return ctx.UserPreferences.Where(p => p.UserId == id).FirstOrDefaultAsync();
+        return ctx.UserPreferences.Where(p => p.UserId == id).FirstAsync();
     }
 
     public void Update(UserPreferences pref)

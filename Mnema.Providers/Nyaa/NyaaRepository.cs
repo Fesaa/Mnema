@@ -91,6 +91,30 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
     public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
     {
         return Task.FromResult<List<FormControlDefinition>>([
+            new FormControlDefinition
+            {
+                Key = RequestConstants.FormatKey,
+                Type = FormType.DropDown,
+                ValueType = FormValueType.Integer,
+                Options = Enum.GetValues<Format>()
+                    .Select(f => new FormControlOption(f.ToString().ToLower(), f))
+                    .ToList(),
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.ContentFormatKey,
+                Type = FormType.DropDown,
+                ValueType = FormValueType.Integer,
+                Options = Enum.GetValues<ContentFormat>()
+                    .Select(f => new FormControlOption(f.ToString().ToLower(), f))
+                    .ToList(),
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.HardcoverSeriesIdKey,
+                Type = FormType.Text,
+                ValueType = FormValueType.Integer,
+            }
         ]);
     }
 }

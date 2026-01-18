@@ -38,4 +38,7 @@ public static class RequestConstants
     public const string AssignEmptyVolumes = "assign_empty_volumes";
     public const string ScanlationGroupKey = "scanlation_group";
     public const string SkipVolumeWithoutChapter = "skip_volume_without_chapter";
+    public const string FormatKey = "format";
+    public const string ContentFormatKey = "content_format";
+    public const string HardcoverSeriesIdKey = "hardcover_series_id";
 }

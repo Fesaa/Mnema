@@ -5,12 +5,25 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities.User;
+using Mnema.Models.External;
 using Mnema.Models.Publication;
 
 namespace Mnema.API.Content;
 
 public interface IMetadataService
 {
+    /// <summary>
+    /// Construct the comicinfo with the given data
+    /// </summary>
+    /// <param name="preferences"></param>
+    /// <param name="request"></param>
+    /// <param name="title"></param>
+    /// <param name="series"></param>
+    /// <param name="chapter"></param>
+    /// <param name="note"></param>
+    /// <returns></returns>
+    ComicInfo? CreateComicInfo(UserPreferences preferences, DownloadRequestDto request, string title, Series? series, Chapter? chapter, string? note = null);
+
     /// <summary>
     ///     Processes the input tags for the given preferences and returns the (Genres, Tags)
     /// </summary>

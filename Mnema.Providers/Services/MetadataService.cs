@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mnema.API.Content;
@@ -5,12 +6,67 @@ using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities.User;
+using Mnema.Models.External;
 using Mnema.Models.Publication;
 
 namespace Mnema.Providers.Services;
 
 internal class MetadataService : IMetadataService
 {
+    public ComicInfo? CreateComicInfo(UserPreferences preferences, DownloadRequestDto request, string title, Series? series,
+        Chapter? chapter, string? note = null)
+    {
+        if (series == null || chapter == null) return null;
+
+        var ci = new ComicInfo
+        {
+            Series = title,
+            LocalizedSeries = series.LocalizedSeries ?? string.Empty,
+            Summary = chapter.Summary.OrNonEmpty(series.Summary),
+            Title = chapter.Title
+        };
+
+        if (note != null)
+            ci.Notes = note;
+
+        if (chapter.VolumeNumber() != null) ci.Volume = chapter.VolumeMarker;
+
+        if (chapter.IsOneShot)
+            ci.Format = "Special";
+        else
+            ci.Number = chapter.ChapterMarker;
+
+        foreach (var role in Enum.GetValues<PersonRole>())
+        {
+            var value = string.Join(',', series.People
+                .Concat(chapter.People)
+                .Where(p => p.Roles.Contains(role))
+                .Select(p => p.Name));
+
+            ci.SetForRole(value, role);
+        }
+
+        ci.Web = string.Join(',', series.Links.Concat([series.RefUrl]).Distinct());
+
+        var allTags = series.Tags.Concat(chapter.Tags).ToList();
+
+        var (genres, tags) = ProcessTags(preferences, allTags, request);
+        ci.Genre = string.Join(',', genres);
+        ci.Tags = string.Join(',', tags);
+
+        var ar = GetAgeRating(preferences, allTags);
+        ar = series.AgeRating > ar ? series.AgeRating : ar;
+        if (ar != null) ci.AgeRating = ar.Value;
+
+        var (count, finished) = GetCount(series);
+
+        if (count == null) return ci;
+
+        ci.Count = count.Value;
+
+        return ci;
+    }
+
     public (List<string>, List<string>) ProcessTags(
         UserPreferences preferences, IList<Tag> inputTags, DownloadRequestDto request)
     {
@@ -109,5 +165,33 @@ internal class MetadataService : IMetadataService
                 IsMarkedAsGenre = tag.IsMarkedAsGenre
             };
         }).ToList();
+    }
+
+    private static (int?, bool) GetCount(Series? series)
+    {
+        if (series == null) return (null, false);
+
+        if (series.Status != PublicationStatus.Completed) return (null, false);
+
+        if (series.TranslationStatus != null && series.TranslationStatus != PublicationStatus.Completed)
+            return (null, false);
+
+        var chapterNumbers = series.Chapters.Select(c => c.ChapterNumber()).WhereNotNull().ToList();
+        var volumeNumbers = series.Chapters.Select(c => c.VolumeNumber()).WhereNotNull().ToList();
+
+        var highestChapter = chapterNumbers.Count == 0 ? null : chapterNumbers.Max();
+        var highestVolume = volumeNumbers.Count == 0 ? null : volumeNumbers.Max();
+
+        if (series.HighestVolumeNumber != null)
+            return ((int?)series.HighestVolumeNumber, series.HighestVolumeNumber.SafeEquals(highestVolume));
+
+        if (series.HighestChapterNumber != null)
+            return ((int?)series.HighestChapterNumber, series.HighestChapterNumber.SafeEquals(highestChapter));
+
+        if (highestVolume != null) return ((int?)highestVolume, true);
+
+        if (highestChapter != null) return ((int?)highestChapter, true);
+
+        return (null, false);
     }
 }

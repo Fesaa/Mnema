@@ -1,11 +1,8 @@
-using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.Content;
-using Mnema.Common.Extensions;
 using Mnema.Common.Helpers;
 using Mnema.Models.External;
 using Mnema.Models.Publication;
@@ -37,94 +34,13 @@ internal partial class Publication
                 await stream.CopyToAsync(file);
             }
 
-        var ci = BuildComicInfoForChapter(chapter);
+        var ci = _metadataService.CreateComicInfo(Preferences, Request, Title, Series, chapter, string.Format(ComicInfoNote, provider.ToString()));
         if (ci != null)
         {
+            // TODO: Patch sub done notification back in
+
             var ciPath = Path.Join(ChapterPath(chapter), "ComicInfo.xml");
             XmlHelper.SerializeToFile(XmlSerializer, ci, ciPath);
         }
-    }
-
-    private ComicInfo? BuildComicInfoForChapter(Chapter chapter)
-    {
-        if (Series == null) return null;
-
-        var ci = new ComicInfo
-        {
-            Notes = string.Format(ComicInfoNote, provider.ToString()),
-            Series = Title,
-            LocalizedSeries = Series.LocalizedSeries ?? string.Empty,
-            Summary = chapter.Summary.OrNonEmpty(Series.Summary),
-            Title = chapter.Title
-        };
-
-        if (chapter.VolumeNumber() != null) ci.Volume = chapter.VolumeMarker;
-
-        if (chapter.IsOneShot)
-            ci.Format = "Special";
-        else
-            ci.Number = chapter.ChapterMarker;
-
-        foreach (var role in Enum.GetValues<PersonRole>())
-        {
-            var value = string.Join(',', Series.People
-                .Where(p => p.Roles.Contains(role))
-                .Select(p => p.Name));
-            ci.SetForRole(value, role);
-        }
-
-        ci.Web = string.Join(',', Series.Links.Concat([Series.RefUrl]).Distinct());
-
-        var allTags = Series.Tags.Concat(chapter.Tags).ToList();
-
-        var (genres, tags) = _metadataService.ProcessTags(Preferences, allTags, Request);
-        ci.Genre = string.Join(',', genres);
-        ci.Tags = string.Join(',', tags);
-
-        var ar = _metadataService.GetAgeRating(Preferences, allTags);
-        ar = Series!.AgeRating > ar ? Series!.AgeRating : ar;
-        if (ar != null) ci.AgeRating = ar.Value;
-
-        var (count, finished) = GetCount();
-
-        if (count == null) return ci;
-
-        ci.Count = count.Value;
-
-        if (_hasNotifiedSubscriptionExhausted || !Request.IsSubscription || !finished) return ci;
-
-        _hasNotifiedSubscriptionExhausted = true;
-
-        _connectionService.CommunicateSubscriptionExhausted(DownloadInfo);
-
-        return ci;
-    }
-
-    private (int?, bool) GetCount()
-    {
-        if (Series == null) return (null, false);
-
-        if (Series.Status != PublicationStatus.Completed) return (null, false);
-
-        if (Series.TranslationStatus != null && Series.TranslationStatus != PublicationStatus.Completed)
-            return (null, false);
-
-        var chapterNumbers = Series.Chapters.Select(c => c.ChapterNumber()).WhereNotNull().ToList();
-        var volumeNumbers = Series.Chapters.Select(c => c.VolumeNumber()).WhereNotNull().ToList();
-
-        var highestChapter = chapterNumbers.Count == 0 ? null : chapterNumbers.Max();
-        var highestVolume = volumeNumbers.Count == 0 ? null : volumeNumbers.Max();
-
-        if (Series.HighestVolumeNumber != null)
-            return ((int?)Series.HighestVolumeNumber, Series.HighestVolumeNumber.SafeEquals(highestVolume));
-
-        if (Series.HighestChapterNumber != null)
-            return ((int?)Series.HighestChapterNumber, Series.HighestChapterNumber.SafeEquals(highestChapter));
-
-        if (highestVolume != null) return ((int?)highestVolume, true);
-
-        if (highestChapter != null) return ((int?)highestChapter, true);
-
-        return (null, false);
     }
 }

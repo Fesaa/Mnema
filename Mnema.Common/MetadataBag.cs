@@ -19,6 +19,15 @@ public class MetadataBag : GenericBag<string>
         return string.IsNullOrEmpty(fallback) ? null : fallback;
     }
 
+    public TEnum? GetEnum<TEnum>(string key) where TEnum : struct
+    {
+        var value = GetString(key);
+        if (string.IsNullOrEmpty(value))
+            return null;
+
+        return Enum.TryParse<TEnum>(value, true, out var result) ? result : default;
+    }
+
     [return:NotNullIfNotNull(nameof(fallback))] public string? GetStringOrDefault(string key, string? fallback)
     {
         var value = GetString(key);
