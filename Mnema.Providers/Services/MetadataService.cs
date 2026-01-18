@@ -41,6 +41,7 @@ internal class MetadataService : IMetadataService
             var value = string.Join(',', series.People
                 .Concat(chapter.People)
                 .Where(p => p.Roles.Contains(role))
+                .DistinctBy(p => p.Name)
                 .Select(p => p.Name));
 
             ci.SetForRole(value, role);
