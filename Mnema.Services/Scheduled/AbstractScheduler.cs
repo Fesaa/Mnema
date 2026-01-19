@@ -34,7 +34,7 @@ internal abstract class AbstractScheduler<TScheduler, TEntity>(
 
     public Task EnsureScheduledAsync()
     {
-        if (environment.IsDevelopment() && false)
+        if (environment.IsDevelopment())
         {
             logger.LogDebug("Removing {WatcherDescription} in development as recurring job", WatcherDescription);
             recurringJobManager.RemoveIfExists(WatcherJobId);

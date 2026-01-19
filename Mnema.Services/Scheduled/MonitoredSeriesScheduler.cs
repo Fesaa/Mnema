@@ -48,7 +48,6 @@ internal class MonitoredSeriesScheduler(
         List<MonitoredSeries> monitoredReleases, CancellationToken cancellationToken
     )
     {
-        var monitoredSeriesService = scope.ServiceProvider.GetRequiredService<IMonitoredSeriesService>();
         var downloadService = scope.ServiceProvider.GetRequiredService<IDownloadService>();
 
         HashSet<Guid> matchedMonitoredSeries = [];
