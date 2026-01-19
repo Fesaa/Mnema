@@ -34,9 +34,9 @@ public class MonitoredSeriesService(
         CancellationToken cancellationToken = default)
     {
         var series = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(dto.Id, cancellationToken);
-        if (series == null) throw new Mnema.Common.Exceptions.NotFoundException();
+        if (series == null) throw new NotFoundException();
 
-        if (series.UserId != userId) throw new Mnema.Common.Exceptions.ForbiddenException();
+        if (series.UserId != userId) throw new ForbiddenException();
 
         series.Title = dto.Title;
         series.BaseDir = dto.BaseDir;
@@ -48,7 +48,7 @@ public class MonitoredSeriesService(
 
         unitOfWork.MonitoredSeriesRepository.Update(series);
 
-        await unitOfWork.CommitAsync();
+        await unitOfWork.CommitAsync(cancellationToken);
     }
 
     public async Task CreateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto,
@@ -68,7 +68,7 @@ public class MonitoredSeriesService(
 
         unitOfWork.MonitoredSeriesRepository.Add(series);
 
-        await unitOfWork.CommitAsync();
+        await unitOfWork.CommitAsync(cancellationToken);
     }
 
     public FormDefinition GetForm()

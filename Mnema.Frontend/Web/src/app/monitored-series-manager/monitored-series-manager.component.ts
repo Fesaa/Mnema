@@ -7,7 +7,7 @@ import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {TableComponent} from "../shared/_component/table/table.component";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {ModalService} from "../_services/modal.service";
-import {catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, tap} from "rxjs";
+import {debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, tap} from "rxjs";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {takeUntilDestroyed, toSignal} from "@angular/core/rxjs-interop";
 import {ProviderNamePipe} from "../_pipes/provider-name.pipe";
@@ -16,7 +16,6 @@ import {DefaultModalOptions} from "../_models/default-modal-options";
 import {Provider} from "../_models/page";
 import {FormControlDefinition} from "../generic-form/form";
 import {PageService} from "../_services/page.service";
-import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-monitored-series-manager',
@@ -26,7 +25,6 @@ import {RouterLink} from "@angular/router";
     NgbTooltip,
     ReactiveFormsModule,
     ProviderNamePipe,
-    RouterLink,
   ],
   templateUrl: './monitored-series-manager.component.html',
   styleUrl: './monitored-series-manager.component.scss',

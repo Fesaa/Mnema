@@ -4,9 +4,7 @@ import {PageLoader, PaginatorComponent} from "../../../shared/_component/paginat
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {debounceTime, distinctUntilChanged, map, of, tap} from "rxjs";
-import {form, FormField} from "@angular/forms/signals";
 import {Series} from "../../../page/_components/series-info/_types";
-import {SeriesInfoComponent} from "../../../page/_components/series-info/series-info.component";
 import {EMPTY_PAGE} from "../../../_models/paged-list";
 import {CompactSeriesInfoComponent} from "../compact-series-info/compact-series-info.component";
 import {EditMonitoredSeriesModalComponent} from "../edit-monitored-series-modal/edit-monitored-series-modal.component";
@@ -21,9 +19,7 @@ import {TranslocoDirective} from "@jsverse/transloco";
   selector: 'app-series-search',
   imports: [
     PaginatorComponent,
-    FormField,
     FormsModule,
-    SeriesInfoComponent,
     ReactiveFormsModule,
     CompactSeriesInfoComponent,
     TranslocoDirective
