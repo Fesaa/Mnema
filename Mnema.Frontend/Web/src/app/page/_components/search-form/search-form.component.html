@@ -38,6 +38,8 @@
                   (selectedData)="onModifierSelection(modifier, $event)"
                 >
                   <ng-template #label>{{t(modifier.key)}}</ng-template>
+                  <ng-template #optionItem let-option>{{option.key}}</ng-template>
+                  <ng-template #badgeItem let-option>{{option.key}}</ng-template>
                 </app-type-ahead>
               }
             </div>

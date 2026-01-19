@@ -14,10 +14,11 @@ import {PagesSettingsComponent} from "./_components/pages-settings/pages-setting
 import {ServerSettingsComponent} from "./_components/server-settings/server-settings.component";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {
-  ExternalConnectionSettingsComponent
-} from "./_components/external-connection-settings/external-connection-settings.component";
+  ConnectionSettingsComponent
+} from "./_components/external-connection-settings/connection-settings.component";
 import {Button, ButtonGroup, ButtonGroupService, SettingsID} from "../../button-grid/button-group.service";
 import {MobileGridComponent} from "../../button-grid/mobile-grid/mobile-grid.component";
+import {DownloadClientSettingsComponent} from "./_components/download-client/download-client-settings.component";
 
 @Component({
   selector: 'app-settings',
@@ -27,8 +28,9 @@ import {MobileGridComponent} from "../../button-grid/mobile-grid/mobile-grid.com
     PagesSettingsComponent,
     ServerSettingsComponent,
     TranslocoDirective,
-    ExternalConnectionSettingsComponent,
+    ConnectionSettingsComponent,
     MobileGridComponent,
+    DownloadClientSettingsComponent,
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']

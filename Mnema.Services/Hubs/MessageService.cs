@@ -42,6 +42,11 @@ internal class MessageService(IHubContext<MessageHub> ctx) : IMessageService
         await SendToUser(userId, nameof(MessageEventType.ContentInfoUpdate), info);
     }
 
+    public async Task BulkContentInfoUpdate(Guid userId, DownloadInfo[] downloadInfos)
+    {
+        await SendToUser(userId, nameof(MessageEventType.BulkContentInfoUpdate), downloadInfos);
+    }
+
     public async Task DeleteContent(Guid userId, string contentId)
     {
         await SendToUser(userId, nameof(MessageEventType.DeleteContent), new ContentUpdate

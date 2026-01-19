@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Mnema.API\Mnema.API.csproj" />
+      <ProjectReference Include="..\Mnema.Common\Mnema.Common.csproj" />
+      <ProjectReference Include="..\Mnema.Database\Mnema.Database.csproj" />
+      <ProjectReference Include="..\Mnema.Models\Mnema.Models.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Hardcover\Queries\*.graphql" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="GraphQL" Version="8.8.3" />
+      <PackageReference Include="GraphQL.Client" Version="6.1.0" />
+      <PackageReference Include="GraphQL.Client.Serializer.SystemTextJson" Version="6.1.0" />
+      <PackageReference Include="Hangfire.Core" Version="1.8.22" />
+      <PackageReference Include="Lucene.Net" Version="4.8.0-beta00017" />
+      <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00017" />
+      <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00017" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.2" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
+      <PackageReference Include="Serilog" Version="4.3.0" />
+    </ItemGroup>
+
+</Project>

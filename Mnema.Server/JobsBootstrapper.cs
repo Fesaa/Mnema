@@ -12,8 +12,12 @@ public class JobsBootstrapper(IServiceScopeFactory scopeFactory) : IHostedServic
     {
         using var scope = scopeFactory.CreateScope();
 
-        var subscriptionSchedular = scope.ServiceProvider.GetRequiredService<ISubscriptionScheduler>();
-        await subscriptionSchedular.EnsureScheduledAsync();
+        var schedulers = scope.ServiceProvider.GetServices<IScheduled>();
+
+        foreach (var scheduler in schedulers)
+        {
+            await scheduler.EnsureScheduledAsync();
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

@@ -11,4 +11,6 @@ public interface IImageService
     Task ConvertAndSave(Stream stream, ImageFormat format, string filePath,
         CancellationToken cancellationToken = default);
 
+    Task Convert(Stream stream, ImageFormat format, Stream outputStream);
+
 }

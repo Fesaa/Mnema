@@ -4,9 +4,8 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
-using Mnema.API.External;
-using Mnema.Models.Entities.External;
-using Mnema.Services.External;
+using Mnema.Models.Entities;
+using Mnema.Services.Connections;
 using Mnema.Services.Hubs;
 using Mnema.Services.Scheduled;
 using Mnema.Services.Store;
@@ -25,17 +24,25 @@ public static class ServiceProviderExtensions
         services.AddScoped<ISubscriptionService, SubscriptionService>();
         services.AddScoped<ISearchService, SearchService>();
         services.AddScoped<IDownloadService, DownloadService>();
-        services.AddScoped<ISubscriptionScheduler, SubscriptionScheduler>();
+        services.AddScoped<IScheduled, SubscriptionScheduler>();
+        services.AddScoped<IScheduled, MonitoredSeriesScheduler>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IImageService, ImageService>();
+        services.AddScoped<IDownloadClientService, DownloadClientService>();
+        services.AddScoped<IParserService, ParserService>();
+        services.AddScoped<INamingService, NamingService>();
+        services.AddScoped<IMetadataResolver, MetadataResolver>();
+        services.AddScoped<IMonitoredSeriesService, MonitoredSeriesService>();
 
         #region External Connection
 
-        services.AddScoped<IExternalConnectionService, ExternalConnectionService>();
-        services.AddKeyedScoped<IExternalConnectionHandlerService, DiscordExternalConnectionService>(
-            ExternalConnectionType.Discord);
-        services.AddKeyedScoped<IExternalConnectionHandlerService, KavitaExternalConnectionService>(
-            ExternalConnectionType.Kavita);
+        services.AddScoped<IConnectionService, ConnectionService>();
+        services.AddKeyedScoped<IConnectionHandlerService, DiscordConnectionService>(
+            ConnectionType.Discord);
+        services.AddKeyedScoped<IConnectionHandlerService, KavitaConnectionService>(
+            ConnectionType.Kavita);
+        services.AddKeyedScoped<IConnectionHandlerService, NativeConnectionService>(
+            ConnectionType.Native);
 
         #endregion
 

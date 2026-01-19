@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mnema.API.Content;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.Content;
 
 namespace Mnema.Providers;
 
@@ -22,7 +23,7 @@ public class NoOpContentManager : IContentManager
         return Task.CompletedTask;
     }
 
-    public Task<IEnumerable<IContent>> GetAllContent()
+    public Task<IEnumerable<IContent>> GetAllContent(Provider provider)
     {
         return Task.FromResult<IEnumerable<IContent>>([]);
     }

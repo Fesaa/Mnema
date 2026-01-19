@@ -1,0 +1,64 @@
+fragment AuthorInfo on authors {
+    id
+    slug
+    name
+    alternate_names
+    bio
+    gender_id
+    image {
+        url
+    }
+}
+
+query GetSeriesById($id: Int!) {
+    series_by_pk(id: $id) {
+        id
+        name
+        slug
+        description
+        is_completed
+        books_count
+
+        author {
+         ...AuthorInfo
+        }
+
+        book_series(where: {
+            featured:  {_eq: true},
+            book: {
+                canonical_id: {_is_null: true},
+                compilation: {_eq: false}
+            }}, order_by: {position: asc}) {
+
+            position
+
+            book {
+                id
+                title
+                alternative_titles
+                description
+                release_date
+                release_year
+                slug
+                image {
+                    url
+                }
+                taggings {
+                    tag {
+                        id
+                        tag
+                        tag_category {
+                            category
+                        }
+                    }
+                }
+                contributions {
+                    contribution
+                    author {
+                        ...AuthorInfo
+                    }
+                }
+            }
+        }
+    }
+}

@@ -67,6 +67,7 @@ export class ManualContentAddModalComponent {
         component.info.set({
           id: data.id,
           name: data.name ?? data.id,
+          downloadUrl: '',
           description: "",
           size: "",
           tags: [],

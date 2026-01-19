@@ -19,10 +19,24 @@ public static class DistributedCacheExtensions
             return cache.SetAsync(key, bytes, options, token);
         }
 
+        public void SetAsJson<T>(string key, T value, DistributedCacheEntryOptions options)
+        {
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(value);
+            cache.Set(key, bytes, options);
+        }
+
         public async Task<T?> GetAsJsonAsync<T>(string key,
             CancellationToken token = default)
         {
             var bytes = await cache.GetAsync(key, token);
+            if (bytes == null) return default;
+
+            return JsonSerializer.Deserialize<T>(bytes);
+        }
+
+        public T? GetAsJson<T>(string key)
+        {
+            var bytes = cache.Get(key);
             if (bytes == null) return default;
 
             return JsonSerializer.Deserialize<T>(bytes);

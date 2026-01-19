@@ -42,6 +42,36 @@ namespace Mnema.Database.Migrations
                     b.ToTable("DataProtectionKeys");
                 });
 
+            modelBuilder.Entity("Mnema.Models.Entities.Connection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.PrimitiveCollection<int[]>("FollowedEvents")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer[]")
+                        .HasDefaultValue(new int[0]);
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("{}");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Connections");
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.Content.ContentRelease", b =>
                 {
                     b.Property<Guid>("Id")
@@ -58,8 +88,15 @@ namespace Mnema.Database.Migrations
                     b.Property<DateTime>("CreatedUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("DownloadUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("LastModifiedUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Provider")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("ReleaseDate")
                         .HasColumnType("timestamp with time zone");
@@ -72,12 +109,98 @@ namespace Mnema.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("ReleaseId")
+                    b.HasIndex("Type");
+
+                    b.HasIndex("Type", "ReleaseId")
                         .IsUnique();
 
-                    b.ToTable("ProcessedContentReleases");
+                    b.ToTable("ContentReleases");
+                });
+
+            modelBuilder.Entity("Mnema.Models.Entities.Content.DownloadClient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("FailedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsFailed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("{}");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Type")
+                        .IsUnique();
+
+                    b.ToTable("DownloadClients");
+                });
+
+            modelBuilder.Entity("Mnema.Models.Entities.Content.MonitoredSeries", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BaseDir")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ContentFormat")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Format")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("LastModifiedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("{}");
+
+                    b.PrimitiveCollection<int[]>("Providers")
+                        .IsRequired()
+                        .HasColumnType("integer[]");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.PrimitiveCollection<List<string>>("ValidTitles")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MonitoredSeries");
                 });
 
             modelBuilder.Entity("Mnema.Models.Entities.Content.Subscription", b =>
@@ -124,36 +247,6 @@ namespace Mnema.Database.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Subscriptions");
-                });
-
-            modelBuilder.Entity("Mnema.Models.Entities.External.ExternalConnection", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.PrimitiveCollection<int[]>("FollowedEvents")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer[]")
-                        .HasDefaultValue(new int[0]);
-
-                    b.Property<string>("Metadata")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("{}");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ExternalConnections");
                 });
 
             modelBuilder.Entity("Mnema.Models.Entities.ServerSetting", b =>

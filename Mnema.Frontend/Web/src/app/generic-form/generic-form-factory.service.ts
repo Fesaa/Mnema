@@ -14,13 +14,20 @@ export const GENERIC_METADATA_FIELD = "metadata";
 export class GenericFormFactoryService {
 
   createTypeAheadSettings(obj: any, control: FormControlDefinition): TypeaheadSettings<FormControlOption> {
-    if (control.type !== FormType.MultiSelect)
+    if (control.type !== FormType.MultiSelect && control.type !== FormType.MultiText)
       throw new Error(`Invalid control type for ${control.type}`);
 
     const settings = new TypeaheadSettings<FormControlOption>();
     settings.id = control.key
     settings.multiple = true;
     settings.minCharacters = 0;
+
+    if (control.type === FormType.MultiText) {
+      settings.addIfNonExisting = true;
+      settings.addTransformFn = (text) => ({key: text, value: text, default: false});
+      settings.compareFnForAdd = (optionList, filter) =>
+        optionList.filter(v => (v.value + '').toLowerCase().includes(filter.toLowerCase()));
+    }
 
     settings.fetchFn = (f) => {
       const filtered = control.options
@@ -30,9 +37,14 @@ export class GenericFormFactoryService {
     }
 
     if (obj) {
-      settings.savedData = (obj as Array<any>).map(v =>
-        control.options.find(o => o.value == v))
-        .filter(v => !!v);
+      const array = Array.isArray(obj) ? obj : [obj];
+      settings.savedData = array.map(v =>
+        control.options.find(o => o.value == v) ?? (control.type === FormType.MultiText ? {
+          key: v + '',
+          value: v,
+          default: false
+        } : undefined))
+        .filter(v => !!v) as FormControlOption[];
     } else {
       settings.savedData = [];
     }
@@ -143,6 +155,7 @@ export class GenericFormFactoryService {
       case FormType.DropDown:
         return this.transFormValue(value, control.valueType);
       case FormType.MultiSelect:
+      case FormType.MultiText:
         return Array.isArray(value) ? value.map(v => this.transFormValue(v, control.valueType)) : [this.transFormValue(value, control.valueType)];
       case FormType.Text:
       case FormType.Directory:

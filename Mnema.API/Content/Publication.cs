@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Mnema.Models.DTOs.Content;
 
 namespace Mnema.API.Content;
 
@@ -10,13 +11,16 @@ public interface IPublicationManager : IContentManager
 
 public interface IPublication : IContent
 {
+    Task Cancel();
+    Task Cleanup();
+    Task<MessageDto> ProcessMessage(MessageDto message);
     Task LoadMetadataAsync(CancellationTokenSource source);
     Task DownloadContentAsync(CancellationTokenSource source);
 }
 
 public class OnDiskContent
 {
-    public string Name { get; init; }
+    public string SeriesName { get; init; }
     public string Path { get; init; }
     public string? Chapter { get; init; }
     public string? Volume { get; init; }
@@ -34,4 +38,8 @@ public static class RequestConstants
     public const string AssignEmptyVolumes = "assign_empty_volumes";
     public const string ScanlationGroupKey = "scanlation_group";
     public const string SkipVolumeWithoutChapter = "skip_volume_without_chapter";
+    public const string FormatKey = "format";
+    public const string ContentFormatKey = "content_format";
+    public const string HardcoverSeriesIdKey = "hardcover_series_id";
+    public const string MangaBakaKey = "manga_baka_id";
 }

@@ -42,7 +42,7 @@ internal class DynastyRepository(
     private HttpClient Client => httpClientFactory.CreateClient(nameof(Provider.Dynasty));
 
 
-    public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination,
+    public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
         var url = "/search"
@@ -149,6 +149,7 @@ internal class DynastyRepository(
                         .RemovePrefix("released ")
                         .Trim()
                         .AsDateTime(SeriesReleaseDateFormat) ?? DateTime.UtcNow,
+                    Provider = Provider.Dynasty,
                 };
             })
             .WhereNotNull()

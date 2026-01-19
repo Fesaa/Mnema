@@ -7,13 +7,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="BencodeNET" Version="5.0.0" />
         <PackageReference Include="Fizzler.Systems.HtmlAgilityPack" Version="1.2.1"/>
         <PackageReference Include="Flurl.Http" Version="4.0.2"/>
+        <PackageReference Include="Hangfire.Core" Version="1.8.22" />
         <PackageReference Include="HtmlAgilityPack" Version="1.12.4"/>
-        <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.1"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1"/>
-        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1"/>
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.1"/>
+        <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.2"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2"/>
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2"/>
+        <PackageReference Include="QBittorrent.Client" Version="1.9.24285.1" />
         <PackageReference Include="System.IO.Abstractions" Version="22.1.0"/>
     </ItemGroup>
 

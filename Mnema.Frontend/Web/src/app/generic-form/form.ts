@@ -30,7 +30,8 @@ export enum FormType {
   DropDown,
   MultiSelect,
   Text,
-  Directory
+  Directory,
+  MultiText
 }
 
 export enum ValueType {

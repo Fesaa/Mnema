@@ -1,0 +1,180 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Hangfire;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Mnema.API;
+using Mnema.API.Content;
+using Mnema.Common.Exceptions;
+using Mnema.Common.Extensions;
+using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.UI;
+using Mnema.Models.Entities.Content;
+using Mnema.Models.Internal;
+using QBittorrent.Client;
+
+namespace Mnema.Providers.QBit;
+
+internal partial class QBitContentManager : IContentManager, IConfigurationProvider
+{
+    private const string MnemaCategory = "Mnema";
+    private const string UrlKey = "url";
+    private const string UsernameKey = "username";
+    private const string PasswordKey = "password";
+    private const string RequestCacheKey = "QBitTorrent-Request-";
+
+    private static readonly List<Provider> SupportedProviders = [Provider.Nyaa];
+    private static readonly DistributedCacheEntryOptions RequestCacheKeyOptions = new();
+
+    private readonly ILogger<QBitContentManager> _logger;
+    private readonly ApplicationConfiguration _configuration;
+    private readonly IDistributedCache _cache;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IQBitClient _qBitClient;
+
+    public QBitContentManager(ILogger<QBitContentManager> logger,
+        ApplicationConfiguration configuration,
+        IDistributedCache cache,
+        IServiceScopeFactory scopeFactory,
+        IQBitClient qBitClient)
+    {
+        _logger = logger;
+        _configuration = configuration;
+        _cache = cache;
+        _scopeFactory = scopeFactory;
+        _qBitClient = qBitClient;
+
+        _watcherTask = Task.Run(async () => await _tokenSource.DoWhile(
+            _logger,
+            TimeSpan.FromSeconds(5),
+            TorrentWatcher,
+            _ => Task.FromResult(true)));
+    }
+
+    public async Task Download(DownloadRequestDto request)
+    {
+        if (!SupportedProviders.Contains(request.Provider))
+            throw new MnemaException($"Provider {request.Provider} is not supported");
+
+        if (string.IsNullOrEmpty(request.DownloadUrl))
+            throw new MnemaException($"Download url is missing");
+
+        var listQuery = new TorrentListQuery
+        {
+            Category = MnemaCategory,
+            Tag = request.Provider.ToString(),
+            Hashes = [request.Id]
+        };
+
+        var torrents = await _qBitClient.GetTorrentsAsync(listQuery);
+        if (torrents != null && torrents.Any(t => t.Hash == request.Id))
+        {
+            throw new MnemaException($"Torrent with hash {request.Id} has already been added");
+        }
+
+        BackgroundJob.Enqueue(() => DownloadTorrent(request, CancellationToken.None));
+    }
+
+    public async Task StopDownload(StopRequestDto request)
+    {
+        if (!SupportedProviders.Contains(request.Provider))
+            throw new MnemaException($"Provider {request.Provider} is not supported");
+
+        using var scope = _scopeFactory.CreateScope();
+        var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
+
+        try
+        {
+            await _qBitClient.DeleteTorrentsAsync([request.Id], true);
+        }
+        finally
+        {
+            await _cache.RemoveAsync(RequestCacheKey + request.Id);
+            await messageService.DeleteContent(request.UserId, request.Id);
+        }
+    }
+
+    public Task MoveToDownloadQueue(string id) => StartDownload(id);
+
+    public async Task<IEnumerable<IContent>> GetAllContent(Provider provider)
+    {
+        if (!SupportedProviders.Contains(provider))
+            throw new MnemaException($"Provider {provider} is not supported");
+
+        var listQuery = new TorrentListQuery
+        {
+            Category = MnemaCategory,
+            Tag = provider.ToString(),
+        };
+
+        IReadOnlyList<TorrentInfo> torrents;
+
+        try
+        {
+            torrents = await _qBitClient.GetTorrentsAsync(listQuery);
+        }
+        catch (MnemaException ex)
+        {
+            _logger.LogTrace(ex, "Failed to load torrent list");
+            return [];
+        }
+
+        if (torrents.Count == 0) return [];
+
+        List<IContent> contents = [];
+
+        foreach (var tInfo in torrents)
+        {
+            if (UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
+
+            var request = await _cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
+            if (request == null) continue;
+
+            contents.Add(new QBitTorrent(request, tInfo));
+        }
+
+        return contents;
+    }
+
+    public Task<List<FormControlDefinition>> GetFormControls(CancellationToken cancellationToken)
+    {
+        return Task.FromResult<List<FormControlDefinition>>([
+            new FormControlDefinition
+            {
+                Key = UrlKey,
+                Type = FormType.Text,
+                Validators = new FormValidatorsBuilder()
+                    .WithIsUrl()
+                    .WithRequired()
+                    .Build()
+            },
+            new FormControlDefinition
+            {
+                Key = UsernameKey,
+                Type = FormType.Text,
+                Validators = new FormValidatorsBuilder()
+                    .WithRequired()
+                    .Build()
+            },
+            new FormControlDefinition
+            {
+                Key = PasswordKey,
+                Type = FormType.Text,
+                Validators = new FormValidatorsBuilder()
+                    .WithRequired()
+                    .Build()
+            },
+        ]);
+    }
+
+    public Task ReloadConfiguration(CancellationToken cancellationToken)
+    {
+        _qBitClient.Invalidate();
+        return Task.CompletedTask;
+    }
+}

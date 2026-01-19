@@ -15,7 +15,8 @@ public enum MessageEventType
     ContentStateUpdate,
     Notification,
     NotificationRead,
-    NotificationAdd
+    NotificationAdd,
+    BulkContentInfoUpdate
 }
 
 public interface IMessageService
@@ -26,6 +27,7 @@ public interface IMessageService
 
     Task AddContent(Guid userId, DownloadInfo info);
     Task UpdateContent(Guid userId, DownloadInfo info);
+    Task BulkContentInfoUpdate(Guid userId, DownloadInfo[] downloadInfos);
     Task DeleteContent(Guid userId, string contentId);
 
     Task NotificationAdded(Guid userId, int amount);

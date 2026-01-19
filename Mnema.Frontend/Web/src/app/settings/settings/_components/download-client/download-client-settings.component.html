@@ -1,0 +1,77 @@
+<div class="mt-4" *transloco="let t; prefix: 'settings.download-clients'">
+
+  <h2 class="h2 fw-bold mt-4 mb-3">{{ t('title') }}</h2>
+
+  <div class="d-flex justify-content-end mb-3">
+    <button type="button" class="btn btn-primary" (click)="edit(null)">
+      <i class="fa fa-plus"></i>
+    </button>
+  </div>
+
+  <app-table
+    [pageLoader]="pageLoader()"
+    [trackByIdFunc]="trackBy"
+    [noMobileCards]="true"
+    [reloader]="pageReloader"
+  >
+    <ng-template #header>
+      <tr>
+        <th class="table-header-cell">{{ t('header.name') }}</th>
+        <th class="table-header-cell" style="width: 15%">{{ t('header.type') }}</th>
+        <th class="table-header-cell" style="width: 15%">{{ t('header.actions') }}</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #cell let-item>
+      <td class="table-cell">
+        {{ item.name }}
+      </td>
+
+      <td class="table-cell">
+        {{ item.type | downloadClientType }}
+      </td>
+
+      <td class="table-cell d-flex align-items-center gap-2 justify-end">
+        <button
+          type="button"
+          class="btn btn-small"
+          (click)="edit(item)"
+        >
+          <i class="fa fa-edit"></i>
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-small"
+          (click)="releaseLock(item)"
+          [disabled]="!item.isFailed"
+        >
+          <i class="fa {{item.isFailed ? 'fa-lock' : 'fa-lock-open'}}"></i>
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-small text-danger"
+          (click)="remove(item)"
+        >
+          <i class="fa fa-trash"></i>
+        </button>
+      </td>
+    </ng-template>
+
+    <ng-template #empty>
+      <tr>
+        <td colspan="4" class="py-5">
+          <div class="d-flex flex-column align-items-center text-center gap-3 text-muted">
+            <h5 class="mb-1">
+              {{ t('empty.title') }}
+            </h5>
+
+            <p class="mb-0" [innerHtml]="t('empty.description')">
+            </p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </app-table>
+</div>

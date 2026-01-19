@@ -10,11 +10,6 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.API;
 
-public interface ISubscriptionScheduler
-{
-    Task EnsureScheduledAsync();
-}
-
 public interface ISubscriptionRepository
 {
     Task<PagedList<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId, string query, PaginationParams pagination, CancellationToken cancellationToken = default);
@@ -32,7 +27,7 @@ public interface ISubscriptionService
 {
     public static readonly ImmutableArray<Provider> SubscriptionProviders =
     [
-        Provider.Bato, Provider.Dynasty, Provider.MangaBuddy,
+        Provider.Bato, Provider.Dynasty,
         Provider.Mangadex, Provider.Webtoons
     ];
 

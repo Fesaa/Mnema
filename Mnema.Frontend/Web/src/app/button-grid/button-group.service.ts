@@ -16,7 +16,8 @@ export enum SettingsID {
   Server = "server",
   Preferences = "preferences",
   Pages = "pages",
-  ExternalConnections = "external_connections",
+  DownloadClients = "download_clients",
+  Connections = "connections",
 }
 
 export interface Button {
@@ -78,13 +79,20 @@ export class ButtonGroupService {
 
     return {
       title: translate('button-groups.actions.title'),
-      icon: 'fa fa-exclamation',
+      icon: 'fa fa-bars',
       buttons: [
         {
           title: translate('button-groups.actions.subscriptions'),
           icon: 'fa fa-bell',
           requiredRoles: [Role.Subscriptions],
           navUrl: '/subscriptions',
+          standAlone: true,
+        },
+        {
+          title: translate('button-groups.actions.monitored-series'),
+          icon: 'fa fa-television',
+          requiredRoles: [Role.Subscriptions],
+          navUrl: '/monitored-series',
           standAlone: true,
         },
         {
@@ -97,16 +105,17 @@ export class ButtonGroupService {
             ? `${this.activeDownloadsService.items().length}` : undefined,
         },
         {
+          title: translate('button-groups.actions.search-series'),
+          icon: 'fa fa-magnifying-glass',
+          requiredRoles: [Role.Subscriptions],
+          navUrl: '/series-search',
+        },
+        {
           title: translate('button-groups.actions.notifications'),
           icon: 'fa fa-inbox',
           navUrl: '/notifications',
           badge: this.notificationService.notificationsCount() > 0
             ? `${this.notificationService.notificationsCount()}` : undefined,
-        },
-        {
-          title: translate('button-groups.actions.audit-log'),
-          icon: 'fa fa-user-secret',
-          navUrl: '/audit-log',
         },
         {
           title: translate('button-groups.settings.logout'),
@@ -146,19 +155,26 @@ export class ButtonGroupService {
           id: SettingsID.Server
         },
         {
-          title: translate('button-groups.settings.external-connections'),
-          icon: 'fa fa-user-secret',
+          title: translate('button-groups.settings.connections'),
+          icon: 'fa fa-signal',
           navUrl: '/settings',
-          navExtras: { fragment: SettingsID.ExternalConnections },
-          id: SettingsID.ExternalConnections
+          navExtras: { fragment: SettingsID.Connections },
+          id: SettingsID.Connections
+        },
+        {
+          title: translate('button-groups.settings.download-clients'),
+          icon: 'fa-solid fa-cloud-arrow-down',
+          navUrl: '/settings',
+          navExtras: { fragment: SettingsID.DownloadClients },
+          id: SettingsID.DownloadClients
         },
       ],
     };
   });
 
   dashboardGroups = computed<ButtonGroup[]>(() => [
-    this.pageGroup(),
     this.actionGroup(),
+    this.pageGroup(),
     this.settingsGroup(),
   ]);
 

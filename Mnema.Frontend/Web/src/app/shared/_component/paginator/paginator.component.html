@@ -1,5 +1,15 @@
-<ng-container [ngTemplateOutlet]="itemsTemplate" [ngTemplateOutletContext]="{$implicit: items()}">
-</ng-container>
+@if (loading()) {
+  <app-loading-spinner class="mt-4" />
+}
+
+@if (!loading() || !hideOnLoading()) {
+  @if (itemsTemplate) {
+    <ng-container [ngTemplateOutlet]="itemsTemplate" [ngTemplateOutletContext]="{$implicit: items()}">
+    </ng-container>
+  } @else {
+    <ng-content></ng-content>
+  }
+}
 
 @if (totalPages() > 1) {
   <div class="pagination-container" *transloco="let t; prefix: 'paginator'">

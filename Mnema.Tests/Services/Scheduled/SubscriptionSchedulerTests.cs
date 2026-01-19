@@ -28,7 +28,8 @@ public class SubscriptionSchedulerTests
         return new ContentRelease
         {
             ReleaseId = releaseId,
-            ContentId = contentId
+            ContentId = contentId,
+            Provider = Provider.Nyaa,
         };
     }
 

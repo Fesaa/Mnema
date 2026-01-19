@@ -14,6 +14,7 @@ export enum EventType {
   Notification = "Notification",
   NotificationRead = "NotificationRead",
   NotificationAdd = "NotificationAdd",
+  BulkContentInfoUpdate = "BulkContentInfoUpdate",
 }
 
 export interface Event<T> {
@@ -114,6 +115,13 @@ export class SignalRService {
     this.hubConnection.on(EventType.ContentInfoUpdate, (message) => {
       this.eventsSource.next({
         type: EventType.ContentInfoUpdate,
+        data: message
+      });
+    });
+
+    this.hubConnection.on(EventType.BulkContentInfoUpdate, (message) => {
+      this.eventsSource.next({
+        type: EventType.BulkContentInfoUpdate,
         data: message
       });
     });

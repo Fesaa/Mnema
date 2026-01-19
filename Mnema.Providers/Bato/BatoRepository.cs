@@ -78,7 +78,7 @@ internal class BatoRepository : IRepository
 
     private HttpClient Client => _httpClientFactory.CreateClient(nameof(Provider.Bato));
 
-    public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination,
+    public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
         var includeGenres = string.Join(',', request.Modifiers.GetStrings("genres"));
@@ -349,6 +349,7 @@ internal class BatoRepository : IRepository
                     ContentId = contentNode.GetAttributeValue("href", string.Empty).RemovePrefix("/title/"),
                     ContentName = contentNode.QuerySelector("span")?.InnerText ?? string.Empty,
                     ReleaseDate = releaseDate.ToUniversalTime(),
+                    Provider = Provider.Bato,
                 };
             })
             .Where(x => !string.IsNullOrEmpty(x.ContentId))
@@ -500,8 +501,8 @@ internal class BatoRepository : IRepository
         }
 
         return new BatoSearchOptions(
-            genresOptions.Values.Select(si => new FormControlOption(si.File, si.Text)).ToList(),
-            releaseStatusOptions.Values.Select(si => new FormControlOption(si.File, si.Text)).ToList()
+            genresOptions.Values.Select(si => new FormControlOption(si.Text, si.File)).ToList(),
+            releaseStatusOptions.Values.Select(si => new FormControlOption(si.Text, si.File)).ToList()
         );
     }
 }

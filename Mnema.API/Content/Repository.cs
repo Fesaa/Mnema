@@ -11,18 +11,43 @@ namespace Mnema.API.Content;
 
 public sealed record DownloadUrl(string Url, string FallbackUrl);
 
-public interface IRepository
+public interface IContentRepository
 {
     /// <summary>
-    ///     Search for possible series to download given a request
+    ///     Search for possible content to download given a request
     /// </summary>
     /// <param name="request"></param>
     /// <param name="pagination"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside our control fails</exception>
-    Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination,
+    Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    ///     Retrieve all recently updated series
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken);
+
+    /// <summary>
+    ///     Get <see cref="DownloadMetadata" /> for the provider
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken);
+
+    /// <summary>
+    ///     Get all <see cref="FormControlDefinition" />s avaible for search for the provider
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken);
+}
+
+public interface IRepository: IContentRepository
+{
 
     /// <summary>
     ///     Retrieve series information by id
@@ -41,25 +66,4 @@ public interface IRepository
     /// <returns></returns>
     /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside our control fails</exception>
     Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken);
-
-    /// <summary>
-    ///     Retrieve all recently updated series
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken);
-
-    /// <summary>
-    ///     Get <see cref="DownloadMetadata" /> for the provider
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken);
-
-    /// <summary>
-    ///     Get all <see cref="ModifierDto" />s avaible for search for the provider
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken);
 }

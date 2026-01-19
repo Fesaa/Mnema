@@ -45,5 +45,27 @@ public class ImageService : IImageService
                 throw new ArgumentOutOfRangeException(nameof(format), format, null);
         }
     }
+
+    public async Task Convert(Stream stream, ImageFormat format, Stream outputStream)
+    {
+        if (stream.CanSeek)
+            stream.Position = 0;
+
+        switch (format)
+        {
+            case ImageFormat.Upstream:
+                await stream.CopyToAsync(outputStream);
+                break;
+            case ImageFormat.Webp:
+            {
+                using var image = Image.NewFromStream(stream);
+
+                image.WebpsaveStream(outputStream, lossless: true, q: 80);
+                break;
+            }
+            default:
+                throw new ArgumentOutOfRangeException(nameof(format), format, null);
+        }
+    }
 }
 

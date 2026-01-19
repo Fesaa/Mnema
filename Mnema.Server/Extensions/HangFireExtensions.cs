@@ -1,8 +1,10 @@
 using System;
+using System.Linq;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Mnema.API.External;
 using Mnema.Models.Internal;
 
 namespace Mnema.Server.Extensions;
@@ -25,9 +27,13 @@ public static class HangFireExtensions
                         SchemaName = "HangFire",
                         PrepareSchemaIfNecessary = true,
                         QueuePollInterval = TimeSpan.FromSeconds(15)
-                    });
+                    })
+                    .UseSerilogLogProvider();
             });
-            services.AddHangfireServer();
+            services.AddHangfireServer(options =>
+            {
+                options.Queues = HangfireQueue.Queues.ToArray();
+            });
         }
     }
 }

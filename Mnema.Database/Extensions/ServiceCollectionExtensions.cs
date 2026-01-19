@@ -12,13 +12,12 @@ public static class ServiceCollectionExtensions
     {
         public IServiceCollection AddMnemaPostgresDatabase(IConfiguration configuration)
         {
-            return serviceCollection.AddDbContextFactory<MnemaDataContext>(options => options
-                .UseNpgsql(configuration.GetConnectionString(ConfigurationKeys.PostgresConnectionKey), b => b
-                    .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
-                .EnableDetailedErrors()
-                .EnableSensitiveDataLogging()
-
-            );
+            return serviceCollection.AddDbContextPool<MnemaDataContext>(options => options
+                    .UseNpgsql(configuration.GetConnectionString(ConfigurationKeys.PostgresConnectionKey), b => b
+                        .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
+                    .EnableDetailedErrors()
+                    .EnableSensitiveDataLogging()
+                , poolSize: 128);
         }
 
         public IServiceCollection AddDatabaseServices()

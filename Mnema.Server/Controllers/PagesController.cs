@@ -31,7 +31,7 @@ public class PagesController(
 
         foreach (var page in pages)
         {
-            var repository = serviceProvider.GetKeyedService<IRepository>(page.Provider);
+            var repository = serviceProvider.GetKeyedService<IContentRepository>(page.Provider);
             if (repository == null)
             {
                 logger.LogWarning("Page {Guid} with provider {Provider} could not be enriched", page.Id, page.Provider);
@@ -51,7 +51,7 @@ public class PagesController(
     [ResponseCache(CacheProfileName = CacheProfiles.OneHour, VaryByQueryKeys = ["provider"])]
     public async Task<ActionResult<List<FormControlDefinition>>> DownloadMetadata([FromQuery] Provider provider)
     {
-        var repository = serviceProvider.GetKeyedService<IRepository>(provider);
+        var repository = serviceProvider.GetKeyedService<IContentRepository>(provider);
         if (repository == null)
             return NotFound();
 

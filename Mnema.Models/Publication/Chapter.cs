@@ -22,7 +22,7 @@ public sealed record Chapter
 
     public required IList<string> TranslationGroups { get; set; }
 
-    public bool IsOneShot => string.IsNullOrEmpty(ChapterMarker);
+    public bool IsOneShot => string.IsNullOrEmpty(ChapterMarker) && string.IsNullOrEmpty(VolumeMarker);
 
     public string Label()
     {

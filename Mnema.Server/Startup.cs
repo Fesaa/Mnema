@@ -17,6 +17,7 @@ using Microsoft.OpenApi;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Database.Extensions;
+using Mnema.Metadata.Extensions;
 using Mnema.Models;
 using Mnema.Models.Internal;
 using Mnema.Providers.Extensions;
@@ -40,6 +41,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddProviders();
         services.AddMnemaServices();
+        services.AddMetadataProviders(configuration, appConfig);
 
         services.AddScoped<IFileSystem, FileSystem>();
         services.AddSingleton<IFileSystem, FileSystem>();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Mnema.Common;
 
@@ -15,4 +16,10 @@ public class PagedList<T>(IEnumerable<T> items, int count, int pageNumber, int p
     {
         return new PagedList<T>([], 0, 0, 0);
     }
+
+    public PagedList<TNew> Map<TNew>(Func<T, TNew> func)
+    {
+        return new PagedList<TNew>(items.Select(func), CurrentPage, TotalPages, PageSize);
+    }
+
 }

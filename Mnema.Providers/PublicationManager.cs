@@ -12,6 +12,7 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
 using Mnema.Models.Internal;
 
@@ -123,7 +124,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         await AddToDownloadQueueAsync(publication);
     }
 
-    public Task<IEnumerable<IContent>> GetAllContent()
+    public Task<IEnumerable<IContent>> GetAllContent(Provider provider)
     {
         return Task.FromResult<IEnumerable<IContent>>(_content.Values.ToList());
     }
@@ -281,14 +282,9 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         {
             _logger.LogError(ex, "Unhandled exceptions while downloading {Title}", publication.Title);
 
-            await AddNotification(new Notification
-            {
-                Title = $"Download failed for {publication.Title}",
-                UserId = publication.Request.UserId,
-                Summary = ex.Message,
-                Body = ex.StackTrace,
-                Colour = NotificationColour.Error
-            });
+            using var scope = _scopeFactory.CreateScope();
+            var externalConnectionService = scope.ServiceProvider.GetRequiredService<IConnectionService>();
+            externalConnectionService.CommunicateDownloadFailure(publication.DownloadInfo, ex);
 
             await StopDownload(new StopRequestDto
             {
@@ -307,17 +303,5 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         var publication = new Publication(scope, request.Provider, request);
 
         return publication;
-    }
-
-    private async Task AddNotification(Notification notification, IUnitOfWork? unitOfWork = null)
-    {
-        using var scope = _scopeFactory.CreateScope();
-        unitOfWork ??= scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        var messageService =  scope.ServiceProvider.GetRequiredService<IMessageService>();
-
-        unitOfWork.NotificationRepository.AddNotification(notification);
-        await unitOfWork.CommitAsync();
-
-        await messageService.NotificationAdded(notification.UserId, 1);
     }
 }

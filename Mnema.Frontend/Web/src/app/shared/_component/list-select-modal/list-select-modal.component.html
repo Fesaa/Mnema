@@ -69,7 +69,7 @@
 </ng-container>
 
 <ng-template #defaultTemplate let-item let-selectedItems='selectedItems'>
-  <div class="fw-bold">{{item.label | sentenceCase}}</div>
+  <div class="fw-bold">{{item.label}}</div>
 
   @if (selectedItems && selectedItems.includes(item)) {
     <span class="pill p-1 ms-1">{{ selectedText() }}</span>

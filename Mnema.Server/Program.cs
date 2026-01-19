@@ -84,7 +84,7 @@ public class Program
             .ConfigureWebHostDefaults(builder => builder
                 .UseKestrel(options => options
                     .ListenAnyIP(8080,
-                        listenOptions => { listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3; }))
+                        listenOptions => { listenOptions.Protocols = HttpProtocols.Http1; }))
                 .UseStartup<Startup>());
     }
 }

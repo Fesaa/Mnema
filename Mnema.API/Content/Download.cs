@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Threading.Tasks;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.Content;
 
 namespace Mnema.API.Content;
 
@@ -27,12 +29,6 @@ public interface IContent
     DownloadRequestDto Request { get; }
 
     DownloadInfo DownloadInfo { get; }
-
-    Task Cancel();
-
-    Task Cleanup();
-
-    Task<MessageDto> ProcessMessage(MessageDto message);
 }
 
 /// <summary>
@@ -43,6 +39,6 @@ public interface IContentManager
     Task Download(DownloadRequestDto request);
     Task StopDownload(StopRequestDto request);
     Task MoveToDownloadQueue(string id);
-    Task<IEnumerable<IContent>> GetAllContent();
+    Task<IEnumerable<IContent>> GetAllContent(Provider provider);
     Task<MessageDto> RelayMessage(MessageDto message);
 }

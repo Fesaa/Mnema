@@ -101,6 +101,30 @@
             </ng-template>
           </app-settings-item>
         }
+        @case (FormType.MultiText) {
+          <app-settings-item
+            [control]="formControl"
+            [labelId]="control.key"
+            [title]="t(control.key + '-title')"
+            [tooltip]="t(control.key + '-tooltip')"
+            [canEdit]="false"
+            [showEdit]="false"
+          >
+            <ng-template #view>
+              <app-type-ahead
+                [settings]="genericFormFactoryService.createTypeAheadSettings(formControl.value, control)"
+                (selectedData)="patchTypeAheadControlValue($event, formControl)"
+              >
+                <ng-template #optionItem let-option>
+                  {{ option.key }}
+                </ng-template>
+                <ng-template #badgeItem let-item>
+                  {{ item.key }}
+                </ng-template>
+              </app-type-ahead>
+            </ng-template>
+          </app-settings-item>
+        }
       }
     </div>
 

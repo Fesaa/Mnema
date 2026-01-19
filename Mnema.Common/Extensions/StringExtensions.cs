@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Mnema.Common.Extensions;
@@ -29,7 +31,7 @@ public static class StringExtensions
             return string.IsNullOrEmpty(s) ? string.Empty : s.Replace("\n", string.Empty).Replace("\r", string.Empty);
         }
 
-        public string OrNonEmpty(params string[] other)
+        public string OrNonEmpty(params string?[] other)
         {
             if (!string.IsNullOrEmpty(s)) return s;
 
@@ -62,6 +64,11 @@ public static class StringExtensions
         public string I()
         {
             return string.IsNullOrEmpty(s) ? EmptyString : s;
+        }
+
+        public float AsFloat(float defaultValue = 0.0f)
+        {
+            return string.IsNullOrEmpty(s) ? defaultValue : float.Parse(s, CultureInfo.InvariantCulture);
         }
     }
 
@@ -102,7 +109,34 @@ public static class StringExtensions
 
         public string GetFileType()
         {
-            return Path.GetExtension(new Uri(s).AbsolutePath);
+            return Path.GetExtension(s.Split('?').First());
         }
+    }
+
+    private static readonly string[] SizeSuffixes = {
+        "B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+
+    public static string AsHumanReadableSize(this long size)
+    {
+        Debug.Assert(SizeSuffixes.Length > 0);
+
+        const string formatTemplate = "{0}{1:0.#} {2}";
+
+        if (size == 0)
+        {
+            return string.Format(formatTemplate, null, 0, SizeSuffixes[0]);
+        }
+
+        var absSize = Math.Abs((double)size);
+        var fpPower = Math.Log(absSize, 1000);
+        var intPower = (int)fpPower;
+        var iUnit = intPower >= SizeSuffixes.Length
+            ? SizeSuffixes.Length - 1
+            : intPower;
+        var normSize = absSize / Math.Pow(1000, iUnit);
+
+        return string.Format(
+            formatTemplate,
+            size < 0 ? "-" : null, normSize, SizeSuffixes[iUnit]);
     }
 }

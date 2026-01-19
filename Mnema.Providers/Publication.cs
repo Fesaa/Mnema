@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.RateLimiting;
@@ -12,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
-using Mnema.API.External;
 using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
@@ -34,11 +34,8 @@ internal partial class Publication(
     private readonly ApplicationConfiguration _configuration =
         scope.ServiceProvider.GetRequiredService<ApplicationConfiguration>();
 
-    private readonly IPublicationExtensions _extensions =
-        scope.ServiceProvider.GetRequiredKeyedService<IPublicationExtensions>(provider);
-
-    private readonly IExternalConnectionService _externalConnectionService =
-        scope.ServiceProvider.GetRequiredService<IExternalConnectionService>();
+    private readonly IConnectionService _connectionService =
+        scope.ServiceProvider.GetRequiredService<IConnectionService>();
 
     private readonly IFileSystem _fileSystem = scope.ServiceProvider.GetRequiredService<IFileSystem>();
 
@@ -135,7 +132,13 @@ internal partial class Publication(
                 var src = _fileSystem.Path.Join(_configuration.DownloadDir, path);
                 var dest = _fileSystem.Path.Join(_configuration.BaseDir, path);
 
-                await _extensions.Cleanup(src, dest);
+                if (File.Exists(dest))
+                    File.Delete(dest);
+
+                await ZipFile.CreateFromDirectoryAsync(src, dest + ".cbz",
+                    CompressionLevel.SmallestSize, false);
+
+                Directory.Delete(src, true);
             }
             catch (Exception ex)
             {
@@ -167,7 +170,8 @@ internal partial class Publication(
         Estimated = _speedTracker?.EstimatedTimeRemaining() ?? 0,
         SpeedType = SpeedType.Images,
         Speed = Math.Floor(_speedTracker?.IntermediateSpeed() ?? 0),
-        DownloadDir = DownloadDir
+        DownloadDir = DownloadDir,
+        UserId = Request.UserId,
     };
 
     public string Id => Series != null ? Series.Id : Request.Id;
@@ -186,12 +190,12 @@ internal partial class Publication(
 
         await _tokenSource.CancelAsync();
 
-        if (IOTask != null)
-            await Task.WhenAny(IOTask, Task.Delay(5000)); // Wait at most 5s for I/O, it's been cancelled
+        if (_ioTask != null)
+            await Task.WhenAny(_ioTask, Task.Delay(5000)); // Wait at most 5s for I/O, it's been cancelled
 
         if (reason != null)
         {
-            _externalConnectionService.CommunicateDownloadFailure(DownloadInfo, reason);
+            _connectionService.CommunicateDownloadFailure(DownloadInfo, reason);
 
         }
 
@@ -209,54 +213,13 @@ internal partial class Publication(
 
     private async Task CleanupNotifications()
     {
-        _externalConnectionService.CommunicateDownloadFinished(DownloadInfo);
-
-        if (!Request.IsSubscription)
-            return;
-
-        if (DownloadedPaths.Count == 0)
-            return;
-
-        var info = DownloadInfo;
-
-        var summary =
-            $"<a class=\"hover:pointer hover:underline\" href=\"{info.RefUrl}\" target=\"_blank\">{Title}</a> finished downloading {DownloadedPaths.Count} item(s).";
-        if (_failedDownloadsTracker > 0)
-        {
-            summary += $"{_failedDownloadsTracker} failed on the first try.";
-        }
-
-        var body = $"<bold>{Title}</bold><br>";
-        foreach (var chapterId in _queuedChapters)
-        {
-            var chapter = Series!.Chapters.FirstOrDefault(c => c.Id == chapterId);
-            if (chapter == null) continue;
-
-            body += $"• {ChapterFileName(chapter)}\n";
-        }
-
-        var notification = new Notification
-        {
-            Title = "Download completed",
-            UserId = Request.UserId,
-            Summary = summary,
-            Body = body,
-            Colour = NotificationColour.Primary,
-        };
-
-        _unitOfWork.NotificationRepository.AddNotification(notification);
-        await _unitOfWork.CommitAsync();
-
-        await _messageService.NotificationAdded(Request.UserId, 1);
-
-        var dto = _mapper.Map<NotificationDto>(notification);
-        await _messageService.Notify(Request.UserId, dto);
+        _connectionService.CommunicateDownloadFinished(DownloadInfo);
     }
 
     private OnDiskContent? GetContentByName(string name)
     {
         return ExistingContent.FirstOrDefault(c
-            => c.Name == name);
+            => c.SeriesName == name);
     }
 
     private OnDiskContent? GetContentByVolumeAndChapter(string volume, string chapter)

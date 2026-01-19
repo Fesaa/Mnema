@@ -8,11 +8,14 @@ namespace Mnema.Models.DTOs.Content;
 
 public sealed record DownloadRequestDto
 {
-    [JsonIgnore]
-    public Guid UserId;
+    public Guid UserId { get; set; }
 
     public required Provider Provider { get; set; }
     public required string Id { get; set; }
+    /// <summary>
+    /// I.e. Torrent magnet url
+    /// </summary>
+    public string? DownloadUrl { get; set; }
 
     public required string BaseDir { get; set; }
 

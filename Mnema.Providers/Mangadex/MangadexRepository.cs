@@ -59,7 +59,7 @@ internal class MangadexRepository : IRepository
 
     private HttpClient Client => _httpClientFactory.CreateClient(nameof(Provider.Mangadex));
 
-    public async Task<PagedList<SearchResult>> SearchPublications(SearchRequest request, PaginationParams pagination,
+    public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
         var url = "/manga".SetQueryParam("title", request.Query)
@@ -211,6 +211,7 @@ internal class MangadexRepository : IRepository
                     ContentId = relationShip.Id,
                     ContentName = mangaAttr?.LangTitle("en") ?? string.Empty,
                     ReleaseDate = chapter.Attributes.PublishAt.ToUniversalTime(),
+                    Provider = Provider.Mangadex,
                 };
             })
             .WhereNotNull()
@@ -284,10 +285,10 @@ internal class MangadexRepository : IRepository
                 Key = "status",
                 Options =
                 [
-                    FormControlOption.Option("cancelled", "Cancelled"),
-                    FormControlOption.Option("completed", "Completed"),
-                    FormControlOption.Option("hiatus", "Hiatus"),
-                    FormControlOption.Option("ongoing", "Ongoing")
+                    FormControlOption.Option("Cancelled", "cancelled"),
+                    FormControlOption.Option("Completed", "completed"),
+                    FormControlOption.Option("Hiatus", "hiatus"),
+                    FormControlOption.Option("Ongoing", "ongoing")
                 ]
             },
             new FormControlDefinition
@@ -296,15 +297,15 @@ internal class MangadexRepository : IRepository
                 Key = "contentRating",
                 Options =
                 [
-                    FormControlOption.Option("safe", "Safe"),
-                    FormControlOption.Option("suggestive", "Suggestive"),
-                    FormControlOption.Option("erotica", "Erotica"),
-                    FormControlOption.Option("pornographic", "Mature")
+                    FormControlOption.Option("Safe", "safe"),
+                    FormControlOption.Option("Suggestive", "suggestive"),
+                    FormControlOption.Option("Erotica", "erotica"),
+                    FormControlOption.Option("Pornographic", "mature")
                 ]
             },
             new FormControlDefinition
             {
-                Type = FormType.DropDown,
+                Type = FormType.MultiSelect,
                 Key = "includeTags",
                 Options = await _tagOptions
             },
@@ -318,13 +319,13 @@ internal class MangadexRepository : IRepository
             {
                 Type = FormType.DropDown,
                 Key = "includeTagsMode",
-                Options = [FormControlOption.DefaultValue("AND", "And"), FormControlOption.Option("OR", "Or")]
+                Options = [FormControlOption.DefaultValue("And", "AND"), FormControlOption.Option("Or", "OR")]
             },
             new FormControlDefinition
             {
                 Type = FormType.DropDown,
                 Key = "excludeTagsMode",
-                Options = [FormControlOption.Option("AND", "And"), FormControlOption.DefaultValue("OR", "Or")]
+                Options = [FormControlOption.Option("And", "AND"), FormControlOption.DefaultValue("Or", "OR")]
             }
         ];
     }
@@ -411,7 +412,7 @@ internal class MangadexRepository : IRepository
         List<FormControlOption> options = [];
         foreach (var tagData in result.Unwrap().Data)
             if (tagData.Attributes.Name.TryGetValue("en", out var value))
-                options.Add(FormControlOption.Option(tagData.Id, value));
+                options.Add(FormControlOption.Option(value, tagData.Id));
 
         return options;
     }

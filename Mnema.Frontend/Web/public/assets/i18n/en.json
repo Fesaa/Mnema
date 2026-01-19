@@ -24,15 +24,17 @@
       "title": "Actions",
       "downloads": "Downloads",
       "subscriptions": "Subscriptions",
+      "monitored-series": "Monitored Series",
       "notifications": "Notifications",
-      "audit-log": "Audit log"
+      "search-series": "Search Series"
     },
     "settings": {
       "title": "Settings",
       "preferences": "Preferences",
       "pages": "Pages",
       "server": "Server",
-      "external-connections": "External Connections",
+      "connections": "Connections",
+      "download-clients": "Download Clients",
       "logout": "Logout"
     }
   },
@@ -103,7 +105,26 @@
     "assign_empty_volumes-title": "{{provider-metadata.assign_empty_volumes-title}}",
     "assign_empty_volumes-tooltip": "{{provider-metadata.assign_empty_volumes-tooltip}}",
     "skip_volume_without_chapter-title": "{{provider-metadata.skip_volume_without_chapter-title}}",
-    "skip_volume_without_chapter-tooltip": "{{provider-metadata.skip_volume_without_chapter-tooltip}}"
+    "skip_volume_without_chapter-tooltip": "{{provider-metadata.skip_volume_without_chapter-tooltip}}",
+    "format-title": "{{provider-metadata.format-title}}",
+    "format-tooltip": "{{provider-metadata.format-tooltip}}",
+    "format": {
+      "archive": "Archive",
+      "epub": "Epub",
+      "unsupported": "unsupported"
+    },
+    "content_format-title": "{{provider-metadata.content_format-title}}",
+    "content_format-tooltip": "{{provider-metadata.content_format-tooltip}}",
+    "content_format": {
+      "manga": "Manga",
+      "lightnovel": "Light novel",
+      "book": "Book",
+      "comic": "Comic"
+    },
+    "hardcover_series_id-title": "{{provider-metadata.hardcover_series_id-title}}",
+    "hardcover_series_id-tooltip": "{{provider-metadata.hardcover_series_id-tooltip}}",
+    "manga_baka_id-title": "{{provider-metadata.manga_baka_id-title}}",
+    "manga_baka_id-tooltip": "{{provider-metadata.manga_baka_id-tooltip}}"
   },
 
   "edit-subscription-modal": {
@@ -193,7 +214,15 @@
     "assign_empty_volumes-title": "Assign empty volumes",
     "assign_empty_volumes-tooltip": "Assign volume 1 to chapters without a volume, if at least one other volume is present",
     "skip_volume_without_chapter-title": "Skip volumes without chapter",
-    "skip_volume_without_chapter-tooltip": "Do not download chapters that are assigned a volume, but do not have a chapter marker"
+    "skip_volume_without_chapter-tooltip": "Do not download chapters that are assigned a volume, but do not have a chapter marker",
+    "format-title": "Format",
+    "format-tooltip": "",
+    "content_format-title": "Content Format",
+    "content_format-tooltip": "",
+    "hardcover_series_id-title": "Hardcover series id",
+    "hardcover_series_id-tooltip": "The numerical id, not the slug",
+    "manga_baka_id-title": "Mangabaka id",
+    "manga_baka_id-tooltip": "Series id on mangabaka.org"
   },
 
   "refresh-frequency-pipe": {
@@ -500,7 +529,9 @@
     "genres": "Genres",
     "ignored_genres": "Ignored Genres",
     "upload": "Upload Status",
-    "search_type": "Search Type"
+    "search_type": "Search Type",
+    "category": "Category",
+    "filter": "Filter"
   },
 
   "series-info-modal": {
@@ -698,8 +729,8 @@
         }
       }
     },
-    "external-connections": {
-      "title": "External Connections",
+    "connections": {
+      "title": "Connections",
       "no-events": "No events",
       "header": {
         "name": "Name",
@@ -709,18 +740,19 @@
       },
       "empty": {
         "title": "Nothing here yet",
-        "description": "You don’t have any external connections set up yet"
+        "description": "You don’t have any connections set up yet"
       },
       "shared": {
         "event": {
           "DownloadStarted": "Download Started",
           "DownloadFinished": "Download Finished",
-          "DownloadFailure": "Download Failure"
+          "DownloadFailure": "Download Failure",
+          "SubscriptionExhausted": "Subscription Exhausted"
         }
       },
       "edit": {
         "select-type-title": "Pick your connection type",
-        "title": "Edit External Connection",
+        "title": "Edit Connection",
         "close": "{{common.close}}",
         "save": "{{common.save}}"
       },
@@ -736,9 +768,10 @@
         "followed-events-title": "Followed Events",
         "followed-events-tooltip": "Events to act on",
         "followed-events": {
-          "DownloadStarted": "{{settings.external-connections.shared.event.DownloadStarted}}",
-          "DownloadFinished": "{{settings.external-connections.shared.event.DownloadFinished}}",
-          "DownloadFailure": "{{settings.external-connections.shared.event.DownloadFailure}}"
+          "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
+          "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
+          "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
+          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}"
         }
       },
       "Kavita": {
@@ -755,12 +788,62 @@
         "followed-events-title": "Followed Events",
         "followed-events-tooltip": "Events to act on",
         "followed-events": {
-          "DownloadStarted": "{{settings.external-connections.shared.event.DownloadStarted}}",
-          "DownloadFinished": "{{settings.external-connections.shared.event.DownloadFinished}}",
-          "DownloadFailure": "{{settings.external-connections.shared.event.DownloadFailure}}"
+          "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
+          "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
+          "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
+          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}"
+        }
+      },
+      "Native": {
+        "name-title": "Name",
+        "name-tooltip": "Your custom name for this connection",
+        "followed-events-title": "Followed Events",
+        "followed-events-tooltip": "Events to act on",
+        "followed-events": {
+          "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
+          "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
+          "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
+          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}"
+        }
+      }
+    },
+    "download-clients": {
+      "title": "Download Clients",
+      "header": {
+        "name": "Name",
+        "type": "Type",
+        "actions": "Actions"
+      },
+      "empty": {
+        "title": "Nothing here yet",
+        "description": "You don’t have any download clients setup yet"
+      },
+      "edit": {
+        "select-type-title": "Pick your client type",
+        "title": "Edit Client",
+        "close": "{{common.close}}",
+        "save": "{{common.save}}"
+      },
+      "QBittorrent": {
+        "name-title": "Name",
+        "name-tooltip": "Optional custom name",
+        "type-title": "Type",
+        "type-tooltip": "The type of the download client you're configuring. Generally does not change",
+        "url-title": "URL",
+        "url-tooltip": "Must be accessible from Mnema",
+        "username-title": "Username",
+        "username-tooltip": "Username",
+        "password-title": "Password",
+        "password-tooltip": "Password, leave empty if not required",
+        "type": {
+          "qbittorrent": "{{download-client-pipe.qbit-torrent}}"
         }
       }
     }
+  },
+
+  "download-client-pipe": {
+    "qbit-torrent": "qBit Torrent"
   },
 
   "directory-selector":{
@@ -858,6 +941,109 @@
       "description": "You don’t have any subscriptions yet.<br>Start a search and click the <strong>bell icon</strong> to create one — we’ll keep an eye on things for you."
     }
   },
+  "monitored-series": {
+    "title": "Title",
+    "filter": "Filter...",
+    "search": "Search",
+    "providers": "Providers",
+    "base-dir": "Base dir",
+    "actions": {
+      "label": "Actions",
+      "edit": "Edit",
+      "delete": "Delete",
+      "add": "Add Series"
+    },
+    "confirm-delete": "Are you sure you want to remove monitored series {{title}}?",
+    "toasts": {
+      "delete": {
+        "success": {
+          "title": "Deleted {{name}}",
+          "summary": ""
+        },
+        "error": {
+          "title": "Failed to delete {{name}}",
+          "summary": "{{msg}}"
+        }
+      },
+      "update": {
+        "success": {
+          "title": "Updated {{name}}",
+          "summary": ""
+        },
+        "error": {
+          "title": "Failed to update {{name}}",
+          "summary": "{{msg}}"
+        }
+      },
+      "new": {
+        "success": {
+          "title": "Created monitored series {{name}}",
+          "summary": ""
+        },
+        "error": {
+          "title": "Failed to create monitored series {{name}}",
+          "summary": "{{msg}}"
+        }
+      }
+    },
+    "empty": {
+      "title": "Nothing here yet",
+      "description": "You don’t have any monitored series yet. Click the 'Add Series' button above to get started."
+    }
+  },
+
+  "edit-monitored-series-modal": {
+    "title": "Edit monitored series: {{name}}",
+    "new-series-title": "Add a new monitored series",
+    "cancel": "{{common.cancel}}",
+    "save": "{{common.save}}",
+    "create": "Create",
+    "general": "General",
+    "options": "Options",
+    "advanced": "Advanced",
+    "close": "{{common.close}}",
+
+    "title-title": "Title",
+    "title-tooltip": "This title is only visual and does not effect the underlying download",
+    "base-dir-title": "Download directory",
+    "base-dir-tooltip": "",
+    "providers-title": "Providers",
+    "providers-tooltip": "Which providers to check for this series",
+    "providers": {
+      "nyaa": "{{provider-name-pipe.nyaa}}"
+    },
+    "valid-titles-title": "Valid titles",
+    "valid-titles-tooltip": "Titles that parsed content can match on to be considered this series",
+    "content-format-title": "Content Format",
+    "content-format-tooltip": "",
+    "content-format": {
+      "manga": "Manga",
+      "lightnovel": "Light novel",
+      "book": "Book",
+      "comic": "Comic"
+    },
+    "format-title": "{{provider-metadata.format-title}}",
+    "format-tooltip": "{{provider-metadata.format-tooltip}}",
+    "format": {
+      "archive": "Archive",
+      "epub": "Epub",
+      "unsupported": "unsupported"
+    },
+    "content_format-title": "{{provider-metadata.content_format-title}}",
+    "content_format-tooltip": "{{provider-metadata.content_format-tooltip}}",
+    "content_format": {
+      "manga": "Manga",
+      "lightnovel": "Light novel",
+      "book": "Book",
+      "comic": "Comic"
+    },
+    "hardcover_series_id-title": "{{provider-metadata.hardcover_series_id-title}}",
+    "hardcover_series_id-tooltip": "{{provider-metadata.hardcover_series_id-tooltip}}",
+    "manga_baka_id-title": "{{provider-metadata.manga_baka_id-title}}",
+    "manga_baka_id-tooltip": "{{provider-metadata.manga_baka_id-tooltip}}",
+    "title_override-title": "{{provider-metadata.title_override-title}}",
+    "title_override-tooltip": "{{provider-metadata.title_override-tooltip}}"
+  },
 
   "input": {
     "errors": {
@@ -914,6 +1100,18 @@
         "title": "Updated your password",
         "summary": ""
       }
+    }
+  },
+
+  "compact-series-info": {
+    "view-source": "Source"
+  },
+  "series-search": {
+    "search": "Search...",
+    "add-as-monitored": "Monitor Series",
+    "empty": {
+      "title": "No results found for your query",
+      "description": ""
     }
   }
 

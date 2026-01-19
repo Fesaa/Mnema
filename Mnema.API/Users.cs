@@ -18,7 +18,7 @@ public interface IUserRepository
 {
     Task<MnemaUser> GetUserById(Guid id, UserIncludes includes = UserIncludes.Preferences);
     Task<MnemaUser?> GetUserByIdOrDefault(Guid id, UserIncludes includes = UserIncludes.Preferences);
-    Task<UserPreferences?> GetPreferences(Guid id);
+    Task<UserPreferences> GetPreferences(Guid id);
 
     void Update(UserPreferences pref);
 }
