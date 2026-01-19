@@ -76,6 +76,7 @@ public class HardcoverMetadataService(
             Tags = [],
             People = series.People(),
             HighestVolumeNumber = series.IsCompleted ?? false ? series.BooksCount : null,
+            CoverUrl = series.BookSeries.FirstOrDefault(b => b.Book.Image != null)?.Book.Image?.Url,
             RefUrl = $"{HardcoverBaseUrl}/series/{series.Slug}",
             Links = [$"{HardcoverBaseUrl}/series/{series.Slug}"],
             Chapters = series.BookSeries.Select(b =>
