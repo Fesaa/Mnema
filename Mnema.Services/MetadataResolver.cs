@@ -12,21 +12,31 @@ namespace Mnema.Services;
 
 public class MetadataResolver(
     IParserService parserService,
-    [FromKeyedServices(key: MetadataProvider.Hardcover)] IMetadataProviderService hardcoverMetadataProvider
+    [FromKeyedServices(key: MetadataProvider.Hardcover)] IMetadataProviderService hardcoverMetadataProvider,
+    [FromKeyedServices(key: MetadataProvider.Mangabaka)] IMetadataProviderService mangabakaMetadataProvider
     ): IMetadataResolver
 {
-    public Task<Series?> ResolveSeriesAsync(MetadataBag metadata, CancellationToken cancellationToken = default)
+    public async Task<Series?> ResolveSeriesAsync(MetadataBag metadata, CancellationToken cancellationToken = default)
     {
         var hardCoverId = metadata.GetString(RequestConstants.HardcoverSeriesIdKey);
         var mangaBakaId = metadata.GetString(RequestConstants.MangaBakaKey);
 
+        Series? series;
         if (!string.IsNullOrEmpty(mangaBakaId))
-            return Task.FromResult<Series?>(null);
+        {
+            series = await mangabakaMetadataProvider.GetSeries(mangaBakaId, cancellationToken);
+            if (series != null)
+                return series;
+        }
 
         if (!string.IsNullOrEmpty(hardCoverId))
-            return hardcoverMetadataProvider.GetSeries(hardCoverId, cancellationToken);
+        {
+            series = await hardcoverMetadataProvider.GetSeries(hardCoverId, cancellationToken);
+            if (series != null)
+                return series;
+        }
 
-        return Task.FromResult<Series?>(null);
+        return null;
     }
 
     public ChapterResolutionResult ResolveChapter(string fileName, Series? series, ContentFormat contentFormat)

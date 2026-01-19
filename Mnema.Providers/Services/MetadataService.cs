@@ -16,30 +16,33 @@ internal class MetadataService : IMetadataService
     public ComicInfo? CreateComicInfo(UserPreferences preferences, DownloadRequestDto request, string title, Series? series,
         Chapter? chapter, string? note = null)
     {
-        if (series == null || chapter == null) return null;
+        if (series == null) return null;
 
         var ci = new ComicInfo
         {
             Series = title,
             LocalizedSeries = series.LocalizedSeries ?? string.Empty,
-            Summary = chapter.Summary.OrNonEmpty(series.Summary),
-            Title = chapter.Title
+            Summary = chapter != null ? chapter.Summary.OrNonEmpty(series.Summary) : series.Summary,
+            Title = chapter?.Title ?? string.Empty,
         };
 
         if (note != null)
             ci.Notes = note;
 
-        if (chapter.VolumeNumber() != null) ci.Volume = chapter.VolumeMarker;
+        if (chapter != null)
+        {
+            if (chapter.VolumeNumber() != null) ci.Volume = chapter.VolumeMarker;
 
-        if (chapter.IsOneShot)
-            ci.Format = "Special";
-        else
-            ci.Number = chapter.ChapterMarker;
+            if (chapter.IsOneShot)
+                ci.Format = "Special";
+            else
+                ci.Number = chapter.ChapterMarker;
+        }
 
         foreach (var role in Enum.GetValues<PersonRole>())
         {
             var value = string.Join(',', series.People
-                .Concat(chapter.People)
+                .Concat(chapter?.People ?? [])
                 .Where(p => p.Roles.Contains(role))
                 .DistinctBy(p => p.Name)
                 .Select(p => p.Name));
@@ -49,7 +52,7 @@ internal class MetadataService : IMetadataService
 
         ci.Web = string.Join(',', series.Links.Concat([series.RefUrl]).Distinct());
 
-        var allTags = series.Tags.Concat(chapter.Tags).ToList();
+        var allTags = series.Tags.Concat(chapter?.Tags ?? []).ToList();
 
         var (genres, tags) = ProcessTags(preferences, allTags, request);
         ci.Genre = string.Join(',', genres);
