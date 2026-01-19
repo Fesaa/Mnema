@@ -85,7 +85,7 @@ internal class QBitClient(
     private async Task ExecuteAsync(Func<QBittorrentClient, Task> action)
     {
         var client = await GetClientAsync();
-        if (client == null) throw new InvalidOperationException("qBittorrent client is not available.");
+        if (client == null) throw new MnemaException("qBittorrent client is not available.");
 
         try
         {
@@ -135,7 +135,7 @@ internal class QBitClient(
 
             if (downloadClient.IsFailed)
             {
-                logger.LogDebug("Download client {Id} is in a failed state until {Until}",
+                logger.LogTrace("Download client {Id} is in a failed state until {Until}",
                     downloadClient.Id, downloadClient.FailedAt?.AddHours(1));
                 return null;
             }

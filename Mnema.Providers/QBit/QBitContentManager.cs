@@ -112,7 +112,18 @@ internal partial class QBitContentManager : IContentManager, IConfigurationProvi
             Tag = provider.ToString(),
         };
 
-        var torrents = await _qBitClient.GetTorrentsAsync(listQuery);
+        IReadOnlyList<TorrentInfo> torrents;
+
+        try
+        {
+            torrents = await _qBitClient.GetTorrentsAsync(listQuery);
+        }
+        catch (MnemaException ex)
+        {
+            _logger.LogTrace(ex, "Failed to load torrent list");
+            return [];
+        }
+
         if (torrents.Count == 0) return [];
 
         List<IContent> contents = [];
