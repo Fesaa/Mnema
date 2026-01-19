@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Common.Extensions;
+using Mnema.Database.Extensions;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.Publication;
 
@@ -12,15 +14,17 @@ internal class MangabakaMetadataService(
     MangabakaDbContext ctx
 ): IMetadataProviderService
 {
-    public async Task<List<Series>> Search(MetadataSearchDto search, CancellationToken cancellationToken)
+    public async Task<PagedList<Series>> Search(MetadataSearchDto search, PaginationParams paginationParams,
+        CancellationToken cancellationToken)
     {
         var matchedSeries = await ctx.Series
             .Where(s => s.MergedWith == null)
             .Where(s => EF.Functions.Like(s.Title, $"%{search.Query}%")
             || EF.Functions.Like(s.SecondaryTitlesEn, $"%{search.Query}%"))
-            .ToListAsync(cancellationToken);
+            .OrderBy(s => s.Title)
+            .AsPagedList(paginationParams, cancellationToken);
 
-        return matchedSeries.Select(ConvertToSeries).ToList();
+        return matchedSeries.Map(ConvertToSeries);
     }
 
     public async Task<Series?> GetSeries(string externalId, CancellationToken ct)

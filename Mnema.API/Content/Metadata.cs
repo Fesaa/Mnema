@@ -59,10 +59,11 @@ public interface IMetadataProviderService
     /// Given the search parameters, return the results for the external provider
     /// </summary>
     /// <param name="search"></param>
+    /// <param name="paginationParams"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <remarks>This may be cached</remarks>
-    Task<List<Series>> Search(MetadataSearchDto search, CancellationToken cancellationToken);
+    Task<PagedList<Series>> Search(MetadataSearchDto search, PaginationParams paginationParams, CancellationToken cancellationToken);
 
     /// <summary>
     /// Return all known metadata for a given entity from the external provider

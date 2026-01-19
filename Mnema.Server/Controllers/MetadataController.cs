@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
@@ -26,13 +27,13 @@ public class MetadataController(IServiceProvider serviceProvider): BaseApiContro
 
     [HttpGet("search")]
     public async Task<ActionResult<List<Series>>> SearchSeries([FromQuery] MetadataProvider provider,
-        [FromQuery] string query)
+        [FromQuery] string query, [FromQuery] PaginationParams pagingParams)
     {
         var metadataService = serviceProvider.GetKeyedService<IMetadataProviderService>(provider);
         if (metadataService == null)
             return NotFound();
 
-        return Ok(await metadataService.Search(new MetadataSearchDto(query), HttpContext.RequestAborted));
+        return Ok(await metadataService.Search(new MetadataSearchDto(query), pagingParams, HttpContext.RequestAborted));
     }
 
 

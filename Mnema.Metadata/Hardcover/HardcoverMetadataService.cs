@@ -3,6 +3,7 @@ using GraphQL.Client.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Helpers;
 using Mnema.Models.DTOs.External;
@@ -16,12 +17,35 @@ public class HardcoverMetadataService(
     [FromKeyedServices(key: MetadataProvider.Hardcover)] IGraphQLClient graphQlClient
     ): IMetadataProviderService
 {
+    private const string HardcoverBaseUrl = "https://hardcover.app";
 
-    public const string HardcoverBaseUrl = "https://hardcover.app";
-
-    public Task<List<Series>> Search(MetadataSearchDto search, CancellationToken cancellationToken)
+    public async Task<PagedList<Series>> Search(MetadataSearchDto search, PaginationParams paginationParams,
+        CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var request = new GraphQLRequest(SearchSeries, new
+        {
+            query = search.Query,
+            page = paginationParams.PageNumber,
+            per_page = paginationParams.PageSize
+        });
+
+        var response = await graphQlClient.SendQueryAsync<HardcoverSearchSeriesResponse>(request, cancellationToken);
+        if (response.Errors != null)
+            throw new MnemaException($"{nameof(SearchSeries)} failed: {string.Join(",", response.Errors.Select(x => x.Message))}");
+
+        // Hardcover returns basically nothing for series in its response... load them manually with a second query
+        var seriesIds = response.Data.Series.Results.Hits
+            .Select(h => int.TryParse(h.Item.Id, out var result) ? result : 0)
+            .Where(i => i > 0);
+
+        var seriesRequest = new GraphQLRequest(GetSeriesByIds, new { ids = seriesIds });
+        var seriesResponse = await graphQlClient.SendQueryAsync<HardcoverGetSeriesInfoByIdsResponse>(seriesRequest, cancellationToken);
+        if (seriesResponse.Errors != null)
+            throw new MnemaException($"{nameof(SearchSeries)} failed: {string.Join(",", seriesResponse.Errors.Select(x => x.Message))}");
+
+        var series = seriesResponse.Data.Series.Select(ConvertFromHardcoverSeries);
+
+        return new PagedList<Series>(series, response.Data.Series.Results.Found, response.Data.Series.Page, response.Data.Series.PageSize);
     }
 
     public async Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken)
@@ -33,12 +57,19 @@ public class HardcoverMetadataService(
 
         var request = new GraphQLRequest(GetSeriesById, new { id = seriesId });
         var response = await graphQlClient.SendQueryAsync<HardcoverGetSeriesInfoByIdResponse>(request, cancellationToken);
+        if (response.Errors != null)
+            throw new MnemaException($"{nameof(GetSeries)} failed: {string.Join(",", response.Errors.Select(x => x.Message))}");
 
         var series = response.Data.Series;
 
+        return ConvertFromHardcoverSeries(series);
+    }
+
+    private static Series ConvertFromHardcoverSeries(HardcoverSeries series)
+    {
         return new Series
         {
-            Id = externalId,
+            Id = series.Id.ToString(),
             Title = series.Name,
             Summary = series.Description ?? string.Empty,
             Status = series.IsCompleted ?? false ? PublicationStatus.Completed : PublicationStatus.Unknown,
@@ -55,7 +86,7 @@ public class HardcoverMetadataService(
                 {
                     Id = book.Id.ToString(),
                     Title = book.Title,
-                    Summary =  book.Description ?? string.Empty,
+                    Summary = book.Description ?? string.Empty,
                     CoverUrl = book.Image?.Url,
                     RefUrl = $"{HardcoverBaseUrl}/books/{book.Slug}",
                     VolumeMarker = b.Position?.ToString() ?? string.Empty,
@@ -73,10 +104,10 @@ public class HardcoverMetadataService(
                     People = book.Contributions
                         .Where(c => c.Role != null)
                         .Select(c => new Person
-                    {
-                        Name = c.Author.Name,
-                        Roles = [c.Role!.Value]
-                    }).ToList(),
+                        {
+                            Name = c.Author.Name,
+                            Roles = [c.Role!.Value]
+                        }).ToList(),
                     TranslationGroups = []
                 };
             }).ToList(),
@@ -88,4 +119,6 @@ public class HardcoverMetadataService(
             "Mnema.Metadata.Hardcover.Queries");
 
     private static readonly GraphQLQuery GetSeriesById = QueryLoader(nameof(GetSeriesById));
+    private static readonly GraphQLQuery SearchSeries = QueryLoader(nameof(SearchSeries));
+    private static readonly GraphQLQuery GetSeriesByIds = QueryLoader(nameof(GetSeriesByIds));
 }

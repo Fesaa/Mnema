@@ -1,0 +1,7 @@
+query SearchSeries($query: String!, $page: Int!, $per_page: Int!) {
+    search(query: $query, page: $page, per_page: $per_page, query_type: "series") {
+        results
+        page
+        per_page
+    }
+}

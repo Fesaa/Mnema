@@ -9,6 +9,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Mnema.API\Mnema.API.csproj" />
       <ProjectReference Include="..\Mnema.Common\Mnema.Common.csproj" />
+      <ProjectReference Include="..\Mnema.Database\Mnema.Database.csproj" />
       <ProjectReference Include="..\Mnema.Models\Mnema.Models.csproj" />
     </ItemGroup>
 
