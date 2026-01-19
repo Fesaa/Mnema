@@ -9,6 +9,7 @@ import {FormControlDefinition, FormDefinition} from "../../../generic-form/form"
 import {tap} from "rxjs";
 import {GenericFormComponent} from "../../../generic-form/generic-form.component";
 import {GenericFormFactoryService} from "../../../generic-form/generic-form-factory.service";
+import {Provider} from "../../../_models/page";
 
 @Component({
   selector: 'app-edit-monitored-series-modal',
@@ -29,9 +30,28 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
   private readonly genericFormFactoryService = inject(GenericFormFactoryService);
 
   series = model.required<MonitoredSeries>();
-  metadata = model.required<FormControlDefinition[]>();
+  metadata = model.required<Map<Provider, FormControlDefinition[]>>();
 
   formDefinition = signal<FormDefinition | undefined>(undefined);
+
+  protected metadataControls = computed(() => {
+    const metadata = this.metadata();
+
+    const hasSeen = new Set<string>();
+    const allControls: FormControlDefinition[] = [];
+
+    for (let [p, controls] of metadata.entries()) {
+      // TODO: Only include controls for selected providers
+
+      controls.filter(c => !hasSeen.has(c.key)).forEach(c => {
+        allControls.push(c);
+        hasSeen.add(c.key);
+      });
+    }
+
+    return allControls;
+  })
+
   optionsFormDefinition = computed(() => {
     const form = this.formDefinition();
     if (!form) return null;
@@ -39,7 +59,7 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
     return {
       key: form.key,
       descriptionKey: '',
-      controls: this.metadata().filter(d => !d.advanced),
+      controls: this.metadataControls().filter(d => !d.advanced),
     }
   });
   advancedFormDefinition = computed(() => {
@@ -49,7 +69,7 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
     return {
       key: form.key,
       descriptionKey: '',
-      controls: this.metadata().filter(d => d.advanced),
+      controls: this.metadataControls().filter(d => d.advanced),
     }
   });
 

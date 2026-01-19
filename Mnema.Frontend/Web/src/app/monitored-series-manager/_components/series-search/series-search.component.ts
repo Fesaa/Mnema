@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, OnInit, signal} from '@angular/core';
 import {MetadataProvider, MetadataService} from "../../metadata.service";
 import {PageLoader, PaginatorComponent} from "../../../shared/_component/paginator/paginator.component";
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
@@ -14,6 +14,7 @@ import {DefaultModalOptions} from "../../../_models/default-modal-options";
 import {Provider} from "../../../_models/page";
 import {FormControlDefinition} from "../../../generic-form/form";
 import {ModalService} from "../../../_services/modal.service";
+import {PageService} from "../../../_services/page.service";
 
 @Component({
   selector: 'app-series-search',
@@ -29,10 +30,13 @@ import {ModalService} from "../../../_services/modal.service";
   styleUrl: './series-search.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SeriesSearchComponent {
+export class SeriesSearchComponent implements OnInit {
 
   private readonly metadataService = inject(MetadataService);
   private readonly modalService = inject(ModalService);
+  private readonly pageService = inject(PageService);
+
+  metadata = signal<Map<Provider, FormControlDefinition[]>>(new Map());
 
   searchForm = new FormGroup({
     query: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
@@ -62,6 +66,12 @@ export class SeriesSearchComponent {
       pz
     );
   });
+
+  ngOnInit(){
+    this.pageService.monitoredSeriesMetadata().pipe(
+      tap(m => this.metadata.set(m))
+    ).subscribe();
+  }
 
   private getMetadataKey() {
     switch (this.searchOptions().provider) {
@@ -93,7 +103,7 @@ export class SeriesSearchComponent {
         [metadataKey]: [series.id]
       }
     });
-    component.metadata.set([]);
+    component.metadata.set(this.metadata());
   }
 
 

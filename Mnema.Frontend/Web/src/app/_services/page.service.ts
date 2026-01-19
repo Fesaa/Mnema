@@ -2,7 +2,20 @@ import {effect, inject, Injectable, signal} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {environment} from "../../environments/environment";
 import {Page, Provider} from "../_models/page";
-import {Observable, of, ReplaySubject, tap} from "rxjs";
+import {
+  catchError,
+  flatMap,
+  forkJoin,
+  from,
+  map,
+  mergeMap,
+  Observable,
+  of,
+  ReplaySubject,
+  switchMap,
+  tap,
+  toArray
+} from "rxjs";
 import {AccountService} from "./account.service";
 import {FormControlDefinition} from "../generic-form/form";
 
@@ -89,6 +102,22 @@ export class PageService {
     }
 
     return this.httpClient.post(this.baseUrl + "load-default", {})
+  }
+
+  allowedProviders() {
+    return of([Provider.NYAA]);
+  }
+
+  monitoredSeriesMetadata() {
+    return this.allowedProviders().pipe(
+      mergeMap(providers => from(providers)),
+      switchMap(p => this.metadata(p).pipe(
+        map(m => [p, m] as [Provider, FormControlDefinition[]]),
+        catchError(err => of([p, []] as [Provider, FormControlDefinition[]]))
+      )),
+      toArray(),
+      map(pairs => new Map<Provider, FormControlDefinition[]>(pairs))
+    );
   }
 
   metadata(provider: Provider) {
