@@ -71,20 +71,13 @@ internal partial class QBitContentManager : IContentManager, IConfigurationProvi
             Hashes = [request.Id]
         };
 
-        try
+        var torrents = await _qBitClient.GetTorrentsAsync(listQuery);
+        if (torrents != null && torrents.Any(t => t.Hash == request.Id))
         {
-            var torrents = await _qBitClient.GetTorrentsAsync(listQuery);
-            if (torrents != null && torrents.Any(t => t.Hash == request.Id))
-            {
-                throw new MnemaException($"Torrent with hash {request.Id} has already been added");
-            }
+            throw new MnemaException($"Torrent with hash {request.Id} has already been added");
+        }
 
-            BackgroundJob.Enqueue(() => DownloadTorrent(request, CancellationToken.None));
-        }
-        catch (InvalidOperationException)
-        {
-            // Client not available
-        }
+        BackgroundJob.Enqueue(() => DownloadTorrent(request, CancellationToken.None));
     }
 
     public async Task StopDownload(StopRequestDto request)
@@ -98,10 +91,6 @@ internal partial class QBitContentManager : IContentManager, IConfigurationProvi
         try
         {
             await _qBitClient.DeleteTorrentsAsync([request.Id], true);
-        }
-        catch (InvalidOperationException)
-        {
-            // Client not available
         }
         finally
         {
@@ -123,29 +112,22 @@ internal partial class QBitContentManager : IContentManager, IConfigurationProvi
             Tag = provider.ToString(),
         };
 
-        try
+        var torrents = await _qBitClient.GetTorrentsAsync(listQuery);
+        if (torrents.Count == 0) return [];
+
+        List<IContent> contents = [];
+
+        foreach (var tInfo in torrents)
         {
-            var torrents = await _qBitClient.GetTorrentsAsync(listQuery);
-            if (torrents.Count == 0) return [];
+            if (UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
 
-            List<IContent> contents = [];
+            var request = await _cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
+            if (request == null) continue;
 
-            foreach (var tInfo in torrents)
-            {
-                if (UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
-
-                var request = await _cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
-                if (request == null) continue;
-
-                contents.Add(new QBitTorrent(request, tInfo));
-            }
-
-            return contents;
+            contents.Add(new QBitTorrent(request, tInfo));
         }
-        catch (InvalidOperationException)
-        {
-            return [];
-        }
+
+        return contents;
     }
 
     public Task<List<FormControlDefinition>> GetFormControls(CancellationToken cancellationToken)

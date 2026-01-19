@@ -17,19 +17,7 @@ namespace Mnema.Providers.QBit;
 internal partial class QBitContentManager
 {
 
-    public async Task DownloadTorrent(DownloadRequestDto request, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await DownloadTorrentInner(request, cancellationToken);
-        }
-        catch (InvalidOperationException)
-        {
-            // Client not available
-        }
-    }
-
-    private async Task DownloadTorrentInner(DownloadRequestDto request, CancellationToken ct)
+    public async Task DownloadTorrent(DownloadRequestDto request, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(request.DownloadUrl))
             return;

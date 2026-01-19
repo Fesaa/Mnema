@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
+using Mnema.Common.Exceptions;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
 using QBittorrent.Client;
@@ -67,7 +68,7 @@ internal class QBitClient(
     private async Task<T> ExecuteAsync<T>(Func<QBittorrentClient, Task<T>> action)
     {
         var client = await GetClientAsync();
-        if (client == null) throw new InvalidOperationException("qBittorrent client is not available.");
+        if (client == null) throw new MnemaException("qBittorrent client is not available.");
 
         try
         {

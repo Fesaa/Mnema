@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
+using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using QBittorrent.Client;
@@ -31,7 +32,7 @@ internal partial class QBitContentManager: IAsyncDisposable
             var listQuery = new TorrentListQuery { Category = MnemaCategory };
             torrents = await _qBitClient.GetTorrentsAsync(listQuery);
         }
-        catch (Exception ex) when (ex is HttpRequestException or QBittorrentClientRequestException or InvalidOperationException)
+        catch (Exception ex) when (ex is HttpRequestException or QBittorrentClientRequestException or MnemaException)
         {
             await Task.Delay(TimeSpan.FromSeconds(30));
             return;

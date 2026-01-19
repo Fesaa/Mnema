@@ -44,15 +44,7 @@ internal partial class QBitContentManager
     {
         if (ids == null) return null;
 
-        IReadOnlyList<TorrentContent> files;
-        try
-        {
-            files = await _qBitClient.GetTorrentContentsAsync(hash, ct);
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
+        var files = await _qBitClient.GetTorrentContentsAsync(hash, ct);
 
         var toDownload = new HashSet<int>();
         var toSkip = new HashSet<int>();
@@ -73,32 +65,18 @@ internal partial class QBitContentManager
             }
         }
 
-        try
-        {
-            if (toDownload.Count > 0)
-                await _qBitClient.SetFilePriorityAsync(hash, toDownload, TorrentContentPriority.Minimal, ct);
+        if (toDownload.Count > 0)
+            await _qBitClient.SetFilePriorityAsync(hash, toDownload, TorrentContentPriority.Minimal, ct);
 
-            if (toSkip.Count > 0)
-                await _qBitClient.SetFilePriorityAsync(hash, toSkip, TorrentContentPriority.Skip, ct);
-        }
-        catch (InvalidOperationException)
-        {
-            // Client not available
-        }
+        if (toSkip.Count > 0)
+            await _qBitClient.SetFilePriorityAsync(hash, toSkip, TorrentContentPriority.Skip, ct);
 
         return null;
     }
 
     private async Task<object?> StartDownload(string hash)
     {
-        try
-        {
-            await _qBitClient.ResumeTorrentsAsync([hash], CancellationToken.None);
-        }
-        catch (InvalidOperationException)
-        {
-            // Client not available
-        }
+        await _qBitClient.ResumeTorrentsAsync([hash], CancellationToken.None);
 
         return null;
     }
@@ -107,16 +85,9 @@ internal partial class QBitContentManager
     {
         var hash = message.ContentId;
 
-        try
-        {
-            var content = await _qBitClient.GetTorrentContentsAsync(hash);
+        var content = await _qBitClient.GetTorrentContentsAsync(hash);
 
-            return BuildTree(content);
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
+        return BuildTree(content);
     }
 
     private List<ListContentData> BuildTree(IReadOnlyList<TorrentContent> files, int depth = 0)
