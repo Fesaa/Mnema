@@ -22,6 +22,9 @@
       <PackageReference Include="GraphQL.Client" Version="6.1.0" />
       <PackageReference Include="GraphQL.Client.Serializer.SystemTextJson" Version="6.1.0" />
       <PackageReference Include="Hangfire.Core" Version="1.8.22" />
+      <PackageReference Include="Lucene.Net" Version="4.8.0-beta00017" />
+      <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00017" />
+      <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00017" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.2" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />

@@ -1,30 +1,68 @@
+using Lucene.Net.Analysis.Standard;
+using Lucene.Net.QueryParsers.Classic;
+using Lucene.Net.Search;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Extensions;
-using Mnema.Database.Extensions;
 using Mnema.Models.DTOs.External;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 
 namespace Mnema.Metadata.Mangabaka;
 
 internal class MangabakaMetadataService(
     ILogger<MangabakaMetadataService> logger,
-    MangabakaDbContext ctx
+    MangabakaDbContext ctx,
+    [FromKeyedServices(key: MetadataProvider.Mangabaka)] SearcherManager searcherManager
 ): IMetadataProviderService
 {
     public async Task<PagedList<Series>> Search(MetadataSearchDto search, PaginationParams paginationParams,
         CancellationToken cancellationToken)
     {
-        var matchedSeries = await ctx.Series
-            .Where(s => s.MergedWith == null)
-            .Where(s => EF.Functions.Like(s.Title, $"%{search.Query}%")
-            || EF.Functions.Like(s.SecondaryTitlesEn, $"%{search.Query}%"))
-            .OrderBy(s => s.Title)
-            .AsPagedList(paginationParams, cancellationToken);
+        var searcher = searcherManager.Acquire();
+        try
+        {
+            var analyzer = new StandardAnalyzer(MangabakaScheduler.Version);
+            var fields = new[] { nameof(MangabakaSeries.Title), nameof(MangabakaSeries.NativeTitle) };
 
-        return matchedSeries.Map(ConvertToSeries);
+            var parser = new MultiFieldQueryParser(MangabakaScheduler.Version, fields, analyzer)
+            {
+                AllowLeadingWildcard = true,
+                DefaultOperator = Operator.AND,
+            };
+
+            var query = parser.Parse($"{search.Query}*");
+
+            var hitsToFetch = (paginationParams.PageNumber + 1) * paginationParams.PageSize;
+            var topDocs = searcher.Search(query, hitsToFetch);
+
+            var scoreDocs = topDocs.ScoreDocs;
+            var totalHits = topDocs.TotalHits;
+
+            var results = scoreDocs
+                .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+                .Take(paginationParams.PageSize)
+                .ToDictionary(d => int.Parse(searcher.Doc(d.Doc).Get(nameof(MangabakaSeries.Id))), d => d.Score);
+
+            var seriesData = await ctx.Series
+                .Where(s => results.Keys.Contains(s.Id))
+                .Where(s => s.MergedWith == null)
+                .ToListAsync(cancellationToken);
+
+            var sortedResults = seriesData
+                .OrderByDescending(s => results[s.Id])
+                .Select(ConvertToSeries)
+                .ToList();
+
+            return new PagedList<Series>(sortedResults, totalHits, paginationParams.PageNumber, paginationParams.PageSize);
+        }
+        finally
+        {
+            searcherManager.Release(searcher);
+        }
     }
 
     public async Task<Series?> GetSeries(string externalId, CancellationToken ct)
@@ -53,6 +91,7 @@ internal class MangabakaMetadataService(
             LocalizedSeries = series.NativeTitle,
             Summary = series.Description ?? string.Empty,
             Status = FromMangabakaPublicationStatus(series.Status),
+            RefUrl = $"https://mangabaka.org/{series.Id}",
             Tags = series.Genres?
                 .Select(g => new Tag(g, true))
                 .ToList() ?? [], // Mangabaka tags are pure nonsense because they have MU
