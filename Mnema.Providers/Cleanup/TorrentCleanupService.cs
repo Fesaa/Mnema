@@ -30,6 +30,7 @@ internal class TorrentCleanupService(
     IMetadataResolver metadataResolver
 ) : ICleanupService
 {
+    private static readonly ParallelOptions ParallelOptions = new() { MaxDegreeOfParallelism = 2 };
     private readonly Dictionary<Format, IFormatHandler> _handlers = formatHandlers.ToDictionary(h => h.SupportedFormat);
 
     public async Task Cleanup(IContent content)
@@ -93,12 +94,13 @@ internal class TorrentCleanupService(
         var files = fileSystem.Directory.GetFiles(context.DownloadDirectory, "*", SearchOption.AllDirectories);
         var allowedExtensions = parserService.FileExtensionsForFormat(context.Format);
 
-        foreach (var sourceFile in files)
-        {
-            if (!allowedExtensions.IsMatch(fileSystem.Path.GetExtension(sourceFile)))
-                continue;
+        await Parallel.ForEachAsync(files.Where(Filter), ParallelOptions,
+            async (f, _) => await ProcessSingleFileAsync(context, f));
+        return;
 
-            await ProcessSingleFileAsync(context, sourceFile);
+        bool Filter(string f)
+        {
+            return allowedExtensions.IsMatch(fileSystem.Path.GetExtension(f));
         }
     }
 
