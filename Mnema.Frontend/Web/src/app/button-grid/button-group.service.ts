@@ -156,14 +156,14 @@ export class ButtonGroupService {
         },
         {
           title: translate('button-groups.settings.connections'),
-          icon: 'fa fa-user-secret',
+          icon: 'fa fa-signal',
           navUrl: '/settings',
           navExtras: { fragment: SettingsID.Connections },
           id: SettingsID.Connections
         },
         {
           title: translate('button-groups.settings.download-clients'),
-          icon: 'fa fa-user-secret',
+          icon: 'fa-solid fa-cloud-arrow-down',
           navUrl: '/settings',
           navExtras: { fragment: SettingsID.DownloadClients },
           id: SettingsID.DownloadClients
