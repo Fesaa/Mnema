@@ -21,19 +21,7 @@ internal partial class QBitContentManager: IAsyncDisposable
     ];
 
     private readonly CancellationTokenSource _tokenSource = new();
-    private Task? _watcherTask;
-
-    private void EnsureWatcherInitialized()
-    {
-        if (_watcherTask != null)
-            return;
-
-        _watcherTask = Task.Run(async () => await _tokenSource.DoWhile(
-            logger,
-            TimeSpan.FromSeconds(5),
-            TorrentWatcher,
-            _ => Task.FromResult(true)));
-    }
+    private readonly Task? _watcherTask;
 
     private async Task TorrentWatcher()
     {
@@ -41,7 +29,7 @@ internal partial class QBitContentManager: IAsyncDisposable
         try
         {
             var listQuery = new TorrentListQuery { Category = MnemaCategory };
-            torrents = await qBitClient.GetTorrentsAsync(listQuery);
+            torrents = await _qBitClient.GetTorrentsAsync(listQuery);
         }
         catch (Exception ex) when (ex is HttpRequestException or QBittorrentClientRequestException or InvalidOperationException)
         {
@@ -55,7 +43,7 @@ internal partial class QBitContentManager: IAsyncDisposable
             return;
         }
 
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
 
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -65,7 +53,7 @@ internal partial class QBitContentManager: IAsyncDisposable
 
         foreach (var tInfo in torrents)
         {
-            var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
+            var request = await _cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
             if (request == null) continue;
 
             (UploadStates.Contains(tInfo.State) ? inUploadState : queuedForSignalR).Add(new QBitTorrent(request, tInfo));
@@ -86,7 +74,7 @@ internal partial class QBitContentManager: IAsyncDisposable
             if (!dict.TryGetValue(id, out var torrent))
                 continue;
 
-            CleanupTorrent(torrent);
+            EnqueueForCleanup(torrent);
 
             queuedForSignalR.Add(torrent);
         }
@@ -120,6 +108,6 @@ internal partial class QBitContentManager: IAsyncDisposable
         }
 
         _tokenSource.Dispose();
-        qBitClient.Dispose();
+        _qBitClient.Dispose();
     }
 }

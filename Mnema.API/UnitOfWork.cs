@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mnema.API;
@@ -15,7 +16,7 @@ public interface IUnitOfWork
     IContentReleaseRepository ImportedReleaseRepository { get; }
     IMonitoredSeriesRepository MonitoredSeriesRepository { get; }
 
-    Task<bool> CommitAsync();
+    Task<bool> CommitAsync(CancellationToken cancellationToken = default);
     bool HasChanges();
-    Task<bool> RollbackAsync();
+    Task<bool> RollbackAsync(CancellationToken cancellationToken = default);
 }

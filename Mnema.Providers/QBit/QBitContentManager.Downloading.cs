@@ -34,12 +34,10 @@ internal partial class QBitContentManager
         if (string.IsNullOrEmpty(request.DownloadUrl))
             return;
 
-        EnsureWatcherInitialized();
-
         var cFormat = request.Metadata.GetRequiredEnum<ContentFormat>(RequestConstants.ContentFormatKey);
         var format = request.Metadata.GetRequiredEnum<Format>(RequestConstants.FormatKey);
 
-        var serviceProvider = scopeFactory.CreateScope().ServiceProvider;
+        var serviceProvider = _scopeFactory.CreateScope().ServiceProvider;
         var metadataResolver = serviceProvider.GetRequiredService<IMetadataResolver>();
         var parserService = serviceProvider.GetRequiredService<IParserService>();
         var scannerService = serviceProvider.GetRequiredService<IScannerService>();
@@ -50,7 +48,7 @@ internal partial class QBitContentManager
 
         if (string.IsNullOrEmpty(title))
         {
-            logger.LogWarning("[{Id}]Downloaded content has no title, aborting download", request.Id);
+            _logger.LogWarning("[{Id}]Downloaded content has no title, aborting download", request.Id);
             return;
         }
 
@@ -61,11 +59,11 @@ internal partial class QBitContentManager
         var toDownloadChapters = chapters.Where(ShouldDownload).ToList();
         if (toDownloadChapters.Count == 0)
         {
-            logger.LogDebug("[{Title}/{Id}] no chapters to download, not starting", title, request.Id);
+            _logger.LogDebug("[{Title}/{Id}] no chapters to download, not starting", title, request.Id);
             return;
         }
 
-        logger.LogDebug("[{Title}/{Id}] Found {Count}/{TotalCount} chapters to download",
+        _logger.LogDebug("[{Title}/{Id}] Found {Count}/{TotalCount} chapters to download",
             title, request.Id, toDownloadChapters.Count,  chapters.Count);
 
 
@@ -73,12 +71,12 @@ internal partial class QBitContentManager
         {
             Category = MnemaCategory,
             Tags = [request.Provider.ToString()],
-            DownloadFolder = Path.Join(configuration.DownloadDir, request.BaseDir, request.TempTitle),
+            DownloadFolder = Path.Join(_configuration.DownloadDir, request.BaseDir, request.TempTitle),
             Paused = true,
         };
 
-        await qBitClient.AddTorrentsAsync(addRequest, ct);
-        await cache.SetAsJsonAsync(RequestCacheKey + request.Id, request, RequestCacheKeyOptions, token: ct);
+        await _qBitClient.AddTorrentsAsync(addRequest, ct);
+        await _cache.SetAsJsonAsync(RequestCacheKey + request.Id, request, RequestCacheKeyOptions, token: ct);
 
         if (toDownloadChapters.Count != chapters.Count)
         {
@@ -93,7 +91,7 @@ internal partial class QBitContentManager
 
         if (request.StartImmediately)
         {
-            await qBitClient.ResumeTorrentsAsync([request.Id], ct);
+            await _qBitClient.ResumeTorrentsAsync([request.Id], ct);
         }
 
         return;
@@ -105,7 +103,7 @@ internal partial class QBitContentManager
 
             if (string.IsNullOrEmpty(chapter.VolumeMarker) && string.IsNullOrEmpty(chapter.ChapterMarker))
             {
-                logger.LogDebug("Skipping download for {Title} because it had no volume or chapter", chapter.Title);
+                _logger.LogDebug("Skipping download for {Title} because it had no volume or chapter", chapter.Title);
                 return false;
             }
 

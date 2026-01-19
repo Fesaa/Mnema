@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
@@ -33,7 +34,7 @@ internal class TorrentCleanupService(
     private static readonly ParallelOptions ParallelOptions = new() { MaxDegreeOfParallelism = 2 };
     private readonly Dictionary<Format, IFormatHandler> _handlers = formatHandlers.ToDictionary(h => h.SupportedFormat);
 
-    public async Task Cleanup(IContent content)
+    public async Task CleanupAsync(IContent content, CancellationToken cancellationToken = default)
     {
         if (content is not QBitTorrent torrent)
             throw new MnemaException($"{nameof(PublicationCleanupService)} cannot cleanup {content.GetType()}");

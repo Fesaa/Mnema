@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -20,9 +21,9 @@ public class UnitOfWork(ILogger<UnitOfWork> logger, MnemaDataContext ctx, IMappe
     public IContentReleaseRepository ImportedReleaseRepository { get; } = new ImportedContentReleaseRepository(ctx, mapper);
     public IMonitoredSeriesRepository MonitoredSeriesRepository { get; } = new MonitoredSeriesRepository(ctx, mapper);
 
-    public async Task<bool> CommitAsync()
+    public async Task<bool> CommitAsync(CancellationToken cancellationToken = default)
     {
-        return await ctx.SaveChangesAsync() > 0;
+        return await ctx.SaveChangesAsync(cancellationToken) > 0;
     }
 
     public bool HasChanges()
@@ -30,11 +31,11 @@ public class UnitOfWork(ILogger<UnitOfWork> logger, MnemaDataContext ctx, IMappe
         return ctx.ChangeTracker.HasChanges();
     }
 
-    public async Task<bool> RollbackAsync()
+    public async Task<bool> RollbackAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            await ctx.Database.RollbackTransactionAsync();
+            await ctx.Database.RollbackTransactionAsync(cancellationToken);
         }
         catch (Exception e)
         {

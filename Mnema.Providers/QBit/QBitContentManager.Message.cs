@@ -47,7 +47,7 @@ internal partial class QBitContentManager
         IReadOnlyList<TorrentContent> files;
         try
         {
-            files = await qBitClient.GetTorrentContentsAsync(hash, ct);
+            files = await _qBitClient.GetTorrentContentsAsync(hash, ct);
         }
         catch (InvalidOperationException)
         {
@@ -76,10 +76,10 @@ internal partial class QBitContentManager
         try
         {
             if (toDownload.Count > 0)
-                await qBitClient.SetFilePriorityAsync(hash, toDownload, TorrentContentPriority.Minimal, ct);
+                await _qBitClient.SetFilePriorityAsync(hash, toDownload, TorrentContentPriority.Minimal, ct);
 
             if (toSkip.Count > 0)
-                await qBitClient.SetFilePriorityAsync(hash, toSkip, TorrentContentPriority.Skip, ct);
+                await _qBitClient.SetFilePriorityAsync(hash, toSkip, TorrentContentPriority.Skip, ct);
         }
         catch (InvalidOperationException)
         {
@@ -93,7 +93,7 @@ internal partial class QBitContentManager
     {
         try
         {
-            await qBitClient.ResumeTorrentsAsync([hash], CancellationToken.None);
+            await _qBitClient.ResumeTorrentsAsync([hash], CancellationToken.None);
         }
         catch (InvalidOperationException)
         {
@@ -109,7 +109,7 @@ internal partial class QBitContentManager
 
         try
         {
-            var content = await qBitClient.GetTorrentContentsAsync(hash);
+            var content = await _qBitClient.GetTorrentContentsAsync(hash);
 
             return BuildTree(content);
         }

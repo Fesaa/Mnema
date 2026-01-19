@@ -134,7 +134,7 @@ internal class QBitClient(
 
             if (downloadClient.IsFailed)
             {
-                logger.LogWarning("Download client {Id} is in a failed state until {Until}",
+                logger.LogDebug("Download client {Id} is in a failed state until {Until}",
                     downloadClient.Id, downloadClient.FailedAt?.AddHours(1));
                 return null;
             }

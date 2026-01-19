@@ -3,6 +3,7 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Mnema.API.External;
 using Mnema.Models.Internal;
 
 namespace Mnema.Server.Extensions;
@@ -28,7 +29,12 @@ public static class HangFireExtensions
                     })
                     .UseSerilogLogProvider();
             });
-            services.AddHangfireServer();
+            services.AddHangfireServer(options =>
+            {
+                options.Queues = [
+                    HangfireQueue.TorrentCleanup,
+                ];
+            });
         }
     }
 }
