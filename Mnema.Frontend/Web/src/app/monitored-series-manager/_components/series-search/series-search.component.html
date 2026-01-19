@@ -1,11 +1,11 @@
-<div class="container mx-auto px-4 py-6 max-w-6xl">
+<div class="container mx-auto px-4 py-6 max-w-6xl" *transloco="let t; prefix:'series-search'">
   <form class="mb-6 row" [formGroup]="searchForm">
     <div class="col-md-8 col-sm-6">
       <input
         class="form-control"
         type="text"
         formControlName="query"
-        placeholder="Search..."
+        [placeholder]="t('search')"
       >
     </div>
     <div class="col-md-4 col-sm-6">
@@ -31,10 +31,22 @@
         <div class="card p-2 mb-2">
           <app-compact-series-info
             [series]="series"
-            [buttonLabel]="'Monitor series'"
+            [buttonLabel]="t('add-as-monitored')"
             [buttonIcon]="'fa-plus'"
             (buttonClick)="monitor($event)"
           />
+        </div>
+      } @empty {
+        <div class="d-flex flex-column align-items-center text-center gap-3 text-muted">
+          <div style="font-size: 3rem;">
+            🔍✨
+          </div>
+          <h5 class="mb-1">
+            {{t('empty.title')}}
+          </h5>
+          <p class="mb-0">
+            {{t('empty.description')}}
+          </p>
         </div>
       }
     </div>

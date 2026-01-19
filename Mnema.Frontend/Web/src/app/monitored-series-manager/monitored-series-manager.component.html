@@ -3,9 +3,9 @@
     <form [formGroup]="filterForm">
       <input class="form-control" type="text" [placeholder]="t('filter')" formControlName="filterText">
     </form>
-    <button class="btn btn-primary">
+    <button class="btn btn-primary" [ngbTooltip]="t('search')">
       <a routerLink="/series-search">
-        <i class="fa fa-magnifying-glass"></i>
+        <i class="fa fa-magnifying-glass text-white"></i>
       </a>
     </button>
     <button class="btn btn-secondary" (click)="add()">

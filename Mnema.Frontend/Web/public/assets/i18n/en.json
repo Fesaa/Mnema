@@ -944,6 +944,7 @@
   "monitored-series": {
     "title": "Title",
     "filter": "Filter...",
+    "search": "Search",
     "providers": "Providers",
     "base-dir": "Base dir",
     "actions": {
@@ -1103,6 +1104,14 @@
 
   "compact-series-info": {
     "view-source": "Source"
+  },
+  "series-search": {
+    "search": "Search...",
+    "add-as-monitored": "Monitor Series",
+    "empty": {
+      "title": "No results found for your query",
+      "description": ""
+    }
   }
 
 }

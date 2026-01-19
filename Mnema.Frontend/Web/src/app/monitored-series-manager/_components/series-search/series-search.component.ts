@@ -15,6 +15,7 @@ import {Provider} from "../../../_models/page";
 import {FormControlDefinition} from "../../../generic-form/form";
 import {ModalService} from "../../../_services/modal.service";
 import {PageService} from "../../../_services/page.service";
+import {TranslocoDirective} from "@jsverse/transloco";
 
 @Component({
   selector: 'app-series-search',
@@ -24,7 +25,8 @@ import {PageService} from "../../../_services/page.service";
     FormsModule,
     SeriesInfoComponent,
     ReactiveFormsModule,
-    CompactSeriesInfoComponent
+    CompactSeriesInfoComponent,
+    TranslocoDirective
   ],
   templateUrl: './series-search.component.html',
   styleUrl: './series-search.component.scss',
