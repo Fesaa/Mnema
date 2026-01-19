@@ -124,7 +124,12 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
                 Key = RequestConstants.MangaBakaKey,
                 Type = FormType.Text,
                 ValueType = FormValueType.Integer,
-            }
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.TitleOverride,
+                Type = FormType.Text
+            },
         ]);
     }
 
