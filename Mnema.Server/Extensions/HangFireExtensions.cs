@@ -25,7 +25,8 @@ public static class HangFireExtensions
                         SchemaName = "HangFire",
                         PrepareSchemaIfNecessary = true,
                         QueuePollInterval = TimeSpan.FromSeconds(15)
-                    });
+                    })
+                    .UseSerilogLogProvider();
             });
             services.AddHangfireServer();
         }

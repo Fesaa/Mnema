@@ -104,7 +104,7 @@ internal class TorrentCleanupService(
 
     private async Task ProcessSingleFileAsync(CleanupContext context, string sourceFile)
     {
-        logger.LogDebug("Processing file {FileName} for cleanup", sourceFile);
+        logger.LogTrace("Processing file {FileName} for cleanup", sourceFile);
 
         var fileName = fileSystem.Path.GetFileName(sourceFile);
         var resolution = metadataResolver.ResolveChapter(fileName, context.Series, context.ContentFormat);

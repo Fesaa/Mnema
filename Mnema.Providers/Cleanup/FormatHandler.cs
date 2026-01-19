@@ -30,6 +30,17 @@ internal record FormatHandlerContext(
     DownloadRequestDto Request
 );
 
+internal class EpubFormatHandler(IFileSystem fileSystem ): IFormatHandler
+{
+    public Format SupportedFormat => Format.Epub;
+    public Task HandleAsync(FormatHandlerContext context)
+    {
+        fileSystem.File.Copy(context.SourceFile, context.DestinationPath);
+
+        return Task.CompletedTask;
+    }
+}
+
 internal class ArchiveFormatHandler(
     IFileSystem fileSystem,
     IImageService imageService,

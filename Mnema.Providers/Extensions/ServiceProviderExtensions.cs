@@ -25,6 +25,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<PublicationCleanupService>();
         services.AddScoped<TorrentCleanupService>();
         services.AddScoped<IFormatHandler, ArchiveFormatHandler>();
+        services.AddScoped<IFormatHandler, EpubFormatHandler>();
 
         #region qBit Torrent
 

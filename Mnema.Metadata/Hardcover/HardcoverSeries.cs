@@ -57,7 +57,7 @@ public sealed record HardcoverAuthor : HardcoverEntity
 
 public sealed record HardcoverBookSeries
 {
-    public int? Position { get; init; }
+    public float? Position { get; init; }
     public HardcoverBook Book { get; init; }
 }
 
