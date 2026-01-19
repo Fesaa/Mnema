@@ -21,6 +21,7 @@ COPY Mnema.Database/Mnema.Database.csproj Mnema.Database/
 COPY Mnema.Models/Mnema.Models.csproj Mnema.Models/
 COPY Mnema.Providers/Mnema.Providers.csproj Mnema.Providers/
 COPY Mnema.Services/Mnema.Services.csproj Mnema.Services/
+COPY Mnema.Metadata/Mnema.Metadata.csproj Mnema.Metadata/
 
 RUN dotnet restore Mnema.Server/Mnema.Server.csproj
 
@@ -31,6 +32,7 @@ COPY Mnema.Database/. Mnema.Database/
 COPY Mnema.Models/. Mnema.Models/
 COPY Mnema.Providers/. Mnema.Providers/
 COPY Mnema.Services/. Mnema.Services/
+COPY Mnema.Metadata/. Mnema.Metadata/
 
 RUN dotnet publish Mnema.Server/Mnema.Server.csproj -c Release -o /Mnema/publish
 
