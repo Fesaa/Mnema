@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.Extensions.Configuration;
@@ -31,9 +32,7 @@ public static class HangFireExtensions
             });
             services.AddHangfireServer(options =>
             {
-                options.Queues = [
-                    HangfireQueue.TorrentCleanup,
-                ];
+                options.Queues = HangfireQueue.Queues.ToArray();
             });
         }
     }
