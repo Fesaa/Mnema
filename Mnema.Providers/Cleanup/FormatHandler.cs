@@ -55,35 +55,46 @@ internal class ArchiveFormatHandler(
 
     public async Task HandleAsync(FormatHandlerContext context)
     {
-        using var tempDir = new TempDirectoryScope(fileSystem, context.DestinationPath);
+        if (fileSystem.File.Exists(context.DestinationPath))
+            fileSystem.File.Delete(context.DestinationPath);
 
-        await ZipFile.ExtractToDirectoryAsync(context.SourceFile, tempDir.ExtractPath);
+        await using var destStream = fileSystem.File.Create(context.DestinationPath);
+        await using var destArchive = new ZipArchive(destStream, ZipArchiveMode.Create, leaveOpen: false);
 
-        var foundCover = await ProcessFilesAsync(context, tempDir);
+        await using var sourceStream = fileSystem.File.OpenRead(context.SourceFile);
+        await using var sourceArchive = new ZipArchive(sourceStream, ZipArchiveMode.Read, leaveOpen: false);
 
-        await AddMetadataAsync(context, tempDir.FinalPath);
-        await AddCoverIfNeededAsync(context, tempDir.FinalPath, foundCover);
+        var foundCover = await ProcessEntriesAsync(context, sourceArchive, destArchive);
 
-        await CreateFinalArchiveAsync(tempDir.FinalPath, context.DestinationPath);
+        await AddMetadataAsync(context, destArchive);
+        await AddCoverIfNeededAsync(context, destArchive, foundCover);
     }
 
-    private async Task<bool> ProcessFilesAsync(FormatHandlerContext context, TempDirectoryScope tempDir)
+    private async Task<bool> ProcessEntriesAsync(
+        FormatHandlerContext context,
+        ZipArchive sourceArchive,
+        ZipArchive destArchive)
     {
-        var sourceFiles = fileSystem.Directory.GetFiles(tempDir.ExtractPath, "*", SearchOption.AllDirectories);
         var foundCover = false;
-        var coverLock = new Lock();
+        var coverLock = new object();
 
-        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 4 };
-        await Parallel.ForEachAsync(sourceFiles, parallelOptions, async (file, _) =>
+        foreach (var entry in sourceArchive.Entries)
         {
-            var fileName = fileSystem.Path.GetFileName(file);
-            var ext = fileSystem.Path.GetExtension(file).ToLower();
+            if (entry.FullName.EndsWith('/')) continue;
+
+            var fileName = fileSystem.Path.GetFileName(entry.FullName);
+            var ext = fileSystem.Path.GetExtension(fileName).ToLower();
 
             if (ImageExtensions.Contains(ext))
             {
-                var localFoundCover = await ProcessImageFileAsync(context, file, fileName, foundCover, tempDir.FinalPath);
+                var localFoundCover = await ProcessImageEntryAsync(
+                    context,
+                    entry,
+                    fileName,
+                    foundCover,
+                    destArchive);
 
-                if (localFoundCover)
+                if (localFoundCover && !foundCover)
                 {
                     lock (coverLock)
                     {
@@ -93,65 +104,67 @@ internal class ArchiveFormatHandler(
             }
             else if (!fileName.Equals("ComicInfo.xml", StringComparison.OrdinalIgnoreCase))
             {
-                var destFilePath = fileSystem.Path.Join(tempDir.FinalPath, fileName);
-                fileSystem.File.Copy(file, destFilePath, true);
+                await CopyEntryAsync(entry, fileName, destArchive);
             }
-        });
-
-        return foundCover;
-    }
-
-    private async Task<bool> ProcessImageFileAsync(
-        FormatHandlerContext context,
-        string file,
-        string fileName,
-        bool foundCover,
-        string finalPath)
-    {
-        var destExt = context.Preferences.ImageFormat.GetFileExtension(fileName);
-        var destImageName = fileSystem.Path.GetFileNameWithoutExtension(fileName) + destExt;
-        var destImagePath = fileSystem.Path.Join(finalPath, destImageName);
-
-        if (!foundCover && parserService.IsCoverImage(fileName))
-        {
-            destImagePath = fileSystem.Path.Join(finalPath, $"!0000 cover{destExt}");
-            foundCover = true;
         }
 
-        await using var stream = fileSystem.File.OpenRead(file);
-        await imageService.ConvertAndSave(stream, context.Preferences.ImageFormat, destImagePath);
-
         return foundCover;
     }
 
-    private async Task AddMetadataAsync(FormatHandlerContext context, string finalPath)
+    private async Task<bool> ProcessImageEntryAsync(
+        FormatHandlerContext context,
+        ZipArchiveEntry sourceEntry,
+        string fileName,
+        bool foundCover,
+        ZipArchive destArchive)
+    {
+        var isCover = !foundCover && parserService.IsCoverImage(fileName);
+        var destExt = context.Preferences.ImageFormat.GetFileExtension(fileName);
+        var destImageName = isCover
+            ? $"!0000 cover{destExt}"
+            : fileSystem.Path.GetFileNameWithoutExtension(fileName) + destExt;
+
+        var destEntry = destArchive.CreateEntry(destImageName, CompressionLevel.SmallestSize);
+
+        await using var sourceStream = await sourceEntry.OpenAsync();
+        await using var destStream = await destEntry.OpenAsync();
+
+        await imageService.Convert(sourceStream, context.Preferences.ImageFormat, destStream);
+
+        return isCover;
+    }
+
+    private static async Task CopyEntryAsync(ZipArchiveEntry sourceEntry, string fileName, ZipArchive destArchive)
+    {
+        var destEntry = destArchive.CreateEntry(fileName, CompressionLevel.SmallestSize);
+
+        await using var sourceStream = await sourceEntry.OpenAsync();
+        await using var destStream = await destEntry.OpenAsync();
+        await sourceStream.CopyToAsync(destStream);
+    }
+
+    private static async Task AddMetadataAsync(FormatHandlerContext context, ZipArchive destArchive)
     {
         if (context.ComicInfo == null) return;
 
-        var ciPath = fileSystem.Path.Join(finalPath, "ComicInfo.xml");
-        await using var ciStream = fileSystem.File.OpenWrite(ciPath);
-        await using var writer = new StreamWriter(ciStream);
+        var entry = destArchive.CreateEntry("ComicInfo.xml", CompressionLevel.SmallestSize);
+        await using var stream = await entry.OpenAsync();
+        await using var writer = new StreamWriter(stream);
         ComicInfoSerializer.Serialize(writer, context.ComicInfo);
     }
 
-    private async Task AddCoverIfNeededAsync(FormatHandlerContext context, string finalPath, bool foundCover)
+    private async Task AddCoverIfNeededAsync(FormatHandlerContext context, ZipArchive destArchive, bool foundCover)
     {
         if (!context.Request.GetBool(RequestConstants.IncludeCover)) return;
         if (foundCover && !context.Request.GetBool(RequestConstants.UpdateCover)) return;
         if (string.IsNullOrEmpty(context.CoverUrl)) return;
 
-        var filePath = fileSystem.Path.Join(finalPath, $"!0000 cover{fileSystem.Path.GetExtension(context.CoverUrl)}");
-        await using var stream = await httpClient.GetStreamAsync(context.CoverUrl);
-        await using var file = fileSystem.File.Create(filePath);
-        await stream.CopyToAsync(file);
-    }
+        var ext = fileSystem.Path.GetExtension(context.CoverUrl);
+        var entry = destArchive.CreateEntry($"!0000 cover{ext}", CompressionLevel.SmallestSize);
 
-    private async Task CreateFinalArchiveAsync(string finalPath, string destinationPath)
-    {
-        if (fileSystem.File.Exists(destinationPath))
-            fileSystem.File.Delete(destinationPath);
-
-        await ZipFile.CreateFromDirectoryAsync(finalPath, destinationPath, CompressionLevel.SmallestSize, false);
+        await using var coverStream = await httpClient.GetStreamAsync(context.CoverUrl);
+        await using var entryStream = await entry.OpenAsync();
+        await coverStream.CopyToAsync(entryStream);
     }
 }
 
