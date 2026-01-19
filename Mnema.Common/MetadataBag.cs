@@ -19,6 +19,12 @@ public class MetadataBag : GenericBag<string>
         return string.IsNullOrEmpty(fallback) ? null : fallback;
     }
 
+    public TEnum GetRequiredEnum<TEnum>(string key) where TEnum : struct, Enum
+    {
+        var value = GetEnum<TEnum>(key);
+        return value ?? throw new ArgumentException($"Required enum value '{key}' not found.");
+    }
+
     public TEnum? GetEnum<TEnum>(string key) where TEnum : struct
     {
         var value = GetString(key);

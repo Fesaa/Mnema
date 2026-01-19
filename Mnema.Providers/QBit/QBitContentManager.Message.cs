@@ -26,7 +26,7 @@ internal partial class QBitContentManager
 
         object? data = message.Type switch {
             MessageType.ListContent => await ListContent(message),
-            MessageType.FilterContent => await FilterContent(message.ContentId, message.Data),
+            MessageType.FilterContent => await FilterContent(message.ContentId, message.Data?.Deserialize<List<string>>()),
             MessageType.StartDownload => await StartDownload(message.ContentId),
             _ => throw new ArgumentOutOfRangeException(nameof(message), message.Type, "Unsupported message type")
         };
@@ -40,15 +40,14 @@ internal partial class QBitContentManager
         };
     }
 
-    private async Task<object?> FilterContent(string hash, JsonNode? node)
+    private async Task<object?> FilterContent(string hash, List<string>? ids, CancellationToken ct = default)
     {
-        var ids = node?.Deserialize<List<string>>();
         if (ids == null) return null;
 
         IReadOnlyList<TorrentContent> files;
         try
         {
-            files = await qBitClient.GetTorrentContentsAsync(hash);
+            files = await qBitClient.GetTorrentContentsAsync(hash, ct);
         }
         catch (InvalidOperationException)
         {
@@ -77,10 +76,10 @@ internal partial class QBitContentManager
         try
         {
             if (toDownload.Count > 0)
-                await qBitClient.SetFilePriorityAsync(hash, toDownload, TorrentContentPriority.Minimal);
+                await qBitClient.SetFilePriorityAsync(hash, toDownload, TorrentContentPriority.Minimal, ct);
 
             if (toSkip.Count > 0)
-                await qBitClient.SetFilePriorityAsync(hash, toSkip, TorrentContentPriority.Skip);
+                await qBitClient.SetFilePriorityAsync(hash, toSkip, TorrentContentPriority.Skip, ct);
         }
         catch (InvalidOperationException)
         {

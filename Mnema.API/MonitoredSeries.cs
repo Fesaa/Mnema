@@ -37,6 +37,5 @@ public interface IMonitoredSeriesService
 
     Task UpdateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     Task CreateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
-    Task<bool> DownloadFromRelease(MonitoredSeries series, ContentRelease release, CancellationToken cancellationToken = default);
     FormDefinition GetForm();
 }

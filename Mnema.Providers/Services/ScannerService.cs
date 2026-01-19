@@ -9,8 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using BencodeNET.Parsing;
 using BencodeNET.Torrents;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
+using Mnema.Common.Extensions;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
@@ -23,12 +25,17 @@ public class ScannerService(
     IParserService parserService,
     ApplicationConfiguration configuration,
     INamingService namingService,
-    HttpClient httpClient
+    HttpClient httpClient,
+    IDistributedCache cache
     ) : IScannerService
 {
 
     private static readonly BencodeParser BencodeParser = new();
     private static readonly StreamPipeReaderOptions StreamPipeReaderOptions = new();
+    private static readonly DistributedCacheEntryOptions CacheEntryOptions = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
+    };
 
     public List<OnDiskContent> ScanDirectory(string path, ContentFormat contentFormat, Format format,
         CancellationToken cancellationToken)
@@ -80,24 +87,32 @@ public class ScannerService(
 
     public async Task<List<Chapter>> ParseTorrentFile(string remoteUrl, ContentFormat contentFormat, CancellationToken cancellationToken)
     {
+        var chapters = await cache.GetAsJsonAsync<List<Chapter>>(remoteUrl, cancellationToken);
+        if (chapters != null)
+            return chapters;
+
         var stream = await httpClient.GetStreamAsync(remoteUrl, cancellationToken);
 
         var torrent = await BencodeParser.ParseAsync<Torrent>(stream, StreamPipeReaderOptions, cancellationToken);
 
-        return torrent.FileMode switch
+        chapters = torrent.FileMode switch
         {
             TorrentFileMode.Unknown => [],
             TorrentFileMode.Single => [
-                ParseChapter(torrent.File.FileName, contentFormat)
+                ParseChapter(Path.Join(torrent.DisplayName, torrent.File.FileName), torrent.File.FileName, contentFormat)
             ],
             TorrentFileMode.Multi => torrent.Files
-                .Select(f => ParseChapter(f.FileName, contentFormat))
+                .Select(f => ParseChapter(Path.Join(torrent.DisplayName, f.FullPath), f.FileName, contentFormat))
                 .ToList(),
             _ => throw new ArgumentOutOfRangeException(nameof(torrent.FileMode), torrent.FileMode, null)
         };
+
+        await cache.SetAsJsonAsync(remoteUrl, chapters, CacheEntryOptions, cancellationToken);
+
+        return chapters;
     }
 
-    private Chapter ParseChapter(string file, ContentFormat contentFormat)
+    private Chapter ParseChapter(string path, string file, ContentFormat contentFormat)
     {
         var volume = parserService.ParseVolume(file, contentFormat);
         var chapter = parserService.ParseChapter(file, contentFormat);
@@ -108,7 +123,7 @@ public class ScannerService(
         return new Chapter
         {
             Id = string.Empty,
-            Title = file,
+            Title = path,
             VolumeMarker = volume,
             ChapterMarker = chapter,
             Tags = [],

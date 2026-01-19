@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -59,18 +60,7 @@ internal partial class QBitContentManager(
                 throw new MnemaException($"Torrent with hash {request.Id} has already been added");
             }
 
-            var addRequest = new AddTorrentUrlsRequest(new Uri(request.DownloadUrl))
-            {
-                Category = MnemaCategory,
-                Tags = [request.Provider.ToString()],
-                DownloadFolder = Path.Join(configuration.DownloadDir, request.BaseDir, request.TempTitle),
-                Paused = !request.StartImmediately,
-            };
-
-            await qBitClient.AddTorrentsAsync(addRequest);
-            await cache.SetAsJsonAsync(RequestCacheKey + request.Id, request, RequestCacheKeyOptions);
-
-            EnsureWatcherInitialized();
+            BackgroundJob.Enqueue(() => DownloadTorrent(request, CancellationToken.None));
         }
         catch (InvalidOperationException)
         {

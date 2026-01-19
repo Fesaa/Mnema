@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services.Scheduled;
@@ -48,6 +49,7 @@ internal class MonitoredSeriesScheduler(
     )
     {
         var monitoredSeriesService = scope.ServiceProvider.GetRequiredService<IMonitoredSeriesService>();
+        var downloadService = scope.ServiceProvider.GetRequiredService<IDownloadService>();
 
         HashSet<Guid> matchedMonitoredSeries = [];
         HashSet<string> actedOnIds = [];
@@ -62,17 +64,27 @@ internal class MonitoredSeriesScheduler(
                 .Where(m => !matchedMonitoredSeries.Contains(m.Id))
                 .ToList();
 
-            var match = FindMatch(scope, validMatches, release);
+            var match = await FindMatch(scope, validMatches, release, cancellationToken);
             if (match == null) continue;
 
             try
             {
-                if (await monitoredSeriesService.DownloadFromRelease(match, release, cancellationToken))
+
+                await downloadService.StartDownload(new DownloadRequestDto
                 {
-                    matchedMonitoredSeries.Add(match.Id);
-                    actedOnIds.Add(release.ReleaseId);
-                    processedDownloads++;
-                }
+                    Provider = release.Provider,
+                    Id = release.ReleaseId,
+                    BaseDir = match.BaseDir,
+                    TempTitle = release.ContentName,
+                    Metadata = match.Metadata,
+                    DownloadUrl = release.DownloadUrl,
+                    StartImmediately = true,
+                    UserId = match.UserId,
+                });
+
+                matchedMonitoredSeries.Add(match.Id);
+                actedOnIds.Add(release.ReleaseId);
+                processedDownloads++;
             }
             catch (Exception e)
             {
@@ -91,18 +103,25 @@ internal class MonitoredSeriesScheduler(
         );
     }
 
-
-
-    public static MonitoredSeries? FindMatch(IServiceScope scope, List<MonitoredSeries> monitoredReleases, ContentRelease release)
+    public static async Task<MonitoredSeries?> FindMatch(IServiceScope scope, List<MonitoredSeries> monitoredReleases, ContentRelease release, CancellationToken ct)
     {
         var parserService = scope.ServiceProvider.GetRequiredService<IParserService>();
+        var scannerService = scope.ServiceProvider.GetRequiredService<IScannerService>();
 
         foreach (var monitoredRelease in monitoredReleases.Where(m => m.Providers.Contains(release.Provider)))
         {
             var parseResult = parserService.FullParse(release.ReleaseName, monitoredRelease.ContentFormat);
 
-            if (parseResult.Series.Intersect(monitoredRelease.ValidTitles).Any())
-                return monitoredRelease;
+            if (!parseResult.Series.Intersect(monitoredRelease.ValidTitles).Any())
+                continue;
+
+            // Ensure the release is off the correct format
+            var chapters = await scannerService.ParseTorrentFile(release.DownloadUrl, monitoredRelease.ContentFormat, ct);
+            var formats = chapters.Select(c => parserService.ParseFormat(c.Title));
+            if (!formats.Contains(monitoredRelease.Format))
+                continue;
+
+            return monitoredRelease;
         }
 
         return null;
