@@ -10,3 +10,4 @@ temp
 appsettings.Development.json
 .DS_Store
 Mnema.sln.DotSettings.user
+*.db
