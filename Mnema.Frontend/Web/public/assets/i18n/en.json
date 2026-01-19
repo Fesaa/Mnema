@@ -26,7 +26,7 @@
       "subscriptions": "Subscriptions",
       "monitored-series": "Monitored Series",
       "notifications": "Notifications",
-      "audit-log": "Audit log"
+      "search-series": "Search Series"
     },
     "settings": {
       "title": "Settings",

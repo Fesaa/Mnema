@@ -79,7 +79,7 @@ export class ButtonGroupService {
 
     return {
       title: translate('button-groups.actions.title'),
-      icon: 'fa fa-exclamation',
+      icon: 'fa fa-bars',
       buttons: [
         {
           title: translate('button-groups.actions.subscriptions'),
@@ -105,16 +105,17 @@ export class ButtonGroupService {
             ? `${this.activeDownloadsService.items().length}` : undefined,
         },
         {
+          title: translate('button-groups.actions.search-series'),
+          icon: 'fa fa-magnifying-glass',
+          requiredRoles: [Role.Subscriptions],
+          navUrl: '/series-search',
+        },
+        {
           title: translate('button-groups.actions.notifications'),
           icon: 'fa fa-inbox',
           navUrl: '/notifications',
           badge: this.notificationService.notificationsCount() > 0
             ? `${this.notificationService.notificationsCount()}` : undefined,
-        },
-        {
-          title: translate('button-groups.actions.audit-log'),
-          icon: 'fa fa-user-secret',
-          navUrl: '/audit-log',
         },
         {
           title: translate('button-groups.settings.logout'),
@@ -172,8 +173,8 @@ export class ButtonGroupService {
   });
 
   dashboardGroups = computed<ButtonGroup[]>(() => [
-    this.pageGroup(),
     this.actionGroup(),
+    this.pageGroup(),
     this.settingsGroup(),
   ]);
 
