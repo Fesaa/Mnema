@@ -82,6 +82,10 @@ internal partial class QBitContentManager
 
         if (toDownloadChapters.Count != chapters.Count)
         {
+            // Small delay to give qbit a bit of time to load everything
+            // This should enough as all metadata is inside the .torrent file we're passing
+            await Task.Delay(TimeSpan.FromSeconds(5), ct);
+
             // The full path is encoded as title
             var paths = toDownloadChapters.Select(c => c.Title).ToList();
             await FilterContent(request.Id, paths, ct);

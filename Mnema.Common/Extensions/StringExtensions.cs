@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Mnema.Common.Extensions;
@@ -108,7 +109,7 @@ public static class StringExtensions
 
         public string GetFileType()
         {
-            return Path.GetExtension(new Uri(s).AbsolutePath);
+            return Path.GetExtension(s.Split('?').First());
         }
     }
 
