@@ -41,7 +41,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddProviders();
         services.AddMnemaServices();
-        services.AddMetadataProviders(configuration);
+        services.AddMetadataProviders(configuration, appConfig);
 
         services.AddScoped<IFileSystem, FileSystem>();
         services.AddSingleton<IFileSystem, FileSystem>();

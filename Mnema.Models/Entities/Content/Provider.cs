@@ -12,4 +12,5 @@ public enum Provider
 public enum MetadataProvider
 {
     Hardcover = 0,
+    Mangabaka = 1,
 }

@@ -19,7 +19,7 @@ internal class MonitoredSeriesScheduler(
     IServiceScopeFactory scopeFactory,
     IRecurringJobManagerV2 recurringJobManager,
     IWebHostEnvironment environment
-) : AbstractScheduler<MonitoredSeriesScheduler, MonitoredSeries>(logger, scopeFactory, recurringJobManager, environment), IMonitoredSeriesScheduler
+) : AbstractScheduler<MonitoredSeriesScheduler, MonitoredSeries>(logger, scopeFactory, recurringJobManager, environment)
 {
     protected override string WatcherJobId => "monitored-releases.rss";
     protected override string WatcherDescription => "monitored releases watcher";

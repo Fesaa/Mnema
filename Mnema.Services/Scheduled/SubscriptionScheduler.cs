@@ -19,7 +19,7 @@ internal class SubscriptionScheduler(
     IServiceScopeFactory scopeFactory,
     IRecurringJobManagerV2 recurringJobManager,
     IWebHostEnvironment environment
-) : AbstractScheduler<SubscriptionScheduler, Subscription>(logger, scopeFactory, recurringJobManager, environment), ISubscriptionScheduler
+) : AbstractScheduler<SubscriptionScheduler, Subscription>(logger, scopeFactory, recurringJobManager, environment)
 {
     protected override string WatcherJobId => "subscriptions.rss";
     protected override string WatcherDescription => "subscription watcher";

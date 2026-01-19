@@ -21,7 +21,7 @@ internal abstract class AbstractScheduler<TScheduler, TEntity>(
     IServiceScopeFactory scopeFactory,
     IRecurringJobManagerV2 recurringJobManager,
     IWebHostEnvironment environment
-) where TScheduler : class
+): IScheduled where TScheduler : class
 {
     protected abstract string WatcherJobId { get; }
     protected abstract string WatcherDescription { get; }

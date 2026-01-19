@@ -2,12 +2,17 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using GraphQL.Client.Abstractions;
 using GraphQL.Client.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Metadata.Hardcover;
+using Mnema.Metadata.Mangabaka;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Internal;
 using Serilog;
 
 namespace Mnema.Metadata.Extensions;
@@ -15,9 +20,9 @@ namespace Mnema.Metadata.Extensions;
 public static class ServiceProviderExtensions
 {
 
-    public const string HardcoverGraphQlEndpoint = "https://api.hardcover.app/v1/graphql";
+    private const string HardcoverGraphQlEndpoint = "https://api.hardcover.app/v1/graphql";
 
-    public static IServiceCollection AddMetadataProviders(this IServiceCollection services, IConfiguration cfg)
+    public static IServiceCollection AddMetadataProviders(this IServiceCollection services, IConfiguration cfg, ApplicationConfiguration configuration)
     {
 
         var hardCoverToken = cfg.GetRequiredSection("Authentication").GetValue<string>("Hardcover");
@@ -52,6 +57,20 @@ public static class ServiceProviderExtensions
         {
             Log.Logger.Warning($"No authentication token configured for {nameof(MetadataProvider.Hardcover)}, hardcover services will not be avaible");
         }
+
+        services.AddScoped<IScheduled, MangabakaScheduler>();
+        services.AddKeyedScoped<IMetadataProviderService, MangabakaMetadataService>(MetadataProvider.Mangabaka);
+
+        var connectionString = $"Data Source={Path.Join(configuration.PersistentStorage, MangabakaScheduler.DatabaseName)}";
+        services.AddDbContextPool<MangabakaDbContext>(options =>
+        {
+            options.UseSqlite(connectionString, builder =>
+            {
+                builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            });
+            options.EnableDetailedErrors();
+            options.EnableSensitiveDataLogging();
+        });
 
         return services;
     }

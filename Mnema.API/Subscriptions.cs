@@ -10,11 +10,6 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.API;
 
-public interface ISubscriptionScheduler
-{
-    Task EnsureScheduledAsync();
-}
-
 public interface ISubscriptionRepository
 {
     Task<PagedList<SubscriptionDto>> GetSubscriptionDtosForUser(Guid userId, string query, PaginationParams pagination, CancellationToken cancellationToken = default);

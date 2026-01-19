@@ -10,11 +10,6 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.API;
 
-public interface IMonitoredSeriesScheduler
-{
-    Task EnsureScheduledAsync();
-}
-
 public interface IMonitoredSeriesRepository
 {
     Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(Guid userId, string query, PaginationParams pagination, CancellationToken cancellationToken);

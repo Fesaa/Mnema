@@ -1,6 +1,3 @@
 namespace Mnema.Models.DTOs.External;
 
-public class MetadataSearchDto
-{
-    
-}
+public sealed record MetadataSearchDto(string Query);
