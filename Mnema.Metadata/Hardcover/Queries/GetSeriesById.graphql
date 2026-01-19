@@ -24,7 +24,6 @@ query GetSeriesById($id: Int!) {
         }
 
         book_series(where: {
-            featured:  {_eq: true},
             book: {
                 canonical_id: {_is_null: true},
                 compilation: {_eq: false}
