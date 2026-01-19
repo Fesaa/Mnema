@@ -49,18 +49,19 @@ internal class TorrentCleanupService(
 
     private async Task<CleanupContext> BuildCleanupContextAsync(DownloadRequestDto request, QBitTorrent torrent)
     {
-        var series = await metadataResolver.ResolveSeriesAsync(request.Metadata);
         var preferences = await unitOfWork.UserRepository.GetPreferences(request.UserId);
+
+        torrent.Series = await metadataResolver.ResolveSeriesAsync(request.Metadata);
 
         var format = request.Metadata.GetEnum<Format>(RequestConstants.FormatKey) ?? Format.Archive;
         var contentFormat = request.Metadata.GetEnum<ContentFormat>(RequestConstants.ContentFormatKey) ?? ContentFormat.Manga;
 
-        var title = ResolveTitle(request, series, torrent, contentFormat);
+        var title = ResolveTitle(request, torrent.Series, torrent, contentFormat);
         var destDir = PrepareDestinationDirectory(request, title);
 
         return new CleanupContext(
             Request: request,
-            Series: series,
+            Series: torrent.Series,
             Preferences: preferences,
             Format: format,
             ContentFormat: contentFormat,

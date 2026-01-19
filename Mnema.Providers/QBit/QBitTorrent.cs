@@ -3,6 +3,7 @@ using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Publication;
 using QBittorrent.Client;
 
 namespace Mnema.Providers.QBit;
@@ -12,6 +13,11 @@ public class QBitTorrent(DownloadRequestDto request, TorrentInfo torrentInfo) : 
     public string Id => torrentInfo.Hash;
     public string Title => torrentInfo.Name;
     public string DownloadDir => torrentInfo.SavePath;
+
+    /// <summary>
+    /// Optional series metadata that can be set during the process
+    /// </summary>
+    public Series? Series { get; set; }
 
     public ContentState State => torrentInfo.State switch
     {
@@ -47,9 +53,9 @@ public class QBitTorrent(DownloadRequestDto request, TorrentInfo torrentInfo) : 
         Id = Id,
         ContentState = State,
         Name = Title,
-        Description = null,
-        ImageUrl = null,
-        RefUrl = null,
+        Description = Series?.Summary,
+        ImageUrl = Series?.CoverUrl,
+        RefUrl = Series?.RefUrl,
         Size = torrentInfo.Size.AsHumanReadableSize(),
         TotalSize = torrentInfo.TotalSize?.AsHumanReadableSize() ?? string.Empty,
         Downloading = State == ContentState.Downloading,
