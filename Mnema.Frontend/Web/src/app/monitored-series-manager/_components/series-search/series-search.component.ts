@@ -1,0 +1,101 @@
+import {ChangeDetectionStrategy, Component, computed, inject, signal} from '@angular/core';
+import {MetadataProvider, MetadataService} from "../../metadata.service";
+import {PageLoader, PaginatorComponent} from "../../../shared/_component/paginator/paginator.component";
+import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
+import {toSignal} from "@angular/core/rxjs-interop";
+import {debounceTime, distinctUntilChanged, map, of, tap} from "rxjs";
+import {form, FormField} from "@angular/forms/signals";
+import {Series} from "../../../page/_components/series-info/_types";
+import {SeriesInfoComponent} from "../../../page/_components/series-info/series-info.component";
+import {EMPTY_PAGE} from "../../../_models/paged-list";
+import {CompactSeriesInfoComponent} from "../compact-series-info/compact-series-info.component";
+import {EditMonitoredSeriesModalComponent} from "../edit-monitored-series-modal/edit-monitored-series-modal.component";
+import {DefaultModalOptions} from "../../../_models/default-modal-options";
+import {Provider} from "../../../_models/page";
+import {FormControlDefinition} from "../../../generic-form/form";
+import {ModalService} from "../../../_services/modal.service";
+
+@Component({
+  selector: 'app-series-search',
+  imports: [
+    PaginatorComponent,
+    FormField,
+    FormsModule,
+    SeriesInfoComponent,
+    ReactiveFormsModule,
+    CompactSeriesInfoComponent
+  ],
+  templateUrl: './series-search.component.html',
+  styleUrl: './series-search.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class SeriesSearchComponent {
+
+  private readonly metadataService = inject(MetadataService);
+  private readonly modalService = inject(ModalService);
+
+  searchForm = new FormGroup({
+    query: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
+    provider: new FormControl(MetadataProvider.Hardcover, {nonNullable: true, validators: [Validators.required]}),
+  });
+
+  searchOptions = toSignal(this.searchForm.valueChanges.pipe(
+    distinctUntilChanged(),
+    debounceTime(200),
+    map(v => ({
+      query: v.query ?? '',
+      provider: v.provider ?? MetadataProvider.Hardcover,
+    })),
+  ), { initialValue: { query: '', provider: MetadataProvider.Hardcover } });
+
+  pageLoader = computed<PageLoader<Series>>(() => {
+    const searchOptions = this.searchOptions();
+
+    if (!searchOptions.query) {
+      return () => of(EMPTY_PAGE);
+    }
+
+    return (pn, pz) => this.metadataService.search(
+      searchOptions.provider,
+      searchOptions.query,
+      pn,
+      pz
+    );
+  });
+
+  private getMetadataKey() {
+    switch (this.searchOptions().provider) {
+      case MetadataProvider.Hardcover:
+        return "hardcover_series_id";
+      case MetadataProvider.Mangabaka:
+        return "mangabaka";
+    }
+  }
+
+  monitor(series: Series) {
+    const validTitles = [series.title];
+    if (series.localizedSeries) {
+      validTitles.push(series.title);
+    }
+
+    const metadataKey = this.getMetadataKey();
+
+    const [_, component] = this.modalService.open(EditMonitoredSeriesModalComponent, DefaultModalOptions);
+    component.series.set({
+      id: '',
+      title: series.title,
+      validTitles: validTitles,
+      providers: [],
+      baseDir: '',
+      contentFormat: 0,
+      format: 0,
+      metadata: {
+        [metadataKey]: [series.id]
+      }
+    });
+    component.metadata.set([]);
+  }
+
+
+  protected readonly MetadataProvider = MetadataProvider;
+}

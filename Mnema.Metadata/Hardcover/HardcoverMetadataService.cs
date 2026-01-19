@@ -25,7 +25,7 @@ public class HardcoverMetadataService(
         var request = new GraphQLRequest(SearchSeries, new
         {
             query = search.Query,
-            page = paginationParams.PageNumber,
+            page = paginationParams.PageNumber + 1, // Hardcover is 1 based
             per_page = paginationParams.PageSize
         });
 
@@ -45,7 +45,7 @@ public class HardcoverMetadataService(
 
         var series = seriesResponse.Data.Series.Select(ConvertFromHardcoverSeries);
 
-        return new PagedList<Series>(series, response.Data.Series.Results.Found, response.Data.Series.Page, response.Data.Series.PageSize);
+        return new PagedList<Series>(series, response.Data.Series.Results.Found, response.Data.Series.Page - 1, response.Data.Series.PageSize);
     }
 
     public async Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken)

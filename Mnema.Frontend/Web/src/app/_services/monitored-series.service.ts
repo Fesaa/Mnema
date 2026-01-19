@@ -24,7 +24,7 @@ export type MonitoredSeries = {
 export class MonitoredSeriesService {
 
   private readonly httpClient = inject(HttpClient);
-  private readonly baseUrl = environment.apiUrl + "monitoredseries";
+  private readonly baseUrl = environment.apiUrl + "MonitoredSeries";
 
   private _cachedForm?: FormDefinition;
 

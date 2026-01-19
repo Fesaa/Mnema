@@ -1,0 +1,47 @@
+<ng-container *transloco="let t; prefix: 'compact-series-info'">
+  <div class="compact-series-card">
+    <div class="row g-3">
+      @if (coverUrl(); as url) {
+        <div class="col-auto">
+          <img [src]="url"
+               [alt]="seriesTitle()"
+               class="compact-cover">
+        </div>
+      }
+      <div class="col">
+        <div class="d-flex flex-column h-100">
+          <h6 class="series-title mb-2">{{seriesTitle()}}</h6>
+
+          @if (summary(); as summaryText) {
+            <p class="series-summary text-secondary small mb-2 flex-grow-1">
+              {{summaryText}}
+            </p>
+          }
+
+          <div class="d-flex gap-2 justify-content-between mt-auto">
+            @if (mainLink(); as link) {
+              <a [href]="link"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 class="btn btn-sm btn-outline-secondary">
+                <i class="fa fa-external-link-alt me-1"></i>
+                {{t('view-source')}}
+              </a>
+            }
+
+            @if (buttonLabel()) {
+              <button type="button"
+                      class="btn btn-sm btn-primary"
+                      (click)="onButtonClick()">
+                @if (buttonIcon()) {
+                  <i class="fa {{buttonIcon()}} me-1"></i>
+                }
+                {{buttonLabel()}}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

@@ -1099,6 +1099,10 @@
         "summary": ""
       }
     }
+  },
+
+  "compact-series-info": {
+    "view-source": "Source"
   }
 
 }

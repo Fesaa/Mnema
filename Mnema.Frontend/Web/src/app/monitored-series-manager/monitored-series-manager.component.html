@@ -3,7 +3,12 @@
     <form [formGroup]="filterForm">
       <input class="form-control" type="text" [placeholder]="t('filter')" formControlName="filterText">
     </form>
-    <button class="btn btn-primary" (click)="add()">
+    <button class="btn btn-primary">
+      <a routerLink="/series-search">
+        <i class="fa fa-magnifying-glass"></i>
+      </a>
+    </button>
+    <button class="btn btn-secondary" (click)="add()">
       <i class="fa fa-plus me-2"></i> {{ t('actions.add') }}
     </button>
   </div>

@@ -17,6 +17,7 @@ import {EMPTY_PAGE, PagedList} from "../../../_models/paged-list";
 import {Observable, tap} from "rxjs";
 import {ToastService} from "../../../_services/toast.service";
 import {end, start} from "@popperjs/core";
+import {LoadingSpinnerComponent} from "../loading-spinner/loading-spinner.component";
 
 export type PageLoader<T> = (pageNumber: number, pageSize: number) => Observable<PagedList<T>>;
 
@@ -25,6 +26,7 @@ export type PageLoader<T> = (pageNumber: number, pageSize: number) => Observable
   imports: [
     NgTemplateOutlet,
     TranslocoDirective,
+    LoadingSpinnerComponent,
   ],
   templateUrl: './paginator.component.html',
   styleUrl: './paginator.component.scss'
@@ -33,7 +35,7 @@ export class PaginatorComponent<T> implements OnInit {
 
   private readonly toastService = inject(ToastService);
 
-  @ContentChild("items") itemsTemplate!: TemplateRef<any>;
+  @ContentChild("items") itemsTemplate?: TemplateRef<any>;
 
   pageLoader = input.required<PageLoader<T>>();
   pageSize = input(20);
@@ -41,10 +43,12 @@ export class PaginatorComponent<T> implements OnInit {
 
   noResultsKey = input<string | null>('common.no-results');
   successKey = input<string | null>(null);
+  hideOnLoading = input(false);
 
   reloader = input<EventEmitter<void>>(new EventEmitter());
 
   pagedList = signal<PagedList<T>>(EMPTY_PAGE);
+  loading = signal(false);
   totalPages = computed(() => this.pagedList().totalPages);
 
   currentPage = computed(() => this.pagedList().currentPage);
@@ -120,6 +124,7 @@ export class PaginatorComponent<T> implements OnInit {
   }
 
   private loadPage(pageNumber: number) {
+    this.loading.set(true);
     this.pageLoader()(pageNumber, this.pageSize()).subscribe(pagedList => {
       const noResultKey = this.noResultsKey();
       const successKey = this.successKey();
@@ -132,6 +137,7 @@ export class PaginatorComponent<T> implements OnInit {
       }
 
       this.pagedList.set(pagedList);
+      this.loading.set(false);
     });
   }
 
