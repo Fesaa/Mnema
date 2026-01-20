@@ -271,7 +271,7 @@ public class MonitoredSeriesService(
                 continue;
             }
 
-            var matchingFile = FindMatchingFile(onDiskContent, chapter);
+            var matchingFile = scannerService.FindMatch(onDiskContent, chapter);
 
             var status = MonitoredChapterStatus.Missing;
             if (matchingFile != null)
@@ -308,29 +308,6 @@ public class MonitoredSeriesService(
         mChapter.RefUrl = chapter.RefUrl;
         mChapter.ReleaseDate = chapter.ReleaseDate?.ToUniversalTime();
         mChapter.SortOrder = chapter.SortOrder ?? ParserService.SpecialVolumeNumber;
-    }
-
-    private static OnDiskContent? FindMatchingFile(List<OnDiskContent> onDiskContents, Chapter chapter)
-    {
-        if (string.IsNullOrEmpty(chapter.VolumeMarker) && string.IsNullOrEmpty(chapter.ChapterMarker))
-        {
-            return null;
-        }
-
-        if (string.IsNullOrEmpty(chapter.ChapterMarker))
-        {
-            return onDiskContents.FirstOrDefault(c
-                => string.IsNullOrEmpty(c.Chapter) && c.Volume == chapter.VolumeMarker);
-        }
-
-        if (string.IsNullOrEmpty(chapter.VolumeMarker))
-        {
-            return onDiskContents.FirstOrDefault(c
-                => string.IsNullOrEmpty(c.Volume) && c.Chapter == chapter.ChapterMarker);
-        }
-
-        return onDiskContents.FirstOrDefault(c
-            => c.Chapter == chapter.ChapterMarker && c.Volume == chapter.VolumeMarker);
     }
 
 

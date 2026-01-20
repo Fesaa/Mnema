@@ -3,13 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
-using Mnema.Models.Publication;
 using QBittorrent.Client;
 
 namespace Mnema.Providers.QBit;
@@ -17,6 +17,7 @@ namespace Mnema.Providers.QBit;
 internal partial class QBitContentManager
 {
 
+    [AutomaticRetry(Attempts = 1, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
     public async Task DownloadTorrent(DownloadRequestDto request, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(request.DownloadUrl))
@@ -44,7 +45,12 @@ internal partial class QBitContentManager
             scannerService.ScanDirectory(Path.Join(request.BaseDir, title), cFormat, format, ct);
         var chapters = await scannerService.ParseTorrentFile(request.DownloadUrl, cFormat, ct);
 
-        var toDownloadChapters = chapters.Where(ShouldDownload).ToList();
+        var toDownloadChapters = chapters.Where(c =>
+        {
+            var match = scannerService.FindMatch(existingContent, c);
+            return match == null;
+        }).ToList();
+
         if (toDownloadChapters.Count == 0)
         {
             logger.LogDebug("[{Title}/{Id}] no chapters to download, not starting", title, request.Id);
@@ -79,35 +85,6 @@ internal partial class QBitContentManager
         if (request.StartImmediately)
         {
             await qBitClient.ResumeTorrentsAsync([request.Id], ct);
-        }
-
-        return;
-
-        bool ShouldDownload(Chapter chapter)
-        {
-            if (parserService.ParseFormat(chapter.Title) != format)
-                return false;
-
-            if (string.IsNullOrEmpty(chapter.VolumeMarker) && string.IsNullOrEmpty(chapter.ChapterMarker))
-            {
-                logger.LogDebug("Skipping download for {Title} because it had no volume or chapter", chapter.Title);
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(chapter.ChapterMarker))
-            {
-                return !existingContent.Any(c => string.IsNullOrEmpty(c.Chapter) && c.Volume == chapter.VolumeMarker);
-            }
-
-            if (string.IsNullOrEmpty(chapter.VolumeMarker))
-            {
-                return !existingContent.Any(c => string.IsNullOrEmpty(c.Volume) && c.Chapter == chapter.ChapterMarker);
-            }
-
-            return !existingContent.Any(c => c.Volume == chapter.VolumeMarker
-                                             && c.Chapter == chapter.ChapterMarker
-                                             && !string.IsNullOrEmpty(c.Volume)
-                                             && !string.IsNullOrEmpty(c.Chapter));
         }
     }
 

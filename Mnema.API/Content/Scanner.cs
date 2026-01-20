@@ -14,4 +14,6 @@ public interface IScannerService
     OnDiskContent ParseContent(string file, ContentFormat contentFormat);
 
     Task<List<Chapter>> ParseTorrentFile(string remoteUrl, ContentFormat contentFormat, CancellationToken cancellationToken);
+
+    OnDiskContent? FindMatch(List<OnDiskContent> onDiskContents, Chapter chapter);
 }
