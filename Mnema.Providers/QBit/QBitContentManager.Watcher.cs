@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
@@ -13,7 +12,7 @@ using QBittorrent.Client;
 
 namespace Mnema.Providers.QBit;
 
-internal partial class QBitContentManager: IAsyncDisposable
+internal partial class QBitContentManager
 {
 
     private static readonly IReadOnlyList<TorrentState> UploadStates = [
@@ -21,30 +20,25 @@ internal partial class QBitContentManager: IAsyncDisposable
         TorrentState.PausedUpload, TorrentState.QueuedUpload,
     ];
 
-    private readonly CancellationTokenSource _tokenSource = new();
-    private readonly Task? _watcherTask;
-
-    private async Task TorrentWatcher()
+    public async Task TorrentWatcher()
     {
         IReadOnlyList<TorrentInfo> torrents;
         try
         {
             var listQuery = new TorrentListQuery { Category = MnemaCategory };
-            torrents = await _qBitClient.GetTorrentsAsync(listQuery);
+            torrents = await qBitClient.GetTorrentsAsync(listQuery);
         }
         catch (Exception ex) when (ex is HttpRequestException or QBittorrentClientRequestException or MnemaException)
         {
-            await Task.Delay(TimeSpan.FromSeconds(30));
             return;
         }
 
         if (torrents.Count == 0)
         {
-            await Task.Delay(TimeSpan.FromSeconds(30));
             return;
         }
 
-        using var scope = _scopeFactory.CreateScope();
+        using var scope = scopeFactory.CreateScope();
 
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -54,7 +48,7 @@ internal partial class QBitContentManager: IAsyncDisposable
 
         foreach (var tInfo in torrents)
         {
-            var request = await _cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
+            var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
             if (request == null) continue;
 
             (UploadStates.Contains(tInfo.State) ? inUploadState : queuedForSignalR).Add(new QBitTorrent(request, tInfo));
@@ -91,24 +85,5 @@ internal partial class QBitContentManager: IAsyncDisposable
         {
             await messageService.BulkContentInfoUpdate(group.Key, group.Select(t => t.DownloadInfo).ToArray());
         }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await _tokenSource.CancelAsync();
-        if (_watcherTask != null)
-        {
-            try
-            {
-                await _watcherTask;
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected
-            }
-        }
-
-        _tokenSource.Dispose();
-        _qBitClient.Dispose();
     }
 }

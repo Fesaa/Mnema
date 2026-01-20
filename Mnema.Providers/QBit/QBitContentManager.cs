@@ -20,7 +20,13 @@ using QBittorrent.Client;
 
 namespace Mnema.Providers.QBit;
 
-internal partial class QBitContentManager : IContentManager, IConfigurationProvider
+internal partial class QBitContentManager(
+    ILogger<QBitContentManager> logger,
+    ApplicationConfiguration configuration,
+    IDistributedCache cache,
+    IServiceScopeFactory scopeFactory,
+    IQBitClient qBitClient)
+    : IContentManager, IConfigurationProvider
 {
     private const string MnemaCategory = "Mnema";
     private const string UrlKey = "url";
@@ -30,31 +36,6 @@ internal partial class QBitContentManager : IContentManager, IConfigurationProvi
 
     private static readonly List<Provider> SupportedProviders = [Provider.Nyaa];
     private static readonly DistributedCacheEntryOptions RequestCacheKeyOptions = new();
-
-    private readonly ILogger<QBitContentManager> _logger;
-    private readonly ApplicationConfiguration _configuration;
-    private readonly IDistributedCache _cache;
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IQBitClient _qBitClient;
-
-    public QBitContentManager(ILogger<QBitContentManager> logger,
-        ApplicationConfiguration configuration,
-        IDistributedCache cache,
-        IServiceScopeFactory scopeFactory,
-        IQBitClient qBitClient)
-    {
-        _logger = logger;
-        _configuration = configuration;
-        _cache = cache;
-        _scopeFactory = scopeFactory;
-        _qBitClient = qBitClient;
-
-        _watcherTask = Task.Run(async () => await _tokenSource.DoWhile(
-            _logger,
-            TimeSpan.FromSeconds(5),
-            TorrentWatcher,
-            _ => Task.FromResult(true)));
-    }
 
     public async Task Download(DownloadRequestDto request)
     {
@@ -71,7 +52,7 @@ internal partial class QBitContentManager : IContentManager, IConfigurationProvi
             Hashes = [request.Id]
         };
 
-        var torrents = await _qBitClient.GetTorrentsAsync(listQuery);
+        var torrents = await qBitClient.GetTorrentsAsync(listQuery);
         if (torrents != null && torrents.Any(t => t.Hash == request.Id))
         {
             throw new MnemaException($"Torrent with hash {request.Id} has already been added");
@@ -85,16 +66,16 @@ internal partial class QBitContentManager : IContentManager, IConfigurationProvi
         if (!SupportedProviders.Contains(request.Provider))
             throw new MnemaException($"Provider {request.Provider} is not supported");
 
-        using var scope = _scopeFactory.CreateScope();
+        using var scope = scopeFactory.CreateScope();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
 
         try
         {
-            await _qBitClient.DeleteTorrentsAsync([request.Id], true);
+            await qBitClient.DeleteTorrentsAsync([request.Id], true);
         }
         finally
         {
-            await _cache.RemoveAsync(RequestCacheKey + request.Id);
+            await cache.RemoveAsync(RequestCacheKey + request.Id);
             await messageService.DeleteContent(request.UserId, request.Id);
         }
     }
@@ -116,11 +97,11 @@ internal partial class QBitContentManager : IContentManager, IConfigurationProvi
 
         try
         {
-            torrents = await _qBitClient.GetTorrentsAsync(listQuery);
+            torrents = await qBitClient.GetTorrentsAsync(listQuery);
         }
         catch (MnemaException ex)
         {
-            _logger.LogTrace(ex, "Failed to load torrent list");
+            logger.LogTrace(ex, "Failed to load torrent list");
             return [];
         }
 
@@ -132,7 +113,7 @@ internal partial class QBitContentManager : IContentManager, IConfigurationProvi
         {
             if (UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
 
-            var request = await _cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
+            var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
             if (request == null) continue;
 
             contents.Add(new QBitTorrent(request, tInfo));
@@ -174,7 +155,7 @@ internal partial class QBitContentManager : IContentManager, IConfigurationProvi
 
     public Task ReloadConfiguration(CancellationToken cancellationToken)
     {
-        _qBitClient.Invalidate();
+        qBitClient.Invalidate();
         return Task.CompletedTask;
     }
 }

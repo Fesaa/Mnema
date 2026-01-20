@@ -44,7 +44,7 @@ internal partial class QBitContentManager
     {
         if (ids == null) return null;
 
-        var files = await _qBitClient.GetTorrentContentsAsync(hash, ct);
+        var files = await qBitClient.GetTorrentContentsAsync(hash, ct);
 
         var toDownload = new HashSet<int>();
         var toSkip = new HashSet<int>();
@@ -66,17 +66,17 @@ internal partial class QBitContentManager
         }
 
         if (toDownload.Count > 0)
-            await _qBitClient.SetFilePriorityAsync(hash, toDownload, TorrentContentPriority.Minimal, ct);
+            await qBitClient.SetFilePriorityAsync(hash, toDownload, TorrentContentPriority.Minimal, ct);
 
         if (toSkip.Count > 0)
-            await _qBitClient.SetFilePriorityAsync(hash, toSkip, TorrentContentPriority.Skip, ct);
+            await qBitClient.SetFilePriorityAsync(hash, toSkip, TorrentContentPriority.Skip, ct);
 
         return null;
     }
 
     private async Task<object?> StartDownload(string hash)
     {
-        await _qBitClient.ResumeTorrentsAsync([hash], CancellationToken.None);
+        await qBitClient.ResumeTorrentsAsync([hash], CancellationToken.None);
 
         return null;
     }
@@ -85,7 +85,7 @@ internal partial class QBitContentManager
     {
         var hash = message.ContentId;
 
-        var content = await _qBitClient.GetTorrentContentsAsync(hash);
+        var content = await qBitClient.GetTorrentContentsAsync(hash);
 
         return BuildTree(content);
     }
