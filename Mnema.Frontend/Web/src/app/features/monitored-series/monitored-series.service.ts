@@ -54,11 +54,19 @@ export type MonitoredChapter = {
 
 export enum MonitoredChapterStatus {
   NotMonitored = 0,
-  Missing,
-  Upcoming,
-  Importing,
-  Available
+  Missing = 1,
+  Upcoming = 2,
+  Importing = 3,
+  Available = 4
 }
+
+export const MonitoredChapterStatuses = [
+  MonitoredChapterStatus.NotMonitored,
+  MonitoredChapterStatus.Missing,
+  MonitoredChapterStatus.Upcoming,
+  MonitoredChapterStatus.Importing,
+  MonitoredChapterStatus.Available,
+]
 
 @Injectable({
   providedIn: 'root'
@@ -100,6 +108,14 @@ export class MonitoredSeriesService {
 
   resolvedSeries(id: string) {
     return this.httpClient.get<Series>(`${this.baseUrl}/${id}/resolved-series`);
+  }
+
+  refreshMetadata(id: string) {
+    return this.httpClient.post<MonitoredSeries>(`${this.baseUrl}/${id}/refresh-metadata`, {});
+  }
+
+  setChapterStatus(id: string, chapterId: string, status: MonitoredChapterStatus) {
+    return this.httpClient.post(`${this.baseUrl}/${id}/${chapterId}/set-status?status=${status}`, {});
   }
 
   getForm() {

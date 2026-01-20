@@ -1,10 +1,10 @@
-import {ChangeDetectionStrategy, Component, computed, inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, linkedSignal} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {
   MonitoredSeries,
   MonitoredChapterStatus,
-  MonitoredSeriesService
+  MonitoredSeriesService, MonitoredChapterStatuses
 } from "@mnema/features/monitored-series/monitored-series.service";
 import {CommonModule} from "@angular/common";
 import {MonitoredChapterStatusPipe} from "@mnema/features/monitored-series/pipes/monitored-chapter-status.pipe";
@@ -23,6 +23,7 @@ import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
 import {
   EditMonitoredSeriesModalComponent
 } from "@mnema/features/monitored-series/_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
+import {ListSelectModalComponent} from "@mnema/shared/_component/list-select-modal/list-select-modal.component";
 
 @Component({
   selector: 'app-monitored-series',
@@ -34,6 +35,8 @@ import {
 })
 export class MonitoredSeriesComponent {
 
+  private readonly chapterStatusPipe = new MonitoredChapterStatusPipe();
+
   private readonly monitoredSeriesService = inject(MonitoredSeriesService);
   private readonly router = inject(Router);
   private readonly modalService = inject(ModalService);
@@ -41,7 +44,33 @@ export class MonitoredSeriesComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly data = toSignal(this.route.data);
 
-  protected series = computed(() => this.data()!['series'] as MonitoredSeries);
+  protected series = linkedSignal(() => this.data()!['series'] as MonitoredSeries);
+
+  setChapterStatus(chapterId: string) {
+    const [modal, component] = this.modalService.open(ListSelectModalComponent, {
+      size: "lg", centered: true
+    });
+
+    component.title.set(this.transLoco.translate('monitored-series-detail.select-status'));
+    component.inputItems.set(MonitoredChapterStatuses.map(s =>
+      ({value: s, label: this.chapterStatusPipe.transform(s)})));
+    component.requireConfirmation.set(true);
+
+    this.modalService.onClose$<MonitoredChapterStatus>(modal).pipe(
+      switchMap(status => this.monitoredSeriesService.setChapterStatus(this.series().id, chapterId, status)),
+      switchMap(() => this.monitoredSeriesService.get(this.series().id)),
+      tap(series => this.series.set(series)),
+    ).subscribe();
+  }
+
+  refreshMetadata() {
+    this.modalService.confirm$({
+      question: this.transLoco.translate('monitored-series-detail.confirm-refresh-metadata', {name: this.series().title})
+    }, true).pipe(
+      switchMap(() => this.monitoredSeriesService.refreshMetadata(this.series().id)),
+      tap(series => this.series.set(series)),
+    ).subscribe();
+  }
 
   showResolvedSeries() {
     this.monitoredSeriesService.resolvedSeries(this.series().id).pipe(

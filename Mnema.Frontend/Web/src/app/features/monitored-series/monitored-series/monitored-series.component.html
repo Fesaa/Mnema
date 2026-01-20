@@ -45,7 +45,9 @@
                   <i class="fa fa-file"></i> {{ s.contentFormat | contentFormat }}
                 </app-badge>
                 @if (s.lastDataRefreshUtc) {
-                  <span class=" small" [ngbTooltip]="t('last-updated', { time: s.lastDataRefreshUtc | utcToLocalTime:'short' })">
+                  <span class="small clickable"
+                          (click)="refreshMetadata()"
+                          [ngbTooltip]="t('last-updated', { time: s.lastDataRefreshUtc | utcToLocalTime:'short' })">
                     <i class="fa fa-calendar-alt"></i>
                   </span>
                 }
@@ -132,7 +134,7 @@
                   </div>
 
                   <div class="col-auto">
-                    <span class="badge" [ngClass]="getStatusClass(chapter.status)">
+                    <span class="badge clickable" (click)="setChapterStatus(chapter.id)" [ngClass]="getStatusClass(chapter.status)">
                       {{ chapter.status | monitoredChapterStatus }}
                     </span>
                   </div>

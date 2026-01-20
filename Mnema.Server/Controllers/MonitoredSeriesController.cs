@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
 
@@ -69,6 +71,21 @@ public class MonitoredSeriesController(
         return Ok(series);
     }
 
+    [HttpPost("{id:guid}/refresh-metadata")]
+    public async Task<ActionResult<MonitoredSeriesDto>> RefreshMetadata(Guid id)
+    {
+        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        if (monitoredSeries == null) return NotFound();
+
+        if (monitoredSeries.UserId != UserId) return Forbid();
+
+        await monitoredSeriesService.EnrichWithMetadata(monitoredSeries, HttpContext.RequestAborted);
+
+        await unitOfWork.CommitAsync();
+
+        return Ok(await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeriesDto(id, HttpContext.RequestAborted));
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -78,6 +95,24 @@ public class MonitoredSeriesController(
         if (series.UserId != UserId) return Forbid();
 
         unitOfWork.MonitoredSeriesRepository.Remove(series);
+
+        await unitOfWork.CommitAsync();
+
+        return Ok();
+    }
+
+    [HttpPost("{id:guid}/{chapterId:guid}/set-status")]
+    public async Task<IActionResult> SetChapterStatus(Guid id, Guid chapterId, [FromQuery] MonitoredChapterStatus status)
+    {
+        var series = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        if (series == null) return NotFound();
+
+        if (series.UserId != UserId) return Forbid();
+
+        var chapter = series.Chapters.FirstOrDefault(c => c.Id == chapterId);
+        if (chapter == null) return NotFound();
+
+        chapter.Status = status;
 
         await unitOfWork.CommitAsync();
 

@@ -54,7 +54,6 @@ internal partial class QBitContentManager
         _logger.LogDebug("[{Title}/{Id}] Found {Count}/{TotalCount} chapters to download",
             title, request.Id, toDownloadChapters.Count,  chapters.Count);
 
-
         var addRequest = new AddTorrentUrlsRequest(new Uri(request.DownloadUrl))
         {
             Category = MnemaCategory,
@@ -70,9 +69,9 @@ internal partial class QBitContentManager
         {
             // Small delay to give qbit a bit of time to load everything
             // This should enough as all metadata is inside the .torrent file we're passing
-            await Task.Delay(TimeSpan.FromSeconds(5), ct);
+            await Task.Delay(TimeSpan.FromSeconds(2), ct);
 
-            // The full path is encoded as title
+            // The full path is encoded as the title
             var paths = toDownloadChapters.Select(c => c.Title).ToList();
             await FilterContent(request.Id, paths, ct);
         }

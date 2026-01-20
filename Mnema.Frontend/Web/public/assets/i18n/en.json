@@ -1135,7 +1135,9 @@
     "last-updated": "Last updated {{time}}",
     "chapters": "Chapters",
     "no-chapters": "No chapters found",
-    "confirm-delete": "Are you sure you want to stop monitoring {{name}}"
+    "confirm-delete": "Are you sure you want to stop monitoring {{name}}",
+    "select-status": "Set chapter status",
+    "confirm-refresh-metadata": "Refresh metadata for {{name}}?"
   },
 
   "metadata_provider_settings": {
