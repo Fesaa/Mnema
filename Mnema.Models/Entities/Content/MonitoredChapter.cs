@@ -37,22 +37,22 @@ public enum MonitoredChapterStatus
     /// <summary>
     /// This chapter should be ignored
     /// </summary>
-    NotMonitored,
+    NotMonitored = 0,
     /// <summary>
     /// This chapter is available, wanted, but not on disk
     /// </summary>
-    Missing,
+    Missing = 1,
     /// <summary>
     /// This is chapter is not yet available, but known
     /// </summary>
-    Upcoming,
+    Upcoming = 2,
     /// <summary>
     /// This chapter is currently being imported/downloaded
     /// </summary>
-    Importing,
+    Importing = 3,
     /// <summary>
     /// The chapter is found on disk
     /// </summary>
-    Available
+    Available = 4,
 
 }

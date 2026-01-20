@@ -6,15 +6,15 @@ import {Event, EventType, SignalRService} from "./_services/signal-r.service";
 import {Notification, NotificationColour} from "./_models/notifications";
 import {ToastrService} from "ngx-toastr";
 import {Breakpoint, UtilityService} from "./_services/utility.service";
-import {translate, TranslocoService} from "@jsverse/transloco";
+import {translate, TranslocoDirective, TranslocoService} from "@jsverse/transloco";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {filter, tap} from "rxjs";
+import {tap} from "rxjs";
 import {ActiveDownloadsService} from "./dashboard/active-downloads/active-downloads.service";
 import {NotificationService} from "./_services/notification.service";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavHeaderComponent],
+  imports: [RouterOutlet, NavHeaderComponent, TranslocoDirective],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

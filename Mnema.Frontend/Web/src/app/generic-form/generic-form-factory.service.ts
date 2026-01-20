@@ -1,9 +1,10 @@
 import {Injectable} from '@angular/core';
 import {FormBuilder, FormGroup, NonNullableFormBuilder, ValidatorFn, Validators} from "@angular/forms";
-import {FormControlDefinition, FormControlOption, FormPipe, FormType, ValueType} from "./form";
+import {FormControlDefinition, FormControlOption, FormType, ValueType} from "./form";
 import {TypeaheadSettings} from "../type-ahead/typeahead.component";
 import {of} from "rxjs";
 import {MnemaValidators} from "../shared/validators";
+
 export type GenericBag = { [key: string]: any[] };
 
 export const GENERIC_METADATA_FIELD = "metadata";

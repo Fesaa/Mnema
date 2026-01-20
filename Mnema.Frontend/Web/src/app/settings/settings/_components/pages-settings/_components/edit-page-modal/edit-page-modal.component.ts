@@ -8,7 +8,6 @@ import {SafeHtmlPipe} from "../../../../../../_pipes/safe-html-pipe";
 import {SettingsItemComponent} from "../../../../../../shared/form/settings-item/settings-item.component";
 import {DefaultValuePipe} from "../../../../../../_pipes/default-value.pipe";
 import {ModalService} from "../../../../../../_services/modal.service";
-import {BadgeComponent} from "../../../../../../shared/_component/badge/badge.component";
 import {ProviderNamePipe} from "../../../../../../_pipes/provider-name.pipe";
 import {ToastService} from "../../../../../../_services/toast.service";
 

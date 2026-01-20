@@ -19,6 +19,8 @@ public class MonitoredChapterDto
     public string? CoverUrl { get; set; }
     public string? RefUrl { get; set; }
 
+    public string? FilePath { get; set; }
+
     /// <summary>
     /// Chapters without a release date are considered available
     /// </summary>

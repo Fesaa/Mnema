@@ -1,21 +1,24 @@
-import {Component, computed, effect, EventEmitter, inject, OnInit, signal} from '@angular/core';
-import {NavService} from "../_services/nav.service";
-import {MonitoredSeries, MonitoredSeriesService} from '../_services/monitored-series.service';
-import {dropAnimation} from "../_animations/drop-animation";
-import {ToastService} from "../_services/toast.service";
-import {translate, TranslocoDirective} from "@jsverse/transloco";
-import {TableComponent} from "../shared/_component/table/table.component";
-import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
-import {ModalService} from "../_services/modal.service";
-import {debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, tap} from "rxjs";
+import {Component, computed, EventEmitter, inject, OnInit, signal} from '@angular/core';
+import {ModalService} from "@mnema/_services/modal.service";
+import {NavService} from "@mnema/_services/nav.service";
+import {MonitoredSeries, MonitoredSeriesService} from "../monitored-series.service";
+import {ToastService} from "@mnema/_services/toast.service";
+import {PageService} from "@mnema/_services/page.service";
+import {dropAnimation} from "@mnema/_animations/drop-animation";
+import {FormControlDefinition} from "@mnema/generic-form/form";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
+import {ProviderNamePipe} from "@mnema/_pipes/provider-name.pipe";
+import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
+import {TableComponent} from "@mnema/shared/_component/table/table.component";
+import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {takeUntilDestroyed, toSignal} from "@angular/core/rxjs-interop";
-import {ProviderNamePipe} from "../_pipes/provider-name.pipe";
-import {EditMonitoredSeriesModalComponent} from "./_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
-import {DefaultModalOptions} from "../_models/default-modal-options";
-import {Provider} from "../_models/page";
-import {FormControlDefinition} from "../generic-form/form";
-import {PageService} from "../_services/page.service";
+import {debounceTime, distinctUntilChanged, tap} from "rxjs";
+import {
+  EditMonitoredSeriesModalComponent
+} from "@mnema/features/monitored-series/_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
+import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
+import {Provider} from "@mnema/_models/page";
+import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-monitored-series-manager',
@@ -25,6 +28,7 @@ import {PageService} from "../_services/page.service";
     NgbTooltip,
     ReactiveFormsModule,
     ProviderNamePipe,
+    RouterLink,
   ],
   templateUrl: './monitored-series-manager.component.html',
   styleUrl: './monitored-series-manager.component.scss',
@@ -70,6 +74,9 @@ export class MonitoredSeriesManagerComponent implements OnInit {
 
   add() {
     this.edit({
+      chapters: [],
+      lastDataRefreshUtc: '',
+      summary: "",
       id: '',
       title: '',
       validTitles: [],

@@ -1,21 +1,61 @@
 import {inject, Injectable} from '@angular/core';
-import {environment} from "../../environments/environment";
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {Observable, of, tap} from "rxjs";
-import {PagedList} from "../_models/paged-list";
-import {FormDefinition} from "../generic-form/form";
-import {Provider} from "../_models/page";
-import {MetadataBag} from "../_models/search";
+import {environment} from "@env/environment";
+import {FormDefinition} from "@mnema/generic-form/form";
+import {Provider} from "@mnema/_models/page";
+import {MetadataBag} from "@mnema/_models/search";
+import {PagedList} from "@mnema/_models/paged-list";
 
 export type MonitoredSeries = {
   id: string;
   title: string;
-  validTitles: string[];
+  summary: string;
+  coverUrl?: string;
+  refUrl?: string;
   providers: Provider[];
   baseDir: string;
-  contentFormat: number;
-  format: number;
+  contentFormat: ContentFormat;
+  format: Format;
+  validTitles: string[];
   metadata: MetadataBag;
+  lastDataRefreshUtc: string;
+  chapters: MonitoredChapter[];
+}
+
+export enum Format {
+  Archive = 0,
+  Epub = 1,
+}
+
+export enum ContentFormat {
+  Manga = 0,
+  LightNovel = 1,
+  Book = 2,
+  Comic = 3,
+}
+
+export type MonitoredChapter = {
+  id: string;
+  externalId: string;
+  seriesId: string;
+  status: MonitoredChapterStatus;
+  title: string;
+  summary: string;
+  volume: string;
+  chapter: string;
+  coverUrl?: string;
+  refUrl?: string;
+  filePath?: string;
+  releaseDate?: string;
+}
+
+export enum MonitoredChapterStatus {
+  NotMonitored = 0,
+  Missing,
+  Upcoming,
+  Importing,
+  Available
 }
 
 @Injectable({
@@ -50,6 +90,10 @@ export class MonitoredSeriesService {
 
   update(s: MonitoredSeries) {
     return this.httpClient.post<MonitoredSeries>(`${this.baseUrl}/update`, s);
+  }
+
+  get(id: string) {
+    return this.httpClient.get<MonitoredSeries>(`${this.baseUrl}/${id}`);
   }
 
   getForm() {

@@ -1,24 +1,15 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  computed, effect, ElementRef,
-  HostListener, inject,
-  OnInit,
-  signal, ViewChild
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, HostListener, inject, OnInit, signal} from '@angular/core';
 import {toSignal} from "@angular/core/rxjs-interop";
 import {Breakpoint, UtilityService} from "../_services/utility.service";
 import {ActivatedRoute, RouterLink} from "@angular/router";
 import {AccountService} from "../_services/account.service";
 import {NavService} from "../_services/nav.service";
 import {NotificationService} from "../_services/notification.service";
-import {ButtonGroupService, Button, ButtonGroup} from "../button-grid/button-group.service";
-import {translate} from "@jsverse/transloco";
+import {Button, ButtonGroup, ButtonGroupService} from "../button-grid/button-group.service";
+import {translate, TranslocoPipe} from "@jsverse/transloco";
 import {TitleCasePipe} from "@angular/common";
 import {animate, style, transition, trigger} from "@angular/animations";
 import {MobileGridComponent} from "../button-grid/mobile-grid/mobile-grid.component";
-import {TranslocoPipe} from "@jsverse/transloco";
 
 @Component({
   selector: 'app-nav-header',

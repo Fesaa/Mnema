@@ -1,19 +1,23 @@
 import {ChangeDetectionStrategy, Component, computed, inject, OnInit, signal} from '@angular/core';
-import {MetadataProvider, MetadataService} from "../../metadata.service";
-import {PageLoader, PaginatorComponent} from "../../../shared/_component/paginator/paginator.component";
+import {PageLoader, PaginatorComponent} from "@mnema/shared/_component/paginator/paginator.component";
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {debounceTime, distinctUntilChanged, map, of, tap} from "rxjs";
-import {Series} from "../../../page/_components/series-info/_types";
-import {EMPTY_PAGE} from "../../../_models/paged-list";
-import {CompactSeriesInfoComponent} from "../compact-series-info/compact-series-info.component";
-import {EditMonitoredSeriesModalComponent} from "../edit-monitored-series-modal/edit-monitored-series-modal.component";
-import {DefaultModalOptions} from "../../../_models/default-modal-options";
-import {Provider} from "../../../_models/page";
-import {FormControlDefinition} from "../../../generic-form/form";
-import {ModalService} from "../../../_services/modal.service";
-import {PageService} from "../../../_services/page.service";
+import {Series} from "@mnema/page/_components/series-info/_types";
+import {EMPTY_PAGE} from "@mnema/_models/paged-list";
+import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
+import {Provider} from "@mnema/_models/page";
+import {FormControlDefinition} from "@mnema/generic-form/form";
+import {ModalService} from "@mnema/_services/modal.service";
+import {PageService} from "@mnema/_services/page.service";
 import {TranslocoDirective} from "@jsverse/transloco";
+import {
+  CompactSeriesInfoComponent
+} from "@mnema/features/monitored-series/_components/compact-series-info/compact-series-info.component";
+import {MetadataService, MetadataProvider} from "@mnema/features/monitored-series/metadata.service";
+import {
+  EditMonitoredSeriesModalComponent
+} from "@mnema/features/monitored-series/_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
 
 @Component({
   selector: 'app-series-search',
@@ -99,7 +103,10 @@ export class SeriesSearchComponent implements OnInit {
       format: 0,
       metadata: {
         [metadataKey]: [series.id]
-      }
+      },
+      summary: "",
+      lastDataRefreshUtc: '',
+      chapters: []
     });
     component.metadata.set(this.metadata());
   }

@@ -2,12 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  ContentChild, effect,
-  EventEmitter, inject,
+  ContentChild,
+  EventEmitter,
+  inject,
   input,
-  OnInit,
   Output,
-  signal,
   TemplateRef
 } from '@angular/core';
 import {NgTemplateOutlet} from '@angular/common';

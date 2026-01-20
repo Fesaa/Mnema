@@ -1,11 +1,4 @@
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  linkedSignal,
-  signal
-} from '@angular/core';
+import {Component, computed, effect, inject, linkedSignal, signal} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NavService} from '../../_services/nav.service';
 import {AccountService} from '../../_services/account.service';
@@ -13,9 +6,7 @@ import {PreferenceSettingsComponent} from "./_components/preference-settings/pre
 import {PagesSettingsComponent} from "./_components/pages-settings/pages-settings.component";
 import {ServerSettingsComponent} from "./_components/server-settings/server-settings.component";
 import {TranslocoDirective} from "@jsverse/transloco";
-import {
-  ConnectionSettingsComponent
-} from "./_components/external-connection-settings/connection-settings.component";
+import {ConnectionSettingsComponent} from "./_components/external-connection-settings/connection-settings.component";
 import {Button, ButtonGroup, ButtonGroupService, SettingsID} from "../../button-grid/button-group.service";
 import {MobileGridComponent} from "../../button-grid/mobile-grid/mobile-grid.component";
 import {DownloadClientSettingsComponent} from "./_components/download-client/download-client-settings.component";

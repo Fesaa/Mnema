@@ -1,15 +1,14 @@
 import {ChangeDetectionStrategy, Component, computed, inject, model, OnInit, signal} from '@angular/core';
-import {MonitoredSeries} from "../../../_services/monitored-series.service";
-import {FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {ToastService} from "../../../_services/toast.service";
-import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
+import {ToastService} from "@mnema/_services/toast.service";
+import {FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {TranslocoDirective} from "@jsverse/transloco";
-import {MonitoredSeriesService} from "../../../_services/monitored-series.service";
-import {FormControlDefinition, FormDefinition} from "../../../generic-form/form";
+import {GenericFormComponent} from "@mnema/generic-form/generic-form.component";
+import {MonitoredSeries, MonitoredSeriesService} from "@mnema/features/monitored-series/monitored-series.service";
+import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
+import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factory.service";
+import {Provider} from "@mnema/_models/page";
+import {FormControlDefinition, FormDefinition} from "@mnema/generic-form/form";
 import {tap} from "rxjs";
-import {GenericFormComponent} from "../../../generic-form/generic-form.component";
-import {GenericFormFactoryService} from "../../../generic-form/generic-form-factory.service";
-import {Provider} from "../../../_models/page";
 
 @Component({
   selector: 'app-edit-monitored-series-modal',

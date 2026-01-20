@@ -3,16 +3,17 @@ import {
   Component,
   computed,
   effect,
-  inject, input,
+  inject,
   model,
   signal,
-  TemplateRef, untracked, viewChild
+  TemplateRef,
+  untracked,
+  viewChild
 } from '@angular/core';
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {toSignal} from "@angular/core/rxjs-interop";
-import {SentenceCasePipe} from "../../../_pipes/sentence-case.pipe";
 import {NgTemplateOutlet} from "@angular/common";
 import {LoadingSpinnerComponent} from "../loading-spinner/loading-spinner.component";
 

@@ -1,4 +1,4 @@
-import {computed, DestroyRef, inject, Injectable, signal} from '@angular/core';
+import {DestroyRef, inject, Injectable, signal} from '@angular/core';
 import {ContentService} from "../../_services/content.service";
 import {EventType, SignalRService} from "../../_services/signal-r.service";
 import {ContentState, InfoStat} from "../../_models/stats";

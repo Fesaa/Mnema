@@ -90,6 +90,14 @@
           </button>
           <button
             type="button"
+            class="btn btn-primary btn-small"
+            [ngbTooltip]="t('actions.view')"
+            [routerLink]="'/monitored-series-detail/' + series.id"
+          >
+            <i class="fa fa-eye"></i>
+          </button>
+          <button
+            type="button"
             class="btn btn-danger btn-small"
             (click)="delete(series)"
             [ngbTooltip]="t('actions.delete')"

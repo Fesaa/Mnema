@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject,} from '@angular/core';
 import {BadgeComponent} from "../../shared/_component/badge/badge.component";
 import {ContentStatePipe} from "../../_pipes/content-state.pipe";
 import {ContentTitlePipe} from "../../_pipes/content-title.pipe";
@@ -15,7 +10,6 @@ import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {ContentState, InfoStat} from "../../_models/stats";
 import {LoadingSpinnerComponent} from "../../shared/_component/loading-spinner/loading-spinner.component";
 import {ModalService} from "../../_services/modal.service";
-import {NavService} from "../../_services/nav.service";
 import {ContentService} from "../../_services/content.service";
 import {ToastService} from "../../_services/toast.service";
 import {ContentPickerDialogComponent} from "../_components/content-picker-dialog/content-picker-dialog.component";

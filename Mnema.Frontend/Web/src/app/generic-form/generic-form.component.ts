@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input, output,
-  Signal
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input, output, Signal} from '@angular/core';
 
 import {FormControlDefinition, FormControlOption, FormDefinition, FormType} from "./form";
 import {FormBuilder, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule} from "@angular/forms";

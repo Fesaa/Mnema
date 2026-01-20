@@ -2,7 +2,7 @@ import {inject, Injectable} from '@angular/core';
 import {environment} from "../../environments/environment";
 import {HttpClient} from "@angular/common/http";
 import {map, Observable, of, tap} from "rxjs";
-import {InfoStat, StatsResponse} from "../_models/stats";
+import {InfoStat} from "../_models/stats";
 import {DownloadRequest, SearchRequest, StopRequest} from "../_models/search";
 import {SearchInfo} from "../_models/Info";
 import {ListContentData, Message, MessageType} from "../_models/messages";

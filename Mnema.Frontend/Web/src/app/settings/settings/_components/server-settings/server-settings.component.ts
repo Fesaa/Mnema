@@ -1,12 +1,6 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, effect, inject} from '@angular/core';
 import {Config} from '../../../../_models/config';
-import {
-  FormControl,
-  FormGroup,
-  NonNullableFormBuilder,
-  ReactiveFormsModule,
-  Validators
-} from "@angular/forms";
+import {FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {ToastService} from "../../../../_services/toast.service";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {SettingsService} from "../../../../_services/settings.service";

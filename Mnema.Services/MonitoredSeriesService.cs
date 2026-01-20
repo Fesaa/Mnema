@@ -146,6 +146,7 @@ public class MonitoredSeriesService(
 
         mSeries.CoverUrl = series.CoverUrl;
         mSeries.RefUrl = series.RefUrl;
+        mSeries.Summary = series.Summary;
 
         var path = Path.Join(mSeries.BaseDir, title);
         var onDiskContent = scannerService.ScanDirectory(path, mSeries.ContentFormat, mSeries.Format, ct);

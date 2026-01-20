@@ -239,6 +239,17 @@
     "bato": "Bato"
   },
 
+  "content-format-pipe": {
+    "manga": "Manga",
+    "light-novel": "Light novel",
+    "book": "Book",
+    "comic": "Comic"
+  },
+  "format-pipe": {
+    "archive": "Archive",
+    "epub": "Epub"
+  },
+
   "confirm-modal": {
     "title": "Confirm your next action",
     "cancel": "{{common.cancel}}",
@@ -1113,6 +1124,12 @@
       "title": "No results found for your query",
       "description": ""
     }
+  },
+
+  "monitored-series-detail": {
+    "last-updated": "Last updated {{time}}",
+    "chapters": "Chapters",
+    "no-chapters": "No chapters found"
   }
 
 }

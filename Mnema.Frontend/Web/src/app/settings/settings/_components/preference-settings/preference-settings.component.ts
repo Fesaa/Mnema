@@ -5,7 +5,8 @@ import {
   AgeRatingMap,
   ComicInfoAgeRating,
   ComicInfoAgeRatings,
-  CoverFallbackMethods, ImageFormats,
+  CoverFallbackMethods,
+  ImageFormats,
   Preferences,
   TagMap
 } from '../../../../_models/preferences';

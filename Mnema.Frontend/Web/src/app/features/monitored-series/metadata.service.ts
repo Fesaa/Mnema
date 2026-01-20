@@ -1,8 +1,8 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
-import {environment} from "../../environments/environment";
-import {Series} from "../page/_components/series-info/_types";
-import {PagedList} from "../_models/paged-list";
+import {environment} from "@env/environment";
+import {PagedList} from "../../_models/paged-list";
+import {Series} from "../../page/_components/series-info/_types";
 
 export enum MetadataProvider {
   Hardcover = 0,

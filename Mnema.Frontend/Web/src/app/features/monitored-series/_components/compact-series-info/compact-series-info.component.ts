@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, computed, input, output} from '@angular/core';
 import {translate, TranslocoDirective} from "@jsverse/transloco";
-import {Series} from "../../../page/_components/series-info/_types";
+import {Series} from "@mnema/page/_components/series-info/_types";
 
 @Component({
   selector: 'app-compact-series-info',

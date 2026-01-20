@@ -1,4 +1,4 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import {HttpInterceptorFn} from '@angular/common/http';
 import {catchError} from "rxjs";
 import {inject} from "@angular/core";
 import {ToastrService} from "ngx-toastr";

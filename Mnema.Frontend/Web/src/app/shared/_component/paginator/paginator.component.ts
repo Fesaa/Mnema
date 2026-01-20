@@ -6,7 +6,8 @@ import {
   EventEmitter,
   inject,
   input,
-  linkedSignal, OnInit,
+  linkedSignal,
+  OnInit,
   Output,
   signal,
   TemplateRef
@@ -16,7 +17,6 @@ import {TranslocoDirective} from "@jsverse/transloco";
 import {EMPTY_PAGE, PagedList} from "../../../_models/paged-list";
 import {Observable, tap} from "rxjs";
 import {ToastService} from "../../../_services/toast.service";
-import {end, start} from "@popperjs/core";
 import {LoadingSpinnerComponent} from "../loading-spinner/loading-spinner.component";
 
 export type PageLoader<T> = (pageNumber: number, pageSize: number) => Observable<PagedList<T>>;

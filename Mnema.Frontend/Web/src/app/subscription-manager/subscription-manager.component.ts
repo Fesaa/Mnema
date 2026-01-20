@@ -1,16 +1,13 @@
-import {Component, computed, effect, EventEmitter, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, EventEmitter, inject, OnInit, signal} from '@angular/core';
 import {NavService} from "../_services/nav.service";
 import {SubscriptionService} from '../_services/subscription.service';
 import {Subscription} from "../_models/subscription";
 import {Provider} from "../_models/page";
 import {dropAnimation} from "../_animations/drop-animation";
 import {SubscriptionExternalUrlPipe} from "../_pipes/subscription-external-url.pipe";
-import {DatePipe} from "@angular/common";
 import {ToastService} from "../_services/toast.service";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
-import {UtcToLocalTimePipe} from "../_pipes/utc-to-local.pipe";
 import {TableComponent} from "../shared/_component/table/table.component";
-import {BadgeComponent} from "../shared/_component/badge/badge.component";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {ModalService} from "../_services/modal.service";
 import {catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, tap} from "rxjs";

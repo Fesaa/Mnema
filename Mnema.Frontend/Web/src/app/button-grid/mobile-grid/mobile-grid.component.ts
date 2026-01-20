@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ButtonGroup } from '../button-group.service';
-import { ButtonGridComponent } from '../button-grid.component';
-import { animate, style, transition, trigger } from '@angular/animations';
-import { TranslocoModule } from '@jsverse/transloco';
+import {ChangeDetectionStrategy, Component, input, output} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ButtonGroup} from '../button-group.service';
+import {ButtonGridComponent} from '../button-grid.component';
+import {animate, style, transition, trigger} from '@angular/animations';
+import {TranslocoModule} from '@jsverse/transloco';
 
 const drawerAnimation = trigger('drawerAnimation', [
   transition(':enter', [
