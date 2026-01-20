@@ -52,14 +52,16 @@ public static class HttpClientExtensions
             DistributedCacheEntryOptions? cacheEntryOptions = null,
             CancellationToken cancellationToken = default)
         {
-            var cachedResponse = await cache.GetStringAsync(url, cancellationToken);
+            var cacheKey = httpClient.BaseAddress + url;
+
+            var cachedResponse = await cache.GetStringAsync(cacheKey, cancellationToken);
             if (!string.IsNullOrEmpty(cachedResponse)) return Result<string, HttpRequestException>.Ok(cachedResponse);
 
             try
             {
                 var response = await httpClient.GetStringAsync(url, cancellationToken);
 
-                await cache.SetStringAsync(url, response, cacheEntryOptions ?? CacheEntryOptions, cancellationToken);
+                await cache.SetStringAsync(cacheKey, response, cacheEntryOptions ?? CacheEntryOptions, cancellationToken);
 
                 return Result<string, HttpRequestException>.Ok(response);
             }
@@ -75,7 +77,9 @@ public static class HttpClientExtensions
             DistributedCacheEntryOptions? cacheEntryOptions = null,
             CancellationToken cancellationToken = default)
         {
-            var cachedResponse = await cache.GetAsJsonAsync<TResult>(url, cancellationToken);
+            var cacheKey = httpClient.BaseAddress + url;
+
+            var cachedResponse = await cache.GetAsJsonAsync<TResult>(cacheKey, cancellationToken);
             if (cachedResponse != null) return Result<TResult, HttpRequestException>.Ok(cachedResponse);
 
             var result = await httpClient.GetAsync<TResult>(url, JsonSerializerOptions, cancellationToken);
@@ -83,7 +87,7 @@ public static class HttpClientExtensions
 
             var resultValue = result.Unwrap();
             if (resultValue != null)
-                await cache.SetAsJsonAsync(url, result.Unwrap(), cacheEntryOptions ?? CacheEntryOptions,
+                await cache.SetAsJsonAsync(cacheKey, result.Unwrap(), cacheEntryOptions ?? CacheEntryOptions,
                     cancellationToken);
 
             return result;

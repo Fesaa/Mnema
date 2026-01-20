@@ -12,6 +12,7 @@ using Mnema.Providers.Nyaa;
 using Mnema.Providers.QBit;
 using Mnema.Providers.Services;
 using Mnema.Providers.Webtoon;
+using Mnema.Providers.Weebdex;
 
 namespace Mnema.Providers.Extensions;
 
@@ -26,6 +27,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<TorrentCleanupService>();
         services.AddScoped<IFormatHandler, ArchiveFormatHandler>();
         services.AddScoped<IFormatHandler, EpubFormatHandler>();
+        services.AddScoped<NoOpRepository>();
 
         #region qBit Torrent
 
@@ -69,6 +71,25 @@ public static class ServiceProviderExtensions
         services.AddHttpClient(nameof(Provider.Mangadex), client =>
         {
             client.BaseAddress = new Uri("https://api.mangadex.org");
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
+        });
+
+        #endregion
+
+        #region Weebdex
+
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Weebdex);
+
+        services.AddScoped<WeebdexRepository>();
+        services.AddKeyedScoped<IContentRepository>(Provider.Weebdex,
+            (s, _) => s.GetRequiredService<WeebdexRepository>());
+        services.AddKeyedScoped<IRepository>(Provider.Weebdex,
+            (s, _) => s.GetRequiredService<WeebdexRepository>());
+
+        services.AddHttpClient(nameof(Provider.Weebdex), client =>
+        {
+            client.BaseAddress = new Uri("https://api.weebdex.org");
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
         });
@@ -120,9 +141,9 @@ public static class ServiceProviderExtensions
 
         services.AddScoped<BatoRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Bato,
-            (s, _) => s.GetRequiredService<BatoRepository>());
+            (s, _) => s.GetRequiredService<NoOpRepository>());
         services.AddKeyedScoped<IRepository>(Provider.Bato,
-            (s, _) => s.GetRequiredService<BatoRepository>());
+            (s, _) => s.GetRequiredService<NoOpRepository>());
 
         services.AddHttpClient(nameof(Provider.Bato), client =>
         {

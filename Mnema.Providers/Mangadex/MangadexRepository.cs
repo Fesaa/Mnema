@@ -23,7 +23,7 @@ namespace Mnema.Providers.Mangadex;
 
 internal class MangadexRepository : IRepository
 {
-    private static readonly ConcurrentDictionary<string, string> LinkFormats =
+    public static readonly ConcurrentDictionary<string, string> LinkFormats =
         new(StringComparer.OrdinalIgnoreCase)
         {
             ["al"] = "https://anilist.co/manga/{0}",
@@ -70,7 +70,7 @@ internal class MangadexRepository : IRepository
             .SetQueryParam("includedTagsMode", request.Modifiers.GetStringOrDefault("includedTagsMode", "AND"))
             .AddRange("excludedTags", request.Modifiers.GetStrings("excludeTags"))
             .SetQueryParam("excludedTagsMode", request.Modifiers.GetStringOrDefault("excludedTagsMode", "OR"))
-            .AddPagination(pagination)
+            .AddOffsetPagination(pagination)
             .AddIncludes();
 
         var result =

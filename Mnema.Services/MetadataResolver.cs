@@ -44,7 +44,7 @@ public class MetadataResolver(
 
         if (!string.IsNullOrEmpty(externalId))
         {
-            foreach (var provider in providers.Where(p => p != Provider.Bato))
+            foreach (var provider in providers)
             {
                 var repo = serviceProvider.GetKeyedService<IRepository>(provider);
                 if (repo == null) continue;

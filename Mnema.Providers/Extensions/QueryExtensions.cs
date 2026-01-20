@@ -37,15 +37,27 @@ internal static class QueryExtensions
                 .AppendQueryParam("contentRating[]", "safe");
         }
 
-        internal Url AddPagination(PaginationParams pagination)
+        internal Url AddOffsetPagination(PaginationParams pagination)
         {
-            return url.AddPagination(pagination.PageSize, pagination.PageNumber * pagination.PageSize);
+            return url.AddOffsetPagination(pagination.PageSize, pagination.PageNumber * pagination.PageSize);
         }
 
-        internal Url AddPagination(int pageSize, int offSet)
+        internal Url AddOffsetPagination(int pageSize, int offSet)
         {
             return url
                 .SetQueryParam("offset", offSet)
+                .SetQueryParam("limit", pageSize);
+        }
+
+        internal Url AddPagination(PaginationParams pagination)
+        {
+            return url.AddPagination(pagination.PageSize, pagination.PageNumber);
+        }
+
+        internal Url AddPagination(int pageSize, int page)
+        {
+            return url
+                .SetQueryParam("page", page)
                 .SetQueryParam("limit", pageSize);
         }
     }

@@ -37,7 +37,7 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
 
         List<ContentRelease> releases = [];
 
-        foreach (var provider in providers.Where(p => p != Provider.Bato))
+        foreach (var provider in providers)
         {
             var repository = scope.ServiceProvider.GetKeyedService<IContentRepository>(provider);
             if (repository == null)
