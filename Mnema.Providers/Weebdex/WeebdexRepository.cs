@@ -332,9 +332,11 @@ public class WeebdexRepository: IRepository
             .ToList();
     }
 
-    private static List<WeebdexChapter> FilterChapters(IList<WeebdexChapter> chapters, string language,
+    private static List<WeebdexChapter> FilterChapters(IList<WeebdexChapter>? chapters, string language,
         DownloadRequestDto request)
     {
+        if (chapters == null) return [];
+
         var scanlationGroup = request.GetStringOrDefault(RequestConstants.ScanlationGroupKey, string.Empty);
         var allowNonMatching = request.GetBool(RequestConstants.AllowNonMatchingScanlationGroupKey, true);
 

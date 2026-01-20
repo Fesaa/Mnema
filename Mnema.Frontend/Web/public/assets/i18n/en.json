@@ -1009,7 +1009,9 @@
     "manga_baka_id-title": "{{provider-metadata.manga_baka_id-title}}",
     "manga_baka_id-tooltip": "{{provider-metadata.manga_baka_id-tooltip}}",
     "title_override-title": "{{provider-metadata.title_override-title}}",
-    "title_override-tooltip": "{{provider-metadata.title_override-tooltip}}"
+    "title_override-tooltip": "{{provider-metadata.title_override-tooltip}}",
+    "external_id-title": "External ID",
+    "external_id-tooltip": "Used to identify this series UpStream"
   },
 
   "input": {
