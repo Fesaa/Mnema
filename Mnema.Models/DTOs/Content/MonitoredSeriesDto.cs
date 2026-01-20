@@ -7,40 +7,42 @@ namespace Mnema.Models.DTOs.Content;
 
 public sealed record MonitoredSeriesDto
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; init; }
 
-    public Guid UserId { get; set; }
+    public Guid UserId { get; init; }
 
-    /// <summary>
-    /// This title has no effect on actual downloads
-    /// </summary>
-    public required string Title { get; set; }
+    /// <inheritdoc cref="MonitoredSeries.Title" />
+    public required string Title { get; init; }
+    public string Summary { get; init; }
+    public string? CoverUrl { get; init; }
+    public string? RefUrl { get; init; }
 
-    /// <summary>
-    /// Providers this release may be found on
-    /// </summary>
-    public List<Provider> Providers { get; set; }
+    /// <inheritdoc cref="MonitoredSeries.Providers" />
+    public List<Provider> Providers { get; init; }
 
-    /// <summary>
-    ///     The directory to download the content in
-    /// </summary>
-    public required string BaseDir { get; set; }
+    /// <inheritdoc cref="MonitoredSeries.BaseDir" />
+    public required string BaseDir { get; init; }
 
-    public ContentFormat ContentFormat { get; set; }
-    public Format Format { get; set; }
+    public ContentFormat ContentFormat { get; init; }
+    public Format Format { get; init; }
 
-    /// <summary>
-    /// Titles that are considered valid for this release. I.e. Translated, original, romanized, etc
-    /// </summary>
-    /// <remarks>You can use the auto complete in the UI to load from metadata providers</remarks>
-    public List<string> ValidTitles { get; set; }
+    /// <inheritdoc cref="MonitoredSeries.ValidTitles" />
+    public List<string> ValidTitles { get; init; }
 
-    /// <summary>
-    /// Contains ids of <see cref="MetadataProvider"/>
-    /// </summary>
+    public string HardcoverId { get; init; }
+    public string MangaBakaId { get; init; }
+    /// <inheritdoc cref="MonitoredSeries.ExternalId" />
+    public string ExternalId { get; set; }
+    public string TitleOverride { get; init; }
+
+    /// <inheritdoc cref="MonitoredSeries.Metadata" />
     public MetadataBag Metadata { get; set; }
 
 
-    public DateTime CreatedUtc { get; set; }
-    public DateTime LastModifiedUtc { get; set; }
+    public DateTime CreatedUtc { get; init; }
+    public DateTime LastModifiedUtc { get; init; }
+
+    public DateTime LastDataRefreshUtc { get; init; }
+
+    public List<MonitoredChapterDto> Chapters { get; init; }
 }

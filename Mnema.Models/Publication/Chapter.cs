@@ -12,6 +12,7 @@ public sealed record Chapter
 
     public required string VolumeMarker { get; set; }
     public required string ChapterMarker { get; set; }
+    public float? SortOrder { get; set; } = null;
 
     public string? CoverUrl { get; set; }
     public string? RefUrl { get; set; }

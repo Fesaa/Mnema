@@ -1,0 +1,22 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  &.with-sidebar {
+    flex-direction: row;
+
+    .main-content {
+      flex: 1;
+      margin-left: 280px;
+      padding: 2rem;
+      min-width: 0;
+    }
+  }
+
+  &:not(.with-sidebar) {
+    .main-content {
+      padding: 1rem;
+    }
+  }
+}

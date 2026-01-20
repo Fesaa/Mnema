@@ -77,7 +77,7 @@ public interface IMetadataProviderService
 
 public interface IMetadataResolver
 {
-    Task<Series?> ResolveSeriesAsync(MetadataBag metadata, CancellationToken cancellationToken = default);
+    Task<Series?> ResolveSeriesAsync(List<Provider> providers, MetadataBag metadata, CancellationToken cancellationToken = default);
     ChapterResolutionResult ResolveChapter(string fileName, Series? series, ContentFormat contentFormat);
 }
 

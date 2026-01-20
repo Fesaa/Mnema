@@ -6,15 +6,16 @@ import {Event, EventType, SignalRService} from "./_services/signal-r.service";
 import {Notification, NotificationColour} from "./_models/notifications";
 import {ToastrService} from "ngx-toastr";
 import {Breakpoint, UtilityService} from "./_services/utility.service";
-import {translate, TranslocoService} from "@jsverse/transloco";
+import {translate, TranslocoDirective, TranslocoService} from "@jsverse/transloco";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {filter, tap} from "rxjs";
+import {tap} from "rxjs";
 import {ActiveDownloadsService} from "./dashboard/active-downloads/active-downloads.service";
 import {NotificationService} from "./_services/notification.service";
+import {NavService} from "@mnema/_services/nav.service";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavHeaderComponent],
+  imports: [RouterOutlet, NavHeaderComponent, TranslocoDirective],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -28,6 +29,9 @@ export class AppComponent implements OnInit {
   private readonly destroyRef$ = inject(DestroyRef);
   private readonly activeDownloadService = inject(ActiveDownloadsService);
   private readonly notificationService = inject(NotificationService);
+  private readonly navService = inject(NavService);
+
+  protected showNavBar = this.navService.showNav;
 
   ngOnInit() {
     this.translocoService.events$.pipe(

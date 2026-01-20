@@ -13,4 +13,8 @@ public enum MetadataProvider
 {
     Hardcover = 0,
     Mangabaka = 1,
+    /// <summary>
+    /// Metadata from <see cref="Provider"/>
+    /// </summary>
+    Upsteam = 2,
 }

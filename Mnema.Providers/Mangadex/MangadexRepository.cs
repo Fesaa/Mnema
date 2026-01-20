@@ -122,7 +122,7 @@ internal class MangadexRepository : IRepository
         var filteredChapters = FilterChapters(chapters.Data, language, request).Select(chapter => new Chapter
         {
             Id = chapter.Id,
-            Title = chapter.Attributes.Title,
+            Title = chapter.Attributes.Title ?? string.Empty,
             VolumeMarker = chapter.Attributes.Volume ?? string.Empty,
             ChapterMarker = chapter.Attributes.Chapter ?? string.Empty,
             ReleaseDate = chapter.Attributes.PublishAt,
@@ -207,7 +207,7 @@ internal class MangadexRepository : IRepository
                 return new ContentRelease
                 {
                     ReleaseId = chapter.Id,
-                    ReleaseName = string.IsNullOrEmpty(chapter.Attributes.Title) ? string.Empty : chapter.Attributes.Title,
+                    ReleaseName = chapter.Attributes.Title ?? string.Empty,
                     ContentId = relationShip.Id,
                     ContentName = mangaAttr?.LangTitle("en") ?? string.Empty,
                     ReleaseDate = chapter.Attributes.PublishAt.ToUniversalTime(),

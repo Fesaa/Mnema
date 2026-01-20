@@ -33,6 +33,7 @@ public static class ServiceProviderExtensions
         services.AddSingleton<QBitContentManager>();
         services.AddKeyedSingleton<IConfigurationProvider>(DownloadClientType.QBittorrent,
             (s, _) => s.GetRequiredService<QBitContentManager>());
+        services.AddHostedService<TorrentWatcherService>();
 
         #endregion
 

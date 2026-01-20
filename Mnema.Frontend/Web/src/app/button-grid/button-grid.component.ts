@@ -2,9 +2,7 @@ import {Component, computed, inject, input, TemplateRef, viewChild} from '@angul
 import {CommonModule} from '@angular/common';
 import {Breakpoint, UtilityService} from "../_services/utility.service";
 import {Button, ButtonGroup, ButtonGroupService} from "./button-group.service";
-import {
-  ListSelectionItem
-} from "../shared/_component/list-select-modal/list-select-modal.component";
+import {ListSelectionItem} from "../shared/_component/list-select-modal/list-select-modal.component";
 import {BadgeComponent} from "../shared/_component/badge/badge.component";
 
 @Component({

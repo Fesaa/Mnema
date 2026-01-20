@@ -1,9 +1,5 @@
-import {ChangeDetectionStrategy, Component, inject, input, model, signal} from '@angular/core';
-import {DefaultValuePipe} from "../../_pipes/default-value.pipe";
-import {ProviderNamePipe} from "../../_pipes/provider-name.pipe";
+import {ChangeDetectionStrategy, Component, inject, model, signal} from '@angular/core';
 import {FormGroup, ReactiveFormsModule} from "@angular/forms";
-import {SafeHtmlPipe} from "../../_pipes/safe-html-pipe";
-import {SettingsItemComponent} from "../../shared/form/settings-item/settings-item.component";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {GenericFormComponent} from "../generic-form.component";

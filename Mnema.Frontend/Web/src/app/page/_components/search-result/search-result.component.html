@@ -31,15 +31,13 @@
         <span class="fa fa-download"></span>
       </button>
 
-      @if (providers().includes(searchResult().provider)) {
-        <button
-          class="icon-btn"
-          (click)="addAsSub()"
-          [ngbTooltip]="t('add-as-sub')"
-        >
-          <span class="fa fa-bell"></span>
-        </button>
-      }
+      <button
+        class="icon-btn"
+        (click)="monitorSeries()"
+        [ngbTooltip]="t('monitor')"
+      >
+        <span class="fa fa-bell"></span>
+      </button>
     </div>
   </div>
 

@@ -1,23 +1,18 @@
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  linkedSignal,
-  signal
-} from '@angular/core';
+import {Component, computed, effect, inject, linkedSignal, signal} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NavService} from '../../_services/nav.service';
 import {AccountService} from '../../_services/account.service';
 import {PreferenceSettingsComponent} from "./_components/preference-settings/preference-settings.component";
 import {PagesSettingsComponent} from "./_components/pages-settings/pages-settings.component";
 import {ServerSettingsComponent} from "./_components/server-settings/server-settings.component";
-import {TranslocoDirective} from "@jsverse/transloco";
+import {ConnectionSettingsComponent} from "./_components/external-connection-settings/connection-settings.component";
 import {
-  ConnectionSettingsComponent
-} from "./_components/external-connection-settings/connection-settings.component";
-import {Button, ButtonGroup, ButtonGroupService, SettingsID} from "../../button-grid/button-group.service";
-import {MobileGridComponent} from "../../button-grid/mobile-grid/mobile-grid.component";
+  Button,
+  ButtonGroup,
+  ButtonGroupKey,
+  ButtonGroupService,
+  SettingsID
+} from "../../button-grid/button-group.service";
 import {DownloadClientSettingsComponent} from "./_components/download-client/download-client-settings.component";
 
 @Component({
@@ -27,9 +22,7 @@ import {DownloadClientSettingsComponent} from "./_components/download-client/dow
     PreferenceSettingsComponent,
     PagesSettingsComponent,
     ServerSettingsComponent,
-    TranslocoDirective,
     ConnectionSettingsComponent,
-    MobileGridComponent,
     DownloadClientSettingsComponent,
   ],
   templateUrl: './settings.component.html',
@@ -49,22 +42,7 @@ export class SettingsComponent {
   readonly visibleSettings = computed(() =>
     this.buttonGroupService.settingsGroup().buttons
       .filter(btn => btn.id && this.buttonGroupService.shouldRender(btn)));
-
-  readonly mobileSettingsGroup = computed<ButtonGroup[]>(() => [
-    {
-      title: '',
-      icon: '',
-      buttons: this.visibleSettings().map(btn => ({
-        ...btn,
-        standAlone: true,
-        onClick: () => {
-          this.setSettings(btn.id as SettingsID);
-          this.toggleMobile();
-        },
-      }))
-    }
-  ]);
-
+  
   readonly selected = linkedSignal<Button[], SettingsID>({
     source: this.visibleSettings,
     computation: (newSettings, prev) => {

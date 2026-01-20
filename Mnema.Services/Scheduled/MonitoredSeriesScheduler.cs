@@ -72,10 +72,10 @@ internal class MonitoredSeriesScheduler(
                 await downloadService.StartDownload(new DownloadRequestDto
                 {
                     Provider = release.Provider,
-                    Id = release.ReleaseId,
+                    Id = release.ContentId ?? release.ReleaseId,
                     BaseDir = match.BaseDir,
                     TempTitle = release.ContentName,
-                    Metadata = match.Metadata,
+                    Metadata = match.MetadataForDownloadRequest(),
                     DownloadUrl = release.DownloadUrl,
                     StartImmediately = true,
                     UserId = match.UserId,
@@ -109,6 +109,15 @@ internal class MonitoredSeriesScheduler(
 
         foreach (var monitoredRelease in monitoredReleases.Where(m => m.Providers.Contains(release.Provider)))
         {
+            // Require exact match
+            if (!string.IsNullOrEmpty(monitoredRelease.ExternalId))
+            {
+                if (monitoredRelease.ExternalId != release.ContentId) continue;
+
+                return monitoredRelease;
+            }
+
+
             var parseResult = parserService.FullParse(release.ReleaseName, monitoredRelease.ContentFormat);
 
             if (!parseResult.Series.Intersect(monitoredRelease.ValidTitles).Any())

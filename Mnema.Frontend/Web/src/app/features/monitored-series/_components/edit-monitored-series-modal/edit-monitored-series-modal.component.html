@@ -1,0 +1,82 @@
+<ng-container *transloco="let t; prefix: 'edit-monitored-series-modal'">
+
+  <div class="modal-container">
+
+    <div class="modal-header">
+      <h5 class="modal-title fw-semibold">
+        @if (series().id === '') {
+          {{t('new-series-title')}}
+        } @else {
+          {{t('title', {name: series().title})}}
+        }
+      </h5>
+      <button type="button" class="btn-close" [attr.aria-label]="t('close')" (click)="close()">
+      </button>
+    </div>
+
+    <div class="modal-body scrollable-modal">
+
+      <ul class="nav nav-tabs">
+        @if (formDefinition()) {
+          <li class="nav-item" (click)="activeTab.set('general')">
+            <a class="nav-link" [class.active]="activeTab() === 'general'">{{t('tabs.general')}}</a>
+          </li>
+        }
+        @if (metadataControls()?.controls && metadataControls()!.controls.length > 0) {
+          <li class="nav-item" (click)="activeTab.set('metadata')">
+            <a class="nav-link" [class.active]="activeTab() === 'metadata'">{{t('tabs.metadata')}}</a>
+          </li>
+        }
+        @if (advancedControls()?.controls && advancedControls()!.controls.length > 0) {
+          <li class="nav-item" (click)="activeTab.set('advanced')">
+            <a class="nav-link" [class.active]="activeTab() === 'advanced'">{{t('tabs.advanced')}}</a>
+          </li>
+        }
+      </ul>
+
+      <div class="tab-content mt-3">
+        <div class="tab-pane" [class.active]="activeTab() === 'general'">
+          @if (formDefinition()) {
+            <app-generic-form
+              [formDefinition]="formDefinition()!"
+              [supplyFormGroup]="seriesForm"
+              [initialValue]="series()"
+            ></app-generic-form>
+          }
+        </div>
+
+        <div class="tab-pane" [class.active]="activeTab() === 'metadata'">
+          @if (metadataControls()) {
+            <app-generic-form
+              [formDefinition]="metadataControls()!"
+              [supplyFormGroup]="seriesForm"
+              [initialValue]="series()"
+            ></app-generic-form>
+          }
+        </div>
+
+        <div class="tab-pane" [class.active]="activeTab() === 'advanced'">
+          @if (advancedControls()) {
+            <app-generic-form
+              [formDefinition]="advancedControls()!"
+              [supplyFormGroup]="seriesForm"
+              [initialValue]="series()"
+            ></app-generic-form>
+          }
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="close()">
+        {{t('cancel')}}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="save()">
+        <span>{{ series().id === '' ? t('create') : t('save')}}</span>
+      </button>
+    </div>
+
+  </div>
+
+</ng-container>

@@ -1,24 +1,16 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  computed, effect, ElementRef,
-  HostListener, inject,
-  OnInit,
-  signal, ViewChild
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, HostListener, inject, signal} from '@angular/core';
 import {toSignal} from "@angular/core/rxjs-interop";
 import {Breakpoint, UtilityService} from "../_services/utility.service";
-import {ActivatedRoute, RouterLink} from "@angular/router";
+import {RouterLink} from "@angular/router";
 import {AccountService} from "../_services/account.service";
 import {NavService} from "../_services/nav.service";
 import {NotificationService} from "../_services/notification.service";
-import {ButtonGroupService, Button, ButtonGroup} from "../button-grid/button-group.service";
-import {translate} from "@jsverse/transloco";
+import {ButtonGroup, ButtonGroupKey, ButtonGroupService} from "../button-grid/button-group.service";
+import {translate, TranslocoPipe} from "@jsverse/transloco";
 import {TitleCasePipe} from "@angular/common";
 import {animate, style, transition, trigger} from "@angular/animations";
 import {MobileGridComponent} from "../button-grid/mobile-grid/mobile-grid.component";
-import {TranslocoPipe} from "@jsverse/transloco";
+import {BadgeComponent} from "@mnema/shared/_component/badge/badge.component";
 
 @Component({
   selector: 'app-nav-header',
@@ -28,7 +20,8 @@ import {TranslocoPipe} from "@jsverse/transloco";
     RouterLink,
     TitleCasePipe,
     MobileGridComponent,
-    TranslocoPipe
+    TranslocoPipe,
+    BadgeComponent
   ],
   animations: [
     trigger('dropdownAnimation', [
@@ -39,13 +32,22 @@ import {TranslocoPipe} from "@jsverse/transloco";
       transition(':leave', [
         animate('100ms ease-in', style({ opacity: 0, transform: 'translateY(-8px)' })),
       ]),
+    ]),
+    trigger('expandCollapse', [
+      transition(':enter', [
+        style({ height: '0', opacity: 0, overflow: 'hidden' }),
+        animate('200ms ease-out', style({ height: '*', opacity: 1 })),
+      ]),
+      transition(':leave', [
+        style({ height: '*', opacity: 1, overflow: 'hidden' }),
+        animate('200ms ease-in', style({ height: '0', opacity: 0 })),
+      ]),
     ])
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NavHeaderComponent implements OnInit {
+export class NavHeaderComponent {
 
-  private readonly route = inject(ActivatedRoute);
   private readonly accountService = inject(AccountService);
   protected readonly navService = inject(NavService);
   protected readonly notificationService = inject(NotificationService);
@@ -57,12 +59,16 @@ export class NavHeaderComponent implements OnInit {
 
   isMobileGridOpen = signal(false);
   isAccountDropdownOpen = signal(false);
+  expandedGroups = signal<Set<ButtonGroupKey>>(new Set([ButtonGroupKey.Actions]));
 
   isMobile = computed(() => this.showNav() && this.utilityService.breakPoint() <= Breakpoint.Mobile);
   isDesktop = computed(() => this.showNav() && this.utilityService.breakPoint() > Breakpoint.Mobile);
 
+  dashboardGroups = this.buttonGroupService.dashboardGroups;
+
   mobileButtonGroups = computed<ButtonGroup[]>(() => [
     {
+      key: ButtonGroupKey.Any,
       title: '',
       icon: '',
       buttons: [
@@ -77,38 +83,6 @@ export class NavHeaderComponent implements OnInit {
     ...this.buttonGroupService.dashboardGroups(),
   ])
 
-  navPageButtons = computed<Button[]>(() => {
-    return [
-      {
-        title: translate('nav-bar.home'),
-        icon: 'fa fa-home',
-        navUrl: 'home'
-      },
-      ...this.buttonGroupService.pageGroup().buttons
-    ];
-  });
-
-  navActionButtons = computed<Button[]>(() => {
-    const buttons = [...this.buttonGroupService.actionGroup().buttons];
-    // Find logout button to insert settings before it
-    const logoutIndex = buttons.findIndex(b => b.onClick && b.onClick.toString().includes('logout'));
-
-    const settingsButton: Button = {
-      title: translate('button-groups.settings.title'),
-      icon: 'fa fa-cog',
-      navUrl: 'settings',
-      standAlone: true,
-    };
-
-    if (logoutIndex !== -1) {
-      buttons.splice(logoutIndex, 0, settingsButton);
-    } else {
-      buttons.push(settingsButton);
-    }
-
-    return buttons;
-  });
-
   severity = computed((): 'info' | 'warn' | 'danger' => {
     const count = this.notificationService.notificationsCount();
     if (count < 4) return 'info';
@@ -116,28 +90,24 @@ export class NavHeaderComponent implements OnInit {
     return 'danger';
   });
 
-  constructor() {
-  }
-
-  ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      const index = params['index'];
-      if (index) {
-        // Not used here, preserved for logic continuity
-      }
-    });
-  }
-
-  logout() {
-    this.accountService.logout();
-  }
-
   toggleMobileGrid() {
     this.isMobileGridOpen.update(v => !v);
   }
 
-  toggleAccountDropdown() {
-    this.isAccountDropdownOpen.update(v => !v);
+  toggleGroup(key: ButtonGroupKey) {
+    this.expandedGroups.update(set => {
+      const newSet = new Set(set);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  }
+
+  isGroupExpanded(key: ButtonGroupKey): boolean {
+    return this.expandedGroups().has(key);
   }
 
   @HostListener('document:click', ['$event'])

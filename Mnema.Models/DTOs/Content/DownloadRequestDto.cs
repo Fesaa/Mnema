@@ -27,10 +27,6 @@ public sealed record DownloadRequestDto
 
     public required MetadataBag Metadata { get; set; }
 
-    [JsonIgnore] public Guid? SubscriptionId { get; set; }
-
-    public bool IsSubscription => SubscriptionId != null;
-
     public string? GetString(string key)
     {
         return Metadata.GetString(key);

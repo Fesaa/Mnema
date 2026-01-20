@@ -35,9 +35,18 @@ export interface Button {
   badge?: string;
 }
 
+export enum ButtonGroupKey {
+  Actions = 0,
+  Pages = 1,
+  Settings = 2,
+
+  Any = 9999,
+}
+
 export interface ButtonGroup {
   icon: string;
   title: string;
+  key: ButtonGroupKey;
   buttons: Button[];
 }
 
@@ -63,6 +72,7 @@ export class ButtonGroupService {
     this.translationReloaded();
 
     return {
+      key: ButtonGroupKey.Pages,
       title: translate('button-groups.pages.title'),
       icon: 'fa fa-thumbtack',
       buttons: this.pageService.pages().map<Button>(page => ({
@@ -78,16 +88,10 @@ export class ButtonGroupService {
     this.translationReloaded();
 
     return {
+      key: ButtonGroupKey.Actions,
       title: translate('button-groups.actions.title'),
       icon: 'fa fa-bars',
       buttons: [
-        {
-          title: translate('button-groups.actions.subscriptions'),
-          icon: 'fa fa-bell',
-          requiredRoles: [Role.Subscriptions],
-          navUrl: '/subscriptions',
-          standAlone: true,
-        },
         {
           title: translate('button-groups.actions.monitored-series'),
           icon: 'fa fa-television',
@@ -130,6 +134,7 @@ export class ButtonGroupService {
     this.translationReloaded();
 
     return {
+      key: ButtonGroupKey.Settings,
       title: translate('button-groups.settings.title'),
       icon: 'fa fa-cogs',
       buttons: [
@@ -205,19 +210,6 @@ export class ButtonGroupService {
       ? group.buttons.filter(btn => !!btn.standAlone)
       : group.buttons)
       .filter(btn => this.shouldRender(btn));
-  }
-
-  groupBadge(group: ButtonGroup): string | undefined {
-    const counts = this.groupedButtons(group)
-      .map(btn => btn.badge)
-      .filter(badge => !!badge)
-      .map(badge => parseInt(badge!))
-      .filter(num => !isNaN(num));
-
-    if (counts.length === 0) return undefined;
-
-    const total = counts.reduce((acc, curr) => acc + curr, 0);
-    return total > 0 ? `${total}` : undefined;
   }
 
   handleButtonClick(button: Button, event?: Event): void {

@@ -1,0 +1,103 @@
+.series-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (min-width: 576px) {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+.series-card {
+  position: relative;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  .series-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .series-cover-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px var(--shadow-medium);
+    background: var(--background-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  .series-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .series-cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-accent) 100%);
+
+    i {
+      font-size: 3rem;
+      color: var(--text-secondary);
+      opacity: 0.5;
+    }
+  }
+
+  .series-info {
+    .series-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .series-stats {
+      font-size: 0.75rem;
+
+      i {
+        color: var(--secondary-color);
+      }
+    }
+  }
+}
+
+.empty-state {
+  padding: 4rem 1rem;
+  background: var(--surface-card);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px var(--shadow-light);
+}
+
+// Hover effects
+.series-card {
+  .series-link:hover {
+    .series-title {
+      color: var(--primary-color);
+    }
+  }
+}
+
+// Loading state
+app-paginator {
+  ::ng-deep {
+    .loading-spinner-container {
+      min-height: 400px;
+    }
+  }
+}

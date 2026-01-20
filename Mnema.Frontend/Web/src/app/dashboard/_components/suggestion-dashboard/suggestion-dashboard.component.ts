@@ -2,7 +2,6 @@ import {Component, computed, inject} from '@angular/core';
 import {PageService} from "../../../_services/page.service";
 import {RouterLink} from "@angular/router";
 import {dropAnimation} from "../../../_animations/drop-animation";
-import {Page} from "../../../_models/page";
 import {ToastService} from "../../../_services/toast.service";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {ModalService} from "../../../_services/modal.service";

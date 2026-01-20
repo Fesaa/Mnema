@@ -1,6 +1,4 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
-import {ContentService} from "../../../_services/content.service";
-import {ToastService} from "../../../_services/toast.service";
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {ModalService} from "../../../_services/modal.service";
 import {DownloadModalComponent} from "../../../page/_components/download-modal/download-modal.component";

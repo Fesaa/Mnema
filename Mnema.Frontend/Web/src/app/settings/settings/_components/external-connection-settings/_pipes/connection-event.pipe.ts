@@ -11,11 +11,11 @@ export class ConnectionEventPipe implements PipeTransform {
   transform(event: ConnectionEvent): string {
     switch (event) {
       case ConnectionEvent.DownloadStarted:
-        return translate('settings.external-connections.shared.event.DownloadStarted');
+        return translate('settings.connections.shared.event.DownloadStarted');
       case ConnectionEvent.DownloadFinished:
-        return translate('settings.external-connections.shared.event.DownloadFinished');
+        return translate('settings.connections.shared.event.DownloadFinished');
       case ConnectionEvent.DownloadFailure:
-        return translate('settings.external-connections.shared.event.DownloadFailure');
+        return translate('settings.connections.shared.event.DownloadFailure');
       default:
         return 'Unknown';
     }

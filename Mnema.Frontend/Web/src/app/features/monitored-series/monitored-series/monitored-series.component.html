@@ -1,0 +1,154 @@
+<div class="monitored-series-container p-2" *transloco="let t; prefix: 'monitored-series-detail'">
+  @if (series(); as s) {
+    <div class="series-header">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12 col-md-3 col-lg-2 mb-4 mb-md-0">
+            <div class="series-cover">
+              @if (s.coverUrl) {
+                <img [src]="s.coverUrl" [alt]="s.title" class="img-fluid rounded shadow-sm">
+              } @else {
+                <div class="cover-placeholder rounded shadow-sm">
+                  <i class="fa fa-book"></i>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="col-12 col-md-9 col-lg-10">
+            <div class="series-info">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <h1 class="series-title mb-0">{{ s.title }}</h1>
+                <div class="d-flex">
+                  <button class="btn btn-sm btn-secondary me-2" (click)="showResolvedSeries()">
+                    <i class="fa fa-magnifying-glass"></i>
+                  </button>
+                  <button class="btn btn-sm btn-secondary me-2" (click)="edit()">
+                    <i class="fa fa-pencil"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="delete()">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                  @if (s.refUrl) {
+                    <a [href]="s.refUrl" target="_blank" class="btn btn-sm btn-secondary ms-2 text-white">
+                      <i class="fa fa-external-link-alt"></i>
+                    </a>
+                  }
+                </div>
+              </div>
+
+              <div class="series-metadata mb-3">
+                <app-badge padding="p-2 me-2">
+                  <i class="fa fa-folder"></i> {{ s.format | format }}
+                </app-badge>
+                <app-badge padding="p-2 me-2" colour="secondary">
+                  <i class="fa fa-file"></i> {{ s.contentFormat | contentFormat }}
+                </app-badge>
+                @if (s.lastDataRefreshUtc) {
+                  <span class="small clickable"
+                          (click)="refreshMetadata()"
+                          [ngbTooltip]="t('last-updated', { time: s.lastDataRefreshUtc | utcToLocalTime:'short' })">
+                    <i class="fa fa-calendar-alt"></i>
+                  </span>
+                }
+              </div>
+
+              @if (s.providers && s.providers.length > 0) {
+                <div class="series-providers mb-3">
+                  <strong class="me-2">Providers:</strong>
+                  @for (provider of s.providers; track provider) {
+                    <app-tag-badge>{{ provider | providerName }}</app-tag-badge>
+                  }
+                </div>
+              }
+
+              @if (s.summary) {
+                <p class="series-summary">{{ s.summary }}</p>
+              }
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chapters-section">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="section-title mb-0">
+            <i class="fa fa-list"></i> {{t('chapters')}}
+            <span class="badge bg-secondary ms-2">{{ s.chapters.length }}</span>
+          </h2>
+        </div>
+
+        @if (s.chapters && s.chapters.length > 0) {
+          <div class="chapters-list">
+            @for (chapter of s.chapters; track chapter.id) {
+              <div class="chapter-row">
+                <div class="row align-items-center">
+                  <div class="col-auto d-none d-md-block">
+                    @if (chapter.coverUrl) {
+                      <img [src]="chapter.coverUrl" [alt]="chapter.title" class="chapter-thumb">
+                    } @else {
+                      <div class="chapter-thumb-placeholder">
+                        <i class="fa fa-file"></i>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="col">
+                    <div class="chapter-info">
+                      <h5 class="chapter-title mb-1">
+                        @if (chapter.volume) {
+                          <span class="text-muted me-2">Vol. {{ chapter.volume }}</span>
+                        }
+                        @if (chapter.chapter) {
+                          <span class="text-muted me-2">Ch. {{ chapter.chapter }}</span>
+                        }
+                        {{ chapter.title }}
+                      </h5>
+                      @if (chapter.summary) {
+                        <p class="chapter-summary mb-1">{{ chapter.summary }}</p>
+                      }
+                      <div class="chapter-meta">
+                        @if (chapter.releaseDate) {
+                          <small class="text-muted me-3">
+                            <i class="fa fa-calendar"></i> {{ chapter.releaseDate | utcToLocalTime:'shortDate' }}
+                          </small>
+                        }
+                        @if (chapter.filePath) {
+                          <small class="text-muted">
+                            <i class="fa fa-folder"></i> {{ chapter.filePath }}
+                          </small>
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-auto">
+                    @if (chapter.refUrl) {
+                      <a [href]="chapter.refUrl" target="_blank" class="btn btn-sm" title="View Source">
+                        <i class="fa fa-external-link-alt"></i>
+                      </a>
+                    }
+                  </div>
+
+                  <div class="col-auto">
+                    <span class="badge clickable" (click)="setChapterStatus(chapter.id)" [ngClass]="getStatusClass(chapter.status)">
+                      {{ chapter.status | monitoredChapterStatus }}
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="alert alert-info">
+            <i class="fa fa-info-circle"></i> {{t('no-chapters')}}
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

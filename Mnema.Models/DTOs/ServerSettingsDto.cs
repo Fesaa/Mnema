@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Mnema.Models.Entities.Content;
 
 namespace Mnema.Models.DTOs;
 
@@ -11,6 +13,7 @@ public class ServerSettingsDto
     public DateTime InstallDate { get; set; }
     public int SubscriptionRefreshHour { get; set; }
     public DateTime LastUpdateDate { get; set; }
+    public Dictionary<MetadataProvider, MetadataProviderSettingsDto> MetadataProviderSettings { get; set; }
 }
 
 public class UpdateServerSettingsDto
@@ -18,4 +21,5 @@ public class UpdateServerSettingsDto
     public int MaxConcurrentTorrents { get; set; }
     public int MaxConcurrentImages { get; set; }
     public int SubscriptionRefreshHour { get; set; }
+    public Dictionary<MetadataProvider, MetadataProviderSettingsDto> MetadataProviderSettings { get; set; }
 }

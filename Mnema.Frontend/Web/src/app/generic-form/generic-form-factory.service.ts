@@ -1,9 +1,10 @@
 import {Injectable} from '@angular/core';
 import {FormBuilder, FormGroup, NonNullableFormBuilder, ValidatorFn, Validators} from "@angular/forms";
-import {FormControlDefinition, FormControlOption, FormPipe, FormType, ValueType} from "./form";
+import {FormControlDefinition, FormControlOption, FormType, ValueType} from "./form";
 import {TypeaheadSettings} from "../type-ahead/typeahead.component";
 import {of} from "rxjs";
 import {MnemaValidators} from "../shared/validators";
+
 export type GenericBag = { [key: string]: any[] };
 
 export const GENERIC_METADATA_FIELD = "metadata";
@@ -70,6 +71,34 @@ export class GenericFormFactoryService {
     }
 
     return obj;
+  }
+
+  adjustForNestedControls(obj: any | undefined, controls: FormControlDefinition[]) {
+    obj = this.adjustForGenericMetadata(obj);
+
+    const result: any = {};
+
+    for (const control of controls) {
+      const fieldName = control.field;
+      const value = obj?.[fieldName];
+
+      if (value === undefined) continue;
+
+      const keys = fieldName.split('.');
+      let current = result;
+
+      for (let i = 0; i < keys.length - 1; i++) {
+        const key = keys[i];
+        if (!current[key]) {
+          current[key] = {};
+        }
+        current = current[key];
+      }
+
+      current[keys[keys.length - 1]] = value;
+    }
+
+    return result;
   }
 
   genericMetadataGroup(
@@ -143,9 +172,26 @@ export class GenericFormFactoryService {
       fieldName = control.key;
     }
 
-    const value = (obj && obj.hasOwnProperty(fieldName)) ? obj[fieldName] : control.defaultOption;
+    const value = this.getNestedValue(obj, fieldName, control.defaultOption);
 
     return this.transFormValueForFormType(value, control);
+  }
+
+  private getNestedValue(obj: any, path: string, defaultValue: any): any {
+    if (!obj) return defaultValue;
+
+    const keys = path.split('.');
+    let value = obj;
+
+    for (const key of keys) {
+      if (value && value.hasOwnProperty(key)) {
+        value = value[key];
+      } else {
+        return defaultValue;
+      }
+    }
+
+    return value;
   }
 
   private transFormValueForFormType(value: any, control: FormControlDefinition) {

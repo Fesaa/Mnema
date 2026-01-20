@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.Entities.Content;
 

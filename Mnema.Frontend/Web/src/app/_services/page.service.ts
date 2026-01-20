@@ -1,21 +1,8 @@
 import {effect, inject, Injectable, signal} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
-import {environment} from "../../environments/environment";
+import {environment} from "@env/environment";
 import {Page, Provider} from "../_models/page";
-import {
-  catchError,
-  flatMap,
-  forkJoin,
-  from,
-  map,
-  mergeMap,
-  Observable,
-  of,
-  ReplaySubject,
-  switchMap,
-  tap,
-  toArray
-} from "rxjs";
+import {catchError, from, map, mergeMap, Observable, of, switchMap, tap, toArray} from "rxjs";
 import {AccountService} from "./account.service";
 import {FormControlDefinition} from "../generic-form/form";
 

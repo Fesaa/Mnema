@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import {Pipe, PipeTransform} from '@angular/core';
 import {DownloadClientType} from "../download-client.service";
 import {translate} from "@jsverse/transloco";
 

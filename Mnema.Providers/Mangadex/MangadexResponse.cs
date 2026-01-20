@@ -127,7 +127,7 @@ internal sealed record ChapterData : Identifiable
 
 internal sealed record ChapterAttributes
 {
-    public string Title { get; set; } = string.Empty;
+    public string? Title { get; set; } = string.Empty;
     public string? Volume { get; set; } = string.Empty;
     public string? Chapter { get; set; } = string.Empty;
     public string TranslatedLanguage { get; set; } = string.Empty;

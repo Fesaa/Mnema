@@ -1,7 +1,12 @@
-<div>
-  <app-nav-header></app-nav-header>
+<div *transloco="let t;">
+  <div class="app-container"
+       [class.with-sidebar]="utilityService.breakPoint() > Breakpoint.Mobile && showNavBar()">
+    <app-nav-header></app-nav-header>
 
-  <router-outlet></router-outlet>
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
 </div>
 
 

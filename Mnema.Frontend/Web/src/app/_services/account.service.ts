@@ -1,10 +1,9 @@
 import {DestroyRef, inject, Injectable, signal} from '@angular/core';
 import {environment} from "../../environments/environment";
-import {Observable, ReplaySubject, tap} from "rxjs";
+import {Observable, tap} from "rxjs";
 import {User, UserDto} from "../_models/user";
-import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {Router} from "@angular/router";
-import {takeUntilDestroyed, toSignal} from "@angular/core/rxjs-interop";
+import {HttpClient} from "@angular/common/http";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {PasswordReset} from "../_models/password_reset";
 import {SignalRService} from "./signal-r.service";
 

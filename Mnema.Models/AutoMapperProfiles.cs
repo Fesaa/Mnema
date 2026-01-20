@@ -1,3 +1,4 @@
+using System.Linq;
 using AutoMapper;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
@@ -22,6 +23,11 @@ public class AutoMapperProfiles : Profile
         CreateMap<Connection, ExternalConnectionDto>();
         CreateMap<ContentRelease, ContentReleaseDto>();
         CreateMap<DownloadClient, DownloadClientDto>();
-        CreateMap<MonitoredSeries, MonitoredSeriesDto>();
+        CreateMap<MonitoredSeries, MonitoredSeriesDto>()
+            .ForMember(dest => dest.Chapters, opt
+                => opt.MapFrom(src
+                    => src.Chapters.OrderBy(c => c.SortOrder)
+            ));
+        CreateMap<MonitoredChapter, MonitoredChapterDto>();
     }
 }

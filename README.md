@@ -1,7 +1,7 @@
 
 # Mnema
 
-[![Tests](https://github.com/Fesaa/Mnema/actions/workflows/tests.yml/badge.svg)](https://github.com/Fesaa/Mnema/actions/workflows/tests.yml)
+![Screenshot](./assets/screenshot.png)
 
 DOCS: https://fesaa.github.io/Mnema/
 

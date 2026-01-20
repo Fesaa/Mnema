@@ -1,5 +1,5 @@
 import {
-  ApplicationConfig, ErrorHandler,
+  ApplicationConfig,
   importProvidersFrom,
   inject,
   isDevMode,
@@ -20,7 +20,7 @@ import {provideTransloco} from "@jsverse/transloco";
 import {TranslocoLoaderImpl} from "./_services/transloco-loader";
 import {AccountService} from './_services/account.service';
 import {NavService} from "./_services/nav.service";
-import {catchError, filter, firstValueFrom, Observable, of, switchMap, tap, timeout} from "rxjs";
+import {catchError, firstValueFrom, of, switchMap, tap} from "rxjs";
 import {provideToastr} from "ngx-toastr";
 import {PageService} from "./_services/page.service";
 import {RolePipe} from "./_pipes/role.pipe";

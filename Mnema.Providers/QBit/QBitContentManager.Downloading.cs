@@ -25,18 +25,18 @@ internal partial class QBitContentManager
         var cFormat = request.Metadata.GetRequiredEnum<ContentFormat>(RequestConstants.ContentFormatKey);
         var format = request.Metadata.GetRequiredEnum<Format>(RequestConstants.FormatKey);
 
-        var serviceProvider = _scopeFactory.CreateScope().ServiceProvider;
+        var serviceProvider = scopeFactory.CreateScope().ServiceProvider;
         var metadataResolver = serviceProvider.GetRequiredService<IMetadataResolver>();
         var parserService = serviceProvider.GetRequiredService<IParserService>();
         var scannerService = serviceProvider.GetRequiredService<IScannerService>();
 
-        var series = await metadataResolver.ResolveSeriesAsync(request.Metadata, ct);
+        var series = await metadataResolver.ResolveSeriesAsync([request.Provider], request.Metadata, ct);
         var title = request.Metadata.GetString(RequestConstants.TitleOverride)
             .OrNonEmpty(series?.Title, parserService.ParseSeries(request.TempTitle, cFormat));
 
         if (string.IsNullOrEmpty(title))
         {
-            _logger.LogWarning("[{Id}]Downloaded content has no title, aborting download", request.Id);
+            logger.LogWarning("[{Id}]Downloaded content has no title, aborting download", request.Id);
             return;
         }
 
@@ -47,39 +47,38 @@ internal partial class QBitContentManager
         var toDownloadChapters = chapters.Where(ShouldDownload).ToList();
         if (toDownloadChapters.Count == 0)
         {
-            _logger.LogDebug("[{Title}/{Id}] no chapters to download, not starting", title, request.Id);
+            logger.LogDebug("[{Title}/{Id}] no chapters to download, not starting", title, request.Id);
             return;
         }
 
-        _logger.LogDebug("[{Title}/{Id}] Found {Count}/{TotalCount} chapters to download",
+        logger.LogDebug("[{Title}/{Id}] Found {Count}/{TotalCount} chapters to download",
             title, request.Id, toDownloadChapters.Count,  chapters.Count);
-
 
         var addRequest = new AddTorrentUrlsRequest(new Uri(request.DownloadUrl))
         {
             Category = MnemaCategory,
             Tags = [request.Provider.ToString()],
-            DownloadFolder = Path.Join(_configuration.DownloadDir, request.BaseDir, request.TempTitle),
+            DownloadFolder = Path.Join(configuration.DownloadDir, request.BaseDir, request.TempTitle),
             Paused = true,
         };
 
-        await _qBitClient.AddTorrentsAsync(addRequest, ct);
-        await _cache.SetAsJsonAsync(RequestCacheKey + request.Id, request, RequestCacheKeyOptions, token: ct);
+        await qBitClient.AddTorrentsAsync(addRequest, ct);
+        await cache.SetAsJsonAsync(RequestCacheKey + request.Id, request, RequestCacheKeyOptions, token: ct);
 
         if (toDownloadChapters.Count != chapters.Count)
         {
             // Small delay to give qbit a bit of time to load everything
             // This should enough as all metadata is inside the .torrent file we're passing
-            await Task.Delay(TimeSpan.FromSeconds(5), ct);
+            await Task.Delay(TimeSpan.FromSeconds(2), ct);
 
-            // The full path is encoded as title
+            // The full path is encoded as the title
             var paths = toDownloadChapters.Select(c => c.Title).ToList();
             await FilterContent(request.Id, paths, ct);
         }
 
         if (request.StartImmediately)
         {
-            await _qBitClient.ResumeTorrentsAsync([request.Id], ct);
+            await qBitClient.ResumeTorrentsAsync([request.Id], ct);
         }
 
         return;
@@ -91,7 +90,7 @@ internal partial class QBitContentManager
 
             if (string.IsNullOrEmpty(chapter.VolumeMarker) && string.IsNullOrEmpty(chapter.ChapterMarker))
             {
-                _logger.LogDebug("Skipping download for {Title} because it had no volume or chapter", chapter.Title);
+                logger.LogDebug("Skipping download for {Title} because it had no volume or chapter", chapter.Title);
                 return false;
             }
 

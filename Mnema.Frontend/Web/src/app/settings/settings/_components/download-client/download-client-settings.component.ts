@@ -52,7 +52,7 @@ export class DownloadClientSettingsComponent {
         component.double.set(true);
         component.formDefinition.set(form);
         component.initialValue.set(client ?? {type: type, metadata: {}});
-        component.translationKey.set('settings.external-connections.edit');
+        component.translationKey.set('settings.connections.edit');
 
         return this.modalService.onClose$<DownloadClient>(modal);
       }),
@@ -71,7 +71,7 @@ export class DownloadClientSettingsComponent {
         const [modal, component] = this.modalService.open(ListSelectModalComponent<DownloadClientType>, {
           size: "lg", centered: true,
         });
-        component.title.set(translate('settings.external-connections.edit.select-type-title'));
+        component.title.set(translate('settings.connections.edit.select-type-title'));
         component.inputItems.set(types);
 
       return this.modalService.onClose$<DownloadClientType>(modal);
@@ -80,7 +80,7 @@ export class DownloadClientSettingsComponent {
   }
 
   releaseLock(client: DownloadClient) {
-    this.modalService.confirm$({question: translate('settings.external-connections.release-lock.title'),
+    this.modalService.confirm$({question: translate('settings.connections.release-lock.title'),
     }, true)
       .pipe(
         switchMap(() => this.downloadClientService.releaseLock(client.id)),
@@ -89,7 +89,7 @@ export class DownloadClientSettingsComponent {
   }
 
   remove(client: DownloadClient) {
-    this.modalService.confirm$({question: translate('settings.external-connections.delete.title'),
+    this.modalService.confirm$({question: translate('settings.connections.delete.title'),
     }, true)
       .pipe(
         switchMap(() => this.downloadClientService.deleteDownloadClient(client.id)),

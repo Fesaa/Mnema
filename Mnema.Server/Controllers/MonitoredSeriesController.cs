@@ -1,20 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
+using Mnema.API.Content;
 using Mnema.Common;
+using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
+using Mnema.Models.Publication;
 
 namespace Mnema.Server.Controllers;
 
 [Authorize(Roles.Subscriptions)]
 public class MonitoredSeriesController(
     IUnitOfWork unitOfWork,
-    IMonitoredSeriesService monitoredSeriesService
+    IMonitoredSeriesService monitoredSeriesService,
+    IMetadataResolver metadataResolver,
+    IMessageService messageService
 ) : BaseApiController
 {
     [HttpGet("all")]
@@ -53,6 +62,44 @@ public class MonitoredSeriesController(
         return Ok();
     }
 
+    [HttpGet("{id:guid}/resolved-series")]
+    public async Task<ActionResult<Series>> GetResolvedSeries(Guid id)
+    {
+        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        if (monitoredSeries == null) return NotFound();
+
+        if (monitoredSeries.UserId != UserId) return Forbid();
+
+        var series = await metadataResolver.ResolveSeriesAsync(monitoredSeries.Providers, monitoredSeries.MetadataForDownloadRequest(), HttpContext.RequestAborted);
+
+        return Ok(series);
+    }
+
+    [HttpPost("{id:guid}/refresh-metadata")]
+    public async Task<IActionResult> RefreshMetadata(Guid id)
+    {
+        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        if (monitoredSeries == null) return NotFound();
+
+        if (monitoredSeries.UserId != UserId) return Forbid();
+
+        BackgroundJob.Enqueue(() => RefreshMetadataJob(UserId, id, CancellationToken.None));
+
+        return Ok();
+    }
+
+    public async Task RefreshMetadataJob(Guid userId, Guid id, CancellationToken cancellationToken)
+    {
+        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, cancellationToken);
+        if (monitoredSeries == null) throw new NotFoundException();
+
+        await monitoredSeriesService.EnrichWithMetadata(monitoredSeries, cancellationToken);
+
+        await unitOfWork.CommitAsync(cancellationToken);
+
+        await messageService.MetadataRefreshed(userId, id);
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -68,9 +115,33 @@ public class MonitoredSeriesController(
         return Ok();
     }
 
+    [HttpPost("{id:guid}/{chapterId:guid}/set-status")]
+    public async Task<IActionResult> SetChapterStatus(Guid id, Guid chapterId, [FromQuery] MonitoredChapterStatus status)
+    {
+        var series = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        if (series == null) return NotFound();
+
+        if (series.UserId != UserId) return Forbid();
+
+        var chapter = series.Chapters.FirstOrDefault(c => c.Id == chapterId);
+        if (chapter == null) return NotFound();
+
+        chapter.Status = status;
+
+        await unitOfWork.CommitAsync();
+
+        return Ok();
+    }
+
     [HttpGet("form")]
     public ActionResult<FormDefinition> GetForm()
     {
         return Ok(monitoredSeriesService.GetForm());
+    }
+
+    [HttpGet("{id:guid}/metadata-form")]
+    public async Task<ActionResult<FormDefinition>> GetMetadataForm(Guid id)
+    {
+        return Ok(await monitoredSeriesService.GetMetadataForm(UserId, id, HttpContext.RequestAborted));
     }
 }

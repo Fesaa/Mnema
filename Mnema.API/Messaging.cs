@@ -16,7 +16,8 @@ public enum MessageEventType
     Notification,
     NotificationRead,
     NotificationAdd,
-    BulkContentInfoUpdate
+    BulkContentInfoUpdate,
+    MetadataRefreshed,
 }
 
 public interface IMessageService
@@ -33,4 +34,6 @@ public interface IMessageService
     Task NotificationAdded(Guid userId, int amount);
     Task NotificationRemoved(Guid userId, int amount);
     Task Notify(Guid userId, NotificationDto notification);
+
+    Task MetadataRefreshed(Guid userId, Guid seriesId);
 }

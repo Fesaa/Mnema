@@ -1,12 +1,13 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Mnema.Common;
-using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Models.Entities.Content;
 
 [Index(nameof(UserId))]
+[Obsolete("Use MonitoredSeries")]
 public class Subscription: IEntityDate
 {
     public Guid Id { get; set; }
@@ -33,21 +34,6 @@ public class Subscription: IEntityDate
     public required MetadataBag Metadata { get; set; }
 
     public required SubscriptionStatus Status { get; set; }
-
-    public DownloadRequestDto AsDownloadRequestDto()
-    {
-        return new DownloadRequestDto
-        {
-            Provider = Provider,
-            Id = ContentId,
-            BaseDir = BaseDir,
-            TempTitle = Title,
-            Metadata = Metadata,
-            StartImmediately = true,
-            UserId = UserId,
-            SubscriptionId = Id
-        };
-    }
 
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModifiedUtc { get; set; }

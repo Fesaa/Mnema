@@ -29,7 +29,7 @@ internal partial class QBitContentManager
         BackgroundJob.Enqueue(() => CleanupTorrent(torrent.Id, CancellationToken.None));
     }
 
-    [AutomaticRetry(Attempts = 0)] // Do not retry this we should be handling all meaningfully errors
+    [AutomaticRetry(Attempts = 0)] // Do not retry this we should be handling all meaningful errors
     [Queue(HangfireQueue.TorrentCleanup)]
     [DisableConcurrentExecution(timeoutInSeconds: 86400 * 2)] // 2 days
     public async Task CleanupTorrent(string hash, CancellationToken ct)
@@ -37,13 +37,13 @@ internal partial class QBitContentManager
         var torrent = await GetTorrent(hash, ct);
         if (torrent == null)
         {
-            await _cache.RemoveAsync(RequestCacheKey + hash, ct);
+            await cache.RemoveAsync(RequestCacheKey + hash, ct);
             _cleanupTorrents.TryRemove(hash, out _);
 
             return;
         }
 
-        using var scope = _scopeFactory.CreateScope();
+        using var scope = scopeFactory.CreateScope();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var connectionService = scope.ServiceProvider.GetRequiredService<IConnectionService>();
@@ -57,7 +57,7 @@ internal partial class QBitContentManager
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to cleanup torrent {TorrentId}", torrent.Id);
+            logger.LogError(ex, "Failed to cleanup torrent {TorrentId}", torrent.Id);
         }
         finally
         {
@@ -80,25 +80,25 @@ internal partial class QBitContentManager
 
             await unitOfWork.CommitAsync(ct);
 
-            _logger.LogInformation("[{Title}/{Id}] Cleaned up in {Elapsed}ms",  torrent.Title, torrent.Id, sw.ElapsedMilliseconds);
+            logger.LogInformation("[{Title}/{Id}] Cleaned up in {Elapsed}ms",  torrent.Title, torrent.Id, sw.ElapsedMilliseconds);
         }
     }
 
     private async Task<QBitTorrent?> GetTorrent(string hash, CancellationToken ct)
     {
-        var request = await _cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + hash, token: ct);
+        var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + hash, token: ct);
         if (request == null)
         {
-            _logger.LogWarning("Tried to get a torrent without matching request: {Id}", hash);
+            logger.LogWarning("Tried to get a torrent without matching request: {Id}", hash);
             return null;
         }
 
         var query = new TorrentListQuery { Category = MnemaCategory, Hashes = [hash] };
-        var qbitTorrents = await _qBitClient.GetTorrentsAsync(query, ct);
+        var qbitTorrents = await qBitClient.GetTorrentsAsync(query, ct);
         var qbitTorrent = qbitTorrents.FirstOrDefault(t => t.Hash == hash);
         if (qbitTorrent == null)
         {
-            _logger.LogWarning("Torrent to get no longer exists on the download client: {Id}", hash);
+            logger.LogWarning("Torrent to get no longer exists on the download client: {Id}", hash);
             return null;
         }
 

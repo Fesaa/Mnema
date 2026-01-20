@@ -1,5 +1,5 @@
 .clickable:hover:not(.disabled) {
-  background-color: var(--list-group-hover-bg-color, var(--primary-color));
+  background-color: var(--list-group-hover-bg-color, var(--secondary-color-lighter));
 }
 
 .disabled:hover {

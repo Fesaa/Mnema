@@ -50,7 +50,7 @@ public class HardcoverMetadataService(
 
     public async Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken)
     {
-        if (!int.TryParse(externalId, out int seriesId))
+        if (!int.TryParse(externalId, out var seriesId))
         {
             throw new MnemaException($"{nameof(externalId)} is not an integer");
         }
@@ -67,6 +67,22 @@ public class HardcoverMetadataService(
 
     private static Series ConvertFromHardcoverSeries(HardcoverSeries series)
     {
+        var realBooks = series.BookSeries.GroupBy(b => b.Position)
+            .SelectMany(g =>
+            {
+                if (g.Key == null)
+                    return g;
+
+                var featuredBook = g.FirstOrDefault(b => b.Featured);
+                if (featuredBook != null)
+                    return [featuredBook];
+
+                var fallBack = g.MaxBy(b => b.Book.UserReadCount);
+
+                return fallBack == null ? [] : [fallBack];
+            })
+            .ToList();
+
         return new Series
         {
             Id = series.Id.ToString(),
@@ -79,7 +95,7 @@ public class HardcoverMetadataService(
             CoverUrl = series.BookSeries.FirstOrDefault(b => b.Book.Image != null)?.Book.Image?.Url,
             RefUrl = $"{HardcoverBaseUrl}/series/{series.Slug}",
             Links = [$"{HardcoverBaseUrl}/series/{series.Slug}"],
-            Chapters = series.BookSeries.Select(b =>
+            Chapters = realBooks.Select(b =>
             {
                 var book = b.Book;
 
@@ -92,6 +108,8 @@ public class HardcoverMetadataService(
                     RefUrl = $"{HardcoverBaseUrl}/books/{book.Slug}",
                     VolumeMarker = b.Position?.ToString() ?? string.Empty,
                     ChapterMarker = string.Empty,
+                    SortOrder = b.Position,
+                    ReleaseDate = b.Book.ReleaseDate?.ToUniversalTime(),
                     Tags = book.Taggings
                         .Select(t => t.Tag)
                         .Where(t => t.TagCategory.Category == HardcoverTagCategory.Genre)

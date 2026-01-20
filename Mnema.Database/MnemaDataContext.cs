@@ -7,6 +7,7 @@ using Mnema.Common;
 using Mnema.Database.Extensions;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Entities.UI;
 using Mnema.Models.Entities.User;
 
@@ -24,6 +25,7 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<MnemaUser> Users { get; set; }
     public DbSet<UserPreferences> UserPreferences { get; set; }
     public DbSet<Page> Pages { get; set; }
+    [Obsolete("Use MonitoredSeries")]
     public DbSet<Subscription> Subscriptions { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<ServerSetting> ServerSettings { get; set; }
@@ -32,6 +34,8 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<ContentRelease> ContentReleases { get; set; }
     public DbSet<DownloadClient> DownloadClients { get; set; }
     public DbSet<MonitoredSeries> MonitoredSeries { get; set; }
+    public DbSet<MonitoredChapter> MonitoredChapters { get; set; }
+    public DbSet<ManualMigrationHistory> ManualMigrationHistory { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -77,16 +81,16 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
             .HasDefaultValue(new MetadataBag());
 
         builder.Entity<MonitoredSeries>()
-            .Property(m => m.Metadata)
-            .HasJsonConversion([])
-            .HasColumnType("TEXT")
-            .HasDefaultValue(new MetadataBag());
-
-        builder.Entity<MonitoredSeries>()
             .PrimitiveCollection(m => m.ValidTitles);
 
         builder.Entity<MonitoredSeries>()
             .PrimitiveCollection(m => m.Providers);
+
+        builder.Entity<MonitoredSeries>()
+            .Property(s => s.Metadata)
+            .HasJsonConversion(new MetadataBag())
+            .HasColumnType("TEXT")
+            .HasDefaultValue(new MetadataBag());
     }
 
     private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)

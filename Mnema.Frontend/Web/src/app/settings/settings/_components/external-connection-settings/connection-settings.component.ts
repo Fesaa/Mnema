@@ -1,11 +1,6 @@
 import {ChangeDetectionStrategy, Component, computed, EventEmitter, inject} from '@angular/core';
 import {ModalService} from "../../../../_services/modal.service";
-import {
-  Connection,
-  ConnectionService,
-  ConnectionType,
-  ConnectionTypes
-} from "./connection.service";
+import {Connection, ConnectionService, ConnectionType, ConnectionTypes} from "./connection.service";
 import {TableComponent} from "../../../../shared/_component/table/table.component";
 import {PageLoader} from "../../../../shared/_component/paginator/paginator.component";
 import {ConnectionTypePipe} from "./_pipes/connection-type.pipe";
@@ -13,7 +8,7 @@ import {ConnectionEventPipe} from "./_pipes/connection-event.pipe";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {GenericFormModalComponent} from "../../../../generic-form/generic-form-modal/generic-form-modal.component";
 import {DefaultModalOptions} from "../../../../_models/default-modal-options";
-import {finalize, map, of, switchMap, take, takeUntil, tap} from "rxjs";
+import {finalize, map, of, switchMap} from "rxjs";
 import {ListSelectModalComponent} from "../../../../shared/_component/list-select-modal/list-select-modal.component";
 
 @Component({

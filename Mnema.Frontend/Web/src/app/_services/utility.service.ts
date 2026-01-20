@@ -1,4 +1,4 @@
-import {HostListener, Injectable, signal} from '@angular/core';
+import {Injectable, signal} from '@angular/core';
 
 export enum Breakpoint {
   Mobile = 768,

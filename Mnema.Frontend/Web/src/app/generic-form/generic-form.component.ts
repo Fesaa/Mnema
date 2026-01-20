@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input, output,
-  Signal
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input, output, Signal, untracked} from '@angular/core';
 
 import {FormControlDefinition, FormControlOption, FormDefinition, FormType} from "./form";
 import {FormBuilder, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule} from "@angular/forms";
@@ -59,7 +52,7 @@ export class GenericFormComponent<T> {
     const fb = this.formGroupBuilder();
 
     // Type safety is only for the consumer, we cannot make such guarantees
-    const obj = this.initialValue() as any;
+    const obj = untracked(this.initialValue) as any;
 
     const formGroup: FormGroup = this.supplyFormGroup() ?? fb.group({})
     for (let control of formDefinition.controls) {

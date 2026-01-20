@@ -8,5 +8,6 @@ public enum ServerSettingKey
     FirstInstalledVersion = 4,
     InstallDate = 5,
     SubscriptionRefreshHour = 6,
-    LastUpdateDate = 7
+    LastUpdateDate = 7,
+    MetadataProviderSettings = 8,
 }
