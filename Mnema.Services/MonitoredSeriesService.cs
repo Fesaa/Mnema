@@ -256,7 +256,9 @@ public class MonitoredSeriesService(
         var seriesChapters = mSeries.Chapters;
 
         mSeries.Chapters = [];
-        unitOfWork.MonitoredSeriesRepository.RemoveRange(seriesChapters);
+
+        var allIds = series.Chapters.Select(c => c.Id).ToHashSet();
+        unitOfWork.MonitoredSeriesRepository.RemoveRange(seriesChapters.Where(c => !allIds.Contains(c.ExternalId)));
 
         foreach (var chapter in series.Chapters)
         {

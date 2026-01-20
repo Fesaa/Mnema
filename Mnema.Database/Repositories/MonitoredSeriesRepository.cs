@@ -73,7 +73,7 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IM
 
         return ctx.MonitoredSeries
             .Includes(MonitoredSeriesIncludes.Chapters)
-            //.Where(s => s.LastDataRefreshUtc < cutoffDate)
+            .Where(s => s.LastDataRefreshUtc < cutoffDate)
             .ToListAsync(cancellationToken);
     }
 

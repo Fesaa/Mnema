@@ -18,6 +18,7 @@ using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Internal;
 using Mnema.Models.Publication;
 using Mnema.Providers.Bato;
 using Mnema.Providers.Extensions;
@@ -237,7 +238,8 @@ internal class DynastyRepository(
             Title = document.DocumentNode.QuerySelector(".tag-title b").InnerText,
             LocalizedSeries = document.DocumentNode.QuerySelector(".aliases b")?.InnerText,
             Summary = document.DocumentNode.QuerySelector(".description p")?.InnerText ?? string.Empty,
-            CoverUrl = string.IsNullOrEmpty(coverUrl)
+            CoverUrl = coverUrl != null ? $"api/proxy/dynasty/covers/{coverUrl.RemovePrefix("/system/tag_contents_covers/")}" : string.Empty,
+            NonProxiedCoverUrl = string.IsNullOrEmpty(coverUrl)
                 ? string.Empty
                 : $"{Client.BaseAddress?.ToString().TrimEnd('/')}{coverUrl}",
             RefUrl = $"{Client.BaseAddress?.ToString().TrimEnd('/')}{request.Id}",

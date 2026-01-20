@@ -122,6 +122,17 @@ public class MetadataResolver(
             into.CoverUrl = from.CoverUrl;
         }
 
+        if (string.IsNullOrEmpty(into.RefUrl))
+        {
+            into.RefUrl = from.RefUrl;
+        }
+        else if (!string.IsNullOrEmpty(from.RefUrl) && !into.Links.Contains(from.RefUrl))
+        {
+            into.Links.Add(from.RefUrl);
+        }
+
+
+
         if (settings.PublicationStatus && into.Status == PublicationStatus.Unknown)
         {
             into.Status = from.Status;
