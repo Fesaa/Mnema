@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
-using Mnema.API.Content;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services.Scheduled;
@@ -17,7 +16,7 @@ namespace Mnema.Services.Scheduled;
 internal sealed record ProcessResult(List<ContentRelease> Releases, int StartedDownloads, int FailedDownloads);
 
 internal abstract class AbstractScheduler<TScheduler, TEntity>(
-    ILogger<TScheduler> logger,
+    ILogger logger,
     IServiceScopeFactory scopeFactory,
     IRecurringJobManagerV2 recurringJobManager,
     IWebHostEnvironment environment
@@ -27,7 +26,7 @@ internal abstract class AbstractScheduler<TScheduler, TEntity>(
     protected abstract string WatcherDescription { get; }
     protected virtual string CronExpression => "*/15 * * * *";
 
-    private static readonly RecurringJobOptions RecurringJobOptions = new()
+    private readonly RecurringJobOptions _recurringJobOptions = new()
     {
         TimeZone = TimeZoneInfo.Local
     };
@@ -44,7 +43,7 @@ internal abstract class AbstractScheduler<TScheduler, TEntity>(
             logger.LogDebug("Registering {WatcherDescription} task with cron {cron}", WatcherDescription, CronExpression);
             recurringJobManager.AddOrUpdate<TScheduler>(WatcherJobId,
                 j => (j as AbstractScheduler<TScheduler, TEntity>)!.RunWatcher(CancellationToken.None),
-                CronExpression, RecurringJobOptions);
+                CronExpression, _recurringJobOptions);
         }
 
         return Task.CompletedTask;
@@ -80,7 +79,7 @@ internal abstract class AbstractScheduler<TScheduler, TEntity>(
 
         try
         {
-            await unitOfWork.CommitAsync();
+            await unitOfWork.CommitAsync(cancellationToken);
         }
         catch (Exception ex)
         {

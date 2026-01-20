@@ -51,23 +51,9 @@ internal partial class Publication
             return;
         }
 
-        if (Request.SubscriptionId != null)
-        {
-            _subscription = await _unitOfWork.SubscriptionRepository
-                .GetSubscription(Request.SubscriptionId.Value, cancellationToken);
-            if (_subscription == null) throw new MnemaException("Invalid subscription linked to download");
-
-            if (Preferences.PinSubscriptionTitles &&
-                !_subscription.Metadata.ContainsKey(RequestConstants.TitleOverride))
-            {
-                _subscription.Metadata.SetValue(RequestConstants.TitleOverride, Title);
-                await _unitOfWork.CommitAsync();
-            }
-        }
-
         FilterAlreadyDownloadedContent(cancellationToken);
 
-        if (_queuedChapters.Count == 0 && (Request.StartImmediately || Request.IsSubscription))
+        if (_queuedChapters.Count == 0 && Request.StartImmediately)
         {
             _logger.LogDebug("[{Title}/{Id}] No chapters to download, stopping download", Title, Id);
             State = ContentState.Cancel;
@@ -75,9 +61,7 @@ internal partial class Publication
             return;
         }
 
-        State = Request.StartImmediately || Request.IsSubscription
-            ? ContentState.Ready
-            : ContentState.Waiting;
+        State = Request.StartImmediately ? ContentState.Ready : ContentState.Waiting;
         await _messageService.UpdateContent(Request.UserId, DownloadInfo);
 
         _logger.LogDebug("[{Title}/{Id}] Loading metadata, {ToDownload}/{Total} chapters in {Elapsed}ms",

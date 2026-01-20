@@ -24,6 +24,7 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<MnemaUser> Users { get; set; }
     public DbSet<UserPreferences> UserPreferences { get; set; }
     public DbSet<Page> Pages { get; set; }
+    [Obsolete("Use MonitoredSeries")]
     public DbSet<Subscription> Subscriptions { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<ServerSetting> ServerSettings { get; set; }
