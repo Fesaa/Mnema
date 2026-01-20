@@ -14,13 +14,19 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.Database.Repositories;
 
+[Flags]
+public enum MonitoredSeriesIncludes
+{
+    Chapters = 0,
+}
+
 public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IMonitoredSeriesRepository
 {
     public Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(Guid userId, string query, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
         return ctx.MonitoredSeries
-            .Include(s => s.Chapters)
+            .Includes(MonitoredSeriesIncludes.Chapters)
             .Where(m => m.UserId == userId)
             .Where(m => m.Title.Contains(query))
             .ProjectTo<MonitoredSeriesDto>(mapper.ConfigurationProvider)
@@ -31,14 +37,14 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IM
     public Task<MonitoredSeries?> GetMonitoredSeries(Guid id, CancellationToken cancellationToken = default)
     {
         return ctx.MonitoredSeries
-            .Include(s => s.Chapters)
+            .Includes(MonitoredSeriesIncludes.Chapters)
             .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
     }
 
     public Task<List<MonitoredSeries>> GetMonitoredSeriesByTitle(string title, CancellationToken cancellationToken)
     {
         return ctx.MonitoredSeries
-            .Include(s => s.Chapters)
+            .Includes(MonitoredSeriesIncludes.Chapters)
             .Where(m => m.ValidTitles.Any(t => t.Contains(title)))
             .ToListAsync(cancellationToken);
     }
@@ -46,14 +52,16 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IM
     public Task<MonitoredSeriesDto?> GetMonitoredSeriesDto(Guid id, CancellationToken cancellationToken = default)
     {
         return ctx.MonitoredSeries
-            .Include(s => s.Chapters)
+            .Includes(MonitoredSeriesIncludes.Chapters)
             .ProjectTo<MonitoredSeriesDto>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
     }
 
     public Task<List<MonitoredSeries>> GetAllMonitoredSeries(CancellationToken cancellationToken = default)
     {
-        return ctx.MonitoredSeries.Include(s => s.Chapters).ToListAsync(cancellationToken);
+        return ctx.MonitoredSeries
+            .Includes(MonitoredSeriesIncludes.Chapters)
+            .ToListAsync(cancellationToken);
     }
 
     public Task<List<MonitoredSeries>> GetSeriesEligibleForRefresh(CancellationToken cancellationToken = default)
@@ -61,7 +69,7 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IM
         var cutoffDate = DateTime.UtcNow.AddDays(-7);
 
         return ctx.MonitoredSeries
-            .Include(s => s.Chapters)
+            .Includes(MonitoredSeriesIncludes.Chapters)
             //.Where(s => s.LastDataRefreshUtc < cutoffDate)
             .ToListAsync(cancellationToken);
     }
