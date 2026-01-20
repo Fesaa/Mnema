@@ -1,4 +1,5 @@
 using System;
+using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.Entities.Content;
 

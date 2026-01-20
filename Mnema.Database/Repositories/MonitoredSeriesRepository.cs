@@ -8,6 +8,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Mnema.API;
 using Mnema.Common;
+using Mnema.Common.Extensions;
 using Mnema.Database.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
@@ -25,10 +26,12 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IM
     public Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(Guid userId, string query, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
+        query = query.ToNormalized();
+
         return ctx.MonitoredSeries
             .Includes(MonitoredSeriesIncludes.Chapters)
             .Where(m => m.UserId == userId)
-            .Where(m => m.Title.Contains(query))
+            .Where(m => m.NormalizedTitle.Contains(query))
             .ProjectTo<MonitoredSeriesDto>(mapper.ConfigurationProvider)
             .OrderBy(m => m.Id)
             .AsPagedList(pagination, cancellationToken);

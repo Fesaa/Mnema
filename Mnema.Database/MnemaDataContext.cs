@@ -7,6 +7,7 @@ using Mnema.Common;
 using Mnema.Database.Extensions;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Entities.UI;
 using Mnema.Models.Entities.User;
 

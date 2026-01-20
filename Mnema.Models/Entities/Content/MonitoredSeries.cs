@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Mnema.Common;
+using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.Entities.Content;
 
@@ -14,6 +15,8 @@ public class MonitoredSeries: IEntityDate
     /// This title has no effect on actual downloads
     /// </summary>
     public required string Title { get; set; }
+    [NormalizedFrom(nameof(Title))]
+    public string NormalizedTitle { get; set; }
     public string Summary { get; set; }
     public string? CoverUrl { get; set; }
     public string? RefUrl { get; set; }

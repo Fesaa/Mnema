@@ -1,6 +1,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Mnema.Common;
+using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Models.Entities.Content;

@@ -12,3 +12,5 @@ appsettings.Development.json
 Mnema.sln.DotSettings.user
 *.db
 Mnema.Metadata.Langabaka.Lucene
+**/bin/
+**/obj/
