@@ -1129,7 +1129,8 @@
   "monitored-series-detail": {
     "last-updated": "Last updated {{time}}",
     "chapters": "Chapters",
-    "no-chapters": "No chapters found"
+    "no-chapters": "No chapters found",
+    "confirm-delete": "Are you sure you want to stop monitoring {{name}}"
   }
 
 }

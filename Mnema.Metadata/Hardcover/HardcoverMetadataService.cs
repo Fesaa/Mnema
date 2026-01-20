@@ -108,6 +108,7 @@ public class HardcoverMetadataService(
                     RefUrl = $"{HardcoverBaseUrl}/books/{book.Slug}",
                     VolumeMarker = b.Position?.ToString() ?? string.Empty,
                     ChapterMarker = string.Empty,
+                    ReleaseDate = b.Book.ReleaseDate?.ToUniversalTime(),
                     Tags = book.Taggings
                         .Select(t => t.Tag)
                         .Where(t => t.TagCategory.Category == HardcoverTagCategory.Genre)

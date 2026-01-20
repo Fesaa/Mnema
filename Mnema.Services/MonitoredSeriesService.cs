@@ -68,9 +68,10 @@ public class MonitoredSeriesService(
             Format = dto.Metadata.GetEnum<Format>(RequestConstants.FormatKey) ?? throw new MnemaException("A format must be provided"),
             ValidTitles = dto.ValidTitles,
             Metadata = dto.Metadata,
+            Chapters = [],
         };
 
-        await EnrichWithMetadata(series);
+        await EnrichWithMetadata(series, cancellationToken);
 
         unitOfWork.MonitoredSeriesRepository.Add(series);
 

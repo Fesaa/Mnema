@@ -6,6 +6,8 @@ namespace Mnema.Models.DTOs.Content;
 public class MonitoredChapterDto
 {
     public Guid Id { get; set; }
+    public string ExternalId { get; set; }
+
     public Guid SeriesId { get; set; }
 
     public MonitoredChapterStatus Status { get; set; }

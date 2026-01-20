@@ -23,11 +23,11 @@
                   <button class="btn btn-sm btn-secondary me-2">
                     <i class="fa fa-pencil"></i>
                   </button>
-                  <button class="btn btn-sm btn-danger">
+                  <button class="btn btn-sm btn-danger" (click)="delete()">
                     <i class="fa fa-trash"></i>
                   </button>
                   @if (s.refUrl) {
-                    <a [href]="s.refUrl" target="_blank" class="btn btn-sm btn-secondary ms-2">
+                    <a [href]="s.refUrl" target="_blank" class="btn btn-sm btn-secondary ms-2 text-white">
                       <i class="fa fa-external-link-alt"></i>
                     </a>
                   }
@@ -43,7 +43,7 @@
                 </app-badge>
                 @if (s.lastDataRefreshUtc) {
                   <span class=" small" [ngbTooltip]="t('last-updated', { time: s.lastDataRefreshUtc | utcToLocalTime:'short' })">
-                    <i class="fa fa-arrow-right-rotate"></i>
+                    <i class="fa fa-calendar-alt"></i>
                   </span>
                 }
               </div>
@@ -108,7 +108,7 @@
                       <div class="chapter-meta">
                         @if (chapter.releaseDate) {
                           <small class="text-muted me-3">
-                            <i class="fa fa-calendar"></i> {{ chapter.releaseDate | utcToLocalTime }}
+                            <i class="fa fa-calendar"></i> {{ chapter.releaseDate | utcToLocalTime:'shortDate' }}
                           </small>
                         }
                         @if (chapter.filePath) {

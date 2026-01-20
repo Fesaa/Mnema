@@ -1,116 +1,55 @@
 <div class="mx-4 mx-md-5 mb-5" *transloco="let t; prefix: 'monitored-series'">
-  <div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="d-flex justify-content-between align-items-center mb-4">
     <form [formGroup]="filterForm">
       <input class="form-control" type="text" [placeholder]="t('filter')" formControlName="filterText">
     </form>
-    <button class="btn btn-secondary" (click)="add()">
-      <i class="fa fa-plus me-2"></i> {{ t('actions.add') }}
-    </button>
   </div>
 
-  <app-table
+  <app-paginator
     [pageLoader]="pageLoader()"
     (currentItems)="hasAny.set($event.length > 0)"
-    [trackByIdFunc]="trackBy"
     [reloader]="pageReloader"
-    [pageSize]="10"
+    [pageSize]="20"
+    [noResultsKey]="null"
+    [hideOnLoading]="true"
   >
-    <ng-template #mobile let-series>
-      <div class="card mobile-card">
-        <div class="card-header">
-          <span class="card-title">{{ series.title }}</span>
-        </div>
-        <div class="card-body">
-          <div class="mb-2">
-            <small class="text-muted">{{ t('providers') }}:</small>
-            <span class="ms-2">
-              @for (provider of series.providers; track provider) {
-                <span class="badge bg-info me-1">{{ provider | providerName }}</span>
-              }
-            </span>
-          </div>
-          <div class="mb-2">
-            <small class="text-muted">{{ t('base-dir') }}:</small>
-            <span class="ms-2">{{ series.baseDir }}</span>
-          </div>
-        </div>
-        <div class="card-footer">
-          <div class="card-actions">
-            <button
-              type="button"
-              class="btn btn-primary btn-small"
-              [ngbTooltip]="t('actions.edit')"
-              (click)="edit(series)"
-            >
-              <i class="fa fa-pencil"></i>
-            </button>
-            <button
-              type="button"
-              class="btn btn-danger btn-small"
-              (click)="delete(series)"
-              [ngbTooltip]="t('actions.delete')"
-            >
-              <i class="fa fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </ng-template>
+    <ng-template #items let-series>
+      @if (hasAny()) {
+        <div class="series-grid">
+          @for (item of series; track item.id) {
+            <div class="series-card">
+              <a [routerLink]="'/monitored-series-detail/' + item.id" class="series-link">
+                <div class="series-cover-wrapper">
+                  @if (item.coverUrl) {
+                    <img [src]="item.coverUrl" [alt]="item.title" class="series-cover">
+                  } @else {
+                    <div class="series-cover-placeholder">
+                      <i class="fa fa-book"></i>
+                    </div>
+                  }
+                </div>
 
-    <ng-template #header>
-      <tr>
-        <th class="table-header-cell">{{ t('title') }}</th>
-        <th class="table-header-cell">{{ t('providers') }}</th>
-        <th class="table-header-cell">{{ t('base-dir') }}</th>
-        <th class="table-header-cell">{{ t('actions.label') }}</th>
-      </tr>
-    </ng-template>
-
-    <ng-template #cell let-series>
-      <td class="table-cell">
-        {{ series.title }}
-      </td>
-      <td class="table-cell">
-        @for (provider of series.providers; track provider) {
-          <span class="badge bg-info me-1">{{ provider | providerName }}</span>
-        }
-      </td>
-      <td class="table-cell">
-        <code class="text-muted">{{ series.baseDir }}</code>
-      </td>
-      <td class="table-cell">
-        <div class="d-flex flex-column flex-md-row gap-2 my-2 justify-content-center align-items-center">
-          <button
-            type="button"
-            class="btn btn-primary btn-small"
-            [ngbTooltip]="t('actions.edit')"
-            (click)="edit(series)"
-          >
-            <i class="fa fa-pencil"></i>
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary btn-small"
-            [ngbTooltip]="t('actions.view')"
-            [routerLink]="'/monitored-series-detail/' + series.id"
-          >
-            <i class="fa fa-eye"></i>
-          </button>
-          <button
-            type="button"
-            class="btn btn-danger btn-small"
-            (click)="delete(series)"
-            [ngbTooltip]="t('actions.delete')"
-          >
-            <i class="fa fa-trash"></i>
-          </button>
+                <div class="series-info">
+                  <h5 class="series-title" [title]="item.title">{{ item.title }}</h5>
+                  @if (item.chapters && item.chapters.length > 0) {
+                    <div class="series-stats">
+                      <small class="text-muted">
+                        <i class="fa fa-list me-1"></i>{{ item.chapters.length }} chapters
+                      </small>
+                    </div>
+                  }
+                  @if (nextReleaseDate(item); as releaseDate) {
+                    <span>
+                      {{t('next-release-date', {date: releaseDate})}}
+                    </span>
+                  }
+                </div>
+              </a>
+            </div>
+          }
         </div>
-      </td>
-    </ng-template>
-
-    <ng-template #empty>
-      <tr>
-        <td colspan="4" class="py-5">
+      } @else {
+        <div class="empty-state">
           <div class="d-flex flex-column align-items-center text-center gap-3 text-muted">
             <div style="font-size: 3rem;">
               📺✨
@@ -122,8 +61,8 @@
               {{t('empty.description')}}
             </p>
           </div>
-        </td>
-      </tr>
+        </div>
+      }
     </ng-template>
-  </app-table>
+  </app-paginator>
 </div>
