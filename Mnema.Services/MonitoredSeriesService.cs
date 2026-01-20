@@ -46,9 +46,11 @@ public class MonitoredSeriesService(
         series.ContentFormat = dto.ContentFormat;
         series.Format = dto.Format;
         series.ValidTitles = dto.ValidTitles;
-        series.Metadata = dto.Metadata;
+        series.HardcoverId = dto.HardcoverId;
+        series.MangaBakaId = dto.MangaBakaId;
+        series.TitleOverride = dto.TitleOverride;
 
-        await EnrichWithMetadata(series);
+        await EnrichWithMetadata(series, cancellationToken);
 
         unitOfWork.MonitoredSeriesRepository.Update(series);
 
@@ -64,10 +66,13 @@ public class MonitoredSeriesService(
             Title = dto.Title,
             BaseDir = dto.BaseDir,
             Providers = dto.Providers,
-            ContentFormat = dto.Metadata.GetEnum<ContentFormat>(RequestConstants.FormatKey) ?? throw new MnemaException("A content format must be provided"),
-            Format = dto.Metadata.GetEnum<Format>(RequestConstants.FormatKey) ?? throw new MnemaException("A format must be provided"),
+            ContentFormat = dto.ContentFormat,
+            Format = dto.Format,
+            HardcoverId = dto.HardcoverId,
+            MangaBakaId = dto.MangaBakaId,
+            TitleOverride = dto.TitleOverride,
             ValidTitles = dto.ValidTitles,
-            Metadata = dto.Metadata,
+            Summary = string.Empty,
             Chapters = [],
         };
 
@@ -128,20 +133,66 @@ public class MonitoredSeriesService(
                         .Select(provider => new FormControlOption(provider.ToString().ToLower(), provider))
                         .ToList(),
                 },
+                new FormControlDefinition
+                {
+                    Key = "format",
+                    Field = "format",
+                    Type = FormType.DropDown,
+                    ValueType = FormValueType.Integer,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                    Options = Enum.GetValues<Format>()
+                        .Select(f => new FormControlOption(f.ToString().ToLower(), f))
+                        .ToList(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "content_format",
+                    Field = "contentFormat",
+                    Type = FormType.DropDown,
+                    ValueType = FormValueType.Integer,
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .Build(),
+                    Options = Enum.GetValues<ContentFormat>()
+                        .Select(f => new FormControlOption(f.ToString().ToLower(), f))
+                        .ToList(),
+                },
+                new FormControlDefinition
+                {
+                    Key = "hardcover-id",
+                    Field = "hardcoverId",
+                    Type = FormType.Text,
+                },
+                new FormControlDefinition
+                {
+                    Key = "mangabaka-id",
+                    Field = "mangabakaId",
+                    Type = FormType.Text,
+                },
+                new FormControlDefinition
+                {
+                    Key = "title_override",
+                    Field = "titleOverride",
+                    Type = FormType.Text,
+                }
             ]
         };
     }
 
     public async Task EnrichWithMetadata(MonitoredSeries mSeries, CancellationToken ct = default)
     {
-        var series = await metadataResolver.ResolveSeriesAsync(mSeries.Metadata, ct);
+        var metadata = mSeries.MetadataForDownloadRequest();
+
+        var series = await metadataResolver.ResolveSeriesAsync(metadata, ct);
         if (series == null)
         {
             logger.LogWarning("Monitored series {Title} has no metadata linked. Nothing will be downloaded", mSeries.Title);
             return;
         }
 
-        var title = mSeries.Metadata.GetStringOrDefault(RequestConstants.TitleOverride, series.Title);
+        var title = metadata.GetStringOrDefault(RequestConstants.TitleOverride, series.Title);
         if (string.IsNullOrEmpty(title))
             return;
 

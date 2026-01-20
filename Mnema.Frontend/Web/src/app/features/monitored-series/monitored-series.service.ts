@@ -4,7 +4,6 @@ import {Observable, of, tap} from "rxjs";
 import {environment} from "@env/environment";
 import {FormDefinition} from "@mnema/generic-form/form";
 import {Provider} from "@mnema/_models/page";
-import {MetadataBag} from "@mnema/_models/search";
 import {PagedList} from "@mnema/_models/paged-list";
 
 export type MonitoredSeries = {
@@ -15,10 +14,12 @@ export type MonitoredSeries = {
   refUrl?: string;
   providers: Provider[];
   baseDir: string;
-  contentFormat: ContentFormat;
   format: Format;
+  contentFormat: ContentFormat;
+  hardcoverId: string,
+  mangabakaId: string;
+  titleOverride: string;
   validTitles: string[];
-  metadata: MetadataBag;
   lastDataRefreshUtc: string;
   chapters: MonitoredChapter[];
 }

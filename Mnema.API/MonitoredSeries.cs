@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
@@ -36,4 +37,19 @@ public interface IMonitoredSeriesService
     FormDefinition GetForm();
 
     Task EnrichWithMetadata(MonitoredSeries mSeries, CancellationToken cancellationToken = default);
+}
+
+public static class MonitoredSeriesExtensions
+{
+    public static MetadataBag MetadataForDownloadRequest(this MonitoredSeries monitoredSeries)
+    {
+        var bag = new MetadataBag();
+        bag.SetValue(RequestConstants.HardcoverSeriesIdKey, monitoredSeries.HardcoverId);
+        bag.SetValue(RequestConstants.MangaBakaKey, monitoredSeries.MangaBakaId);
+        bag.SetValue(RequestConstants.FormatKey, monitoredSeries.Format.ToString());
+        bag.SetValue(RequestConstants.ContentFormatKey, monitoredSeries.ContentFormat.ToString());
+        bag.SetValue(RequestConstants.TitleOverride, monitoredSeries.TitleOverride);
+
+        return bag;
+    }
 }

@@ -6,8 +6,7 @@ import {GenericFormComponent} from "@mnema/generic-form/generic-form.component";
 import {MonitoredSeries, MonitoredSeriesService} from "@mnema/features/monitored-series/monitored-series.service";
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factory.service";
-import {Provider} from "@mnema/_models/page";
-import {FormControlDefinition, FormDefinition} from "@mnema/generic-form/form";
+import {FormDefinition} from "@mnema/generic-form/form";
 import {tap} from "rxjs";
 
 @Component({
@@ -29,50 +28,8 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
   private readonly genericFormFactoryService = inject(GenericFormFactoryService);
 
   series = model.required<MonitoredSeries>();
-  metadata = model.required<Map<Provider, FormControlDefinition[]>>();
 
   formDefinition = signal<FormDefinition | undefined>(undefined);
-
-  protected metadataControls = computed(() => {
-    const metadata = this.metadata();
-
-    const hasSeen = new Set<string>();
-    const allControls: FormControlDefinition[] = [];
-
-    for (let [p, controls] of metadata.entries()) {
-      // TODO: Only include controls for selected providers
-
-      controls.filter(c => !hasSeen.has(c.key)).forEach(c => {
-        allControls.push(c);
-        hasSeen.add(c.key);
-      });
-    }
-
-    return allControls;
-  })
-
-  optionsFormDefinition = computed(() => {
-    const form = this.formDefinition();
-    if (!form) return null;
-
-    return {
-      key: form.key,
-      descriptionKey: '',
-      controls: this.metadataControls().filter(d => !d.advanced),
-    }
-  });
-  advancedFormDefinition = computed(() => {
-    const form = this.formDefinition();
-    if (!form) return null;
-
-    return {
-      key: form.key,
-      descriptionKey: '',
-      controls: this.metadataControls().filter(d => d.advanced),
-    }
-  });
-
-  activeTab: 'general' | 'options' | 'advanced' = 'general';
 
   seriesForm = new FormGroup({});
 

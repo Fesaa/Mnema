@@ -74,23 +74,11 @@ export class SeriesSearchComponent implements OnInit {
       tap(m => this.metadata.set(m))
     ).subscribe();
   }
-
-  private getMetadataKey() {
-    switch (this.searchOptions().provider) {
-      case MetadataProvider.Hardcover:
-        return "hardcover_series_id";
-      case MetadataProvider.Mangabaka:
-        return "mangabaka";
-    }
-  }
-
   monitor(series: Series) {
     const validTitles = [series.title];
     if (series.localizedSeries) {
       validTitles.push(series.title);
     }
-
-    const metadataKey = this.getMetadataKey();
 
     const [_, component] = this.modalService.open(EditMonitoredSeriesModalComponent, DefaultModalOptions);
     component.series.set({
@@ -101,14 +89,13 @@ export class SeriesSearchComponent implements OnInit {
       baseDir: '',
       contentFormat: 0,
       format: 0,
-      metadata: {
-        [metadataKey]: [series.id]
-      },
+      titleOverride: '',
+      hardcoverId: this.searchOptions().provider === MetadataProvider.Hardcover ? series.id : '',
+      mangabakaId: this.searchOptions().provider === MetadataProvider.Mangabaka ? series.id : '',
       summary: "",
       lastDataRefreshUtc: '',
       chapters: []
     });
-    component.metadata.set(this.metadata());
   }
 
 

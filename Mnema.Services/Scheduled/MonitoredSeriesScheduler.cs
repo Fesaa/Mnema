@@ -75,7 +75,7 @@ internal class MonitoredSeriesScheduler(
                     Id = release.ReleaseId,
                     BaseDir = match.BaseDir,
                     TempTitle = release.ContentName,
-                    Metadata = match.Metadata,
+                    Metadata = match.MetadataForDownloadRequest(),
                     DownloadUrl = release.DownloadUrl,
                     StartImmediately = true,
                     UserId = match.UserId,

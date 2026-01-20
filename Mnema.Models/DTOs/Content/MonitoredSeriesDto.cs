@@ -38,10 +38,9 @@ public sealed record MonitoredSeriesDto
     /// <remarks>You can use the auto complete in the UI to load from metadata providers</remarks>
     public List<string> ValidTitles { get; set; }
 
-    /// <summary>
-    /// Contains ids of <see cref="MetadataProvider"/>
-    /// </summary>
-    public MetadataBag Metadata { get; set; }
+    public string HardcoverId { get; set; }
+    public string MangaBakaId { get; set; }
+    public string TitleOverride { get; set; }
 
 
     public DateTime CreatedUtc { get; set; }

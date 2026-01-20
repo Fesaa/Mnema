@@ -20,5 +20,8 @@ public class CreateOrUpdateMonitoredSeriesDto
     public ContentFormat ContentFormat { get; set; }
     public Format Format { get; set; }
 
-    public required MetadataBag Metadata { get; set; }
+    public string HardcoverId { get; set; }
+    public string MangaBakaId { get; set; }
+    public string TitleOverride { get; set; }
+
 }
