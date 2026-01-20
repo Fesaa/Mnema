@@ -112,7 +112,7 @@ public class WeebdexRepository: IRepository
             .Select(chapter => new ContentRelease
             {
                 ReleaseId = chapter.Id,
-                ReleaseName = chapter.Title,
+                ReleaseName = chapter.Title ?? string.Empty,
                 ContentId = chapter.Relationships.Manga.Id,
                 ReleaseDate = chapter.CreatedAt,
                 Provider = Provider.Weebdex
@@ -257,16 +257,16 @@ public class WeebdexRepository: IRepository
         var filteredChapters = FilterChapters(chapters.Data, language, request).Select(chapter => new Chapter
         {
             Id = chapter.Id,
-            Title = chapter.Title,
+            Title = chapter.Title ?? string.Empty,
             VolumeMarker = chapter.Volume ?? string.Empty,
             ChapterMarker = chapter.ChapterNumber ?? string.Empty,
             ReleaseDate = chapter.PublishedAt,
             Tags = [],
             People = [],
             TranslationGroups = chapter.Relationships
-                .Groups
+                .Groups?
                 .Select(g => g.Name)
-                .ToList()
+                .ToList() ?? []
         }).ToList();
 
         return new Series
@@ -368,7 +368,7 @@ public class WeebdexRepository: IRepository
 
             if (string.IsNullOrEmpty(scanlationGroup)) return true;
 
-            return chapter.Relationships.Groups
+            return chapter.Relationships.Groups?
                 .FirstOrDefault(r => r.Id == scanlationGroup) != null;
         };
     }

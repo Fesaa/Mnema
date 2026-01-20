@@ -179,7 +179,8 @@
     "mangadex": "Mangadex",
     "dynasty": "Dynasty",
     "webtoon": "Webtoon",
-    "bato": "Bato"
+    "bato": "Bato",
+    "weebdex": "Weebdex"
   },
 
   "content-format-pipe": {
@@ -977,7 +978,9 @@
       "nyaa": "{{provider-name-pipe.nyaa}}",
       "mangadex": "{{provider-name-pipe.mangadex}}",
       "dynasty": "{{provider-name-pipe.dynasty}}",
-      "webtoons": "{{provider-name-pipe.webtoon}}"
+      "webtoons": "{{provider-name-pipe.webtoon}}",
+      "bato": "{{provider-name-pipe.bato}}",
+      "weebdex": "{{provider-name-pipe.weebdex}}"
     },
     "valid-titles-title": "Valid titles",
     "valid-titles-tooltip": "Titles that parsed content can match on to be considered this series",

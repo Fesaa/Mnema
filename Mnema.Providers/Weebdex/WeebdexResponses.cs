@@ -235,7 +235,7 @@ internal sealed record WeebdexChapter : Identifiable
     public string? Volume { get; set; }
 
     [JsonPropertyName("title")]
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
     [JsonPropertyName("language")]
     public string Language { get; set; }
@@ -289,7 +289,7 @@ internal sealed record ChapterRelationships
     public Identifiable Manga { get; set; }
 
     [JsonPropertyName("groups")]
-    public List<Group> Groups { get; set; }
+    public List<Group>? Groups { get; set; }
 }
 
 internal sealed record Group
