@@ -182,3 +182,7 @@ a:hover {
   height: 1px;
   background-color: var(--secondary-color-lighter);
 }
+
+.nav-pills .nav-link.active {
+  background-color: var(--secondary-color-lighter);
+}

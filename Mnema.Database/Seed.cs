@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,35 @@ public static class Seed
             if (existing == null) ctx.ServerSettings.Add(defaultServerSetting);
         }
 
+
+        await ctx.SaveChangesAsync();
+
+        await SeedMetadataProviderSettings(ctx);
+    }
+
+    private static async Task SeedMetadataProviderSettings(MnemaDataContext ctx)
+    {
+        var setting = await ctx.ServerSettings.FirstAsync(s => s.Key == ServerSettingKey.MetadataProviderSettings);
+
+        var settings = JsonSerializer.Deserialize<Dictionary<MetadataProvider, MetadataProviderSettingsDto>>(setting.Value);
+        if (settings == null)
+            return;
+
+        var highestPriority = settings.Values.Count > 0 ? settings.Values.Max(s => s.Priority) : 0;
+
+        foreach (var metadataProvider in Enum.GetValues<MetadataProvider>())
+        {
+            if (settings.ContainsKey(metadataProvider))
+                continue;
+
+            settings[metadataProvider] = new MetadataProviderSettingsDto(highestPriority++, false,
+                new SeriesMetadataSettingsDto(
+                    true, true, true, true, true, true, true, true, true,
+                    true, true, new ChapterMetadataSettingsDto(true, true, true, true, true)
+                ));
+        }
+
+        setting.Value = JsonSerializer.Serialize(settings);
 
         await ctx.SaveChangesAsync();
     }
