@@ -68,7 +68,7 @@ public class WeebdexRepository: IRepository
             .SetQueryParam("includedTagsMode", request.Modifiers.GetStringOrDefault("includedTagsMode", "AND"))
             .AddRange("excludedTags", request.Modifiers.GetStrings("excludeTags"))
             .SetQueryParam("excludedTagsMode", request.Modifiers.GetStringOrDefault("excludedTagsMode", "OR"))
-            .AddPagination(pagination)
+            .AddPagination(pagination.PageSize, pagination.PageNumber + 1)
             .AddIncludes();
 
         var result =
@@ -90,7 +90,7 @@ public class WeebdexRepository: IRepository
             Size = sr.Size(),
         });
 
-        return new PagedList<SearchResult>(items, response.Total, response.Page, response.Limit);
+        return new PagedList<SearchResult>(items, response.Total, response.Page - 1, response.Limit);
     }
 
     public async Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken)
@@ -293,7 +293,7 @@ public class WeebdexRepository: IRepository
     }
 
     private async Task<ChapterResponse> GetChaptersForSeries(string id, string language,
-        CancellationToken cancellationToken, int page = 0)
+        CancellationToken cancellationToken, int page = 1)
     {
         var url = $"/manga/{id}/chapters?order[volume]=desc&order[chapter]=desc"
             .AppendQueryParam("translatedLanguage[]", language)
@@ -307,7 +307,7 @@ public class WeebdexRepository: IRepository
 
         var resp = result.Unwrap();
 
-        if (resp.Total < resp.Limit * resp.Page) return resp;
+        if (resp.Total < resp.Limit * resp.Page + 1) return resp;
 
         var extra = await GetChaptersForSeries(id, language, cancellationToken, resp.Page+1);
 
