@@ -50,7 +50,7 @@ public class HardcoverMetadataService(
 
     public async Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken)
     {
-        if (!int.TryParse(externalId, out int seriesId))
+        if (!int.TryParse(externalId, out var seriesId))
         {
             throw new MnemaException($"{nameof(externalId)} is not an integer");
         }
@@ -108,6 +108,7 @@ public class HardcoverMetadataService(
                     RefUrl = $"{HardcoverBaseUrl}/books/{book.Slug}",
                     VolumeMarker = b.Position?.ToString() ?? string.Empty,
                     ChapterMarker = string.Empty,
+                    SortOrder = b.Position,
                     ReleaseDate = b.Book.ReleaseDate?.ToUniversalTime(),
                     Tags = book.Taggings
                         .Select(t => t.Tag)

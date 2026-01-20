@@ -26,7 +26,7 @@ public class AutoMapperProfiles : Profile
         CreateMap<MonitoredSeries, MonitoredSeriesDto>()
             .ForMember(dest => dest.Chapters, opt
                 => opt.MapFrom(src
-                    => src.Chapters.OrderBy(c => c.Volume).ThenBy(c => c.Chapter)
+                    => src.Chapters.OrderBy(c => c.SortOrder)
             ));
         CreateMap<MonitoredChapter, MonitoredChapterDto>();
     }

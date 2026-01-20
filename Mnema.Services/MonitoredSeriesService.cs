@@ -263,6 +263,7 @@ public class MonitoredSeriesService(
         mChapter.CoverUrl = chapter.CoverUrl;
         mChapter.RefUrl = chapter.RefUrl;
         mChapter.ReleaseDate = chapter.ReleaseDate;
+        mChapter.SortOrder = chapter.SortOrder ?? ParserService.SpecialVolumeNumber;
     }
 
     private static OnDiskContent? FindMatchingFile(List<OnDiskContent> onDiskContents, Chapter chapter)

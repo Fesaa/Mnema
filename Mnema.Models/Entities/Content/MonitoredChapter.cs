@@ -17,6 +17,7 @@ public class MonitoredChapter: IEntityDate
 
     public string Volume { get; set; }
     public string Chapter { get; set; }
+    public float SortOrder { get; set; }
 
     public string? CoverUrl { get; set; }
     public string? RefUrl { get; set; }

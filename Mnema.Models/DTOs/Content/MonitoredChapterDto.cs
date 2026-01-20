@@ -22,6 +22,7 @@ public class MonitoredChapterDto
     public string? RefUrl { get; set; }
 
     public string? FilePath { get; set; }
+    public float SortOrder { get; set; }
 
     /// <summary>
     /// Chapters without a release date are considered available
