@@ -19,6 +19,7 @@ public interface IMonitoredSeriesRepository
     Task<MonitoredSeriesDto?> GetMonitoredSeriesDto(Guid id, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetAllMonitoredSeries(CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetSeriesEligibleForRefresh(CancellationToken cancellationToken = default);
+    Task<bool> CheckDuplicateSeries(Guid userId, Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
 
     void Update(MonitoredSeries series);
     void Add(MonitoredSeries series);

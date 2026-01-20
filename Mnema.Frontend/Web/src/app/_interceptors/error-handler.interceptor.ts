@@ -25,8 +25,6 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (req, next) => {
         case 401:
           window.location.href = "/Auth/logout";
           break;
-        case 400:
-          toastr.error("Bad request!");
       }
 
       throw err;

@@ -40,6 +40,11 @@ public class MonitoredSeriesService(
 
         if (series.UserId != userId) throw new ForbiddenException();
 
+        if (await unitOfWork.MonitoredSeriesRepository.CheckDuplicateSeries(userId, series.Id, dto, cancellationToken))
+        {
+            throw new MnemaException("You cannot monitor the same series twice (External Ids or Valid Titles)");
+        }
+
         series.Title = dto.Title;
         series.BaseDir = dto.BaseDir;
         series.Providers = dto.Providers;
@@ -60,6 +65,11 @@ public class MonitoredSeriesService(
     public async Task CreateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto,
         CancellationToken cancellationToken = default)
     {
+        if (await unitOfWork.MonitoredSeriesRepository.CheckDuplicateSeries(userId, null, dto, cancellationToken))
+        {
+            throw new MnemaException("You cannot monitor the same series twice (External Ids or Valid Titles)");
+        }
+
         var series = new MonitoredSeries
         {
             UserId = userId,
