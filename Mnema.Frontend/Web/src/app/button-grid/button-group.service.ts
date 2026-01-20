@@ -200,19 +200,6 @@ export class ButtonGroupService {
       .filter(btn => this.shouldRender(btn));
   }
 
-  groupBadge(group: ButtonGroup): string | undefined {
-    const counts = this.groupedButtons(group)
-      .map(btn => btn.badge)
-      .filter(badge => !!badge)
-      .map(badge => parseInt(badge!))
-      .filter(num => !isNaN(num));
-
-    if (counts.length === 0) return undefined;
-
-    const total = counts.reduce((acc, curr) => acc + curr, 0);
-    return total > 0 ? `${total}` : undefined;
-  }
-
   handleButtonClick(button: Button, event?: Event): void {
     if (button.onClick) {
       event?.preventDefault();

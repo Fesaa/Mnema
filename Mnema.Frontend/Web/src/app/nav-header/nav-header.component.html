@@ -1,59 +1,74 @@
 @if (isDesktop()) {
-  <div class="nav-wrapper">
-    <nav class="nav-header">
-      <div class="nav-left">
-        <div class="nav-links">
-          @for (btn of navPageButtons(); track btn.title) {
-            <a
-              class="nav-link"
-              (click)="buttonGroupService.handleButtonClick(btn, $event)"
-              style="cursor: pointer"
-            >
-              @if (btn.icon) {
-                <i class="{{ btn.icon }}"></i>
-              }
-              <span>{{ btn.title }}</span>
-            </a>
-          }
-        </div>
-      </div>
-
-      <div class="nav-right">
-        @if (notificationService.notificationsCount() > 0) {
-          <span routerLink="/notifications" class="notification-badge clickable" [class]="severity()">
-            {{ notificationService.notificationsCount() }}
-          </span>
-        }
-
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="account-section">
         <div class="dropdown">
           @if (currentUser()) {
-            <button class="account-toggle btn btn-secondary" (click)="toggleAccountDropdown()">
+            <button class="account-toggle btn btn-secondary w-100">
+              <i class="fa fa-user me-2"></i>
               {{ currentUser()?.name | titlecase }}
             </button>
-
-            @if (isAccountDropdownOpen()) {
-              <ul class="account-dropdown" @dropdownAnimation>
-                @for (item of buttonGroupService.standAloneButtons({title: '', icon: '', buttons: navActionButtons()}); track item.title) {
-                  <li>
-                      <a
-                        (click)="buttonGroupService.handleButtonClick(item, $event); isAccountDropdownOpen.set(false)"
-                        style="cursor: pointer"
-                      >
-                        @if (item.icon) {
-                          <i class="{{ item.icon }}"></i>
-                        }
-                        {{ item.title }}
-                      </a>
-                  </li>
-                }
-              </ul>
-            }
-
           }
         </div>
       </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a
+        class="nav-link"
+        routerLink="/home"
+        style="cursor: pointer"
+      >
+        <div class="sub-link-content">
+          <i class="fa fa-home"></i>
+          <span class="ms-2">Home</span>
+        </div>
+      </a>
+
+      @for (group of dashboardGroups(); track group.title) {
+        @if (buttonGroupService.anyVisible(group.buttons)) {
+          <div class="nav-group">
+            <div class="group-header" (click)="toggleGroup(group.title)">
+              <div class="group-title-content">
+                @if (group.icon) {
+                  <i class="{{ group.icon }} me-2"></i>
+                }
+                <span>{{ group.title }}</span>
+              </div>
+              <div class="group-header-actions">
+                <i class="fa fa-chevron-right chevron" [class.rotated]="isGroupExpanded(group.title)"></i>
+              </div>
+            </div>
+
+            @if (isGroupExpanded(group.title)) {
+              <div class="group-content" @expandCollapse>
+                @for (btn of group.buttons; track btn.title) {
+                  @if (buttonGroupService.shouldRender(btn)) {
+                    <a
+                      class="nav-link sub-link"
+                      routerLink="{{ btn.navUrl }}"
+                      (click)="buttonGroupService.handleButtonClick(btn, $event)"
+                      style="cursor: pointer"
+                    >
+                      <div class="sub-link-content">
+                        @if (btn.icon) {
+                          <i class="{{ btn.icon }} me-2"></i>
+                        }
+                        <span>{{ btn.title }}</span>
+                      </div>
+                      @if (btn.badge) {
+                        <app-badge>{{ btn.badge }}</app-badge>
+                      }
+                    </a>
+                  }
+                }
+              </div>
+            }
+          </div>
+        }
+      }
     </nav>
-  </div>
+  </aside>
 }
 
 @if (isMobile()) {

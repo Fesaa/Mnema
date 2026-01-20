@@ -11,6 +11,7 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {tap} from "rxjs";
 import {ActiveDownloadsService} from "./dashboard/active-downloads/active-downloads.service";
 import {NotificationService} from "./_services/notification.service";
+import {NavService} from "@mnema/_services/nav.service";
 
 @Component({
   selector: 'app-root',
@@ -28,6 +29,9 @@ export class AppComponent implements OnInit {
   private readonly destroyRef$ = inject(DestroyRef);
   private readonly activeDownloadService = inject(ActiveDownloadsService);
   private readonly notificationService = inject(NotificationService);
+  private readonly navService = inject(NavService);
+
+  protected showNavBar = this.navService.showNav;
 
   ngOnInit() {
     this.translocoService.events$.pipe(

@@ -1,78 +1,32 @@
-<div class="settings-container" *transloco="let t; prefix: 'settings'">
 
-  <header class="settings-header">
-    <h1>{{ t('settings') }}</h1>
-    <button
-      class="mobile-toggle"
-      type="button"
-      aria-controls="settings-menu"
-      (click)="toggleMobile()"
-    >
-      <i class="fas fa-sliders text-primary" aria-hidden="true"></i>
-    </button>
-  </header>
-
-  <main class="settings-main">
-
-    <nav
-      id="settings-menu"
-      class="settings-sidebar"
-    >
-      @for (setting of visibleSettings(); track setting.id) {
-        <button
-          type="button"
-          class="settings-btn"
-          [class.active]="selected() === setting.id"
-          (click)="setSettings(setting.id)"
-          [attr.aria-current]="selected() === setting.id ? 'page' : null"
-        >
-          <span [class]="setting.icon + ' icon'" aria-hidden="true"></span>
-          <span>{{ setting.title }}</span>
-        </button>
-      }
-    </nav>
-
-    @if (showMobileConfig()) {
-      <app-mobile-grid
-        [title]="t('settings')"
-        [groups]="mobileSettingsGroup()"
-        [columns]="1"
-        (close)="toggleMobile()"
-      />
+<div class="p-sm-2 p-md-5">
+  @defer (when selected() === SettingsID.Preferences; prefetch on idle) {
+    @if (selected() === SettingsID.Preferences && canSee(SettingsID.Preferences)) {
+      <app-preference-settings />
     }
+  }
 
-    <section class="settings-content" role="region" aria-live="polite">
+  @defer (when selected() === SettingsID.Pages; prefetch on idle) {
+    @if (selected() === SettingsID.Pages && canSee(SettingsID.Pages)) {
+      <app-pages-settings />
+    }
+  }
 
-      @defer (when selected() === SettingsID.Preferences; prefetch on idle) {
-        @if (selected() === SettingsID.Preferences && canSee(SettingsID.Preferences)) {
-          <app-preference-settings />
-        }
-      }
+  @defer (when selected() === SettingsID.Server; prefetch on idle) {
+    @if (selected() === SettingsID.Server && canSee(SettingsID.Server)) {
+      <app-server-settings />
+    }
+  }
 
-      @defer (when selected() === SettingsID.Pages; prefetch on idle) {
-        @if (selected() === SettingsID.Pages && canSee(SettingsID.Pages)) {
-          <app-pages-settings />
-        }
-      }
+  @defer (when selected() === SettingsID.Connections; prefetch on idle) {
+    @if (selected() === SettingsID.Connections && canSee(SettingsID.Connections)) {
+      <app-external-connection-settings />
+    }
+  }
 
-      @defer (when selected() === SettingsID.Server; prefetch on idle) {
-        @if (selected() === SettingsID.Server && canSee(SettingsID.Server)) {
-          <app-server-settings />
-        }
-      }
-
-      @defer (when selected() === SettingsID.Connections; prefetch on idle) {
-        @if (selected() === SettingsID.Connections && canSee(SettingsID.Connections)) {
-          <app-external-connection-settings />
-        }
-      }
-
-      @defer (when selected() === SettingsID.DownloadClients; prefetch on idle) {
-        @if (selected() === SettingsID.DownloadClients && canSee(SettingsID.DownloadClients)) {
-          <app-download-client-settings />
-        }
-      }
-    </section>
-
-  </main>
+  @defer (when selected() === SettingsID.DownloadClients; prefetch on idle) {
+    @if (selected() === SettingsID.DownloadClients && canSee(SettingsID.DownloadClients)) {
+      <app-download-client-settings />
+    }
+  }
 </div>

@@ -47,7 +47,7 @@ public static class Seed
         if (settings == null)
             return;
 
-        var highestPriority = settings.Values.Count > 0 ? settings.Values.Max(s => s.Priority) : 0;
+        var highestPriority = settings.Values.Count > 0 ? settings.Values.Max(s => s.Priority) + 1 : 0;
 
         foreach (var metadataProvider in Enum.GetValues<MetadataProvider>())
         {
