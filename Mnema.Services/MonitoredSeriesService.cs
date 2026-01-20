@@ -221,7 +221,7 @@ public class MonitoredSeriesService(
 
         return new FormDefinition
         {
-            Key = "metadata-form",
+            Key = "provider-metadata",
             Controls = allControls
         };
     }
@@ -230,7 +230,7 @@ public class MonitoredSeriesService(
     {
         var metadata = mSeries.MetadataForDownloadRequest();
 
-        var series = await metadataResolver.ResolveSeriesAsync(metadata, ct);
+        var series = await metadataResolver.ResolveSeriesAsync(mSeries.Providers, metadata, ct);
         if (series == null)
         {
             logger.LogWarning("Monitored series {Title} has no metadata linked. Nothing will be downloaded", mSeries.Title);
@@ -241,7 +241,11 @@ public class MonitoredSeriesService(
         if (string.IsNullOrEmpty(title))
             return;
 
-        mSeries.CoverUrl = series.CoverUrl;
+        if (!string.IsNullOrEmpty(series.CoverUrl))
+        {
+            mSeries.CoverUrl = series.CoverUrl.StartsWith("proxy") ? $"api/{series.CoverUrl}" : series.CoverUrl;
+        }
+
         mSeries.RefUrl = series.RefUrl;
         mSeries.Summary = series.Summary;
 
@@ -249,7 +253,9 @@ public class MonitoredSeriesService(
         var onDiskContent = scannerService.ScanDirectory(path, mSeries.ContentFormat, mSeries.Format, ct);
 
         var seriesChapters = mSeries.Chapters;
+
         mSeries.Chapters = [];
+        unitOfWork.MonitoredSeriesRepository.RemoveRange(seriesChapters);
 
         foreach (var chapter in series.Chapters)
         {
@@ -297,7 +303,7 @@ public class MonitoredSeriesService(
         mChapter.Chapter = chapter.ChapterMarker;
         mChapter.CoverUrl = chapter.CoverUrl;
         mChapter.RefUrl = chapter.RefUrl;
-        mChapter.ReleaseDate = chapter.ReleaseDate;
+        mChapter.ReleaseDate = chapter.ReleaseDate?.ToUniversalTime();
         mChapter.SortOrder = chapter.SortOrder ?? ParserService.SpecialVolumeNumber;
     }
 

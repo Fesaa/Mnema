@@ -50,12 +50,14 @@ internal class MonitoredSeriesMetadataScheduler(
 
         foreach (var mSeries in series)
         {
+            logger.LogDebug("Refreshing metadata for {Title}", mSeries.Title);
+
             await monitoredSeriesService.EnrichWithMetadata(mSeries, ct);
+
+            await unitOfWork.CommitAsync(ct);
 
             await Task.Delay(TimeSpan.FromMilliseconds(10), ct);
         }
-
-        await unitOfWork.CommitAsync(ct);
 
         logger.LogInformation("Refreshed metadata for {Amount} series in {Elapsed}ms",
             series.Count, sw.Elapsed.TotalMilliseconds - 10 * series.Count);

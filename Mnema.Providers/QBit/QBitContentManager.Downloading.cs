@@ -30,7 +30,7 @@ internal partial class QBitContentManager
         var parserService = serviceProvider.GetRequiredService<IParserService>();
         var scannerService = serviceProvider.GetRequiredService<IScannerService>();
 
-        var series = await metadataResolver.ResolveSeriesAsync(request.Metadata, ct);
+        var series = await metadataResolver.ResolveSeriesAsync([request.Provider], request.Metadata, ct);
         var title = request.Metadata.GetString(RequestConstants.TitleOverride)
             .OrNonEmpty(series?.Title, parserService.ParseSeries(request.TempTitle, cFormat));
 

@@ -24,6 +24,7 @@ public interface IMonitoredSeriesRepository
     void Update(MonitoredSeries series);
     void Add(MonitoredSeries series);
     void Remove(MonitoredSeries series);
+    void RemoveRange(IEnumerable<MonitoredChapter> chapters);
 }
 
 public interface IMonitoredSeriesService
@@ -48,6 +49,7 @@ public static class MonitoredSeriesExtensions
         var bag = monitoredSeries.Metadata;
         bag.SetValue(RequestConstants.HardcoverSeriesIdKey, monitoredSeries.HardcoverId);
         bag.SetValue(RequestConstants.MangaBakaKey, monitoredSeries.MangaBakaId);
+        bag.SetValue(RequestConstants.ExternalIdKey, monitoredSeries.ExternalId);
         bag.SetValue(RequestConstants.FormatKey, monitoredSeries.Format.ToString());
         bag.SetValue(RequestConstants.ContentFormatKey, monitoredSeries.ContentFormat.ToString());
         bag.SetValue(RequestConstants.TitleOverride, monitoredSeries.TitleOverride);

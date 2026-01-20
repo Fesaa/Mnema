@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,8 +45,9 @@ public class MetadataResolverTests
             settingsService,
             Substitute.For<IParserService>(),
             metadataProviderService,
-            metadataProviderService
-        ).ResolveSeriesAsync(metadata, ct);
+            metadataProviderService,
+            Substitute.For<IServiceProvider>()
+        ).ResolveSeriesAsync([], metadata, ct);
     }
 
     private static MetadataProviderSettingsDto CreateSettings(

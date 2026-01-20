@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
+using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
@@ -19,7 +22,8 @@ namespace Mnema.Server.Controllers;
 public class MonitoredSeriesController(
     IUnitOfWork unitOfWork,
     IMonitoredSeriesService monitoredSeriesService,
-    IMetadataResolver metadataResolver
+    IMetadataResolver metadataResolver,
+    IMessageService messageService
 ) : BaseApiController
 {
     [HttpGet("all")]
@@ -66,24 +70,34 @@ public class MonitoredSeriesController(
 
         if (monitoredSeries.UserId != UserId) return Forbid();
 
-        var series = await metadataResolver.ResolveSeriesAsync(monitoredSeries.MetadataForDownloadRequest(), HttpContext.RequestAborted);
+        var series = await metadataResolver.ResolveSeriesAsync(monitoredSeries.Providers, monitoredSeries.MetadataForDownloadRequest(), HttpContext.RequestAborted);
 
         return Ok(series);
     }
 
     [HttpPost("{id:guid}/refresh-metadata")]
-    public async Task<ActionResult<MonitoredSeriesDto>> RefreshMetadata(Guid id)
+    public async Task<IActionResult> RefreshMetadata(Guid id)
     {
         var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
         if (monitoredSeries == null) return NotFound();
 
         if (monitoredSeries.UserId != UserId) return Forbid();
 
-        await monitoredSeriesService.EnrichWithMetadata(monitoredSeries, HttpContext.RequestAborted);
+        BackgroundJob.Enqueue(() => RefreshMetadataJob(UserId, id, CancellationToken.None));
 
-        await unitOfWork.CommitAsync();
+        return Ok();
+    }
 
-        return Ok(await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeriesDto(id, HttpContext.RequestAborted));
+    public async Task RefreshMetadataJob(Guid userId, Guid id, CancellationToken cancellationToken)
+    {
+        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, cancellationToken);
+        if (monitoredSeries == null) throw new NotFoundException();
+
+        await monitoredSeriesService.EnrichWithMetadata(monitoredSeries, cancellationToken);
+
+        await unitOfWork.CommitAsync(cancellationToken);
+
+        await messageService.MetadataRefreshed(userId, id);
     }
 
     [HttpDelete("{id:guid}")]

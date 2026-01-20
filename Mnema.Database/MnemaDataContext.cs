@@ -33,6 +33,7 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<DownloadClient> DownloadClients { get; set; }
     public DbSet<MonitoredSeries> MonitoredSeries { get; set; }
     public DbSet<MonitoredChapter> MonitoredChapters { get; set; }
+    public DbSet<ManualMigrationHistory> ManualMigrationHistory { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

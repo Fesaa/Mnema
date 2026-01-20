@@ -38,13 +38,13 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
     const f = this.metadataFormDefinition();
     if (!f) return undefined;
 
-    return {key: '', descriptionKey: '', controls: f.controls.filter(c => !c.advanced)}
+    return {key: f.key, descriptionKey: '', controls: f.controls.filter(c => !c.advanced)}
   });
   advancedControls = computed<FormDefinition | undefined>(() => {
     const f = this.metadataFormDefinition();
     if (!f) return undefined;
 
-    return {key: '', descriptionKey: '', controls: f.controls.filter(c => c.advanced)}
+    return {key: f.key, descriptionKey: '', controls: f.controls.filter(c => c.advanced)}
   });
 
   seriesForm = new FormGroup({});

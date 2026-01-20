@@ -127,41 +127,9 @@
     "manga_baka_id-tooltip": "{{provider-metadata.manga_baka_id-tooltip}}"
   },
 
-  "edit-subscription-modal": {
-    "new-sub-title": "Subscribe to: {{name}}",
-    "title": "Edit your subscription on: {{name}}",
-    "cancel": "{{common.cancel}}",
-    "save": "{{common.save}}",
-    "create": "Subscribe",
-    "general": "General",
-    "options": "Options",
-    "advanced": "Advanced",
-    "close": "{{common.close}}",
-
-    "title-title": "Title",
-    "title-tooltip": "This title is only visual and does not effect the underlying download",
-    "content-id-title": "Content Id",
-    "content-id-tooltip": "The id from your provider, must be correct",
-    "base-dir-title": "Download directory",
-    "base-dir-tooltip": "",
-    "provider-title": "Provider",
-    "provider-tooltip": "Which provider is this subscription using",
-    "provider": {
-      "nyaa": "{{provider-name-pipe.nyaa}}",
-      "mangadex": "{{provider-name-pipe.mangadex}}",
-      "dynasty": "{{provider-name-pipe.dynasty}}",
-      "webtoon": "{{provider-name-pipe.webtoon}}",
-      "bato": "{{provider-name-pipe.bato}}"
-    },
-    "status-title": "Status",
-    "status-tooltip": "",
-    "status": {
-      "enabled": "Enabled",
-      "disabled": "Disabled"
-    },
-
-    "tl-lang-title": "{{provider-metadata.tl-lang-title}}",
-    "tl-lang-tooltip": "{{provider-metadata.tl-lang-tooltip}}",
+  "provider-metadata": {
+    "tl-lang-title": "Language",
+    "tl-lang-tooltip": "Will only download chapters in the selected language",
     "tl-lang": {
       "en": "English",
       "zh": "Chinese",
@@ -170,31 +138,6 @@
       "fr": "French",
       "ja": "Japanese"
     },
-    "scanlation_group-title": "{{provider-metadata.scanlation_group-title}}",
-    "scanlation_group-tooltip": "{{provider-metadata.scanlation_group-tooltip}}",
-    "download_one_shot-title": "{{provider-metadata.download_one_shot-title}}",
-    "download_one_shot-tooltip": "{{provider-metadata.download_one_shot-tooltip}}",
-    "include_cover-title": "{{provider-metadata.include_cover-title}}",
-    "include_cover-tooltip": "{{provider-metadata.include_cover-tooltip}}",
-    "update_cover-title": "{{provider-metadata.update_cover-title}}",
-    "update_cover-tooltip": "{{provider-metadata.update_cover-tooltip}}",
-    "include_not_matched_tags-title": "{{provider-metadata.include_not_matched_tags-title}}",
-    "include_not_matched_tags-tooltip": "{{provider-metadata.include_not_matched_tags-tooltip}}",
-    "no-sub-dir-title": "{{provider-metadata.no-sub-dir-title}}",
-    "no-sub-dir-tooltip": "{{provider-metadata.no-sub-dir-tooltip}}",
-    "title_override-title": "{{provider-metadata.title_override-title}}",
-    "title_override-tooltip": "{{provider-metadata.title_override-tooltip}}",
-    "allow_non_matching_scanlation_group-title": "{{provider-metadata.allow_non_matching_scanlation_group-title}}",
-    "allow_non_matching_scanlation_group-tooltip": "{{provider-metadata.allow_non_matching_scanlation_group-tooltip}}",
-    "assign_empty_volumes-title": "{{provider-metadata.assign_empty_volumes-title}}",
-    "assign_empty_volumes-tooltip": "{{provider-metadata.assign_empty_volumes-tooltip}}",
-    "skip_volume_without_chapter-title": "{{provider-metadata.skip_volume_without_chapter-title}}",
-    "skip_volume_without_chapter-tooltip": "{{provider-metadata.skip_volume_without_chapter-tooltip}}"
-  },
-
-  "provider-metadata": {
-    "tl-lang-title": "Language",
-    "tl-lang-tooltip": "Will only download chapters in the selected language",
     "scanlation_group-title": "Scanlation group",
     "scanlation_group-tooltip": "Prioritise chapters from this group, fallback is controlled in the advanced section",
     "download_one_shot-title": "Download OneShot",
@@ -1142,7 +1085,7 @@
   "monitored-series-detail": {
     "last-updated": "Last updated {{time}}",
     "chapters": "Chapters",
-    "no-chapters": "No chapters found",
+    "no-chapters": "No chapters found, note that chapters from UpStream are not tracked",
     "confirm-delete": "Are you sure you want to stop monitoring {{name}}",
     "select-status": "Set chapter status",
     "confirm-refresh-metadata": "Refresh metadata for {{name}}?"

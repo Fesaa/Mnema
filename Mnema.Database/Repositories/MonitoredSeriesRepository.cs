@@ -98,4 +98,9 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IM
     {
         ctx.MonitoredSeries.Remove(series).State = EntityState.Deleted;
     }
+
+    public void RemoveRange(IEnumerable<MonitoredChapter> chapters)
+    {
+        ctx.MonitoredChapters.RemoveRange(chapters);
+    }
 }

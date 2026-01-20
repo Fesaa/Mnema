@@ -77,6 +77,14 @@ internal class MessageService(IHubContext<MessageHub> ctx) : IMessageService
         await SendToUser(userId, nameof(MessageEventType.NotificationAdd));
     }
 
+    public async Task MetadataRefreshed(Guid userId, Guid seriesId)
+    {
+        await SendToUser(userId, nameof(MessageEventType.MetadataRefreshed), new
+        {
+            SeriesId = seriesId
+        });
+    }
+
     private async Task SendToUser(Guid userId, string method, object? body = null)
     {
         await ctx.Clients.User(userId.ToString()).SendAsync(method, body);

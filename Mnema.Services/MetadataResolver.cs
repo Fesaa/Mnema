@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,6 +9,7 @@ using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 
@@ -17,13 +19,16 @@ public class MetadataResolver(
     ISettingsService settingsService,
     IParserService parserService,
     [FromKeyedServices(key: MetadataProvider.Hardcover)] IMetadataProviderService hardcoverMetadataProvider,
-    [FromKeyedServices(key: MetadataProvider.Mangabaka)] IMetadataProviderService mangabakaMetadataProvider
+    [FromKeyedServices(key: MetadataProvider.Mangabaka)] IMetadataProviderService mangabakaMetadataProvider,
+    IServiceProvider serviceProvider
     ): IMetadataResolver
 {
-    public async Task<Series?> ResolveSeriesAsync(MetadataBag metadata, CancellationToken cancellationToken = default)
+    public async Task<Series?> ResolveSeriesAsync(List<Provider> providers, MetadataBag metadata,
+        CancellationToken cancellationToken = default)
     {
         var hardCoverId = metadata.GetString(RequestConstants.HardcoverSeriesIdKey);
         var mangaBakaId = metadata.GetString(RequestConstants.MangaBakaKey);
+        var externalId = metadata.GetString(RequestConstants.ExternalIdKey);
 
         Dictionary<MetadataProvider, Series?> series = [];
 
@@ -35,6 +40,25 @@ public class MetadataResolver(
         if (!string.IsNullOrEmpty(mangaBakaId))
         {
             series[MetadataProvider.Mangabaka] = await mangabakaMetadataProvider.GetSeries(mangaBakaId, cancellationToken);
+        }
+
+        if (!string.IsNullOrEmpty(externalId))
+        {
+            foreach (var provider in providers.Where(p => p != Provider.Bato))
+            {
+                var repo = serviceProvider.GetKeyedService<IRepository>(provider);
+                if (repo == null) continue;
+
+                series[MetadataProvider.Upsteam] = await repo.SeriesInfo(new DownloadRequestDto
+                {
+                    Provider = provider,
+                    Id = externalId,
+                    BaseDir = string.Empty,
+                    TempTitle = string.Empty,
+                    Metadata = metadata
+                }, cancellationToken);
+                break;
+            }
         }
 
         var settings = await settingsService.GetSettingsAsync();
@@ -70,13 +94,13 @@ public class MetadataResolver(
                 continue;
             }
 
-            Merge(mergedSeries, seriesEntity, setting.SeriesSettings);
+            Merge(metadataProvider, mergedSeries, seriesEntity, setting.SeriesSettings);
         }
 
         return mergedSeries;
     }
 
-    private static void Merge(Series into, Series from, SeriesMetadataSettingsDto settings)
+    private static void Merge(MetadataProvider provider, Series into, Series from, SeriesMetadataSettingsDto settings)
     {
         if (settings.Title && string.IsNullOrEmpty(into.Title))
         {
@@ -135,7 +159,7 @@ public class MetadataResolver(
                 .ToList();
         }
 
-        if (settings.Chapters)
+        if (settings.Chapters && provider != MetadataProvider.Upsteam)
         {
             foreach (var fromChapter in from.Chapters)
             {

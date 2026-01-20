@@ -1,10 +1,11 @@
-import {ChangeDetectionStrategy, Component, computed, inject, linkedSignal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, linkedSignal} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {
-  MonitoredSeries,
   MonitoredChapterStatus,
-  MonitoredSeriesService, MonitoredChapterStatuses
+  MonitoredChapterStatuses,
+  MonitoredSeries,
+  MonitoredSeriesService
 } from "@mnema/features/monitored-series/monitored-series.service";
 import {CommonModule} from "@angular/common";
 import {MonitoredChapterStatusPipe} from "@mnema/features/monitored-series/pipes/monitored-chapter-status.pipe";
@@ -17,13 +18,14 @@ import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
 import {BadgeComponent} from "@mnema/shared/_component/badge/badge.component";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {ModalService} from "@mnema/_services/modal.service";
-import {switchMap, tap} from "rxjs";
+import {filter, map, switchMap, tap} from "rxjs";
 import {SeriesInfoComponent} from "@mnema/page/_components/series-info/series-info.component";
 import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
 import {
   EditMonitoredSeriesModalComponent
 } from "@mnema/features/monitored-series/_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
 import {ListSelectModalComponent} from "@mnema/shared/_component/list-select-modal/list-select-modal.component";
+import {EventType, SignalRService} from "@mnema/_services/signal-r.service";
 
 @Component({
   selector: 'app-monitored-series',
@@ -41,10 +43,21 @@ export class MonitoredSeriesComponent {
   private readonly router = inject(Router);
   private readonly modalService = inject(ModalService);
   private readonly transLoco = inject(TranslocoService);
+  private readonly signalR = inject(SignalRService);
   private readonly route = inject(ActivatedRoute);
   private readonly data = toSignal(this.route.data);
 
   protected series = linkedSignal(() => this.data()!['series'] as MonitoredSeries);
+
+  constructor() {
+    this.signalR.events$.pipe(
+      filter(e => e.type === EventType.MetadataRefreshed),
+      map(e => e.data.seriesId as string),
+      filter(id => id === this.series().id),
+      switchMap(() => this.monitoredSeriesService.get(this.series().id)),
+      tap(series => this.series.set(series))
+    ).subscribe();
+  }
 
   setChapterStatus(chapterId: string) {
     const [modal, component] = this.modalService.open(ListSelectModalComponent, {
@@ -67,8 +80,7 @@ export class MonitoredSeriesComponent {
     this.modalService.confirm$({
       question: this.transLoco.translate('monitored-series-detail.confirm-refresh-metadata', {name: this.series().title})
     }, true).pipe(
-      switchMap(() => this.monitoredSeriesService.refreshMetadata(this.series().id)),
-      tap(series => this.series.set(series)),
+      switchMap(() => this.monitoredSeriesService.refreshMetadata(this.series().id))
     ).subscribe();
   }
 

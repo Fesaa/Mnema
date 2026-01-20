@@ -111,7 +111,7 @@ export class MonitoredSeriesService {
   }
 
   refreshMetadata(id: string) {
-    return this.httpClient.post<MonitoredSeries>(`${this.baseUrl}/${id}/refresh-metadata`, {});
+    return this.httpClient.post(`${this.baseUrl}/${id}/refresh-metadata`, {});
   }
 
   setChapterStatus(id: string, chapterId: string, status: MonitoredChapterStatus) {

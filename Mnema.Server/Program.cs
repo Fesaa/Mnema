@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mnema.Database;
+using Mnema.Database.ManualMigrations;
 using Mnema.Server.Logging;
 using Serilog;
 using Serilog.Templates;
@@ -47,6 +48,8 @@ public class Program
                     logger.LogInformation("Database has been migrated, starting Mnema");
                 }
 
+                await new MigrateSubscriptionsToMonitoredSeries().RunAsync(context, logger);
+
                 await context.SeedDatabase();
             }
             catch (Exception ex)
@@ -59,7 +62,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Log.Fatal(ex, "Mnema failed to startup");
+            Log.Fatal(ex, "Mnema uncounted an exceptions");
         }
         finally
         {
