@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services;
 
@@ -50,6 +52,10 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                 case ServerSettingKey.LastUpdateDate:
                     dto.InstallDate = DeserializeSetting<DateTime>(serverSetting);
                     break;
+                case ServerSettingKey.MetadataProviderSettings:
+                    dto.MetadataProviderSettings =
+                        DeserializeSetting<Dictionary<MetadataProvider, MetadataProviderSettingsDto>>(serverSetting);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
                         "Unknown server settings key");
@@ -73,6 +79,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                 ServerSettingKey.InstallDate => null,
                 ServerSettingKey.SubscriptionRefreshHour => dto.SubscriptionRefreshHour,
                 ServerSettingKey.LastUpdateDate => null,
+                ServerSettingKey.MetadataProviderSettings => dto.MetadataProviderSettings,
                 _ => throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
                     "Unknown server settings key")
             };
@@ -96,6 +103,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             ServerSettingKey.InstallDate => DateTime.Parse(setting.Value, CultureInfo.InvariantCulture),
             ServerSettingKey.SubscriptionRefreshHour => int.Parse(setting.Value),
             ServerSettingKey.LastUpdateDate => DateTime.Parse(setting.Value, CultureInfo.InvariantCulture),
+            ServerSettingKey.MetadataProviderSettings => JsonSerializer.Deserialize<T>(setting.Value),
             _ => default(T)
         };
 
@@ -119,6 +127,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             ServerSettingKey.InstallDate => setting.ToString(),
             ServerSettingKey.SubscriptionRefreshHour => setting.ToString(),
             ServerSettingKey.LastUpdateDate => setting.ToString(),
+            ServerSettingKey.MetadataProviderSettings => JsonSerializer.Serialize(setting),
             _ => throw new ArgumentException($"No converter found for key {key}")
         } ?? string.Empty;
     }
@@ -146,7 +155,8 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             { ServerSettingKey.FirstInstalledVersion, typeof(string) },
             { ServerSettingKey.InstallDate, typeof(DateTime) },
             { ServerSettingKey.SubscriptionRefreshHour, typeof(int) },
-            { ServerSettingKey.LastUpdateDate, typeof(DateTime) }
+            { ServerSettingKey.LastUpdateDate, typeof(DateTime) },
+            { ServerSettingKey.MetadataProviderSettings , typeof(Dictionary<MetadataProvider, MetadataProviderSettingsDto>)}
         };
     }
 }
