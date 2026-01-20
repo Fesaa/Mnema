@@ -27,6 +27,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<TorrentCleanupService>();
         services.AddScoped<IFormatHandler, ArchiveFormatHandler>();
         services.AddScoped<IFormatHandler, EpubFormatHandler>();
+        services.AddScoped<NoOpRepository>();
 
         #region qBit Torrent
 
@@ -86,7 +87,6 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.Weebdex,
             (s, _) => s.GetRequiredService<WeebdexRepository>());
 
-        services.AddKeyedScoped<IPreDownloadHook, LoadVolumesHook>(Provider.Weebdex);
         services.AddHttpClient(nameof(Provider.Weebdex), client =>
         {
             client.BaseAddress = new Uri("https://api.weebdex.org");
@@ -141,9 +141,9 @@ public static class ServiceProviderExtensions
 
         services.AddScoped<BatoRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Bato,
-            (s, _) => s.GetRequiredService<BatoRepository>());
+            (s, _) => s.GetRequiredService<NoOpRepository>());
         services.AddKeyedScoped<IRepository>(Provider.Bato,
-            (s, _) => s.GetRequiredService<BatoRepository>());
+            (s, _) => s.GetRequiredService<NoOpRepository>());
 
         services.AddHttpClient(nameof(Provider.Bato), client =>
         {
