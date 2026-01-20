@@ -72,7 +72,7 @@ internal class MonitoredSeriesScheduler(
                 await downloadService.StartDownload(new DownloadRequestDto
                 {
                     Provider = release.Provider,
-                    Id = release.ReleaseId,
+                    Id = release.ContentId ?? release.ReleaseId,
                     BaseDir = match.BaseDir,
                     TempTitle = release.ContentName,
                     Metadata = match.MetadataForDownloadRequest(),

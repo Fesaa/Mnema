@@ -71,6 +71,9 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
       ...this.genericFormFactoryService.adjustForGenericMetadata(this.seriesForm.value),
     };
 
+    if (!seriesValue.metadata)
+      seriesValue.metadata = {};
+
     const actions$ = this.series().id === ''
       ? this.monitoredSeriesService.new(seriesValue)
       : this.monitoredSeriesService.update(seriesValue);

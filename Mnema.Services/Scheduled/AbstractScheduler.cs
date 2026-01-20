@@ -35,8 +35,10 @@ internal abstract class AbstractScheduler<TScheduler, TEntity>(
     {
         if (environment.IsDevelopment())
         {
-            logger.LogDebug("Removing {WatcherDescription} in development as recurring job", WatcherDescription);
-            recurringJobManager.RemoveIfExists(WatcherJobId);
+            logger.LogDebug("Updating {WatcherDescription} in development as a monthly recurring job", WatcherDescription);
+            recurringJobManager.AddOrUpdate<TScheduler>(WatcherJobId,
+                j => (j as AbstractScheduler<TScheduler, TEntity>)!.RunWatcher(CancellationToken.None),
+                "0 0 1 * *", _recurringJobOptions);
         }
         else
         {
