@@ -6,7 +6,6 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {SearchRequest} from "../_models/search";
 import {SearchInfo} from "../_models/Info";
 import {SearchResultComponent} from "./_components/search-result/search-result.component";
-import {SubscriptionService} from "../_services/subscription.service";
 import {ContentService} from "../_services/content.service";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {PageLoader, PaginatorComponent} from "../shared/_component/paginator/paginator.component";
@@ -34,11 +33,8 @@ export class PageComponent implements OnInit {
   private readonly navService = inject(NavService);
   private readonly pageService = inject(PageService);
   private readonly contentService = inject(ContentService);
-  private readonly subscriptionService = inject(SubscriptionService);
 
   page = signal<Page | undefined>(undefined);
-
-  providers = signal<Provider[]>([]);
 
   metadata = computed(() => this.page()?.metadata);
 
@@ -62,10 +58,6 @@ export class PageComponent implements OnInit {
         this.searchRequest.set(null);
         this.showForm.set(true);
       });
-    })
-
-    this.subscriptionService.providers().subscribe(providers => {
-      this.providers.set(providers);
     })
   }
 

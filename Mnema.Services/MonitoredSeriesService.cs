@@ -109,20 +109,21 @@ public class MonitoredSeriesService(
                     Key = "title",
                     Field = "title",
                     Type = FormType.Text,
-                    ForceSingle = true,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .Build(),
                 },
                 new FormControlDefinition
                 {
+                    Key = RequestConstants.TitleOverride,
+                    Field = "titleOverride",
+                    Type = FormType.Text,
+                },
+                new FormControlDefinition
+                {
                     Key = "valid-titles",
                     Field = "validTitles",
                     Type = FormType.MultiText,
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .WithMinLength(1)
-                        .Build(),
                     ForceSingle = true,
                 },
                 new FormControlDefinition
@@ -187,10 +188,10 @@ public class MonitoredSeriesService(
                 },
                 new FormControlDefinition
                 {
-                    Key = RequestConstants.TitleOverride,
-                    Field = "titleOverride",
+                    Key = RequestConstants.ExternalIdKey,
+                    Field = "externalId",
                     Type = FormType.Text,
-                }
+                },
             ]
         };
     }

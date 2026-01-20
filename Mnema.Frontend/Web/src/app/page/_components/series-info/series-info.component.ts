@@ -8,16 +8,13 @@ import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {LoadingSpinnerComponent} from "../../../shared/_component/loading-spinner/loading-spinner.component";
 import {UtcToLocalTimePipe} from "../../../_pipes/utc-to-local.pipe";
 import {PersonRolePipe} from "@mnema/_pipes/person-role.pipe";
-import {MonitoredChapterStatusPipe} from "@mnema/features/monitored-series/pipes/monitored-chapter-status.pipe";
 
 @Component({
   selector: 'app-series-info',
   imports: [
     TranslocoDirective,
-    LoadingSpinnerComponent,
     UtcToLocalTimePipe,
-    PersonRolePipe,
-    MonitoredChapterStatusPipe
+    PersonRolePipe
   ],
   templateUrl: './series-info.component.html',
   styleUrl: './series-info.component.scss',

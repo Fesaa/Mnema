@@ -35,7 +35,7 @@
             <div class="results-grid">
               @for (res of results; track res.id) {
                 <app-search-result [metadata]="metadata()!" [page]="page()!"
-                                   [searchResult]="res" [providers]="providers()" [@fadeAnimation]></app-search-result>
+                                   [searchResult]="res" [@fadeAnimation]></app-search-result>
               }
             </div>
           </ng-template>

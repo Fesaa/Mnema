@@ -92,6 +92,7 @@ export class SeriesSearchComponent implements OnInit {
       titleOverride: '',
       hardcoverId: this.searchOptions().provider === MetadataProvider.Hardcover ? series.id : '',
       mangabakaId: this.searchOptions().provider === MetadataProvider.Mangabaka ? series.id : '',
+      externalId: '',
       summary: "",
       lastDataRefreshUtc: '',
       chapters: []

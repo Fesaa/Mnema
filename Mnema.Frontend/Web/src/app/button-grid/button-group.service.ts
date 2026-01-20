@@ -82,13 +82,6 @@ export class ButtonGroupService {
       icon: 'fa fa-bars',
       buttons: [
         {
-          title: translate('button-groups.actions.subscriptions'),
-          icon: 'fa fa-bell',
-          requiredRoles: [Role.Subscriptions],
-          navUrl: '/subscriptions',
-          standAlone: true,
-        },
-        {
           title: translate('button-groups.actions.monitored-series'),
           icon: 'fa fa-television',
           requiredRoles: [Role.Subscriptions],

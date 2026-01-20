@@ -1,5 +1,4 @@
 import {Routes} from "@angular/router";
-import {SubscriptionManagerComponent} from "../subscription-manager/subscription-manager.component";
 import {NotificationsComponent} from "../notifications/notifications.component";
 import {ActiveDownloadsComponent} from "../dashboard/active-downloads/active-downloads.component";
 import {
@@ -12,10 +11,6 @@ import {
 } from "@mnema/features/monitored-series/monitored-series/monitored-series.resolver";
 
 export const routes: Routes = [
-  {
-    path: 'subscriptions',
-    component: SubscriptionManagerComponent
-  },
   {
     path: 'monitored-series',
     component: MonitoredSeriesManagerComponent,

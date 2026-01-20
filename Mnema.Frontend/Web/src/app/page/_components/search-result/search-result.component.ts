@@ -1,23 +1,23 @@
 import {Component, inject, input, OnInit, signal} from '@angular/core';
-import {SearchInfo} from "../../../_models/Info";
-import {Page, Provider} from "../../../_models/page";
-import {bounceIn200ms} from "../../../_animations/bounce-in";
-import {dropAnimation} from "../../../_animations/drop-animation";
-import {ImageService} from "../../../_services/image.service";
+import {SearchInfo} from "@mnema/_models/Info";
+import {Page} from "@mnema/_models/page";
+import {bounceIn200ms} from "@mnema/_animations/bounce-in";
+import {dropAnimation} from "@mnema/_animations/drop-animation";
+import {ImageService} from "@mnema/_services/image.service";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {NgStyle} from "@angular/common";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
-import {ModalService} from "../../../_services/modal.service";
+import {ModalService} from "@mnema/_services/modal.service";
 import {DownloadModalComponent} from "../download-modal/download-modal.component";
-import {DefaultModalOptions} from "../../../_models/default-modal-options";
-import {
-  EditSubscriptionModalComponent
-} from "../../../subscription-manager/_components/edit-subscription-modal/edit-subscription-modal.component";
-import {Subscription, SubscriptionStatus} from "../../../_models/subscription";
+import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
 import {SeriesInfoComponent} from "../series-info/series-info.component";
-import {FormControlDefinition} from "../../../generic-form/form";
+import {FormControlDefinition} from "@mnema/generic-form/form";
 import {SeriesService} from "@mnema/page/_components/series-info/series.service";
 import {tap} from "rxjs";
+import {
+  EditMonitoredSeriesModalComponent
+} from "@mnema/features/monitored-series/_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
+import {ContentFormat, Format, MonitoredSeries} from "@mnema/features/monitored-series/monitored-series.service";
 
 @Component({
   selector: 'app-search-result',
@@ -38,7 +38,6 @@ export class SearchResultComponent implements OnInit{
 
   page = input.required<Page>();
   searchResult = input.required<SearchInfo>();
-  providers = input.required<Provider[]>();
   metadata = input.required<FormControlDefinition[]>();
 
   imageSource = signal<string | null>(null);
@@ -48,22 +47,28 @@ export class SearchResultComponent implements OnInit{
     this.loadImage();
   }
 
-  addAsSub() {
-    const [_, component] = this.modalService.open(EditSubscriptionModalComponent, DefaultModalOptions);
+  monitorSeries() {
+    const [_, component] = this.modalService.open(EditMonitoredSeriesModalComponent, DefaultModalOptions);
 
-    const newSub: Subscription = {
+    const newMonitoredSeries: MonitoredSeries = {
+      externalId: this.searchResult().id,
+      baseDir: "",
+      chapters: [],
+      contentFormat: ContentFormat.Manga,
+      format: Format.Archive,
+      hardcoverId: "",
+      lastDataRefreshUtc: "",
+      mangabakaId: "",
+      providers: [this.searchResult().provider],
+      summary: "",
+      titleOverride: "",
+      validTitles: [],
       id: '',
-      contentId: this.searchResult().id,
-      provider: this.searchResult().provider,
-      title: this.searchResult().name,
-      baseDir: this.page().customRootDir,
-      metadata: {},
-      status: SubscriptionStatus.Enabled,
-    };
+      title: this.searchResult().name
 
-    component.subscription.set(newSub);
-    component.metadata.set(this.metadata());
-    component.providers.set(this.providers());
+    }
+
+    component.series.set(newMonitoredSeries);
   }
 
   download() {

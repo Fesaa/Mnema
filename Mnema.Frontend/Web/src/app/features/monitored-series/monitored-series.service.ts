@@ -19,6 +19,7 @@ export type MonitoredSeries = {
   contentFormat: ContentFormat;
   hardcoverId: string,
   mangabakaId: string;
+  externalId: string;
   titleOverride: string;
   validTitles: string[];
   lastDataRefreshUtc: string;
@@ -119,6 +120,8 @@ export class MonitoredSeriesService {
   }
 
   getMetadataForm(id: string) {
+    if (!id) return of({key: '', descriptionKey: '', controls: []});
+
     return this.httpClient.get<FormDefinition>(`${this.baseUrl}/${id}/metadata-form`);
   }
 
