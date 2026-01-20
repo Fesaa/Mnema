@@ -67,6 +67,22 @@ public class HardcoverMetadataService(
 
     private static Series ConvertFromHardcoverSeries(HardcoverSeries series)
     {
+        var realBooks = series.BookSeries.GroupBy(b => b.Position)
+            .SelectMany(g =>
+            {
+                if (g.Key == null)
+                    return g;
+
+                var featuredBook = g.FirstOrDefault(b => b.Featured);
+                if (featuredBook != null)
+                    return [featuredBook];
+
+                var fallBack = g.MaxBy(b => b.Book.UserReadCount);
+
+                return fallBack == null ? [] : [fallBack];
+            })
+            .ToList();
+
         return new Series
         {
             Id = series.Id.ToString(),
@@ -79,7 +95,7 @@ public class HardcoverMetadataService(
             CoverUrl = series.BookSeries.FirstOrDefault(b => b.Book.Image != null)?.Book.Image?.Url,
             RefUrl = $"{HardcoverBaseUrl}/series/{series.Slug}",
             Links = [$"{HardcoverBaseUrl}/series/{series.Slug}"],
-            Chapters = series.BookSeries.Select(b =>
+            Chapters = realBooks.Select(b =>
             {
                 var book = b.Book;
 

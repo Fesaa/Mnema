@@ -32,6 +32,7 @@ query GetSeriesByIds($ids: [Int!]) {
             }}, order_by: {position: asc}) {
 
             position
+            featured
 
             book {
                 id
@@ -59,6 +60,7 @@ query GetSeriesByIds($ids: [Int!]) {
                         ...AuthorInfo
                     }
                 }
+                users_read_count
             }
         }
     }

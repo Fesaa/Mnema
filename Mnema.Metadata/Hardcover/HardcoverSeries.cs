@@ -58,6 +58,7 @@ public sealed record HardcoverAuthor : HardcoverEntity
 public sealed record HardcoverBookSeries
 {
     public float? Position { get; init; }
+    public bool Featured { get; init; }
     public HardcoverBook Book { get; init; }
 }
 
@@ -72,6 +73,8 @@ public sealed record HardcoverBook : HardcoverEntity
     public HardcoverImage? Image { get; init; }
     public List<HardcoverTagging> Taggings { get; init; } = [];
     public List<HardoverContribution> Contributions { get; init; } = [];
+    [JsonPropertyName("users_read_count")]
+    public long UserReadCount { get; init; }
 }
 
 public sealed record HardoverContribution
