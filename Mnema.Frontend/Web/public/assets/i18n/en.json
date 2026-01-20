@@ -582,17 +582,20 @@
       "3": "Teen Plus",
       "4": "Mature",
       "5": "Adults Only"
-    },
-
-    "role": {
-      "0": "Writer",
-      "1": "Penciller",
-      "2": "Inker",
-      "3": "Colorist",
-      "4": "Letterer",
-      "5": "Cover Artist",
-      "6": "Editor"
     }
+  },
+  "person-role-pipe": {
+    "writer": "Writer",
+    "penciller": "Penciller",
+    "inker": "Inker",
+    "colorist": "Colorist",
+    "letterer": "Letterer",
+    "cover-artist": "Cover Artist",
+    "editor": "Editor",
+    "translator": "Translator",
+    "publisher": "Publisher",
+    "imprint": "Imprint",
+    "character": "Character"
   },
 
   "settings": {

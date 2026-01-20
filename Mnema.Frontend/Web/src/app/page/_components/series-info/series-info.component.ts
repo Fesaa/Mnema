@@ -7,28 +7,26 @@ import {finalize, tap} from "rxjs";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {LoadingSpinnerComponent} from "../../../shared/_component/loading-spinner/loading-spinner.component";
 import {UtcToLocalTimePipe} from "../../../_pipes/utc-to-local.pipe";
+import {PersonRolePipe} from "@mnema/_pipes/person-role.pipe";
+import {MonitoredChapterStatusPipe} from "@mnema/features/monitored-series/pipes/monitored-chapter-status.pipe";
 
 @Component({
   selector: 'app-series-info',
   imports: [
     TranslocoDirective,
     LoadingSpinnerComponent,
-    UtcToLocalTimePipe
+    UtcToLocalTimePipe,
+    PersonRolePipe,
+    MonitoredChapterStatusPipe
   ],
   templateUrl: './series-info.component.html',
   styleUrl: './series-info.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SeriesInfoComponent implements OnInit {
+export class SeriesInfoComponent {
 
   private readonly modal = inject(NgbActiveModal);
-  private readonly seriesService = inject(SeriesService);
-
-  provider = model.required<Provider>();
-  seriesId = model.required<string>();
-
-  protected loading = signal(true);
-  protected series = signal<Series | null>(null);
+  series = model.required<Series |null>();
 
   protected seriesTitle = computed(() => this.series()?.title ?? translate('shared.unknown'));
   protected coverUrl = computed(() => {
@@ -41,13 +39,6 @@ export class SeriesInfoComponent implements OnInit {
 
     return url;
   });
-
-  ngOnInit() {
-    this.seriesService.getSeriesInfo(this.provider(), this.seriesId()).pipe(
-      tap(series => this.series.set(series)),
-      finalize(() => this.loading.set(false)),
-    ).subscribe();
-  }
 
   close() {
     this.modal.dismiss();

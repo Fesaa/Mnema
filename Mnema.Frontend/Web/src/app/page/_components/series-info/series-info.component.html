@@ -10,10 +10,7 @@
 
     <div class="modal-body scrollable-modal">
 
-      @if (loading()) {
-        <app-loading-spinner />
-      } @else if (series(); as series) {
-
+      @if (series(); as series) {
         <div class="row mb-4">
           @if (coverUrl(); as url) {
             <div class="col-md-4 col-lg-3 mb-3 mb-md-0">
@@ -95,7 +92,7 @@
                   <div class="credit-roles">
                     @for (role of person.roles; track role; let last = $last) {
                       <span class="text-secondary small">
-                    {{t('role.' + role)}}@if (!last) {<span>, </span>}
+                    {{ role | personRole }}@if (!last) {<span>, </span>}
                   </span>
                     }
                   </div>
@@ -128,29 +125,50 @@
             <h6 class="section-title">{{t('recent-chapters')}} ({{series.chapters.length}})</h6>
             <div class="chapters-list">
               @for (chapter of series.chapters; track chapter.id) {
-                <div class="chapter-item">
-                  <div class="d-flex align-items-start gap-3">
-                    <div class="flex-grow-1">
-                      <div class="chapter-markers mb-1 d-flex flex-row">
-                        @if (chapter.volumeMarker) {
-                          <div><span class="badge volume-badge me-1">Volume {{chapter.volumeMarker}}</span></div>
-                        }
-                        @if (chapter.chapterMarker) {
-                          <div><span class="badge chapter-badge">Chapter {{chapter.chapterMarker}}</span></div>
-                        }
-                        <div class="chapter-title ms-2">{{chapter.title}}</div>
-                      </div>
-                      @if (chapter.summary) {
-                        <p class="chapter-summary text-secondary small mb-2">{{chapter.summary}}</p>
+                <div class="chapter-row">
+                  <div class="row align-items-center">
+                    <div class="col-auto d-none d-md-block">
+                      @if (chapter.coverUrl) {
+                        <img [src]="chapter.coverUrl" [alt]="chapter.title" class="chapter-thumb">
+                      } @else {
+                        <div class="chapter-thumb-placeholder">
+                          <i class="fa fa-file"></i>
+                        </div>
                       }
-                      <div class="chapter-meta">
-                        @if (chapter.releaseDate && chapter.releaseDate !== '0001-01-01T00:00:00') {
-                          <span class="small text-secondary me-3">
-                            <i class="fa fa-calendar me-1"></i>{{chapter.releaseDate | utcToLocalTime}}
-                          </span>
+                    </div>
+
+                    <div class="col">
+                      <div class="chapter-info">
+                        <h5 class="chapter-title mb-1">
+                          @if (chapter.volumeMarker) {
+                            <span class="text-muted me-2">Vol. {{ chapter.volumeMarker }}</span>
+                          }
+                          @if (chapter.chapterMarker) {
+                            <span class="text-muted me-2">Ch. {{ chapter.chapterMarker }}</span>
+                          }
+                          {{ chapter.title }}
+                        </h5>
+                        @if (chapter.summary) {
+                          <p class="chapter-summary mb-1">{{ chapter.summary }}</p>
                         }
+                        <div class="chapter-meta">
+                          @if (chapter.releaseDate) {
+                            <small class="text-muted me-3">
+                              <i class="fa fa-calendar"></i> {{ chapter.releaseDate | utcToLocalTime:'shortDate' }}
+                            </small>
+                          }
+                        </div>
                       </div>
                     </div>
+
+                    <div class="col-auto">
+                      @if (chapter.refUrl) {
+                        <a [href]="chapter.refUrl" target="_blank" class="btn btn-sm" title="View Source">
+                          <i class="fa fa-external-link-alt"></i>
+                        </a>
+                      }
+                    </div>
+
                   </div>
                 </div>
               }

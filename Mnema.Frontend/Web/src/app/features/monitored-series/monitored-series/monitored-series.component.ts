@@ -18,6 +18,11 @@ import {BadgeComponent} from "@mnema/shared/_component/badge/badge.component";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {ModalService} from "@mnema/_services/modal.service";
 import {switchMap, tap} from "rxjs";
+import {SeriesInfoComponent} from "@mnema/page/_components/series-info/series-info.component";
+import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
+import {
+  EditMonitoredSeriesModalComponent
+} from "@mnema/features/monitored-series/_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
 
 @Component({
   selector: 'app-monitored-series',
@@ -37,6 +42,20 @@ export class MonitoredSeriesComponent {
   private readonly data = toSignal(this.route.data);
 
   protected series = computed(() => this.data()!['series'] as MonitoredSeries);
+
+  showResolvedSeries() {
+    this.monitoredSeriesService.resolvedSeries(this.series().id).pipe(
+      tap(series => {
+        const [_, component] = this.modalService.open(SeriesInfoComponent, DefaultModalOptions)
+        component.series.set(series);
+      })
+    ).subscribe();
+  }
+
+  edit() {
+    const [_, component] = this.modalService.open(EditMonitoredSeriesModalComponent, DefaultModalOptions);
+    component.series.set(this.series());
+  }
 
   delete() {
     this.modalService.confirm$({

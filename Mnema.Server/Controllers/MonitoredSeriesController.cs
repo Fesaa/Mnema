@@ -4,17 +4,20 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
+using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Internal;
+using Mnema.Models.Publication;
 
 namespace Mnema.Server.Controllers;
 
 [Authorize(Roles.Subscriptions)]
 public class MonitoredSeriesController(
     IUnitOfWork unitOfWork,
-    IMonitoredSeriesService monitoredSeriesService
+    IMonitoredSeriesService monitoredSeriesService,
+    IMetadataResolver metadataResolver
 ) : BaseApiController
 {
     [HttpGet("all")]
@@ -51,6 +54,19 @@ public class MonitoredSeriesController(
         await monitoredSeriesService.CreateMonitoredSeries(UserId, createDto, HttpContext.RequestAborted);
 
         return Ok();
+    }
+
+    [HttpGet("{id:guid}/resolved-series")]
+    public async Task<ActionResult<Series>> GetResolvedSeries(Guid id)
+    {
+        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        if (monitoredSeries == null) return NotFound();
+
+        if (monitoredSeries.UserId != UserId) return Forbid();
+
+        var series = await metadataResolver.ResolveSeriesAsync(monitoredSeries.MetadataForDownloadRequest(), HttpContext.RequestAborted);
+
+        return Ok(series);
     }
 
     [HttpDelete("{id:guid}")]

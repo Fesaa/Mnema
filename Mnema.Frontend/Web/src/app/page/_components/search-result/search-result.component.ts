@@ -16,6 +16,8 @@ import {
 import {Subscription, SubscriptionStatus} from "../../../_models/subscription";
 import {SeriesInfoComponent} from "../series-info/series-info.component";
 import {FormControlDefinition} from "../../../generic-form/form";
+import {SeriesService} from "@mnema/page/_components/series-info/series.service";
+import {tap} from "rxjs";
 
 @Component({
   selector: 'app-search-result',
@@ -32,6 +34,7 @@ export class SearchResultComponent implements OnInit{
 
   private readonly imageService = inject(ImageService);
   private readonly modalService = inject(ModalService);
+  private readonly seriesService = inject(SeriesService);
 
   page = input.required<Page>();
   searchResult = input.required<SearchInfo>();
@@ -78,9 +81,12 @@ export class SearchResultComponent implements OnInit{
   }
 
   loadInfo() {
-    const [_, component] = this.modalService.open(SeriesInfoComponent, DefaultModalOptions);
-    component.provider.set(this.searchResult().provider);
-    component.seriesId.set(this.searchResult().id);
+    this.seriesService.getSeriesInfo(this.searchResult().provider, this.searchResult().id).pipe(
+      tap(series => {
+        const [_, component] = this.modalService.open(SeriesInfoComponent, DefaultModalOptions);
+        component.series.set(series);
+      }),
+    ).subscribe();
   }
 
   loadImage() {

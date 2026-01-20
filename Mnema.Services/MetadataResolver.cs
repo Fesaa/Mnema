@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
+using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
@@ -116,14 +117,14 @@ public class MetadataResolver(
         {
             into.Tags = into.Tags
                 .Concat(from.Tags)
-                .DistinctBy(t => t.Value)
+                .DistinctBy(t => t.Value.ToNormalized())
                 .ToList();
         }
 
         if (settings.People)
         {
             into.People = into.People.Concat(from.People)
-                .DistinctBy(p => p.Name)
+                .DistinctBy(p => p.Name.ToNormalized())
                 .ToList();
         }
 

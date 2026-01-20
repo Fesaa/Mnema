@@ -5,6 +5,7 @@ import {environment} from "@env/environment";
 import {FormDefinition} from "@mnema/generic-form/form";
 import {Provider} from "@mnema/_models/page";
 import {PagedList} from "@mnema/_models/paged-list";
+import {Series} from "@mnema/page/_components/series-info/_types";
 
 export type MonitoredSeries = {
   id: string;
@@ -95,6 +96,10 @@ export class MonitoredSeriesService {
 
   get(id: string) {
     return this.httpClient.get<MonitoredSeries>(`${this.baseUrl}/${id}`);
+  }
+
+  resolvedSeries(id: string) {
+    return this.httpClient.get<Series>(`${this.baseUrl}/${id}/resolved-series`);
   }
 
   getForm() {
