@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
@@ -46,6 +48,8 @@ public class MonitoredSeriesService(
         series.ValidTitles = dto.ValidTitles;
         series.Metadata = dto.Metadata;
 
+        await EnrichWithMetadata(series);
+
         unitOfWork.MonitoredSeriesRepository.Update(series);
 
         await unitOfWork.CommitAsync(cancellationToken);
@@ -65,6 +69,8 @@ public class MonitoredSeriesService(
             ValidTitles = dto.ValidTitles,
             Metadata = dto.Metadata,
         };
+
+        await EnrichWithMetadata(series);
 
         unitOfWork.MonitoredSeriesRepository.Add(series);
 
@@ -124,4 +130,100 @@ public class MonitoredSeriesService(
             ]
         };
     }
+
+    public async Task EnrichWithMetadata(MonitoredSeries mSeries, CancellationToken ct = default)
+    {
+        var series = await metadataResolver.ResolveSeriesAsync(mSeries.Metadata, ct);
+        if (series == null)
+        {
+            logger.LogWarning("Monitored series {Title} has no metadata linked. Nothing will be downloaded", mSeries.Title);
+            return;
+        }
+
+        var title = mSeries.Metadata.GetStringOrDefault(RequestConstants.TitleOverride, series.Title);
+        if (string.IsNullOrEmpty(title))
+            return;
+
+        mSeries.CoverUrl = series.CoverUrl;
+        mSeries.RefUrl = series.RefUrl;
+
+        var path = Path.Join(mSeries.BaseDir, title);
+        var onDiskContent = scannerService.ScanDirectory(path, mSeries.ContentFormat, mSeries.Format, ct);
+
+        var seriesChapters = mSeries.Chapters;
+        mSeries.Chapters = [];
+
+        foreach (var chapter in series.Chapters)
+        {
+            var mChapter = seriesChapters.FirstOrDefault(c => c.ExternalId == chapter.Id);
+
+            if (mChapter?.Status == MonitoredChapterStatus.NotMonitored)
+            {
+                PatchChapterMetadata(mChapter, chapter);
+                mSeries.Chapters.Add(mChapter);
+                continue;
+            }
+
+            var matchingFile = FindMatchingFile(onDiskContent, chapter);
+
+            var status = MonitoredChapterStatus.Missing;
+            if (matchingFile != null)
+            {
+                status = MonitoredChapterStatus.Available;
+            }
+            else if (chapter.ReleaseDate >= DateTime.UtcNow)
+            {
+                status = MonitoredChapterStatus.Upcoming;
+            }
+
+            mChapter ??= new MonitoredChapter();
+            PatchChapterMetadata(mChapter, chapter);
+            mChapter.FilePath = matchingFile?.Path;
+            mChapter.Status = status;
+
+            mSeries.Chapters.Add(mChapter);
+        }
+
+        mSeries.LastDataRefreshUtc = DateTime.UtcNow;
+    }
+
+    private static void PatchChapterMetadata(MonitoredChapter? mChapter, Chapter chapter)
+    {
+        if (mChapter == null)
+            return;
+
+        mChapter.ExternalId = chapter.Id;
+        mChapter.Title = chapter.Title;
+        mChapter.Summary = chapter.Summary;
+        mChapter.Volume = chapter.VolumeMarker;
+        mChapter.Chapter = chapter.ChapterMarker;
+        mChapter.CoverUrl = chapter.CoverUrl;
+        mChapter.RefUrl = chapter.RefUrl;
+        mChapter.ReleaseDate = chapter.ReleaseDate;
+    }
+
+    private static OnDiskContent? FindMatchingFile(List<OnDiskContent> onDiskContents, Chapter chapter)
+    {
+        if (string.IsNullOrEmpty(chapter.VolumeMarker) && string.IsNullOrEmpty(chapter.ChapterMarker))
+        {
+            return null;
+        }
+
+        if (string.IsNullOrEmpty(chapter.ChapterMarker))
+        {
+            return onDiskContents.FirstOrDefault(c
+                => string.IsNullOrEmpty(c.Chapter) && c.Volume == chapter.VolumeMarker);
+        }
+
+        if (string.IsNullOrEmpty(chapter.VolumeMarker))
+        {
+            return onDiskContents.FirstOrDefault(c
+                => string.IsNullOrEmpty(c.Volume) && c.Chapter == chapter.ChapterMarker);
+        }
+
+        return onDiskContents.FirstOrDefault(c
+            => c.Chapter == chapter.ChapterMarker && c.Volume == chapter.VolumeMarker);
+    }
+
+
 }

@@ -26,6 +26,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<IDownloadService, DownloadService>();
         services.AddScoped<IScheduled, SubscriptionScheduler>();
         services.AddScoped<IScheduled, MonitoredSeriesScheduler>();
+        services.AddScoped<IScheduled, MonitoredSeriesMetadataScheduler>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IDownloadClientService, DownloadClientService>();

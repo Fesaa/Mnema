@@ -17,6 +17,7 @@ public interface IMonitoredSeriesRepository
     Task<List<MonitoredSeries>> GetMonitoredSeriesByTitle(string title, CancellationToken cancellationToken);
     Task<MonitoredSeriesDto?> GetMonitoredSeriesDto(Guid id, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetAllMonitoredSeries(CancellationToken cancellationToken = default);
+    Task<List<MonitoredSeries>> GetSeriesEligibleForRefresh(CancellationToken cancellationToken = default);
 
     void Update(MonitoredSeries series);
     void Add(MonitoredSeries series);
@@ -33,4 +34,6 @@ public interface IMonitoredSeriesService
     Task UpdateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     Task CreateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     FormDefinition GetForm();
+
+    Task EnrichWithMetadata(MonitoredSeries mSeries, CancellationToken cancellationToken = default);
 }

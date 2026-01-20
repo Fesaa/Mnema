@@ -43,4 +43,6 @@ public sealed record MonitoredSeriesDto
 
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModifiedUtc { get; set; }
+
+    public List<MonitoredChapterDto> Chapters { get; set; }
 }

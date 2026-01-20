@@ -23,5 +23,6 @@ public class AutoMapperProfiles : Profile
         CreateMap<ContentRelease, ContentReleaseDto>();
         CreateMap<DownloadClient, DownloadClientDto>();
         CreateMap<MonitoredSeries, MonitoredSeriesDto>();
+        CreateMap<MonitoredChapter, MonitoredChapterDto>();
     }
 }

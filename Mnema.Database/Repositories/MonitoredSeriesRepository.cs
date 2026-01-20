@@ -20,6 +20,7 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IM
         CancellationToken cancellationToken)
     {
         return ctx.MonitoredSeries
+            .Include(s => s.Chapters)
             .Where(m => m.UserId == userId)
             .Where(m => m.Title.Contains(query))
             .ProjectTo<MonitoredSeriesDto>(mapper.ConfigurationProvider)
@@ -29,12 +30,15 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IM
 
     public Task<MonitoredSeries?> GetMonitoredSeries(Guid id, CancellationToken cancellationToken = default)
     {
-        return ctx.MonitoredSeries.FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
+        return ctx.MonitoredSeries
+            .Include(s => s.Chapters)
+            .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
     }
 
     public Task<List<MonitoredSeries>> GetMonitoredSeriesByTitle(string title, CancellationToken cancellationToken)
     {
         return ctx.MonitoredSeries
+            .Include(s => s.Chapters)
             .Where(m => m.ValidTitles.Any(t => t.Contains(title)))
             .ToListAsync(cancellationToken);
     }
@@ -42,13 +46,24 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IM
     public Task<MonitoredSeriesDto?> GetMonitoredSeriesDto(Guid id, CancellationToken cancellationToken = default)
     {
         return ctx.MonitoredSeries
+            .Include(s => s.Chapters)
             .ProjectTo<MonitoredSeriesDto>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
     }
 
     public Task<List<MonitoredSeries>> GetAllMonitoredSeries(CancellationToken cancellationToken = default)
     {
-        return ctx.MonitoredSeries.ToListAsync(cancellationToken);
+        return ctx.MonitoredSeries.Include(s => s.Chapters).ToListAsync(cancellationToken);
+    }
+
+    public Task<List<MonitoredSeries>> GetSeriesEligibleForRefresh(CancellationToken cancellationToken = default)
+    {
+        var cutoffDate = DateTime.UtcNow.AddDays(-7);
+
+        return ctx.MonitoredSeries
+            .Include(s => s.Chapters)
+            //.Where(s => s.LastDataRefreshUtc < cutoffDate)
+            .ToListAsync(cancellationToken);
     }
 
     public void Update(MonitoredSeries series)

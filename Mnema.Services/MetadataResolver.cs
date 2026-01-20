@@ -22,16 +22,16 @@ public class MetadataResolver(
         var mangaBakaId = metadata.GetString(RequestConstants.MangaBakaKey);
 
         Series? series;
-        if (!string.IsNullOrEmpty(mangaBakaId))
+        if (!string.IsNullOrEmpty(hardCoverId))
         {
-            series = await mangabakaMetadataProvider.GetSeries(mangaBakaId, cancellationToken);
+            series = await hardcoverMetadataProvider.GetSeries(hardCoverId, cancellationToken);
             if (series != null)
                 return series;
         }
 
-        if (!string.IsNullOrEmpty(hardCoverId))
+        if (!string.IsNullOrEmpty(mangaBakaId))
         {
-            series = await hardcoverMetadataProvider.GetSeries(hardCoverId, cancellationToken);
+            series = await mangabakaMetadataProvider.GetSeries(mangaBakaId, cancellationToken);
             if (series != null)
                 return series;
         }

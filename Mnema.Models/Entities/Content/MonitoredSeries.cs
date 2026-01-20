@@ -15,6 +15,9 @@ public class MonitoredSeries: IEntityDate
     /// This title has no effect on actual downloads
     /// </summary>
     public required string Title { get; set; }
+    public string Summary { get; set; }
+    public string? CoverUrl { get; set; }
+    public string? RefUrl { get; set; }
 
     /// <summary>
     /// Providers this release may be found on
@@ -43,4 +46,8 @@ public class MonitoredSeries: IEntityDate
 
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModifiedUtc { get; set; }
+
+    public DateTime LastDataRefreshUtc { get; set; }
+
+    public List<MonitoredChapter> Chapters { get; set; }
 }
