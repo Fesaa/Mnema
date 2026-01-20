@@ -59,7 +59,7 @@ export class NavHeaderComponent {
 
   isMobileGridOpen = signal(false);
   isAccountDropdownOpen = signal(false);
-  expandedGroups = signal<Set<ButtonGroupKey>>(new Set([ButtonGroupKey.Actions]));
+  expandedGroup = signal<ButtonGroupKey | null>(ButtonGroupKey.Actions);
 
   isMobile = computed(() => this.showNav() && this.utilityService.breakPoint() <= Breakpoint.Mobile);
   isDesktop = computed(() => this.showNav() && this.utilityService.breakPoint() > Breakpoint.Mobile);
@@ -83,31 +83,21 @@ export class NavHeaderComponent {
     ...this.buttonGroupService.dashboardGroups(),
   ])
 
-  severity = computed((): 'info' | 'warn' | 'danger' => {
-    const count = this.notificationService.notificationsCount();
-    if (count < 4) return 'info';
-    if (count < 10) return 'warn';
-    return 'danger';
-  });
-
   toggleMobileGrid() {
     this.isMobileGridOpen.update(v => !v);
   }
 
   toggleGroup(key: ButtonGroupKey) {
-    this.expandedGroups.update(set => {
-      const newSet = new Set(set);
-      if (newSet.has(key)) {
-        newSet.delete(key);
-      } else {
-        newSet.add(key);
-      }
-      return newSet;
-    });
+    const cur = this.expandedGroup();
+    if (cur === key) {
+      this.expandedGroup.set(null);
+    } else {
+      this.expandedGroup.set(key);
+    }
   }
 
   isGroupExpanded(key: ButtonGroupKey): boolean {
-    return this.expandedGroups().has(key);
+    return this.expandedGroup() == key;
   }
 
   @HostListener('document:click', ['$event'])
