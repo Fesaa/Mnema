@@ -19,8 +19,8 @@ export class ProviderNamePipe implements PipeTransform {
         return translate('provider-name-pipe.webtoon');
       case Provider.BATO:
         return translate('provider-name-pipe.bato');
-      case Provider.MANGABUDDY:
-        return "Manga buddy"
+      case Provider.WEEBDEX:
+        return "Weebdex"
       default:
         return "Unknown";
     }
