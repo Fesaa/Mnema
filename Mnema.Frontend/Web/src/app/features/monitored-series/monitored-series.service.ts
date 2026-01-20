@@ -118,6 +118,10 @@ export class MonitoredSeriesService {
     return this.httpClient.post(`${this.baseUrl}/${id}/${chapterId}/set-status?status=${status}`, {});
   }
 
+  getMetadataForm(id: string) {
+    return this.httpClient.get<FormDefinition>(`${this.baseUrl}/${id}/metadata-form`);
+  }
+
   getForm() {
     if (this._cachedForm) {
       return of(this._cachedForm);

@@ -32,14 +32,24 @@ public class MonitoredSeries: IEntityDate
     public Format Format { get; set; }
 
     /// <summary>
-    /// Titles that are considered valid for this release. I.e. Translated, original, romanized, etc
+    /// Titles that are considered valid for this release. I.e., Translated, original, romanized, etc.
     /// </summary>
-    /// <remarks>You can use the auto complete in the UI to load from metadata providers</remarks>
+    /// <remarks>You can use the auto-complete in the UI to load from metadata providers</remarks>
     public List<string> ValidTitles { get; set; }
 
     public string HardcoverId { get; set; }
     public string MangaBakaId { get; set; }
+    /// <summary>
+    /// This is the ID from a <see cref="Provider"/>. This only makes sense for Mangadex, etc. Not for torrent sites
+    /// </summary>
+    public string ExternalId { get; set; }
     public string TitleOverride { get; set; }
+
+    /// <summary>
+    /// This holds metadata for the download option from the <see cref="Providers"/>. Some options will be filtered out
+    /// as they're stored in the object itself.
+    /// </summary>
+    public MetadataBag Metadata { get; set; }
 
 
     public DateTime CreatedUtc { get; set; }

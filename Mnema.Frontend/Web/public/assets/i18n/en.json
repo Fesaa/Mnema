@@ -1018,15 +1018,23 @@
     "options": "Options",
     "advanced": "Advanced",
     "close": "{{common.close}}",
+    "tabs": {
+      "general": "General",
+      "metadata": "Download options",
+      "advanced": "Advanced"
+    },
 
     "title-title": "Title",
     "title-tooltip": "This title is only visual and does not effect the underlying download",
     "base-dir-title": "Download directory",
     "base-dir-tooltip": "",
     "providers-title": "Providers",
-    "providers-tooltip": "Which providers to check for this series",
+    "providers-tooltip": "Which providers to check for this series. If you update these, you need to re-open the form to have it update",
     "providers": {
-      "nyaa": "{{provider-name-pipe.nyaa}}"
+      "nyaa": "{{provider-name-pipe.nyaa}}",
+      "mangadex": "{{provider-name-pipe.mangadex}}",
+      "dynasty": "{{provider-name-pipe.dynasty}}",
+      "webtoons": "{{provider-name-pipe.webtoon}}"
     },
     "valid-titles-title": "Valid titles",
     "valid-titles-tooltip": "Titles that parsed content can match on to be considered this series",
@@ -1053,10 +1061,10 @@
       "book": "Book",
       "comic": "Comic"
     },
-    "hardcover-id-title": "{{provider-metadata.hardcover_series_id-title}}",
-    "hardcover-id-tooltip": "{{provider-metadata.hardcover_series_id-tooltip}}",
-    "mangabaka-id-title": "{{provider-metadata.manga_baka_id-title}}",
-    "mangabaka-id-tooltip": "{{provider-metadata.manga_baka_id-tooltip}}",
+    "hardcover_series_id-title": "{{provider-metadata.hardcover_series_id-title}}",
+    "hardcover_series_id-tooltip": "{{provider-metadata.hardcover_series_id-tooltip}}",
+    "manga_baka_id-title": "{{provider-metadata.manga_baka_id-title}}",
+    "manga_baka_id-tooltip": "{{provider-metadata.manga_baka_id-tooltip}}",
     "title_override-title": "{{provider-metadata.title_override-title}}",
     "title_override-tooltip": "{{provider-metadata.title_override-tooltip}}"
   },

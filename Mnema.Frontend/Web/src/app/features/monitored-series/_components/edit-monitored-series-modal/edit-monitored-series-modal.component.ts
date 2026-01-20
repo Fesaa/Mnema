@@ -7,7 +7,7 @@ import {MonitoredSeries, MonitoredSeriesService} from "@mnema/features/monitored
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factory.service";
 import {FormDefinition} from "@mnema/generic-form/form";
-import {tap} from "rxjs";
+import {forkJoin, tap} from "rxjs";
 
 @Component({
   selector: 'app-edit-monitored-series-modal',
@@ -29,13 +29,35 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
 
   series = model.required<MonitoredSeries>();
 
+  activeTab = signal<'general' | 'metadata' | 'advanced'>('general');
+
   formDefinition = signal<FormDefinition | undefined>(undefined);
+  metadataFormDefinition = signal<FormDefinition | undefined>(undefined);
+
+  metadataControls = computed<FormDefinition | undefined>(() => {
+    const f = this.metadataFormDefinition();
+    if (!f) return undefined;
+
+    return {key: '', descriptionKey: '', controls: f.controls.filter(c => !c.advanced)}
+  });
+  advancedControls = computed<FormDefinition | undefined>(() => {
+    const f = this.metadataFormDefinition();
+    if (!f) return undefined;
+
+    return {key: '', descriptionKey: '', controls: f.controls.filter(c => c.advanced)}
+  });
 
   seriesForm = new FormGroup({});
 
   ngOnInit(): void {
-    this.monitoredSeriesService.getForm().pipe(
-      tap(form => this.formDefinition.set(form)),
+    forkJoin([
+      this.monitoredSeriesService.getForm(),
+      this.monitoredSeriesService.getMetadataForm(this.series().id)
+    ]).pipe(
+      tap(([form, mForm]) => {
+        this.formDefinition.set(form);
+        this.metadataFormDefinition.set(mForm);
+      }),
     ).subscribe();
   }
 

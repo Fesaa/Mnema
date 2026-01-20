@@ -124,4 +124,10 @@ public class MonitoredSeriesController(
     {
         return Ok(monitoredSeriesService.GetForm());
     }
+
+    [HttpGet("{id:guid}/metadata-form")]
+    public async Task<ActionResult<FormDefinition>> GetMetadataForm(Guid id)
+    {
+        return Ok(await monitoredSeriesService.GetMetadataForm(UserId, id, HttpContext.RequestAborted));
+    }
 }

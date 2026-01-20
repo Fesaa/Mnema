@@ -51,9 +51,11 @@ public class MonitoredSeriesService(
         series.ContentFormat = dto.ContentFormat;
         series.Format = dto.Format;
         series.ValidTitles = dto.ValidTitles;
+        series.TitleOverride = dto.TitleOverride;
         series.HardcoverId = dto.HardcoverId;
         series.MangaBakaId = dto.MangaBakaId;
-        series.TitleOverride = dto.TitleOverride;
+        series.ExternalId = dto.ExternalId;
+        series.Metadata = dto.Metadata;
 
         await EnrichWithMetadata(series, cancellationToken);
 
@@ -80,6 +82,8 @@ public class MonitoredSeriesService(
             Format = dto.Format,
             HardcoverId = dto.HardcoverId,
             MangaBakaId = dto.MangaBakaId,
+            ExternalId = dto.ExternalId,
+            Metadata = dto.Metadata,
             TitleOverride = dto.TitleOverride,
             ValidTitles = dto.ValidTitles,
             Summary = string.Empty,
@@ -145,7 +149,7 @@ public class MonitoredSeriesService(
                 },
                 new FormControlDefinition
                 {
-                    Key = "format",
+                    Key = RequestConstants.FormatKey,
                     Field = "format",
                     Type = FormType.DropDown,
                     ValueType = FormValueType.Integer,
@@ -158,7 +162,7 @@ public class MonitoredSeriesService(
                 },
                 new FormControlDefinition
                 {
-                    Key = "content_format",
+                    Key = RequestConstants.ContentFormatKey,
                     Field = "contentFormat",
                     Type = FormType.DropDown,
                     ValueType = FormValueType.Integer,
@@ -171,23 +175,54 @@ public class MonitoredSeriesService(
                 },
                 new FormControlDefinition
                 {
-                    Key = "hardcover-id",
+                    Key = RequestConstants.HardcoverSeriesIdKey,
                     Field = "hardcoverId",
                     Type = FormType.Text,
                 },
                 new FormControlDefinition
                 {
-                    Key = "mangabaka-id",
+                    Key = RequestConstants.MangaBakaKey,
                     Field = "mangabakaId",
                     Type = FormType.Text,
                 },
                 new FormControlDefinition
                 {
-                    Key = "title_override",
+                    Key = RequestConstants.TitleOverride,
                     Field = "titleOverride",
                     Type = FormType.Text,
                 }
             ]
+        };
+    }
+
+    public async Task<FormDefinition> GetMetadataForm(Guid userId, Guid seriesId, CancellationToken ct = default)
+    {
+        var series = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(seriesId, ct);
+        if (series == null) throw new NotFoundException();
+        if (series.UserId != userId) throw new UnauthorizedAccessException();
+
+        var excludedKeys = GetForm().Controls.Select(c => c.Key).ToHashSet();
+
+        var allControls = new List<FormControlDefinition>();
+
+        foreach (var provider in series.Providers)
+        {
+            var repository = serviceProvider.GetKeyedService<IContentRepository>(provider);
+            if (repository == null) continue;
+
+            var controls = await repository.DownloadMetadata(ct);
+
+            var filteredControls = controls.Where(c => !excludedKeys.Contains(c.Key)).ToList();
+            if (filteredControls.Count == 0) continue;
+
+            allControls.AddRange(filteredControls);
+            filteredControls.ForEach(c => excludedKeys.Add(c.Key));
+        }
+
+        return new FormDefinition
+        {
+            Key = "metadata-form",
+            Controls = allControls
         };
     }
 

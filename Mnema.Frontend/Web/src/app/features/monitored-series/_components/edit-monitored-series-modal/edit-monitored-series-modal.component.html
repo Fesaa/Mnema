@@ -16,15 +16,55 @@
 
     <div class="modal-body scrollable-modal">
 
-      @let formDefinitionValue = formDefinition();
+      <ul class="nav nav-tabs">
+        @if (formDefinition()) {
+          <li class="nav-item" (click)="activeTab.set('general')">
+            <a class="nav-link" [class.active]="activeTab() === 'general'">{{t('tabs.general')}}</a>
+          </li>
+        }
+        @if (metadataControls()?.controls && metadataControls()!.controls.length > 0) {
+          <li class="nav-item" (click)="activeTab.set('metadata')">
+            <a class="nav-link" [class.active]="activeTab() === 'metadata'">{{t('tabs.metadata')}}</a>
+          </li>
+        }
+        @if (advancedControls()?.controls && advancedControls()!.controls.length > 0) {
+          <li class="nav-item" (click)="activeTab.set('advanced')">
+            <a class="nav-link" [class.active]="activeTab() === 'advanced'">{{t('tabs.advanced')}}</a>
+          </li>
+        }
+      </ul>
 
-      @if (formDefinitionValue) {
-        <app-generic-form
-          [formDefinition]="formDefinitionValue"
-          [supplyFormGroup]="seriesForm"
-          [initialValue]="series()"
-        ></app-generic-form>
-      }
+      <div class="tab-content mt-3">
+        <div class="tab-pane" [class.active]="activeTab() === 'general'">
+          @if (formDefinition()) {
+            <app-generic-form
+              [formDefinition]="formDefinition()!"
+              [supplyFormGroup]="seriesForm"
+              [initialValue]="series()"
+            ></app-generic-form>
+          }
+        </div>
+
+        <div class="tab-pane" [class.active]="activeTab() === 'metadata'">
+          @if (metadataControls()) {
+            <app-generic-form
+              [formDefinition]="metadataControls()!"
+              [supplyFormGroup]="seriesForm"
+              [initialValue]="series()"
+            ></app-generic-form>
+          }
+        </div>
+
+        <div class="tab-pane" [class.active]="activeTab() === 'advanced'">
+          @if (advancedControls()) {
+            <app-generic-form
+              [formDefinition]="advancedControls()!"
+              [supplyFormGroup]="seriesForm"
+              [initialValue]="series()"
+            ></app-generic-form>
+          }
+        </div>
+      </div>
 
     </div>
 

@@ -30,12 +30,13 @@ public interface IMonitoredSeriesService
 {
     public static readonly ImmutableArray<Provider> SupportedProviders =
     [
-        Provider.Nyaa,
+        Provider.Nyaa, Provider.Mangadex, Provider.Dynasty, Provider.Webtoons
     ];
 
     Task UpdateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     Task CreateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     FormDefinition GetForm();
+    Task<FormDefinition> GetMetadataForm(Guid userId, Guid seriesId, CancellationToken cancellationToken = default);
 
     Task EnrichWithMetadata(MonitoredSeries mSeries, CancellationToken cancellationToken = default);
 }
@@ -44,7 +45,7 @@ public static class MonitoredSeriesExtensions
 {
     public static MetadataBag MetadataForDownloadRequest(this MonitoredSeries monitoredSeries)
     {
-        var bag = new MetadataBag();
+        var bag = monitoredSeries.Metadata;
         bag.SetValue(RequestConstants.HardcoverSeriesIdKey, monitoredSeries.HardcoverId);
         bag.SetValue(RequestConstants.MangaBakaKey, monitoredSeries.MangaBakaId);
         bag.SetValue(RequestConstants.FormatKey, monitoredSeries.Format.ToString());

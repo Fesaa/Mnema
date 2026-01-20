@@ -82,6 +82,12 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
 
         builder.Entity<MonitoredSeries>()
             .PrimitiveCollection(m => m.Providers);
+
+        builder.Entity<MonitoredSeries>()
+            .Property(s => s.Metadata)
+            .HasJsonConversion(new MetadataBag())
+            .HasColumnType("TEXT")
+            .HasDefaultValue(new MetadataBag());
     }
 
     private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)

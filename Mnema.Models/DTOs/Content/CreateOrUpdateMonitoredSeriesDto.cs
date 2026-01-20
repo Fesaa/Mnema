@@ -22,6 +22,10 @@ public class CreateOrUpdateMonitoredSeriesDto
 
     public string HardcoverId { get; set; }
     public string MangaBakaId { get; set; }
+    /// <inheritdoc cref="MonitoredSeries.ExternalId" />
+    public string ExternalId { get; set; }
     public string TitleOverride { get; set; }
+    /// <inheritdoc cref="MonitoredSeries.Metadata" />
+    public MetadataBag Metadata { get; set; }
 
 }
