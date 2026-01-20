@@ -35,9 +35,18 @@ export interface Button {
   badge?: string;
 }
 
+export enum ButtonGroupKey {
+  Actions = 0,
+  Pages = 1,
+  Settings = 2,
+
+  Any = 9999,
+}
+
 export interface ButtonGroup {
   icon: string;
   title: string;
+  key: ButtonGroupKey;
   buttons: Button[];
 }
 
@@ -63,6 +72,7 @@ export class ButtonGroupService {
     this.translationReloaded();
 
     return {
+      key: ButtonGroupKey.Pages,
       title: translate('button-groups.pages.title'),
       icon: 'fa fa-thumbtack',
       buttons: this.pageService.pages().map<Button>(page => ({
@@ -78,6 +88,7 @@ export class ButtonGroupService {
     this.translationReloaded();
 
     return {
+      key: ButtonGroupKey.Actions,
       title: translate('button-groups.actions.title'),
       icon: 'fa fa-bars',
       buttons: [
@@ -123,6 +134,7 @@ export class ButtonGroupService {
     this.translationReloaded();
 
     return {
+      key: ButtonGroupKey.Settings,
       title: translate('button-groups.settings.title'),
       icon: 'fa fa-cogs',
       buttons: [

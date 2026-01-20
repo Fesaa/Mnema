@@ -1,11 +1,11 @@
-import {ChangeDetectionStrategy, Component, computed, HostListener, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, HostListener, inject, signal} from '@angular/core';
 import {toSignal} from "@angular/core/rxjs-interop";
 import {Breakpoint, UtilityService} from "../_services/utility.service";
-import {ActivatedRoute, RouterLink} from "@angular/router";
+import {RouterLink} from "@angular/router";
 import {AccountService} from "../_services/account.service";
 import {NavService} from "../_services/nav.service";
 import {NotificationService} from "../_services/notification.service";
-import {Button, ButtonGroup, ButtonGroupService} from "../button-grid/button-group.service";
+import {ButtonGroup, ButtonGroupKey, ButtonGroupService} from "../button-grid/button-group.service";
 import {translate, TranslocoPipe} from "@jsverse/transloco";
 import {TitleCasePipe} from "@angular/common";
 import {animate, style, transition, trigger} from "@angular/animations";
@@ -59,7 +59,7 @@ export class NavHeaderComponent {
 
   isMobileGridOpen = signal(false);
   isAccountDropdownOpen = signal(false);
-  expandedGroups = signal<Set<string>>(new Set());
+  expandedGroups = signal<Set<ButtonGroupKey>>(new Set([ButtonGroupKey.Actions]));
 
   isMobile = computed(() => this.showNav() && this.utilityService.breakPoint() <= Breakpoint.Mobile);
   isDesktop = computed(() => this.showNav() && this.utilityService.breakPoint() > Breakpoint.Mobile);
@@ -68,6 +68,7 @@ export class NavHeaderComponent {
 
   mobileButtonGroups = computed<ButtonGroup[]>(() => [
     {
+      key: ButtonGroupKey.Any,
       title: '',
       icon: '',
       buttons: [
@@ -93,20 +94,20 @@ export class NavHeaderComponent {
     this.isMobileGridOpen.update(v => !v);
   }
 
-  toggleGroup(groupTitle: string) {
+  toggleGroup(key: ButtonGroupKey) {
     this.expandedGroups.update(set => {
       const newSet = new Set(set);
-      if (newSet.has(groupTitle)) {
-        newSet.delete(groupTitle);
+      if (newSet.has(key)) {
+        newSet.delete(key);
       } else {
-        newSet.add(groupTitle);
+        newSet.add(key);
       }
       return newSet;
     });
   }
 
-  isGroupExpanded(groupTitle: string): boolean {
-    return this.expandedGroups().has(groupTitle);
+  isGroupExpanded(key: ButtonGroupKey): boolean {
+    return this.expandedGroups().has(key);
   }
 
   @HostListener('document:click', ['$event'])

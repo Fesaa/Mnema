@@ -28,7 +28,7 @@
       @for (group of dashboardGroups(); track group.title) {
         @if (buttonGroupService.anyVisible(group.buttons)) {
           <div class="nav-group">
-            <div class="group-header" (click)="toggleGroup(group.title)">
+            <div class="group-header" (click)="toggleGroup(group.key)">
               <div class="group-title-content">
                 @if (group.icon) {
                   <i class="{{ group.icon }} me-2"></i>
@@ -36,11 +36,11 @@
                 <span>{{ group.title }}</span>
               </div>
               <div class="group-header-actions">
-                <i class="fa fa-chevron-right chevron" [class.rotated]="isGroupExpanded(group.title)"></i>
+                <i class="fa fa-chevron-right chevron" [class.rotated]="isGroupExpanded(group.key)"></i>
               </div>
             </div>
 
-            @if (isGroupExpanded(group.title)) {
+            @if (isGroupExpanded(group.key)) {
               <div class="group-content" @expandCollapse>
                 @for (btn of group.buttons; track btn.title) {
                   @if (buttonGroupService.shouldRender(btn)) {
