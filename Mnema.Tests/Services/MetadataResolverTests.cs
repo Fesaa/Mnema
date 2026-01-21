@@ -47,7 +47,7 @@ public class MetadataResolverTests
             metadataProviderService,
             metadataProviderService,
             Substitute.For<IServiceProvider>()
-        ).ResolveSeriesAsync([], metadata, ct);
+        ).ResolveSeriesAsync(Provider.Nyaa, metadata, ct);
     }
 
     private static MetadataProviderSettingsDto CreateSettings(

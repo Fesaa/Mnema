@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   inject,
+  input,
   model,
   signal,
   TemplateRef,
@@ -14,8 +15,10 @@ import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {toSignal} from "@angular/core/rxjs-interop";
+import {SentenceCasePipe} from "@mnema/_pipes/sentence-case.pipe";
 import {NgTemplateOutlet} from "@angular/common";
-import {LoadingSpinnerComponent} from "../loading-spinner/loading-spinner.component";
+import {VirtualScrollerModule} from "@iharbeck/ngx-virtual-scroller";
+import {LoadingSpinnerComponent} from "@mnema/shared/_component/loading-spinner/loading-spinner.component";
 
 export type ListSelectionItem<T> = {
   label: string,
@@ -28,8 +31,10 @@ export type ListSelectionItem<T> = {
   imports: [
     TranslocoDirective,
     ReactiveFormsModule,
+    SentenceCasePipe,
     NgTemplateOutlet,
-    LoadingSpinnerComponent,
+    VirtualScrollerModule,
+    LoadingSpinnerComponent
   ],
   templateUrl: './list-select-modal.component.html',
   styleUrl: './list-select-modal.component.scss',
@@ -54,8 +59,10 @@ export class ListSelectModalComponent<T> {
   interceptConfirm = model<((selection: T|T[]) => void) | null>(null);
 
   itemsBeforeFilter = model(8);
+  itemsBeforeVirtual = model<number | null>(null);
   requireConfirmation = model(false);
   showFooter = model(true);
+  showConfirm = model(true);
   multiSelect = model(false);
   hideItemsWhenInvalid = model(false);
 
@@ -101,7 +108,7 @@ export class ListSelectModalComponent<T> {
 
   protected filteredItems = computed(() => {
     const items = this.items();
-    const filter = this.filterQuery().toLowerCase();
+    const filter = (this.filterQuery() ?? '').toLowerCase();
 
     if (!filter) return items;
 

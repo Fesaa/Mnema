@@ -2,18 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using System.IO.Compression;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using BencodeNET.Parsing;
 using BencodeNET.Torrents;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
+using Mnema.Common.Helpers;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.External;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
 
@@ -30,6 +34,7 @@ public class ScannerService(
     ) : IScannerService
 {
 
+    private static readonly XmlSerializer XmlSerializer = new(typeof(ComicInfo));
     private static readonly BencodeParser BencodeParser = new();
     private static readonly StreamPipeReaderOptions StreamPipeReaderOptions = new();
     private static readonly DistributedCacheEntryOptions CacheEntryOptions = new()
@@ -72,6 +77,18 @@ public class ScannerService(
 
     public OnDiskContent ParseContent(string file, ContentFormat contentFormat)
     {
+        var ci = ParseComicInfoFromFile(file);
+        if (ci != null)
+        {
+            return new OnDiskContent
+            {
+                SeriesName = ci.Series,
+                Path = file,
+                Volume = ci.Volume,
+                Chapter = ci.Number,
+            };
+        }
+
         var series = parserService.ParseSeries(file, contentFormat);
         var volume = parserService.ParseVolume(file, contentFormat);
         var chapter = parserService.ParseChapter(file, contentFormat);
@@ -85,17 +102,54 @@ public class ScannerService(
         };
     }
 
-    public async Task<List<Chapter>> ParseTorrentFile(string remoteUrl, ContentFormat contentFormat, CancellationToken cancellationToken)
+    private ComicInfo? ParseComicInfoFromFile(string file)
     {
-        var chapters = await cache.GetAsJsonAsync<List<Chapter>>(remoteUrl, cancellationToken);
-        if (chapters != null)
-            return chapters;
+        try
+        {
+            switch (parserService.ParseFormat(file))
+            {
+                case Format.Archive:
+                    return ParseComicInfoFromArchive(file);
+                case Format.Epub:
+                    break;
+                case Format.Unsupported:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        catch
+        {
+            return null;
+        }
+
+        return null;
+    }
+
+    private static ComicInfo? ParseComicInfoFromArchive(string file)
+    {
+        using var archive = ZipFile.OpenRead(file);
+
+        var comicInfoEntry = archive.GetEntry("ComicInfo.xml")??
+                             archive.Entries
+                                 .FirstOrDefault(e
+                                     => e.Name.Equals("ComicInfo.xml", StringComparison.OrdinalIgnoreCase));
+        if (comicInfoEntry == null) return null;
+
+        return XmlHelper.Deserialize<ComicInfo>(XmlSerializer, comicInfoEntry.Open());
+    }
+
+    public async Task<TorrentScanResult> ParseTorrentFile(string remoteUrl, ContentFormat contentFormat, CancellationToken cancellationToken)
+    {
+        var cached = await cache.GetAsJsonAsync<TorrentScanResult>(remoteUrl, cancellationToken);
+        if (cached != null)
+            return cached;
 
         var stream = await httpClient.GetStreamAsync(remoteUrl, cancellationToken);
 
         var torrent = await BencodeParser.ParseAsync<Torrent>(stream, StreamPipeReaderOptions, cancellationToken);
 
-        chapters = torrent.FileMode switch
+        var chapters = torrent.FileMode switch
         {
             TorrentFileMode.Unknown => [],
             TorrentFileMode.Single => [
@@ -107,9 +161,11 @@ public class ScannerService(
             _ => throw new ArgumentOutOfRangeException(nameof(torrent.FileMode), torrent.FileMode, null)
         };
 
-        await cache.SetAsJsonAsync(remoteUrl, chapters, CacheEntryOptions, cancellationToken);
+        var res = new TorrentScanResult(torrent.TotalSize.AsHumanReadableSize(), chapters);
 
-        return chapters;
+        await cache.SetAsJsonAsync(remoteUrl, res, CacheEntryOptions, cancellationToken);
+
+        return res;
     }
 
     private Chapter ParseChapter(string path, string file, ContentFormat contentFormat)
@@ -130,5 +186,32 @@ public class ScannerService(
             People = [],
             TranslationGroups = []
         };
+    }
+
+    public OnDiskContent? FindMatch(List<OnDiskContent> onDiskContents, Chapter chapter)
+    {
+        if (string.IsNullOrEmpty(chapter.VolumeMarker) && string.IsNullOrEmpty(chapter.ChapterMarker))
+        {
+            return null;
+        }
+
+        if (string.IsNullOrEmpty(chapter.ChapterMarker))
+        {
+            var volumeMatches = onDiskContents.Where(c => c.Volume == chapter.VolumeMarker).ToList();
+
+            if (volumeMatches.Count == 1)
+                return volumeMatches[0];
+
+            return volumeMatches.FirstOrDefault(c => string.IsNullOrEmpty(c.Chapter));
+        }
+
+        if (string.IsNullOrEmpty(chapter.VolumeMarker))
+        {
+            return onDiskContents.FirstOrDefault(c
+                => string.IsNullOrEmpty(c.Volume) && c.Chapter == chapter.ChapterMarker);
+        }
+
+        return onDiskContents.FirstOrDefault(c
+            => c.Chapter == chapter.ChapterMarker && c.Volume == chapter.VolumeMarker);
     }
 }

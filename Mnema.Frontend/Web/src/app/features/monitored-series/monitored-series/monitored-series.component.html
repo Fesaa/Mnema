@@ -20,8 +20,11 @@
               <div class="d-flex justify-content-between align-items-start mb-3">
                 <h1 class="series-title mb-0">{{ s.title }}</h1>
                 <div class="d-flex">
-                  <button class="btn btn-sm btn-secondary me-2" (click)="showResolvedSeries()">
+                  <button class="btn btn-sm btn-secondary me-2" (click)="search()">
                     <i class="fa fa-magnifying-glass"></i>
+                  </button>
+                  <button class="btn btn-sm btn-secondary me-2" (click)="showResolvedSeries()">
+                    <i class="fa fa-eye"></i>
                   </button>
                   <button class="btn btn-sm btn-secondary me-2" (click)="edit()">
                     <i class="fa fa-pencil"></i>
@@ -53,14 +56,7 @@
                 }
               </div>
 
-              @if (s.providers && s.providers.length > 0) {
-                <div class="series-providers mb-3">
-                  <strong class="me-2">Providers:</strong>
-                  @for (provider of s.providers; track provider) {
-                    <app-tag-badge>{{ provider | providerName }}</app-tag-badge>
-                  }
-                </div>
-              }
+              <app-tag-badge>{{ s.provider | providerName }}</app-tag-badge>
 
               @if (s.summary) {
                 <p class="series-summary">{{ s.summary }}</p>

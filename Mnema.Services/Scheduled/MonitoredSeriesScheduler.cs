@@ -33,7 +33,7 @@ internal class MonitoredSeriesScheduler(
     protected override List<Provider> GetProviders(List<MonitoredSeries> entities)
     {
         return entities
-            .SelectMany(m => m.Providers)
+            .Select(m => m.Provider)
             .Distinct()
             .ToList();
     }
@@ -107,7 +107,7 @@ internal class MonitoredSeriesScheduler(
         var parserService = scope.ServiceProvider.GetRequiredService<IParserService>();
         var scannerService = scope.ServiceProvider.GetRequiredService<IScannerService>();
 
-        foreach (var monitoredRelease in monitoredReleases.Where(m => m.Providers.Contains(release.Provider)))
+        foreach (var monitoredRelease in monitoredReleases.Where(m => m.Provider == release.Provider))
         {
             // Require exact match
             if (!string.IsNullOrEmpty(monitoredRelease.ExternalId))
@@ -123,8 +123,8 @@ internal class MonitoredSeriesScheduler(
             if (!parseResult.Series.Intersect(monitoredRelease.ValidTitles).Any())
                 continue;
 
-            // Ensure the release is off the correct format
-            var chapters = await scannerService.ParseTorrentFile(release.DownloadUrl, monitoredRelease.ContentFormat, ct);
+            // Ensure the release is in the correct format
+            var (_, chapters) = await scannerService.ParseTorrentFile(release.DownloadUrl, monitoredRelease.ContentFormat, ct);
             var formats = chapters.Select(c => parserService.ParseFormat(c.Title));
             if (!formats.Contains(monitoredRelease.Format))
                 continue;

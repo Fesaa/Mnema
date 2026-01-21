@@ -23,7 +23,9 @@ public class MonitoredSeriesController(
     IUnitOfWork unitOfWork,
     IMonitoredSeriesService monitoredSeriesService,
     IMetadataResolver metadataResolver,
-    IMessageService messageService
+    IMessageService messageService,
+    ISearchService searchService,
+    IDownloadService downloadService
 ) : BaseApiController
 {
     [HttpGet("all")]
@@ -70,7 +72,7 @@ public class MonitoredSeriesController(
 
         if (monitoredSeries.UserId != UserId) return Forbid();
 
-        var series = await metadataResolver.ResolveSeriesAsync(monitoredSeries.Providers, monitoredSeries.MetadataForDownloadRequest(), HttpContext.RequestAborted);
+        var series = await metadataResolver.ResolveSeriesAsync(monitoredSeries.Provider, monitoredSeries.MetadataForDownloadRequest(), HttpContext.RequestAborted);
 
         return Ok(series);
     }
@@ -98,6 +100,49 @@ public class MonitoredSeriesController(
         await unitOfWork.CommitAsync(cancellationToken);
 
         await messageService.MetadataRefreshed(userId, id);
+    }
+
+    [HttpGet("{id:guid}/search")]
+    public async Task<ActionResult<PagedList<SearchResult>>> Search(Guid id, [FromQuery] PaginationParams paginationParams)
+    {
+        var mSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        if (mSeries == null) return NotFound();
+        if (mSeries.UserId != UserId) return Forbid();
+
+        var req = new SearchRequest
+        {
+            Provider = Provider.Nyaa,
+            Query = mSeries.Title,
+            Modifiers = mSeries.MetadataForDownloadRequest()
+        };
+
+        return Ok(await searchService.Search(req, paginationParams, HttpContext.RequestAborted));
+    }
+
+    [HttpPost("{id:guid}/download")]
+    public async Task<IActionResult> Download(Guid id, SearchResult result)
+    {
+        var mSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        if (mSeries == null) return NotFound();
+        if (mSeries.UserId != UserId) return Forbid();
+
+        if (mSeries.Provider != result.Provider) return BadRequest();
+
+        var req = new DownloadRequestDto
+        {
+            Provider = result.Provider,
+            Id = result.Id,
+            BaseDir = mSeries.BaseDir,
+            TempTitle = mSeries.Title,
+            Metadata = mSeries.MetadataForDownloadRequest(),
+            DownloadUrl = result.DownloadUrl,
+            UserId = UserId,
+            StartImmediately = true
+        };
+
+        await downloadService.StartDownload(req);
+
+        return Ok();
     }
 
     [HttpDelete("{id:guid}")]

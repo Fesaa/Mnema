@@ -47,7 +47,7 @@ public class MonitoredSeriesService(
 
         series.Title = dto.Title;
         series.BaseDir = dto.BaseDir;
-        series.Providers = dto.Providers;
+        series.Provider = dto.Provider;
         series.ContentFormat = dto.ContentFormat;
         series.Format = dto.Format;
         series.ValidTitles = dto.ValidTitles;
@@ -77,7 +77,7 @@ public class MonitoredSeriesService(
             UserId = userId,
             Title = dto.Title,
             BaseDir = dto.BaseDir,
-            Providers = dto.Providers,
+            Provider = dto.Provider,
             ContentFormat = dto.ContentFormat,
             Format = dto.Format,
             HardcoverId = dto.HardcoverId,
@@ -137,9 +137,9 @@ public class MonitoredSeriesService(
                 },
                 new FormControlDefinition
                 {
-                    Key = "providers",
-                    Field = "providers",
-                    Type = FormType.MultiSelect,
+                    Key = "provider",
+                    Field = "provider",
+                    Type = FormType.DropDown,
                     ValueType = FormValueType.Integer,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
@@ -206,18 +206,11 @@ public class MonitoredSeriesService(
 
         var allControls = new List<FormControlDefinition>();
 
-        foreach (var provider in series.Providers)
+        var repository = serviceProvider.GetKeyedService<IContentRepository>(series.Provider);
+        if (repository != null)
         {
-            var repository = serviceProvider.GetKeyedService<IContentRepository>(provider);
-            if (repository == null) continue;
-
             var controls = await repository.DownloadMetadata(ct);
-
-            var filteredControls = controls.Where(c => !excludedKeys.Contains(c.Key)).ToList();
-            if (filteredControls.Count == 0) continue;
-
-            allControls.AddRange(filteredControls);
-            filteredControls.ForEach(c => excludedKeys.Add(c.Key));
+            allControls.AddRange(controls.Where(c => !excludedKeys.Contains(c.Key)).ToList());
         }
 
         return new FormDefinition
@@ -231,7 +224,7 @@ public class MonitoredSeriesService(
     {
         var metadata = mSeries.MetadataForDownloadRequest();
 
-        var series = await metadataResolver.ResolveSeriesAsync(mSeries.Providers, metadata, ct);
+        var series = await metadataResolver.ResolveSeriesAsync(mSeries.Provider, metadata, ct);
         if (series == null)
         {
             logger.LogWarning("Monitored series {Title} has no metadata linked. Nothing will be downloaded", mSeries.Title);
@@ -271,7 +264,7 @@ public class MonitoredSeriesService(
                 continue;
             }
 
-            var matchingFile = FindMatchingFile(onDiskContent, chapter);
+            var matchingFile = scannerService.FindMatch(onDiskContent, chapter);
 
             var status = MonitoredChapterStatus.Missing;
             if (matchingFile != null)
@@ -308,29 +301,6 @@ public class MonitoredSeriesService(
         mChapter.RefUrl = chapter.RefUrl;
         mChapter.ReleaseDate = chapter.ReleaseDate?.ToUniversalTime();
         mChapter.SortOrder = chapter.SortOrder ?? ParserService.SpecialVolumeNumber;
-    }
-
-    private static OnDiskContent? FindMatchingFile(List<OnDiskContent> onDiskContents, Chapter chapter)
-    {
-        if (string.IsNullOrEmpty(chapter.VolumeMarker) && string.IsNullOrEmpty(chapter.ChapterMarker))
-        {
-            return null;
-        }
-
-        if (string.IsNullOrEmpty(chapter.ChapterMarker))
-        {
-            return onDiskContents.FirstOrDefault(c
-                => string.IsNullOrEmpty(c.Chapter) && c.Volume == chapter.VolumeMarker);
-        }
-
-        if (string.IsNullOrEmpty(chapter.VolumeMarker))
-        {
-            return onDiskContents.FirstOrDefault(c
-                => string.IsNullOrEmpty(c.Volume) && c.Chapter == chapter.ChapterMarker);
-        }
-
-        return onDiskContents.FirstOrDefault(c
-            => c.Chapter == chapter.ChapterMarker && c.Volume == chapter.VolumeMarker);
     }
 
 

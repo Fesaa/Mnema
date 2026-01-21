@@ -6,6 +6,8 @@ using Mnema.Models.Publication;
 
 namespace Mnema.API.Content;
 
+public sealed record TorrentScanResult(string Size, List<Chapter> Chapters);
+
 public interface IScannerService
 {
     List<OnDiskContent> ScanDirectory(string path, ContentFormat contentFormat, Format format,
@@ -13,5 +15,7 @@ public interface IScannerService
 
     OnDiskContent ParseContent(string file, ContentFormat contentFormat);
 
-    Task<List<Chapter>> ParseTorrentFile(string remoteUrl, ContentFormat contentFormat, CancellationToken cancellationToken);
+    Task<TorrentScanResult> ParseTorrentFile(string remoteUrl, ContentFormat contentFormat, CancellationToken cancellationToken);
+
+    OnDiskContent? FindMatch(List<OnDiskContent> onDiskContents, Chapter chapter);
 }

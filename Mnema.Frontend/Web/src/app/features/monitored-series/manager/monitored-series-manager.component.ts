@@ -13,6 +13,7 @@ import {Provider} from "@mnema/_models/page";
 import {RouterLink} from "@angular/router";
 import {PaginatorComponent} from "@mnema/shared/_component/paginator/paginator.component";
 import {TranslocoDirective} from "@jsverse/transloco";
+import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
 
 @Component({
   selector: 'app-monitored-series-manager',
@@ -21,6 +22,7 @@ import {TranslocoDirective} from "@jsverse/transloco";
     ReactiveFormsModule,
     RouterLink,
     PaginatorComponent,
+    UtcToLocalTimePipe,
   ],
   templateUrl: './monitored-series-manager.component.html',
   styleUrl: './monitored-series-manager.component.scss',

@@ -26,6 +26,9 @@ import {
 } from "@mnema/features/monitored-series/_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
 import {ListSelectModalComponent} from "@mnema/shared/_component/list-select-modal/list-select-modal.component";
 import {EventType, SignalRService} from "@mnema/_services/signal-r.service";
+import {SearchInfo} from "@mnema/_models/Info";
+import {DownloadModalComponent} from "@mnema/page/_components/download-modal/download-modal.component";
+import {ToastService} from "@mnema/_services/toast.service";
 
 @Component({
   selector: 'app-monitored-series',
@@ -40,11 +43,12 @@ export class MonitoredSeriesComponent {
   private readonly chapterStatusPipe = new MonitoredChapterStatusPipe();
 
   private readonly monitoredSeriesService = inject(MonitoredSeriesService);
-  private readonly router = inject(Router);
-  private readonly modalService = inject(ModalService);
   private readonly transLoco = inject(TranslocoService);
+  private readonly modalService = inject(ModalService);
   private readonly signalR = inject(SignalRService);
   private readonly route = inject(ActivatedRoute);
+  private readonly toastR = inject(ToastService);
+  private readonly router = inject(Router);
   private readonly data = toSignal(this.route.data);
 
   protected series = linkedSignal(() => this.data()!['series'] as MonitoredSeries);
@@ -81,6 +85,24 @@ export class MonitoredSeriesComponent {
       question: this.transLoco.translate('monitored-series-detail.confirm-refresh-metadata', {name: this.series().title})
     }, true).pipe(
       switchMap(() => this.monitoredSeriesService.refreshMetadata(this.series().id))
+    ).subscribe();
+  }
+
+  search() {
+    this.monitoredSeriesService.search(this.series().id).pipe(
+      switchMap(results => {
+        const [modal, component] = this.modalService.open(ListSelectModalComponent, {
+          size: "lg", centered: true
+        });
+        component.title.set(this.transLoco.translate('monitored-series-detail.select-search-result'));
+        component.inputItems.set(results.items.map(si => ({label: si.name, value: si})));
+        component.itemsBeforeVirtual.set(8);
+        component.requireConfirmation.set(true);
+
+        return this.modalService.onClose$<SearchInfo>(modal)
+      }),
+      switchMap(selection => this.monitoredSeriesService.download(this.series().id, selection)),
+      tap(() => this.toastR.infoLoco('monitored-series-detail.download-started', {name: this.series().title}))
     ).subscribe();
   }
 

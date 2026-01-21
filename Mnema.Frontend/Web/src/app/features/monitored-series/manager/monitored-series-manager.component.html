@@ -40,7 +40,7 @@
                   }
                   @if (nextReleaseDate(item); as releaseDate) {
                     <span>
-                      {{t('next-release-date', {date: releaseDate})}}
+                      {{t('next-release-date', {date: releaseDate | utcToLocalTime:'shortDate'})}}
                     </span>
                   }
                 </div>

@@ -335,7 +335,7 @@ internal class MangadexRepository : IRepository
     {
         var url = $"/manga/{id}/feed?order[volume]=desc&order[chapter]=desc"
             .AppendQueryParam("translatedLanguage[]", language)
-            .AddPagination(20, offSet)
+            .AddOffsetPagination(20, offSet)
             .AddAllContentRatings();
 
         var result = await Client.GetCachedAsync<ChaptersResponse>(url, _cache, cancellationToken: cancellationToken);

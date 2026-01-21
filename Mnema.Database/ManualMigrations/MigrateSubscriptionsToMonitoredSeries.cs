@@ -21,7 +21,7 @@ public class MigrateSubscriptionsToMonitoredSeries: ManualMigration
                 BaseDir = subscription.BaseDir,
                 Metadata = subscription.Metadata,
                 ExternalId = subscription.ContentId,
-                Providers = [subscription.Provider],
+                Provider = subscription.Provider,
                 TitleOverride = subscription.Metadata.GetStringOrDefault(RequestConstants.TitleOverride, string.Empty),
                 UserId = subscription.UserId,
                 ContentFormat = subscription.Metadata.GetEnum<ContentFormat>(RequestConstants.ContentFormatKey) ?? ContentFormat.Manga,

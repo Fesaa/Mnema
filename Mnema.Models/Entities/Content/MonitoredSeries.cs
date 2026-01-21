@@ -22,9 +22,9 @@ public class MonitoredSeries: IEntityDate
     public string? RefUrl { get; set; }
 
     /// <summary>
-    /// Providers this release may be found on
+    /// Provider this release may be found on
     /// </summary>
-    public List<Provider> Providers { get; set; }
+    public Provider Provider { get; set; }
 
     /// <summary>
     ///     The directory to download the content in
@@ -43,13 +43,13 @@ public class MonitoredSeries: IEntityDate
     public string HardcoverId { get; set; }
     public string MangaBakaId { get; set; }
     /// <summary>
-    /// This is the ID from a <see cref="Provider"/>. This only makes sense for Mangadex, etc. Not for torrent sites
+    /// This is the ID from a <see cref="Content.Provider"/>. This only makes sense for Mangadex, etc. Not for torrent sites
     /// </summary>
     public string ExternalId { get; set; }
     public string TitleOverride { get; set; }
 
     /// <summary>
-    /// This holds metadata for the download option from the <see cref="Providers"/>. Some options will be filtered out
+    /// This holds metadata for the download option from the <see cref="Provider"/>. Some options will be filtered out
     /// as they're stored in the object itself.
     /// </summary>
     public MetadataBag Metadata { get; set; }

@@ -13,7 +13,9 @@
     "confirm": "Confirm",
     "actions": "Actions",
     "dismiss": "Dismiss",
-    "selected": "Selected"
+    "selected": "Selected",
+    "clear": "Clear",
+    "filter": "Filter"
   },
 
   "button-groups": {
@@ -914,6 +916,7 @@
       "add": "Add Series"
     },
     "confirm-delete": "Are you sure you want to remove monitored series {{title}}?",
+    "next-release-date": "Next release date: {{date}}",
     "toasts": {
       "delete": {
         "success": {
@@ -972,9 +975,9 @@
     "title-tooltip": "This title is only visual and does not effect the underlying download",
     "base-dir-title": "Download directory",
     "base-dir-tooltip": "",
-    "providers-title": "Providers",
-    "providers-tooltip": "Which providers to check for this series. If you update these, you need to re-open the form to have it update",
-    "providers": {
+    "provider-title": "Provider",
+    "provider-tooltip": "Which provider to use for this series. If you update this, you need to re-open the form to have it update",
+    "provider": {
       "nyaa": "{{provider-name-pipe.nyaa}}",
       "mangadex": "{{provider-name-pipe.mangadex}}",
       "dynasty": "{{provider-name-pipe.dynasty}}",
@@ -1093,7 +1096,12 @@
     "no-chapters": "No chapters found, note that chapters from UpStream are not tracked",
     "confirm-delete": "Are you sure you want to stop monitoring {{name}}",
     "select-status": "Set chapter status",
-    "confirm-refresh-metadata": "Refresh metadata for {{name}}?"
+    "confirm-refresh-metadata": "Refresh metadata for {{name}}?",
+    "select-search-result": "Search results",
+    "download-started": {
+      "title": "Started download for {{name}}",
+      "summary": ""
+    }
   },
 
   "metadata_provider_settings": {

@@ -13,7 +13,7 @@ public class CreateOrUpdateMonitoredSeriesDto
 
     public List<string> ValidTitles { get; set; } = [];
 
-    public List<Provider> Providers { get; set; } = [];
+    public Provider Provider { get; set; }
 
     public required string BaseDir { get; set; }
 
