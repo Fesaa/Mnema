@@ -9,7 +9,7 @@ public sealed record SearchResult
     /// <summary>
     /// I.e. Torrent magnet url
     /// </summary>
-    public string DownloadUrl { get; set; }
+    public string? DownloadUrl { get; set; }
     public required string Name { get; set; }
     public required Provider Provider { get; set; }
 
