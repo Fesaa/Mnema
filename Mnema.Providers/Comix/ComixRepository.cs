@@ -226,6 +226,9 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
             .GroupBy(c => c.Number)
             .Select(g =>
             {
+                var official = g.FirstOrDefault(c => c.Language == language && c.IsOfficial == 1);
+                if (official != null) return official;
+
                 var chapter = g.FirstOrDefault(ChapterFinder(language, scanlationGroup));
 
                 if (chapter == null && allowNonMatching)
