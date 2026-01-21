@@ -51,7 +51,7 @@ internal class TorrentCleanupService(
     {
         var preferences = await unitOfWork.UserRepository.GetPreferences(request.UserId);
 
-        torrent.Series = await metadataResolver.ResolveSeriesAsync([request.Provider], request.Metadata);
+        torrent.Series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata);
 
         var format = request.Metadata.GetEnum<Format>(RequestConstants.FormatKey) ?? Format.Archive;
         var contentFormat = request.Metadata.GetEnum<ContentFormat>(RequestConstants.ContentFormatKey) ?? ContentFormat.Manga;

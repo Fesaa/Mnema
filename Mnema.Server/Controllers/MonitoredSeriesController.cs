@@ -23,7 +23,8 @@ public class MonitoredSeriesController(
     IUnitOfWork unitOfWork,
     IMonitoredSeriesService monitoredSeriesService,
     IMetadataResolver metadataResolver,
-    IMessageService messageService
+    IMessageService messageService,
+    ISearchService searchService
 ) : BaseApiController
 {
     [HttpGet("all")]
@@ -70,7 +71,7 @@ public class MonitoredSeriesController(
 
         if (monitoredSeries.UserId != UserId) return Forbid();
 
-        var series = await metadataResolver.ResolveSeriesAsync(monitoredSeries.Providers, monitoredSeries.MetadataForDownloadRequest(), HttpContext.RequestAborted);
+        var series = await metadataResolver.ResolveSeriesAsync(monitoredSeries.Provider, monitoredSeries.MetadataForDownloadRequest(), HttpContext.RequestAborted);
 
         return Ok(series);
     }
@@ -98,6 +99,23 @@ public class MonitoredSeriesController(
         await unitOfWork.CommitAsync(cancellationToken);
 
         await messageService.MetadataRefreshed(userId, id);
+    }
+
+    [HttpGet("{id:guid}/search")]
+    public async Task<ActionResult<PagedList<SearchResult>>> Search(Guid id, [FromQuery] PaginationParams paginationParams)
+    {
+        var mSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        if (mSeries == null) return NotFound();
+        if (mSeries.UserId != UserId) return Forbid();
+
+        var req = new SearchRequest
+        {
+            Provider = Provider.Nyaa,
+            Query = mSeries.Title,
+            Modifiers = mSeries.MetadataForDownloadRequest()
+        };
+
+        return Ok(await searchService.Search(req, paginationParams, HttpContext.RequestAborted));
     }
 
     [HttpDelete("{id:guid}")]

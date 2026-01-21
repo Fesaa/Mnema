@@ -23,7 +23,7 @@ public class MetadataResolver(
     IServiceProvider serviceProvider
     ): IMetadataResolver
 {
-    public async Task<Series?> ResolveSeriesAsync(List<Provider> providers, MetadataBag metadata,
+    public async Task<Series?> ResolveSeriesAsync(Provider provider, MetadataBag metadata,
         CancellationToken cancellationToken = default)
     {
         var hardCoverId = metadata.GetString(RequestConstants.HardcoverSeriesIdKey);
@@ -44,11 +44,9 @@ public class MetadataResolver(
 
         if (!string.IsNullOrEmpty(externalId))
         {
-            foreach (var provider in providers)
+            var repo = serviceProvider.GetKeyedService<IRepository>(provider);
+            if (repo != null)
             {
-                var repo = serviceProvider.GetKeyedService<IRepository>(provider);
-                if (repo == null) continue;
-
                 series[MetadataProvider.Upsteam] = await repo.SeriesInfo(new DownloadRequestDto
                 {
                     Provider = provider,
@@ -57,7 +55,6 @@ public class MetadataResolver(
                     TempTitle = string.Empty,
                     Metadata = metadata
                 }, cancellationToken);
-                break;
             }
         }
 

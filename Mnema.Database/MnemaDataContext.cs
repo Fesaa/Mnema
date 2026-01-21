@@ -84,9 +84,6 @@ public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
             .PrimitiveCollection(m => m.ValidTitles);
 
         builder.Entity<MonitoredSeries>()
-            .PrimitiveCollection(m => m.Providers);
-
-        builder.Entity<MonitoredSeries>()
             .Property(s => s.Metadata)
             .HasJsonConversion(new MetadataBag())
             .HasColumnType("TEXT")

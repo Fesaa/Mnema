@@ -17,7 +17,7 @@ public sealed record MonitoredSeriesDto
     public string? CoverUrl { get; init; }
     public string? RefUrl { get; init; }
 
-    /// <inheritdoc cref="MonitoredSeries.Providers" />
+    /// <inheritdoc cref="MonitoredSeries.Provider" />
     public List<Provider> Providers { get; init; }
 
     /// <inheritdoc cref="MonitoredSeries.BaseDir" />
