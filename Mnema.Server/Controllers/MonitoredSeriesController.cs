@@ -111,7 +111,7 @@ public class MonitoredSeriesController(
 
         var req = new SearchRequest
         {
-            Provider = Provider.Nyaa,
+            Provider = mSeries.Provider,
             Query = mSeries.Title,
             Modifiers = mSeries.MetadataForDownloadRequest()
         };
