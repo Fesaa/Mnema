@@ -174,7 +174,7 @@ internal class MangadexRepository : IRepository
         {
             var preferredUrl = $"{baseUrl}/data/{hash}/{image}";
             // Mangadex is timing out on single chapter images. For these we'll get them from the fallback
-            var fallbackUrl = $"https://uploads.mangadex.org/data/{hash}/{imageInfo}";
+            var fallbackUrl = $"https://uploads.mangadex.org/data/{hash}/{image}";
 
             return new DownloadUrl(preferredUrl, fallbackUrl);
         }).ToList();
