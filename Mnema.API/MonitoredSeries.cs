@@ -29,10 +29,7 @@ public interface IMonitoredSeriesRepository
 
 public interface IMonitoredSeriesService
 {
-    public static readonly ImmutableArray<Provider> SupportedProviders =
-    [
-        Provider.Nyaa, Provider.Mangadex, Provider.Dynasty, Provider.Webtoons, Provider.Bato, Provider.Weebdex
-    ];
+    public static readonly ImmutableArray<Provider> SupportedProviders = [..Enum.GetValues<Provider>()];
 
     Task UpdateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     Task CreateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);

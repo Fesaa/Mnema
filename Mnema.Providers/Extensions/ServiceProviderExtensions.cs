@@ -6,6 +6,7 @@ using Mnema.API.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Providers.Bato;
 using Mnema.Providers.Cleanup;
+using Mnema.Providers.Comix;
 using Mnema.Providers.Dynasty;
 using Mnema.Providers.Mangadex;
 using Mnema.Providers.Nyaa;
@@ -147,7 +148,26 @@ public static class ServiceProviderExtensions
 
         services.AddHttpClient(nameof(Provider.Bato), client =>
         {
-            client.BaseAddress = new Uri("https://jto.to");
+            client.BaseAddress = new Uri("https://xbat.app/ap2");
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
+        });
+
+        #endregion
+
+        #region Comix
+
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Comix);
+
+        services.AddScoped<ComixRepository>();
+        services.AddKeyedScoped<IContentRepository>(Provider.Comix,
+            (s, _) => s.GetRequiredService<ComixRepository>());
+        services.AddKeyedScoped<IRepository>(Provider.Comix,
+            (s, _) => s.GetRequiredService<ComixRepository>());
+
+        services.AddHttpClient(nameof(Provider.Comix), client =>
+        {
+            client.BaseAddress = new Uri("https://comix.to");
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
         });

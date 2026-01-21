@@ -183,7 +183,7 @@ internal class MangadexRepository : IRepository
     public async Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken)
     {
         var url = "chapter"
-            .SetQueryParam("limit", 32)
+            .SetQueryParam("limit", 50)
             .SetQueryParam("offset", 0)
             .SetQueryParam("includes[]", "manga")
             .SetQueryParam("translatedLanguage[]", "en")
@@ -347,7 +347,7 @@ internal class MangadexRepository : IRepository
 
         if (resp.Total < resp.Limit + resp.Offset) return resp;
 
-        await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+        await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
 
         var extra = await GetChaptersForSeries(id, language, cancellationToken, resp.Limit + resp.Offset);
 

@@ -309,7 +309,7 @@ public class WeebdexRepository: IRepository
 
         if (resp.Total < resp.Limit * resp.Page + 1) return resp;
 
-        await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+        await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
 
         var extra = await GetChaptersForSeries(id, language, cancellationToken, resp.Page+1);
 

@@ -8,6 +8,7 @@ public enum Provider
     Dynasty = 3,
     Bato = 4,
     Weebdex = 5,
+    Comix = 6,
 }
 
 public enum MetadataProvider

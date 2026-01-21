@@ -50,7 +50,7 @@ export class PagesSettingsComponent {
       id: "",
       customRootDir: '',
       title: '',
-      provider: Provider.BATO,
+      provider: Provider.MANGADEX,
       icon: '',
       sortValue: 0,
     });
