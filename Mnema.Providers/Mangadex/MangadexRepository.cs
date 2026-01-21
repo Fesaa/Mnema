@@ -347,6 +347,8 @@ internal class MangadexRepository : IRepository
 
         if (resp.Total < resp.Limit + resp.Offset) return resp;
 
+        await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+
         var extra = await GetChaptersForSeries(id, language, cancellationToken, resp.Limit + resp.Offset);
 
         resp.Data.AddRange(extra.Data);
