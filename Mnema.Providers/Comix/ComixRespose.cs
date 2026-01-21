@@ -195,7 +195,7 @@ internal class ComixChapter
     public long UpdatedAt { get; set; }
 
     [JsonPropertyName("scanlation_group")]
-    public ComixScanlationGroup ScanlationGroup { get; set; }
+    public ComixScanlationGroup? ScanlationGroup { get; set; }
 
     [JsonPropertyName("images")]
     public List<ComixImage> Images { get; set; }

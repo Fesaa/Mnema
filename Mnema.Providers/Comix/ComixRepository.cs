@@ -166,7 +166,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
             ReleaseDate = null,
             Tags = [],
             People = [],
-            TranslationGroups = [chapter.ScanlationGroup.Name],
+            TranslationGroups = chapter.ScanlationGroup != null ? [chapter.ScanlationGroup.Name] : [],
         }).ToList();
 
         return new Series
@@ -243,6 +243,8 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
         {
             if (chapter.Language != language) return false;
             if (string.IsNullOrEmpty(scanlationGroup)) return true;
+
+            if (chapter.ScanlationGroup == null) return false;
 
             return chapter.ScanlationGroup.Name == scanlationGroup || chapter.ScanlationGroup.Slug == scanlationGroup;
         };
