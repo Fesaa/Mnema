@@ -85,21 +85,9 @@ public class MonitoredSeriesController(
 
         if (monitoredSeries.UserId != UserId) return Forbid();
 
-        BackgroundJob.Enqueue(() => RefreshMetadataJob(UserId, id, CancellationToken.None));
+        BackgroundJob.Enqueue(() => monitoredSeriesService.EnrichWithMetadata(id, CancellationToken.None));
 
         return Ok();
-    }
-
-    public async Task RefreshMetadataJob(Guid userId, Guid id, CancellationToken cancellationToken)
-    {
-        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, cancellationToken);
-        if (monitoredSeries == null) throw new NotFoundException();
-
-        await monitoredSeriesService.EnrichWithMetadata(monitoredSeries, cancellationToken);
-
-        await unitOfWork.CommitAsync(cancellationToken);
-
-        await messageService.MetadataRefreshed(userId, id);
     }
 
     [HttpGet("{id:guid}/search")]
