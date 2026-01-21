@@ -85,7 +85,7 @@ export class SeriesSearchComponent implements OnInit {
       id: '',
       title: series.title,
       validTitles: validTitles,
-      providers: [],
+      provider: Provider.NYAA,
       baseDir: '',
       contentFormat: 0,
       format: 0,

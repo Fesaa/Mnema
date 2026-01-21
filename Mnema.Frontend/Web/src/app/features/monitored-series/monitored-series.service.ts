@@ -6,6 +6,7 @@ import {FormDefinition} from "@mnema/generic-form/form";
 import {Provider} from "@mnema/_models/page";
 import {PagedList} from "@mnema/_models/paged-list";
 import {Series} from "@mnema/page/_components/series-info/_types";
+import {SearchInfo} from "@mnema/_models/Info";
 
 export type MonitoredSeries = {
   id: string;
@@ -13,7 +14,7 @@ export type MonitoredSeries = {
   summary: string;
   coverUrl?: string;
   refUrl?: string;
-  providers: Provider[];
+  provider: Provider;
   baseDir: string;
   format: Format;
   contentFormat: ContentFormat;
@@ -109,6 +110,14 @@ export class MonitoredSeriesService {
 
   resolvedSeries(id: string) {
     return this.httpClient.get<Series>(`${this.baseUrl}/${id}/resolved-series`);
+  }
+
+  search(id: string) {
+    return this.httpClient.get<PagedList<SearchInfo>>(this.baseUrl + `/${id}/search?pageSize=20&pageNumber=0`);
+  }
+
+  download(id: string, si: SearchInfo) {
+    return this.httpClient.post(`${this.baseUrl}/${id}/download`, si);
   }
 
   refreshMetadata(id: string) {

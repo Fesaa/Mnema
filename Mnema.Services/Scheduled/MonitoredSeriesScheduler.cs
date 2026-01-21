@@ -123,8 +123,8 @@ internal class MonitoredSeriesScheduler(
             if (!parseResult.Series.Intersect(monitoredRelease.ValidTitles).Any())
                 continue;
 
-            // Ensure the release is off the correct format
-            var chapters = await scannerService.ParseTorrentFile(release.DownloadUrl, monitoredRelease.ContentFormat, ct);
+            // Ensure the release is in the correct format
+            var (_, chapters) = await scannerService.ParseTorrentFile(release.DownloadUrl, monitoredRelease.ContentFormat, ct);
             var formats = chapters.Select(c => parserService.ParseFormat(c.Title));
             if (!formats.Contains(monitoredRelease.Format))
                 continue;

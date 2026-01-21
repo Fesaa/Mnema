@@ -139,17 +139,17 @@ public class ScannerService(
         return XmlHelper.Deserialize<ComicInfo>(XmlSerializer, comicInfoEntry.Open());
     }
 
-    public async Task<List<Chapter>> ParseTorrentFile(string remoteUrl, ContentFormat contentFormat, CancellationToken cancellationToken)
+    public async Task<TorrentScanResult> ParseTorrentFile(string remoteUrl, ContentFormat contentFormat, CancellationToken cancellationToken)
     {
-        var chapters = await cache.GetAsJsonAsync<List<Chapter>>(remoteUrl, cancellationToken);
-        if (chapters != null)
-            return chapters;
+        var cached = await cache.GetAsJsonAsync<TorrentScanResult>(remoteUrl, cancellationToken);
+        if (cached != null)
+            return cached;
 
         var stream = await httpClient.GetStreamAsync(remoteUrl, cancellationToken);
 
         var torrent = await BencodeParser.ParseAsync<Torrent>(stream, StreamPipeReaderOptions, cancellationToken);
 
-        chapters = torrent.FileMode switch
+        var chapters = torrent.FileMode switch
         {
             TorrentFileMode.Unknown => [],
             TorrentFileMode.Single => [
@@ -161,9 +161,11 @@ public class ScannerService(
             _ => throw new ArgumentOutOfRangeException(nameof(torrent.FileMode), torrent.FileMode, null)
         };
 
-        await cache.SetAsJsonAsync(remoteUrl, chapters, CacheEntryOptions, cancellationToken);
+        var res = new TorrentScanResult(torrent.TotalSize.AsHumanReadableSize(), chapters);
 
-        return chapters;
+        await cache.SetAsJsonAsync(remoteUrl, res, CacheEntryOptions, cancellationToken);
+
+        return res;
     }
 
     private Chapter ParseChapter(string path, string file, ContentFormat contentFormat)

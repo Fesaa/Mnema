@@ -24,7 +24,8 @@ public class MonitoredSeriesController(
     IMonitoredSeriesService monitoredSeriesService,
     IMetadataResolver metadataResolver,
     IMessageService messageService,
-    ISearchService searchService
+    ISearchService searchService,
+    IDownloadService downloadService
 ) : BaseApiController
 {
     [HttpGet("all")]
@@ -116,6 +117,32 @@ public class MonitoredSeriesController(
         };
 
         return Ok(await searchService.Search(req, paginationParams, HttpContext.RequestAborted));
+    }
+
+    [HttpPost("{id:guid}/download")]
+    public async Task<IActionResult> Download(Guid id, SearchResult result)
+    {
+        var mSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        if (mSeries == null) return NotFound();
+        if (mSeries.UserId != UserId) return Forbid();
+
+        if (mSeries.Provider != result.Provider) return BadRequest();
+
+        var req = new DownloadRequestDto
+        {
+            Provider = result.Provider,
+            Id = result.Id,
+            BaseDir = mSeries.BaseDir,
+            TempTitle = mSeries.Title,
+            Metadata = mSeries.MetadataForDownloadRequest(),
+            DownloadUrl = result.DownloadUrl,
+            UserId = UserId,
+            StartImmediately = true
+        };
+
+        await downloadService.StartDownload(req);
+
+        return Ok();
     }
 
     [HttpDelete("{id:guid}")]

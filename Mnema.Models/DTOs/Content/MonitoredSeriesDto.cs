@@ -18,7 +18,7 @@ public sealed record MonitoredSeriesDto
     public string? RefUrl { get; init; }
 
     /// <inheritdoc cref="MonitoredSeries.Provider" />
-    public List<Provider> Providers { get; init; }
+    public Provider Provider { get; init; }
 
     /// <inheritdoc cref="MonitoredSeries.BaseDir" />
     public required string BaseDir { get; init; }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
@@ -30,6 +31,8 @@ internal partial class QBitContentManager
         var metadataResolver = serviceProvider.GetRequiredService<IMetadataResolver>();
         var parserService = serviceProvider.GetRequiredService<IParserService>();
         var scannerService = serviceProvider.GetRequiredService<IScannerService>();
+        var connectionService = serviceProvider.GetRequiredService<IConnectionService>();
+        var signalR = serviceProvider.GetRequiredService<IMessageService>();
 
         var series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata, ct);
         var title = request.Metadata.GetString(RequestConstants.TitleOverride)
@@ -41,9 +44,9 @@ internal partial class QBitContentManager
             return;
         }
 
-        var existingContent =
-            scannerService.ScanDirectory(Path.Join(request.BaseDir, title), cFormat, format, ct);
-        var chapters = await scannerService.ParseTorrentFile(request.DownloadUrl, cFormat, ct);
+        var downloadDir = Path.Join(request.BaseDir, title);
+        var existingContent = scannerService.ScanDirectory(downloadDir, cFormat, format, ct);
+        var (size, chapters) = await scannerService.ParseTorrentFile(request.DownloadUrl, cFormat, ct);
 
         var toDownloadChapters = chapters.Where(c =>
         {
@@ -86,6 +89,29 @@ internal partial class QBitContentManager
         {
             await qBitClient.ResumeTorrentsAsync([request.Id], ct);
         }
+
+        var info = new DownloadInfo
+        {
+            Provider = request.Provider,
+            Id = request.Id,
+            ContentState = ContentState.Queued,
+            Name = title,
+            Description = series?.Summary,
+            ImageUrl = series?.CoverUrl,
+            RefUrl = series?.RefUrl,
+            Size = string.Empty,
+            TotalSize = size,
+            Downloading = request.StartImmediately,
+            Progress = 0,
+            Estimated = 0,
+            SpeedType = SpeedType.Bytes,
+            Speed = 0,
+            DownloadDir = downloadDir,
+            UserId = request.UserId,
+        };
+
+        await signalR.AddContent(request.UserId, info);
+        connectionService.CommunicateDownloadStarted(info);
     }
 
 }

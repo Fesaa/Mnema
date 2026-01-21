@@ -59,7 +59,7 @@ export class SearchResultComponent implements OnInit{
       hardcoverId: "",
       lastDataRefreshUtc: "",
       mangabakaId: "",
-      providers: [this.searchResult().provider],
+      provider: this.searchResult().provider,
       summary: "",
       titleOverride: "",
       validTitles: [],
