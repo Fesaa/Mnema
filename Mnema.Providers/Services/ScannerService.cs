@@ -77,29 +77,36 @@ public class ScannerService(
 
     public OnDiskContent ParseContent(string file, ContentFormat contentFormat)
     {
+        var content = new OnDiskContent()
+        {
+            Path = file,
+        };
+
         var ci = ParseComicInfoFromFile(file);
         if (ci != null)
         {
-            return new OnDiskContent
-            {
-                SeriesName = ci.Series,
-                Path = file,
-                Volume = ci.Volume,
-                Chapter = ci.Number,
-            };
+            content.SeriesName = ci.Series;
+            content.Volume = ci.Volume;
+            content.Chapter = ci.Number;
         }
 
-        var series = parserService.ParseSeries(file, contentFormat);
-        var volume = parserService.ParseVolume(file, contentFormat);
-        var chapter = parserService.ParseChapter(file, contentFormat);
+        if (string.IsNullOrEmpty(content.SeriesName))
+            content.SeriesName = parserService.ParseSeries(file, contentFormat);
 
-        return new OnDiskContent
+        if (string.IsNullOrEmpty(content.Volume))
         {
-            SeriesName = series,
-            Path = file,
-            Volume = parserService.IsLooseLeafVolume(volume) ? string.Empty : volume,
-            Chapter = parserService.IsDefaultChapter(chapter) ? string.Empty : chapter,
-        };
+            var volume = parserService.ParseVolume(file, contentFormat);
+            content.Volume = parserService.IsLooseLeafVolume(volume) ? string.Empty : volume;
+        }
+
+        if (string.IsNullOrEmpty(content.Chapter))
+        {
+            var chapter = parserService.ParseChapter(file, contentFormat);
+            content.Chapter = parserService.IsDefaultChapter(chapter) ? string.Empty : chapter;
+        }
+
+
+        return content;
     }
 
     private ComicInfo? ParseComicInfoFromFile(string file)
