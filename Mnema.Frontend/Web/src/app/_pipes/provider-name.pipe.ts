@@ -21,6 +21,8 @@ export class ProviderNamePipe implements PipeTransform {
         return translate('provider-name-pipe.bato');
       case Provider.WEEBDEX:
         return "Weebdex"
+      case Provider.COMIX:
+        return "Comix"
       default:
         return "Unknown";
     }

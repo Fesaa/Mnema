@@ -18,7 +18,9 @@ export class SubscriptionExternalUrlPipe implements PipeTransform {
       case Provider.BATO:
         return "https://jto.to/title/" + contentId;
       case Provider.WEEBDEX:
-        return "https://mangadex.org/title/" + contentId;
+        return "https://weebdex.org/title/" + contentId;
+      case Provider.COMIX:
+        return "https://comix.to/title/" + contentId;
       default:
         throw new Error(`Unsupported provider: ${provider}`);
     }
