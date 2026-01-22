@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -21,24 +22,14 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
+using Mnema.Providers.Common;
 using Mnema.Providers.Extensions;
 
 namespace Mnema.Providers.Bato;
 
-internal sealed record BatoMapping(
-    [property: JsonPropertyName("file")] string File,
-    [property: JsonPropertyName("text")] string Text);
-
-internal sealed record BatoSearchOptions(List<FormControlOption> Genres, List<FormControlOption> ReleaseStatus);
-
-internal class BatoRepository : IRepository
+internal class BatoRepository(ILogger<BatoRepository> logger, IDistributedCache cache, IHttpClientFactory httpClientFactory) : AbstractRepository(cache)
 {
-    private static readonly Regex ChapterUrlRegex =
-        new(@"https://[^""]+?\.(?:webp|jpeg|jpg|png)", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
-
-    private const string GoodServer = "n11.mbznp.org";
-    private static readonly Regex BadServerRegex =
-        new(@"k[0-9]{2}\.[a-z]+\.org", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+    private const string ApiPath = "/ap2/";
 
     private static readonly Regex CleanTitleRegex =
         new(@"[\(\[\{<«][^)\]\}>»]*[\)\]\}>»]", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
@@ -50,161 +41,124 @@ internal class BatoRepository : IRepository
         new(@"(?:\[S(\d+)] ?)?(?:Episode|Ep\.) ([\d\.]+)", RegexOptions.Compiled, TimeSpan.FromSeconds(5))
     ];
 
-    private static readonly Dictionary<string, List<PersonRole>> RoleMappings = new()
-    {
-        ["(Story&Art)"] = [PersonRole.Writer, PersonRole.Colorist],
-        ["(Story)"] = [PersonRole.Writer],
-        ["(Art)"] = [PersonRole.Colorist]
-    };
+    protected override HttpClient Client => httpClientFactory.CreateClient(nameof(Provider.Bato));
 
-    private static readonly DistributedCacheEntryOptions LongCacheEntryOptions = new()
-    {
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(7)
-    };
-
-    private readonly IDistributedCache _cache;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<BatoRepository> _logger;
-
-    private readonly AsyncLazy<BatoSearchOptions> _searchOptions;
-
-    public BatoRepository(ILogger<BatoRepository> logger, IDistributedCache cache, IHttpClientFactory httpClientFactory)
-    {
-        _logger = logger;
-        _cache = cache;
-        _httpClientFactory = httpClientFactory;
-        _searchOptions = new AsyncLazy<BatoSearchOptions>(LoadSearchOptions);
-    }
-
-    private HttpClient Client => _httpClientFactory.CreateClient(nameof(Provider.Bato));
-
-    public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination,
+    public override async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
-        var includeGenres = string.Join(',', request.Modifiers.GetStrings("genres"));
-        var excludeGenres = string.Join(',', request.Modifiers.GetStrings("ignored_genres"));
-        var status = request.Modifiers.GetStringOrDefault("status", string.Empty);
-        var upload = request.Modifiers.GetStringOrDefault("upload", string.Empty);
+        var query = $$"""
+                      {
+                        "query": "query get_search_comic($select: Search_Comic_Select) { get_search_comic(select: $select) { paging { total } items { id data { name summary urlCoverOri chapterNode_up_to { data { dname } } } } } }",
+                        "variables": {
+                          "select": {
+                            "word": "{{request.Query}}",
+                            "size": {{pagination.PageSize}},
+                            "page": {{pagination.PageNumber}}
+                          }
+                        }
+                      }
+                      """;
 
-        var genreQuery = $"{includeGenres}|{excludeGenres}";
+        var resp = await PostAsync(ApiPath, query, cancellationToken);
 
-        var url = "/v3x-search".SetQueryParam("word", request.Query)
-            .SetQueryParamIf(genreQuery != "|", "genres", genreQuery)
-            .SetQueryParamIf(!string.IsNullOrEmpty(status), "status", status)
-            .SetQueryParamIf(!string.IsNullOrEmpty(upload), "upload", upload)
-            .SetQueryParam("page", pagination.PageNumber + 1); // Bato is 1 indexed
-
-        var result = await Client.GetCachedStringAsync(url.ToString(), _cache, cancellationToken: cancellationToken);
-        if (result.IsErr) throw new MnemaException("Failed to search for series", result.Error);
-
-        var document = result.Unwrap().ToHtmlDocument();
-
-        var seriesNodes = document.DocumentNode.QuerySelectorAll("div.border-b-base-200");
-        if (seriesNodes == null) return PagedList<SearchResult>.Empty();
-
-        var items = seriesNodes.Select(node =>
-        {
-            var id = node.QuerySelector("div > a")
-                .GetAttributeValue("href", string.Empty)
-                .RemovePrefix("/title/");
-
-            var title = node.QuerySelector("h3 a span span")?.InnerText;
-            if (string.IsNullOrEmpty(title)) title = node.QuerySelector("h3 a span")?.InnerText;
-
-            var imageUrl = node.QuerySelector("div > a > img")?.GetAttributeValue("src", string.Empty);
-            var size = node.QuerySelector("a.link-hover.link-primary > span")?.InnerText;
-            var tags = node.QuerySelectorAll("div.flex.flex-wrap.text-xs.opacity-70 > span > span:first-child")?
-                .Select(n => n?.InnerText ?? string.Empty)
-                .Where(n => !string.IsNullOrEmpty(n))
-                .ToList();
-
-            return new SearchResult
+        var items = resp.SelectMany("data.get_search_comic.items[*]")
+            .Select(node => new SearchResult
             {
-                Id = id,
-                Name = title ?? "Unknown",
+                Id = node.SelectString("id"),
+                DownloadUrl = null,
+                Name = node.SelectString("data.name"),
                 Provider = Provider.Bato,
-                ImageUrl = string.IsNullOrEmpty(imageUrl) ? string.Empty : BadServerRegex.Replace(imageUrl, GoodServer),
-                Url = $"{Client.BaseAddress?.ToString()}title/{id}",
-                Size = size,
-                Tags = tags ?? []
-            };
-        }).ToList();
+                Description = node.SelectString("data.summary"),
+                // Mapping dname from the nested chapter node
+                Size = node.SelectString("data.chapterNode_up_to.data.dname"),
+                Tags = [],
+                Url = $"{Client.BaseAddress?.ToString()}title/{node.SelectString("id")}",
+                ImageUrl = $"{Client.BaseAddress?.ToString().Trim('/')}{node.SelectString("data.urlCoverOri")}",
+            });
 
-        if (items.Count == 0) return PagedList<SearchResult>.Empty();
-
-        var paginatorNode = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[4]");
-        if (paginatorNode == null) return new PagedList<SearchResult>(items, items.Count, 1, items.Count);
-
-        var lastPage = paginatorNode.QuerySelectorAll("a").Last().InnerText.AsInt();
-        var currentPage = paginatorNode.QuerySelector("a.btn-accent").InnerText.AsInt();
-
-        return new PagedList<SearchResult>(items, items.Count + (lastPage - 1) * 36, currentPage - 1, 36);
+        return new PagedList<SearchResult>(
+            items,
+            resp.SelectInt("data.get_search_comic.paging.total"),
+            pagination.PageNumber,
+            pagination.PageSize);
     }
 
-    public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
+    public override async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
     {
-        var result =
-            await Client.GetCachedStringAsync($"/title/{request.Id}", _cache, cancellationToken: cancellationToken);
-        if (result.IsErr) throw new MnemaException("Failed to series info", result.Error);
+        var query = $$"""
+                      {
+                        "query": "query get_comicNode($id: ID!) { get_comicNode(id: $id) { data { id name altNames urlCoverOri authors artists genres uploadStatus originalStatus summary } } }",
+                        "variables": {
+                          "id": "{{request.Id}}"
+                        }
+                      }
+                      """;
+        var chapterQuery = $$"""
+                             {
+                               "query": "query get_comic_chapterList($comicId: ID!, $start: Int) { get_comic_chapterList(comicId: $comicId, start: $start) { data { id dname title } } }",
+                               "variables": {
+                                 "comicId": "{{request.Id}}",
+                                 "start": -1
+                               }
+                             }
+                             """;
 
-        var document = result.Unwrap().ToHtmlDocument();
 
-        var titleNode = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[1]/h3/a");
-        if (titleNode == null)
-            throw new MnemaException($"Series {request.Id} has no title");
+        var resp = await PostAsync(ApiPath, query, cancellationToken);
+        var chapterResp = await PostAsync(ApiPath, chapterQuery, cancellationToken);
 
-        var title = titleNode.InnerText;
-
-        List<string> summaryXPaths =
-        [
-            "/html/body/div/main/div[1]/div[2]/div[4]/astro-island/div/div[1]/astro-slot/div/astro-island[1]/div/div/div",
-            "/html/body/div/main/div[1]/div[2]/div[5]/astro-island/div/div[1]/astro-slot/div/astro-island[1]/div/div/div"
-        ];
-
-        var summary = summaryXPaths
-            .Select(xPath => document.DocumentNode.SelectSingleNode(xPath))
-            .Select(n => n?.InnerText)
-            .FirstOrDefault(n => !string.IsNullOrEmpty(n)) ?? string.Empty;
-
-        var statusNode =
-            document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[2]/div[3]/span[3]");
-        var translationStatusNode =
-            document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[2]/div[4]/span[3]");
-
-        var genres = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[2]/div[1]")
-            .QuerySelectorAll("span > span:first-child")
-            .Select(n => new Tag { Id = n.InnerText, Value = n.InnerText })
-            .ToList();
-
-        var people = document.DocumentNode
-            .SelectSingleNode("/html/body/div/main/div[1]/div[2]/div[1]/div[2]")
-            .QuerySelectorAll("a")
-            .Select(n => ParsePerson(n?.InnerText))
-            .WhereNotNull()
-            .ToList();
-
-        var chapterNodes = document.DocumentNode
-            .QuerySelectorAll("[name=\"chapter-list\"] astro-slot > div");
-
-        var coverUrl = document.DocumentNode.SelectSingleNode("/html/body/div/main/div[1]/div[1]/div[1]/img")
-            .GetAttributeValue("src", string.Empty);
+        var infoResponse = resp.Select("data.get_comicNode.data");
+        var chapterResponse = chapterResp.SelectMany("data.get_comic_chapterList[*]");
 
         return new Series
         {
-            Id = request.Id,
-            CoverUrl = BadServerRegex.Replace(coverUrl, GoodServer).Trim(),
+            Id = infoResponse.SelectString("id"),
+            Title = infoResponse.SelectString("name"),
+            LocalizedSeries = infoResponse.SelectManyString("altNames[*]").FirstOrDefault(),
+            Summary = infoResponse.SelectString("summary"),
+            CoverUrl = $"{Client.BaseAddress?.ToString().Trim('/')}{infoResponse.SelectString("urlCoverOri")}",
+            NonProxiedCoverUrl = null,
             RefUrl = $"{Client.BaseAddress?.ToString()}title/{request.Id}",
-            Title = CleanTitleRegex.Replace(title, string.Empty).Trim(),
-            Summary = summary,
-            Status = TranslatePublicationStatus(statusNode?.InnerText) ?? PublicationStatus.Unknown,
-            TranslationStatus = TranslatePublicationStatus(translationStatusNode?.InnerText),
-            Tags = genres,
-            People = people,
-            Links = document.DocumentNode.QuerySelectorAll("div.mt-5.space-y-3 div.limit-html a")
-                .Select(node => node.InnerText)
-                .Where(x => !string.IsNullOrEmpty(x))
+            Status = TranslatePublicationStatus(infoResponse.SelectString("originalStatus")) ?? PublicationStatus.Unknown,
+            TranslationStatus = TranslatePublicationStatus(infoResponse.SelectString("uploadStatus")),
+            Year = null,
+            HighestVolumeNumber = null,
+            HighestChapterNumber = null,
+            AgeRating = null,
+            /*Tags = infoResponse.SelectManyString("genres[*]")
+                .Select(g => new Tag(g))
+                .ToList(),*/
+            Tags = [], // We're currently not mapping the ids to actual tags
+            People = infoResponse.SelectManyString("artists[*]")
+                .Select(a => Person.Create(a, PersonRole.Colorist))
+                .Concat(infoResponse.SelectManyString("authors[*]")
+                    .Select(a => Person.Create(a, PersonRole.Writer)))
+                .GroupBy(p => p.Name)
+                .Select(g => new Person
+                {
+                    Name = g.Key,
+                    Roles = g.SelectMany(p => p.Roles).Distinct().ToList(),
+                })
                 .ToList(),
-            Chapters = chapterNodes?.Select(ParseChapter).ToList() ?? []
+            Links = [],
+            Chapters = chapterResponse
+                .Select(node => node.Select("data"))
+                .Select(data =>
+                {
+                    var name = data.SelectString("dname");
+                    var (volume, chapter) = ParseVolumeAndChapter(name);
+
+                    return new Chapter
+                    {
+                        Id = data.SelectString("id"),
+                        Title = data.SelectString("title"),
+                        VolumeMarker = volume,
+                        ChapterMarker = chapter,
+                        Tags = [],
+                        People = [],
+                        TranslationGroups = []
+                    };
+                }).ToList()
         };
 
         PublicationStatus? TranslatePublicationStatus(string? publicationStatus)
@@ -223,52 +177,6 @@ internal class BatoRepository : IRepository
             };
         }
 
-        Chapter ParseChapter(HtmlNode node)
-        {
-            var linkNode = node.QuerySelector("div > a.link-hover.link-primary");
-            var (volume, chapter) = ParseVolumeAndChapter(linkNode.InnerText);
-
-            var chapterTitle = ParseTitle(linkNode.InnerText);
-            if (string.IsNullOrEmpty(chapterTitle))
-                chapterTitle = node.QuerySelector("div > span.opacity-80")?.InnerText.RemovePrefix(":").Trim();
-
-            // OneShot
-            if (string.IsNullOrEmpty(chapterTitle) && string.IsNullOrEmpty(volume) && string.IsNullOrEmpty(chapter))
-                chapterTitle = linkNode.InnerText.Trim();
-
-            var translatorNode = node.QuerySelector("div.avatar > div > a")?.FirstChild;
-            var translator = translatorNode?.GetAttributeValue("href", string.Empty)?.RemovePrefix("/u/");
-
-            return new Chapter
-            {
-                Id = linkNode.GetAttributeValue("href", "").RemovePrefix("/title/"),
-                Title = chapterTitle ?? string.Empty,
-                VolumeMarker = volume,
-                ChapterMarker = chapter,
-                Tags = [],
-                People = [],
-                TranslationGroups = string.IsNullOrEmpty(translator) ? [] : [translator]
-            };
-        }
-
-        Person? ParsePerson(string? person)
-        {
-            if (string.IsNullOrEmpty(person))
-                return null;
-
-            foreach (var mapping in RoleMappings.Where(mapping => person.Contains(mapping.Key)))
-                return new Person
-                {
-                    Name = person.Replace(mapping.Key, string.Empty).Trim(),
-                    Roles = mapping.Value
-                };
-
-            return new Person
-            {
-                Name = person.Trim(),
-                Roles = [PersonRole.Writer]
-            };
-        }
 
         (string Volume, string Chapter) ParseVolumeAndChapter(string input)
         {
@@ -285,47 +193,29 @@ internal class BatoRepository : IRepository
 
             return (string.Empty, string.Empty);
         }
-
-        string ParseTitle(string input)
-        {
-            var idx = input.IndexOf(':');
-            if (idx == -1) return string.Empty;
-
-            if (idx + 1 == input.Length) return string.Empty;
-
-            return input[idx..];
-        }
     }
 
-    public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    public override async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
     {
-        var result =
-            await Client.GetCachedStringAsync($"/title/{chapter.Id}", _cache, cancellationToken: cancellationToken);
-        if (result.IsErr) throw new MnemaException("Failed to retrieve chapter urls", result.Error);
+        var query = $$"""
+                      {
+                        "query": "query get_chapterNode($id: ID!) { get_chapterNode(id: $id) { data { imageFile { urlList } } } }",
+                        "variables": {
+                          "id": "{{chapter.Id}}"
+                        }
+                      }
+                      """;
 
-        var html = result.Unwrap();
-        var document = new HtmlDocument();
-        document.LoadHtml(html);
+        var resp = await PostAsync(ApiPath, query, cancellationToken);
 
-        var astroIsland = document.DocumentNode.SelectSingleNode("/html/body/div/astro-island[1]");
-        if (astroIsland == null)
-            throw new MnemaException("No astro island found");
-
-        var props = astroIsland.GetAttributeValue("props", string.Empty);
-        if (string.IsNullOrEmpty(props))
-            throw new MnemaException("No properties found");
-
-        props = BadServerRegex.Replace(props, GoodServer);
-
-        return ChapterUrlRegex
-            .Matches(props)
-            .Select(match => new DownloadUrl(match.Value, match.Value))
+        return resp.SelectManyString("data.get_chapterNode.data.imageFile.urlList[*]")
+            .Select(u => new DownloadUrl(u, u))
             .ToList();
     }
 
-    public async Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken)
+    public override async Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken)
     {
-        var result = await Client.GetCachedStringAsync("v3x", _cache, cancellationToken: cancellationToken);
+        var result = await Client.GetCachedStringAsync("v3x", cache, cancellationToken: cancellationToken);
         if (result.IsErr)
             throw new MnemaException("Failed to retrieve recently updated chapters", result.Error);
 
@@ -357,7 +247,7 @@ internal class BatoRepository : IRepository
             .ToList();
     }
 
-    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
+    public override Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
@@ -399,110 +289,8 @@ internal class BatoRepository : IRepository
         ]);
     }
 
-    public async Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    public override Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        var searchOptions = await _searchOptions;
-
-        return
-        [
-            new FormControlDefinition
-            {
-                Type = FormType.MultiSelect,
-                Key = "genres",
-                Options = searchOptions.Genres
-            },
-            new FormControlDefinition
-            {
-                Type = FormType.MultiSelect,
-                Key = "ignored_genres",
-                Options = searchOptions.Genres
-            },
-            new FormControlDefinition
-            {
-                Type = FormType.DropDown,
-                Key = "status",
-                Options = searchOptions.ReleaseStatus
-            },
-            new FormControlDefinition
-            {
-                Type = FormType.DropDown,
-                Key = "upload",
-                Options = searchOptions.ReleaseStatus
-            }
-        ];
-    }
-
-    private async Task<BatoSearchOptions> LoadSearchOptions()
-    {
-        var html =
-            (await Client.GetCachedStringAsync("/v3x-search", _cache, LongCacheEntryOptions)).UnwrapOr(string.Empty);
-        if (string.IsNullOrEmpty(html))
-        {
-            _logger.LogWarning("No html found for Bato, cannot load search options");
-            return new BatoSearchOptions([], []);
-        }
-
-        var document = html.ToHtmlDocument();
-
-        var astroIsland =
-            document.DocumentNode.SelectSingleNode("//astro-island[contains(@component-url, 'ClientTools')]");
-        var clientTools = astroIsland.GetAttributeValue("component-url", string.Empty);
-        if (string.IsNullOrEmpty(clientTools))
-        {
-            _logger.LogWarning("No ClientTools found for Bato, cannot load search options");
-            return new BatoSearchOptions([], []);
-        }
-
-        var clientToolsJs =
-            (await Client.GetCachedStringAsync(clientTools, _cache, LongCacheEntryOptions)).UnwrapOr(string.Empty);
-        if (string.IsNullOrEmpty(clientToolsJs))
-        {
-            _logger.LogWarning("No ClientToolsJs found for Bato, cannot load search options");
-            return new BatoSearchOptions([], []);
-        }
-
-        var genresImport = clientToolsJs.FindJsImport("content_comic_genres");
-        var releaseStatusImport = clientToolsJs.FindJsImport("content_comic_release_statuss");
-
-        if (string.IsNullOrEmpty(genresImport) || string.IsNullOrEmpty(releaseStatusImport))
-
-        {
-            _logger.LogWarning("Some imports where not found, cannot load search options");
-            return new BatoSearchOptions([], []);
-        }
-
-        var genres = (await Client.GetCachedStringAsync($"/_astro/{genresImport.TrimStart('.', '/')}", _cache,
-                LongCacheEntryOptions))
-            .UnwrapOr(string.Empty);
-        var releaseStatuses = (await Client.GetCachedStringAsync($"/_astro/{releaseStatusImport.TrimStart('.', '/')}",
-                _cache, LongCacheEntryOptions))
-            .UnwrapOr(string.Empty);
-
-        if (string.IsNullOrEmpty(genres) || string.IsNullOrEmpty(releaseStatuses))
-        {
-            _logger.LogWarning("Some imports where not found, cannot load search options");
-            return new BatoSearchOptions([], []);
-        }
-
-        var json = releaseStatuses.ExtractObjectLiteral().JsObjectToJson();
-        var releaseStatusOptions = JsonSerializer.Deserialize<Dictionary<string, BatoMapping>>(json);
-        if (releaseStatusOptions == null)
-        {
-            _logger.LogWarning("Failed to Deserialize releases, cannot load search options");
-            return new BatoSearchOptions([], []);
-        }
-
-        json = genres.ExtractObjectLiteral().JsObjectToJson();
-        var genresOptions = JsonSerializer.Deserialize<Dictionary<string, BatoMapping>>(json);
-        if (genresOptions == null)
-        {
-            _logger.LogWarning("Failed to Deserialize genres, cannot load search options");
-            return new BatoSearchOptions([], []);
-        }
-
-        return new BatoSearchOptions(
-            genresOptions.Values.Select(si => new FormControlOption(si.Text, si.File)).ToList(),
-            releaseStatusOptions.Values.Select(si => new FormControlOption(si.Text, si.File)).ToList()
-        );
+        return Task.FromResult<List<FormControlDefinition>>([]);
     }
 }
