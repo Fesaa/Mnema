@@ -142,13 +142,13 @@ public static class ServiceProviderExtensions
 
         services.AddScoped<BatoRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Bato,
-            (s, _) => s.GetRequiredService<NoOpRepository>());
+            (s, _) => s.GetRequiredService<BatoRepository>());
         services.AddKeyedScoped<IRepository>(Provider.Bato,
-            (s, _) => s.GetRequiredService<NoOpRepository>());
+            (s, _) => s.GetRequiredService<BatoRepository>());
 
         services.AddHttpClient(nameof(Provider.Bato), client =>
         {
-            client.BaseAddress = new Uri("https://xbat.app/ap2");
+            client.BaseAddress = new Uri("https://xbat.app");
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
         });

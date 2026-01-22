@@ -145,12 +145,19 @@ internal partial class Publication
                 {
                     if (_tokenSource.IsCancellationRequested || !Path.Exists(ioWork.FilePath)) continue;
 
+                    var realFileType = ioWork.Url.GetFileType();
                     var fileType = ioWork.Preferences.ImageFormat.GetFileExtension(ioWork.Url);
 
                     var fileCounter = $"{ioWork.Idx}".PadLeft(4, '0');
                     var filePath = Path.Join(ioWork.FilePath, $"page {fileCounter}{fileType}");
 
-                    await _imageService.ConvertAndSave(ioWork.Stream, ioWork.Preferences.ImageFormat, filePath, _tokenSource.Token);
+                    var format = ioWork.Preferences.ImageFormat;
+                    if (ioWork.Preferences.ImageFormat == ImageFormat.Webp && realFileType != ".webp")
+                    {
+                        format = ImageFormat.Upstream;
+                    }
+
+                    await _imageService.ConvertAndSave(ioWork.Stream, format, filePath, _tokenSource.Token);
 
                     _logger.LogTrace("[{Title}/{Id}] Wrote {FilePath} / {Idx} to disk", Title, Id, filePath, ioWork.Idx);
                 }

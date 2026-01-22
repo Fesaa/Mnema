@@ -131,38 +131,34 @@ public static class HttpClientExtensions
             }
         }
 
-        public async Task<Result<TResult, HttpRequestException>> PostAsync<TResult>(
-            string url, object body, JsonSerializerOptions jsonSerializerOptions,
-            CancellationToken cancellationToken = default)
+        public async Task<Result<string, HttpRequestException>> PostResultASync(
+            string url, HttpContent body, CancellationToken cancellationToken = default)
         {
             try
             {
-                var response = await httpClient.PostAsJsonAsync(url, body, jsonSerializerOptions, cancellationToken);
+                var response = await httpClient.PostAsync(url, body, cancellationToken);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
-                    return Result<TResult, HttpRequestException>.Err(new HttpRequestException(
+                    return Result<string, HttpRequestException>.Err(new HttpRequestException(
                         $"Request failed with status {response.StatusCode}: {errorContent}",
                         null,
                         response.StatusCode));
                 }
 
-                var json = await response.Content.ReadFromJsonAsync<TResult>(cancellationToken);
-                if (json == null)
-                    return Result<TResult, HttpRequestException>.Err(
-                        new HttpRequestException("Failed to deserialize response"));
+                var json = await response.Content.ReadAsStringAsync(cancellationToken);
 
-                return Result<TResult, HttpRequestException>.Ok(json);
+                return Result<string, HttpRequestException>.Ok(json);
             }
             catch (HttpRequestException ex)
             {
-                return Result<TResult, HttpRequestException>.Err(ex);
+                return Result<string, HttpRequestException>.Err(ex);
             }
             catch (JsonException ex)
             {
-                return Result<TResult, HttpRequestException>.Err(
+                return Result<string, HttpRequestException>.Err(
                     new HttpRequestException("JSON serialization/deserialization failed", ex));
             }
         }
