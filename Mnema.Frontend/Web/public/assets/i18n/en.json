@@ -983,7 +983,8 @@
       "dynasty": "{{provider-name-pipe.dynasty}}",
       "webtoons": "{{provider-name-pipe.webtoon}}",
       "bato": "{{provider-name-pipe.bato}}",
-      "weebdex": "{{provider-name-pipe.weebdex}}"
+      "weebdex": "{{provider-name-pipe.weebdex}}",
+      "comix": "Comix"
     },
     "valid-titles-title": "Valid titles",
     "valid-titles-tooltip": "Titles that parsed content can match on to be considered this series",

@@ -1,18 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
-using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
@@ -29,7 +26,8 @@ public class MonitoredSeriesService(
     IMetadataResolver metadataResolver,
     ApplicationConfiguration configuration,
     IUnitOfWork unitOfWork,
-    IServiceProvider serviceProvider
+    IServiceProvider serviceProvider,
+    IMessageService messageService
 ): IMonitoredSeriesService
 {
     public async Task UpdateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto,
@@ -57,11 +55,11 @@ public class MonitoredSeriesService(
         series.ExternalId = dto.ExternalId;
         series.Metadata = dto.Metadata;
 
-        await EnrichWithMetadata(series, cancellationToken);
-
         unitOfWork.MonitoredSeriesRepository.Update(series);
 
         await unitOfWork.CommitAsync(cancellationToken);
+
+        BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
     }
 
     public async Task CreateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto,
@@ -90,11 +88,11 @@ public class MonitoredSeriesService(
             Chapters = [],
         };
 
-        await EnrichWithMetadata(series, cancellationToken);
-
         unitOfWork.MonitoredSeriesRepository.Add(series);
 
         await unitOfWork.CommitAsync(cancellationToken);
+
+        BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
     }
 
     public FormDefinition GetForm()
@@ -220,8 +218,11 @@ public class MonitoredSeriesService(
         };
     }
 
-    public async Task EnrichWithMetadata(MonitoredSeries mSeries, CancellationToken ct = default)
+    public async Task EnrichWithMetadata(Guid guid, CancellationToken ct = default)
     {
+        var mSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(guid, ct);
+        if (mSeries == null) return;
+
         var metadata = mSeries.MetadataForDownloadRequest();
 
         var series = await metadataResolver.ResolveSeriesAsync(mSeries.Provider, metadata, ct);
@@ -285,6 +286,10 @@ public class MonitoredSeriesService(
         }
 
         mSeries.LastDataRefreshUtc = DateTime.UtcNow;
+
+        await unitOfWork.CommitAsync(ct);
+
+        await messageService.MetadataRefreshed(mSeries.UserId, mSeries.Id);
     }
 
     private static void PatchChapterMetadata(MonitoredChapter? mChapter, Chapter chapter)
