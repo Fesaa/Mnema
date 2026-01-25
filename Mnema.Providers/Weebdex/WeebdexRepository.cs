@@ -278,6 +278,7 @@ public class WeebdexRepository: IRepository
             Status = manga.Status.AsPublicationStatus(),
             AgeRating = manga.ContentRating.AsAgeRating(),
             CoverUrl = $"https://weebdex.org/covers/{manga.Id}/{manga.Relationships.Cover.Id}{manga.Relationships.Cover.Ext}",
+            RefUrl = $"https://weebdex.org/title/{manga.Id}",
             HighestChapterNumber = manga.HighestChapter,
             HighestVolumeNumber = manga.HighestVolume,
             Year = manga.Year,
