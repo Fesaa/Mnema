@@ -142,9 +142,9 @@ public static class ServiceProviderExtensions
 
         services.AddScoped<BatoRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Bato,
-            (s, _) => s.GetRequiredService<BatoRepository>());
+            (s, _) => s.GetRequiredService<NoOpRepository>());
         services.AddKeyedScoped<IRepository>(Provider.Bato,
-            (s, _) => s.GetRequiredService<BatoRepository>());
+            (s, _) => s.GetRequiredService<NoOpRepository>());
 
         services.AddHttpClient(nameof(Provider.Bato), client =>
         {
