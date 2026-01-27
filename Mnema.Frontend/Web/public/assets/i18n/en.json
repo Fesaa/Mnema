@@ -1161,7 +1161,10 @@
     "chapter_settings_release_date-tooltip": "Fetch the original release date for each chapter",
 
     "chapter_settings_people-title": "Chapter Contributors",
-    "chapter_settings_people-tooltip": "Fetch chapter-specific contributor information (translators, editors, etc.)"
+    "chapter_settings_people-tooltip": "Fetch chapter-specific contributor information (translators, editors, etc.)",
+
+    "chapter_settings_tags-title": "Chapter Tags",
+    "chapter_settings_tags-tooltip": "Fetch chapter-specific tags"
   }
 
 }

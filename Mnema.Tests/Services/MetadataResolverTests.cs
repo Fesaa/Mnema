@@ -80,7 +80,7 @@ public class MetadataResolverTests
                 people,
                 links,
                 chapters,
-                new ChapterMetadataSettingsDto(true, true, true, true, true)
+                new ChapterMetadataSettingsDto(true, true, true, true, true, true)
             )
         );
     }

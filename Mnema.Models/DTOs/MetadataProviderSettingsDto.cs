@@ -26,5 +26,6 @@ public sealed record ChapterMetadataSettingsDto(
     bool Summary,
     bool Cover,
     bool ReleaseDate,
-    bool People
+    bool People,
+    bool Tags
 );

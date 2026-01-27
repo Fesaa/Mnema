@@ -174,14 +174,19 @@ public class MetadataResolver(
                 var match = into.Chapters.FirstOrDefault(c
                     => c.VolumeMarker == fromChapter.VolumeMarker
                     && c.ChapterMarker == fromChapter.ChapterMarker);
-                if (match != null)
+
+                match ??= new Chapter
                 {
-                    MergeChapter(match, fromChapter, settings.ChapterSettings);
-                }
-                else
-                {
-                    into.Chapters.Add(fromChapter);
-                }
+                    Id = string.Empty,
+                    Title = string.Empty,
+                    VolumeMarker = string.Empty,
+                    ChapterMarker = string.Empty,
+                    Tags = [],
+                    People = [],
+                    TranslationGroups = []
+                };
+
+                MergeChapter(match, fromChapter, settings.ChapterSettings);
             }
         }
     }
@@ -213,7 +218,37 @@ public class MetadataResolver(
             into.People = into.People.Concat(from.People)
                 .DistinctBy(p => p.Name)
                 .ToList();
+
+            into.TranslationGroups = into.TranslationGroups
+                .Concat(from.TranslationGroups)
+                .Distinct()
+                .ToList();
         }
+
+        if (settings.Tags)
+        {
+            into.Tags = into.Tags.Concat(from.Tags)
+                .DistinctBy(t => t.Value.ToNormalized())
+                .ToList();
+        }
+
+        if (string.IsNullOrEmpty(into.VolumeMarker))
+        {
+            into.VolumeMarker = from.VolumeMarker;
+        }
+
+        if (string.IsNullOrEmpty(into.ChapterMarker))
+        {
+            into.ChapterMarker = from.ChapterMarker;
+        }
+
+        into.SortOrder ??= from.SortOrder;
+
+        if (string.IsNullOrEmpty(into.RefUrl))
+        {
+            into.RefUrl = from.RefUrl;
+        }
+
     }
 
     public ChapterResolutionResult ResolveChapter(string fileName, Series? series, ContentFormat contentFormat)

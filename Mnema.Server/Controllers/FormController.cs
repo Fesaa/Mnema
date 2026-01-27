@@ -170,6 +170,15 @@ public class FormController: BaseApiController
                     ValueType = FormValueType.Boolean,
                     DefaultOption = true,
                     Advanced = true
+                },
+                new FormControlDefinition
+                {
+                    Key = "chapter_settings_tags",
+                    Field = "seriesSettings.chapterSettings.tags",
+                    Type = FormType.Switch,
+                    ValueType = FormValueType.Boolean,
+                    DefaultOption = true,
+                    Advanced = true
                 }
             ]
         };

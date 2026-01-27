@@ -57,7 +57,7 @@ public static class Seed
             settings[metadataProvider] = new MetadataProviderSettingsDto(highestPriority++, false,
                 new SeriesMetadataSettingsDto(
                     true, true, true, true, true, true, true, true, true,
-                    true, true, new ChapterMetadataSettingsDto(true, true, true, true, true)
+                    true, true, new ChapterMetadataSettingsDto(true, true, true, true, true, true)
                 ));
         }
 
