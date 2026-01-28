@@ -175,6 +175,12 @@ public class MetadataResolver(
                     => c.VolumeMarker == fromChapter.VolumeMarker
                     && c.ChapterMarker == fromChapter.ChapterMarker);
 
+                if (match != null)
+                {
+                    MergeChapter(match, fromChapter, settings.ChapterSettings);
+                    return;
+                }
+
                 match ??= new Chapter
                 {
                     Id = string.Empty,
@@ -187,12 +193,19 @@ public class MetadataResolver(
                 };
 
                 MergeChapter(match, fromChapter, settings.ChapterSettings);
+                into.Chapters.Add(match);
             }
         }
     }
 
     private static void MergeChapter(Chapter into, Chapter from, ChapterMetadataSettingsDto settings)
     {
+
+        if (string.IsNullOrEmpty(into.Id))
+        {
+            into.Id = from.Id;
+        }
+
         if (settings.Title && string.IsNullOrEmpty(into.Title))
         {
             into.Title = from.Title;

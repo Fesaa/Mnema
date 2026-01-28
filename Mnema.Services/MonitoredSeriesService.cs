@@ -181,7 +181,7 @@ public class MonitoredSeriesService(
                 new FormControlDefinition
                 {
                     Key = RequestConstants.MangaBakaKey,
-                    Field = "mangabakaId",
+                    Field = "mangaBakaId",
                     Type = FormType.Text,
                 },
                 new FormControlDefinition
