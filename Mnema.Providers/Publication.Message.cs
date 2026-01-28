@@ -66,7 +66,7 @@ internal partial class Publication
         {
             return _userSelectedIds.Count > 0
                 ? _userSelectedIds.Contains(chapter.Id)
-                : _queuedChapters.Contains(chapter.Id);
+                : QueuedChapters.Contains(chapter.Id);
         }
 
         List<ListContentData> CreateChildren(List<Chapter> volumeChapters)

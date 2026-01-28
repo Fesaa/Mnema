@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.RateLimiting;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
@@ -40,7 +39,6 @@ internal partial class Publication(
     private readonly IFileSystem _fileSystem = scope.ServiceProvider.GetRequiredService<IFileSystem>();
 
     private readonly ILogger<Publication> _logger = scope.ServiceProvider.GetRequiredService<ILogger<Publication>>();
-    private readonly IMapper _mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
     private readonly IMessageService _messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
 
     private readonly IPublicationManager _publicationManager =
@@ -58,7 +56,7 @@ internal partial class Publication(
     /// <summary>
     ///     List of <see cref="Chapter.Id" /> that are queued for downloading
     /// </summary>
-    private IList<string> _queuedChapters = [];
+    internal IList<string> QueuedChapters = [];
 
     private ServerSettingsDto _settings = null!;
     private SpeedTracker? _speedTracker;
@@ -73,7 +71,7 @@ internal partial class Publication(
     private List<string> _userSelectedIds = [];
 
     internal UserPreferences Preferences = null!;
-    internal Series? Series { get; private set; }
+    internal Series? Series { get; set; }
 
     /// <summary>
     ///     List of directory paths pointing to chapters we've downloaded this run
@@ -88,7 +86,7 @@ internal partial class Publication(
     /// <summary>
     ///     List of paths pointing to chapters that got replaced this run
     /// </summary>
-    private IList<string> ToRemovePaths { get; set; } = [];
+    internal IList<string> ToRemovePaths { get; set; } = [];
 
     public DownloadRequestDto Request { get; } = request;
 
@@ -163,7 +161,7 @@ internal partial class Publication(
         Description = Series?.Summary,
         ImageUrl = Series?.NonProxiedCoverUrl ?? Series?.CoverUrl,
         RefUrl = Series?.RefUrl,
-        Size = _userSelectedIds.Count > 0 ? $"{_userSelectedIds.Count} Chapters" : $"{_queuedChapters.Count} Chapters",
+        Size = _userSelectedIds.Count > 0 ? $"{_userSelectedIds.Count} Chapters" : $"{QueuedChapters.Count} Chapters",
         TotalSize = $"{Series?.Chapters.Count ?? 0} Chapters",
         Downloading = State == ContentState.Downloading,
         Progress = Math.Floor(_speedTracker?.Progress() ?? 0),
@@ -214,6 +212,11 @@ internal partial class Publication(
     private async Task CleanupNotifications()
     {
         _connectionService.CommunicateDownloadFinished(DownloadInfo);
+    }
+
+    private OnDiskContent? GetContentByPath(string path)
+    {
+        return ExistingContent.FirstOrDefault(c => c.Path == path);
     }
 
     private OnDiskContent? GetContentByName(string name)

@@ -76,16 +76,16 @@ internal partial class Publication
 
         if (_userSelectedIds.Count > 0)
         {
-            var initialSize = _queuedChapters.Count;
+            var initialSize = QueuedChapters.Count;
 
-            _queuedChapters = Series.Chapters.Select(c => c.Id).Where(_userSelectedIds.Contains).ToList();
+            QueuedChapters = Series.Chapters.Select(c => c.Id).Where(_userSelectedIds.Contains).ToList();
 
             _logger.LogDebug("[{Title}/{Id}] Chapters filtered after user selection. Old: {Old}, New: {New}", Title, Id, initialSize,
-                _queuedChapters.Count);
+                QueuedChapters.Count);
 
             if (ToRemovePaths.Count > 0)
             {
-                var paths = _queuedChapters
+                var paths = QueuedChapters
                     .Select(id => Series.Chapters.FirstOrDefault(c => c.Id == id))
                     .WhereNotNull()
                     .Select(c => ChapterPath(c) + "cbz")
@@ -98,9 +98,9 @@ internal partial class Publication
 
         _logger.LogInformation(
             "[{Title}/{Id}] Will be downloading {Chapters}, and removing {ToDelete} chapters from {Provider} into {Dir}",
-            Title, Id, _queuedChapters.Count, ToRemovePaths.Count, provider.ToString(), DownloadDir);
+            Title, Id, QueuedChapters.Count, ToRemovePaths.Count, provider.ToString(), DownloadDir);
 
-        _speedTracker = new SpeedTracker(_queuedChapters.Count);
+        _speedTracker = new SpeedTracker(QueuedChapters.Count);
 
         _connectionService.CommunicateDownloadStarted(DownloadInfo);
 
@@ -179,7 +179,7 @@ internal partial class Publication
 
         try
         {
-            foreach (var chapterId in _queuedChapters)
+            foreach (var chapterId in QueuedChapters)
             {
                 if (_tokenSource.Token.IsCancellationRequested) break;
 
