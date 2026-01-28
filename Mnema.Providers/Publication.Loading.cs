@@ -53,7 +53,7 @@ internal partial class Publication
 
         FilterAlreadyDownloadedContent(cancellationToken);
 
-        if (_queuedChapters.Count == 0 && Request.StartImmediately)
+        if (QueuedChapters.Count == 0 && Request.StartImmediately)
         {
             _logger.LogDebug("[{Title}/{Id}] No chapters to download, stopping download", Title, Id);
             State = ContentState.Cancel;
@@ -65,10 +65,10 @@ internal partial class Publication
         await _messageService.UpdateContent(Request.UserId, DownloadInfo);
 
         _logger.LogDebug("[{Title}/{Id}] Loading metadata, {ToDownload}/{Total} chapters in {Elapsed}ms",
-            Title, Id, _queuedChapters.Count, Series!.Chapters.Count, sw.ElapsedMilliseconds);
+            Title, Id, QueuedChapters.Count, Series!.Chapters.Count, sw.ElapsedMilliseconds);
     }
 
-    private void FilterAlreadyDownloadedContent(CancellationToken cancellationToken)
+    internal void FilterAlreadyDownloadedContent(CancellationToken cancellationToken)
     {
         _logger.LogTrace("[{Title}/{Id}] Checking disk for content: {DownloadDir}", Title, Id, DownloadDir);
 
@@ -77,7 +77,7 @@ internal partial class Publication
         ExistingContent =
             _scannerService.ScanDirectory(DownloadDir, ContentFormat.Manga, Format.Archive, cancellationToken);
 
-        _queuedChapters = Series!.Chapters
+        QueuedChapters = Series!.Chapters
             .Where(ShouldDownloadChapter)
             .Select(c => c.Id)
             .ToList();
@@ -92,7 +92,7 @@ internal partial class Publication
         if (!downloadOneShots && string.IsNullOrEmpty(chapter.ChapterMarker)) return false;
 
         // Chapter is present as a download (backwards compat with Media-Provider's old behavior)
-        if (GetContentByName(VolumeDir(chapter)) != null) return false;
+        if (GetContentByPath(VolumeDir(chapter) + ".cbz") != null) return false;
 
         var content = GetContentByName(ChapterFileName(chapter));
         if (content == null)
@@ -108,8 +108,6 @@ internal partial class Publication
                 return true;
             }
         }
-
-        if (string.IsNullOrEmpty(content.Volume)) return false;
 
         var volumeChanged = !string.IsNullOrEmpty(chapter.VolumeMarker) && chapter.VolumeMarker != content.Volume;
 

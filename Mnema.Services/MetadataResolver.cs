@@ -178,7 +178,7 @@ public class MetadataResolver(
                 if (match != null)
                 {
                     MergeChapter(match, fromChapter, settings.ChapterSettings);
-                    return;
+                    continue;
                 }
 
                 match ??= new Chapter
