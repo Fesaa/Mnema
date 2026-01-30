@@ -391,4 +391,14 @@ public class WeebdexRepository: IRepository
 
         return options;
     }
+
+    internal async Task<List<Cover>> GetCoverImages(string id, CancellationToken cancellationToken)
+    {
+        var url = $"/manga/{id}/covers";
+
+        var result = await Client.GetCachedAsync<List<Cover>>(url, _cache, cancellationToken: cancellationToken);
+        if (result.IsErr) throw new MnemaException($"Failed to load cover images for {id}", result.Error);
+
+        return result.Unwrap();
+    }
 }

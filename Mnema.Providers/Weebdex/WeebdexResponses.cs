@@ -223,6 +223,8 @@ internal sealed record Cover
 
     [JsonPropertyName("version")]
     public int Version { get; set; }
+
+    public string Url(string seriesId) => $"https://weebdex.org/covers/{seriesId}/{Id}.webp";
 }
 
 

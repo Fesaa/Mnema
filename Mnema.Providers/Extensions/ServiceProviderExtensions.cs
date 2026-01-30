@@ -88,6 +88,7 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.Weebdex,
             (s, _) => s.GetRequiredService<WeebdexRepository>());
 
+        services.AddKeyedScoped<IPreDownloadHook, WeebdexLoadVolumesHook>(Provider.Weebdex);
         services.AddHttpClient(nameof(Provider.Weebdex), client =>
         {
             client.BaseAddress = new Uri("https://api.weebdex.org");
