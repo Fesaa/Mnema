@@ -12,6 +12,8 @@
   box-shadow: 0 4px 6px var(--shadow-medium);
 
   .series-cover {
+    display: inline-block;
+
     img {
       width: 100%;
       height: auto;

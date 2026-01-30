@@ -450,7 +450,8 @@
       "download": "{{shared.download}}: {{name}}",
       "add-as-sub": "Add as a subscription",
       "sub-header": "Subscribe to: {{name}}",
-      "info": "Info"
+      "info": "Info",
+      "monitor": "Monitor"
     },
     "toasts": {
       "search-success": {

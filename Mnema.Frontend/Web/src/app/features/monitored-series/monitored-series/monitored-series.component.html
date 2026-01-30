@@ -3,8 +3,8 @@
     <div class="series-header">
       <div class="container-fluid">
         <div class="row">
-          <div class="col-12 col-md-3 col-lg-2 mb-4 mb-md-0">
-            <div class="series-cover">
+          <div class="col-12 col-md-3 col-lg-2 mb-4 mb-md-0 text-center text-md-start">
+            <div class="series-cover d-inline-block">
               @if (s.coverUrl) {
                 <img [src]="s.coverUrl" [alt]="s.title" class="img-fluid rounded shadow-sm">
               } @else {
@@ -17,23 +17,24 @@
 
           <div class="col-12 col-md-9 col-lg-10">
             <div class="series-info">
-              <div class="d-flex justify-content-between align-items-start mb-3">
-                <h1 class="series-title mb-0">{{ s.title }}</h1>
-                <div class="d-flex">
-                  <button class="btn btn-sm btn-secondary me-2" (click)="search()">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-3">
+                <h1 class="series-title mb-2 mb-md-0">{{ s.title }}</h1>
+
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-sm btn-secondary" (click)="search()">
                     <i class="fa fa-magnifying-glass"></i>
                   </button>
-                  <button class="btn btn-sm btn-secondary me-2" (click)="showResolvedSeries()">
+                  <button class="btn btn-sm btn-secondary" (click)="showResolvedSeries()">
                     <i class="fa fa-eye"></i>
                   </button>
-                  <button class="btn btn-sm btn-secondary me-2" (click)="edit()">
+                  <button class="btn btn-sm btn-secondary" (click)="edit()">
                     <i class="fa fa-pencil"></i>
                   </button>
                   <button class="btn btn-sm btn-danger" (click)="delete()">
                     <i class="fa fa-trash"></i>
                   </button>
                   @if (s.refUrl) {
-                    <a [href]="s.refUrl" target="_blank" class="btn btn-sm btn-secondary ms-2 text-white">
+                    <a [href]="s.refUrl" target="_blank" class="btn btn-sm btn-secondary text-white">
                       <i class="fa fa-external-link-alt"></i>
                     </a>
                   }
