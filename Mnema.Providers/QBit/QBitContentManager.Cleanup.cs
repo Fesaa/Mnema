@@ -47,6 +47,7 @@ internal partial class QBitContentManager
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var connectionService = scope.ServiceProvider.GetRequiredService<IConnectionService>();
+        var monitoredSeriesService = scope.ServiceProvider.GetRequiredService<IMonitoredSeriesService>();
 
         var sw = Stopwatch.StartNew();
 
@@ -54,6 +55,13 @@ internal partial class QBitContentManager
         {
             var cleanupService = scope.ServiceProvider.GetRequiredService<ICleanupService>();
             await cleanupService.CleanupAsync(torrent, ct);
+
+            var monitoredSeriesId = torrent.Request.Metadata.GetGuid(RequestConstants.MonitoredSeriesId);
+            if (monitoredSeriesId != null)
+            {
+                BackgroundJob.Enqueue(() =>
+                    monitoredSeriesService.EnrichWithMetadata(monitoredSeriesId.Value, CancellationToken.None));
+            }
         }
         catch (Exception ex)
         {

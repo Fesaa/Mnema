@@ -49,6 +49,14 @@ public class MetadataBag : GenericBag<string>
             ? fallback
             : value.Equals("true", StringComparison.InvariantCultureIgnoreCase);
     }
+
+    public Guid? GetGuid(string key)
+    {
+        var value = GetString(key);
+        if (string.IsNullOrEmpty(value)) return null;
+
+        return Guid.TryParse(value, out var result) ? result : null;
+    }
 }
 
 public class GenericBag<T> : Dictionary<string, IList<T>>

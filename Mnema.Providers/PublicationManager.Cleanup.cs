@@ -1,7 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
@@ -16,6 +18,7 @@ internal partial class PublicationManager
     {
         using var scope = _scopeFactory.CreateScope();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
+        var monitoredSeriesService = scope.ServiceProvider.GetRequiredService<IMonitoredSeriesService>();
 
         try
         {
@@ -24,6 +27,13 @@ internal partial class PublicationManager
                 if (!skipSaving) await publication.Cleanup();
 
                 await DeleteFiles(publication);
+            }
+
+            var monitoredSeriesId = publication.Request.Metadata.GetGuid(RequestConstants.MonitoredSeriesId);
+            if (monitoredSeriesId != null)
+            {
+                BackgroundJob.Enqueue(() =>
+                    monitoredSeriesService.EnrichWithMetadata(monitoredSeriesId.Value, CancellationToken.None));
             }
         }
         catch (Exception ex)
