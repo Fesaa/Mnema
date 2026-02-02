@@ -143,7 +143,7 @@ internal class BatoRepository(ILogger<BatoRepository> logger, IDistributedCache 
             Links = [],
             Chapters = chapterResponse
                 .Select(node => node.Select("data"))
-                .Select(data =>
+                .Select((data, idx) =>
                 {
                     var name = data.SelectString("dname");
                     var (volume, chapter) = ParseVolumeAndChapter(name);
@@ -154,6 +154,7 @@ internal class BatoRepository(ILogger<BatoRepository> logger, IDistributedCache 
                         Title = data.SelectString("title"),
                         VolumeMarker = volume,
                         ChapterMarker = chapter,
+                        SortOrder = idx,
                         Tags = [],
                         People = [],
                         TranslationGroups = []

@@ -157,12 +157,13 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
         var manga = res.Unwrap().Result;
         var chapters = await GetSeriesChapters(manga.HashId, cancellationToken: cancellationToken);
 
-        var filteredChapters = FilterChapters(chapters, language, request).Select(chapter => new Chapter
+        var filteredChapters = FilterChapters(chapters, language, request).Select((chapter, idx) => new Chapter
         {
             Id = chapter.ChapterId.ToString(),
             Title = chapter.Name ?? string.Empty,
             VolumeMarker = chapter.Volume > 0 ? chapter.Volume.ToString() : string.Empty,
             ChapterMarker = chapter.Number.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
+            SortOrder = idx,
             ReleaseDate = null,
             Tags = [],
             People = [],

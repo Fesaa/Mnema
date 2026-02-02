@@ -281,6 +281,7 @@ internal class DynastyRepository(
                 Title = title,
                 VolumeMarker = currentVolume,
                 ChapterMarker = chapter,
+                SortOrder = chapters.Count,
                 Tags = tags,
                 People = [],
                 TranslationGroups = [],
