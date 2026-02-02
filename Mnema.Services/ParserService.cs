@@ -1083,9 +1083,14 @@ public partial class ParserService: IParserService
 
     public ParseResult FullParse(string input, ContentFormat type)
     {
-        var series = ParseSeriesCollection(ParseSeries(input, type));
-        var volume = ParseVolume(input, type);
-        var chapter = ParseChapter(input, type);
+        var fullSeriesName = ParseSeries(input, type);
+        // Remove series name before parsing volume & chapter for safety
+        // e.g. The Long Summer of August _31st_
+        var inputWithoutSeries = input.Replace(fullSeriesName, string.Empty);
+
+        var series = ParseSeriesCollection(fullSeriesName);
+        var volume = ParseVolume(inputWithoutSeries, type);
+        var chapter = ParseChapter(inputWithoutSeries, type);
 
         return new ParseResult(
             input,
