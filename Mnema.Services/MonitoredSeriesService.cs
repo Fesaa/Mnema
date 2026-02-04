@@ -93,6 +93,19 @@ public class MonitoredSeriesService(
         await unitOfWork.CommitAsync(cancellationToken);
 
         BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
+
+        if (string.IsNullOrEmpty(series.ExternalId)) return;
+
+        await downloadService.StartDownload(new DownloadRequestDto
+        {
+            Provider = series.Provider,
+            Id = series.ExternalId,
+            BaseDir = series.BaseDir,
+            TempTitle = series.Title,
+            Metadata = series.MetadataForDownloadRequest(),
+            StartImmediately = true,
+            UserId = userId,
+        });
     }
 
     public FormDefinition GetForm()
@@ -218,6 +231,7 @@ public class MonitoredSeriesService(
         };
     }
 
+    [AutomaticRetry(Attempts = 1)]
     public async Task EnrichWithMetadata(Guid guid, CancellationToken ct = default)
     {
         var mSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(guid, ct);

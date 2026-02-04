@@ -254,13 +254,14 @@ public class WeebdexRepository: IRepository
             })
             .ToList();
 
-        var filteredChapters = FilterChapters(chapters.Data, language, request).Select(chapter => new Chapter
+        var filteredChapters = FilterChapters(chapters.Data, language, request).Select((chapter, idx) => new Chapter
         {
             Id = chapter.Id,
             Title = chapter.Title ?? string.Empty,
             VolumeMarker = chapter.Volume ?? string.Empty,
             ChapterMarker = chapter.ChapterNumber ?? string.Empty,
             ReleaseDate = chapter.PublishedAt,
+            SortOrder = idx,
             Tags = [],
             People = [],
             TranslationGroups = chapter.Relationships

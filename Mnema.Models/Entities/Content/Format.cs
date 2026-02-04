@@ -1,3 +1,5 @@
+using System;
+
 namespace Mnema.Models.Entities.Content;
 
 public enum Format
@@ -14,4 +16,19 @@ public enum ContentFormat
     LightNovel = 1,
     Book = 2,
     Comic = 3,
+}
+
+public static class ContentFormatExtensions
+{
+    public static string FileExt(this ContentFormat contentFormat)
+    {
+        return contentFormat switch
+        {
+            ContentFormat.Manga => ".cbz",
+            ContentFormat.LightNovel => ".epub",
+            ContentFormat.Book => ".epub",
+            ContentFormat.Comic => ".cbz",
+            _ => throw new ArgumentOutOfRangeException(nameof(contentFormat), contentFormat, null)
+        };
+    }
 }

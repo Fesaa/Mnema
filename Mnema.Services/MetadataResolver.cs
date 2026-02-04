@@ -167,7 +167,7 @@ public class MetadataResolver(
                 .ToList();
         }
 
-        if (settings.Chapters && provider != MetadataProvider.Upsteam)
+        if (settings.Chapters)
         {
             foreach (var fromChapter in from.Chapters)
             {

@@ -132,7 +132,10 @@ internal class WebtoonRepository(
                 })
                 .ToList() ?? [],
             Links = [],
-            Chapters = chapters
+            Chapters = chapters.Select((chapter, idx) => chapter with
+            {
+                SortOrder = idx,
+            }).ToList()
         };
 
         List<string> ParsePages(HtmlNode rootNode)

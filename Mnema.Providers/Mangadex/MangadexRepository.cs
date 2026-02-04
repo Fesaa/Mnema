@@ -119,12 +119,13 @@ internal class MangadexRepository : IRepository
             })
             .ToList();
 
-        var filteredChapters = FilterChapters(chapters.Data, language, request).Select(chapter => new Chapter
+        var filteredChapters = FilterChapters(chapters.Data, language, request).Select((chapter, idx) => new Chapter
         {
             Id = chapter.Id,
             Title = chapter.Attributes.Title ?? string.Empty,
             VolumeMarker = chapter.Attributes.Volume ?? string.Empty,
             ChapterMarker = chapter.Attributes.Chapter ?? string.Empty,
+            SortOrder = idx,
             ReleaseDate = chapter.Attributes.PublishAt,
             Tags = [],
             People = [],

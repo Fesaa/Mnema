@@ -50,6 +50,7 @@ public static class MonitoredSeriesExtensions
         bag.SetValue(RequestConstants.FormatKey, monitoredSeries.Format.ToString());
         bag.SetValue(RequestConstants.ContentFormatKey, monitoredSeries.ContentFormat.ToString());
         bag.SetValue(RequestConstants.TitleOverride, monitoredSeries.TitleOverride);
+        bag.SetValue(RequestConstants.MonitoredSeriesId, monitoredSeries.Id.ToString());
 
         return bag;
     }
