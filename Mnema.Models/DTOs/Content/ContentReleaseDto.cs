@@ -1,8 +1,9 @@
 using System;
+using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.DTOs.Content;
 
-public class ContentReleaseDto
+public class ContentReleaseDto: IDatabaseEntity
 {
     /// <summary>
     /// The id in the database, not required when loading from a provider

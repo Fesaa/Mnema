@@ -19,14 +19,14 @@ public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitO
 {
     public async Task MarkAsFailed(Guid id, CancellationToken cancellationToken)
     {
-        var client = await unitOfWork.DownloadClientRepository.GetDownloadClientAsync(id, cancellationToken);
+        var client = await unitOfWork.DownloadClientRepository.GetById(id, cancellationToken);
         if (client == null) return;
 
         client.IsFailed = true;
         client.FailedAt = DateTime.UtcNow;
 
         unitOfWork.DownloadClientRepository.Update(client);
-        await unitOfWork.CommitAsync();
+        await unitOfWork.CommitAsync(cancellationToken);
 
         BackgroundJob.Schedule(
             ()  => ReleaseFailedLock(id, CancellationToken.None),
@@ -35,7 +35,7 @@ public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitO
 
     public async Task ReleaseFailedLock(Guid id, CancellationToken cancellationToken)
     {
-        var client = await unitOfWork.DownloadClientRepository.GetDownloadClientAsync(id, cancellationToken);
+        var client = await unitOfWork.DownloadClientRepository.GetById(id, cancellationToken);
         if (client is not { IsFailed: true }) return;
 
         logger.LogInformation("Releasing failed lock on Download client {Id} of type {Type}", client.Id, client.Type);
@@ -44,7 +44,7 @@ public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitO
         client.FailedAt = null;
 
         unitOfWork.DownloadClientRepository.Update(client);
-        await unitOfWork.CommitAsync();
+        await unitOfWork.CommitAsync(cancellationToken);
     }
 
     public async Task UpdateDownloadClientAsync(DownloadClientDto dto, CancellationToken cancellationToken)
@@ -53,7 +53,7 @@ public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitO
         if (configurationProvider == null)
             throw new MnemaException($"Download client with type {dto.Type} cannot be configured");
 
-        var client = await unitOfWork.DownloadClientRepository.GetDownloadClientAsync(dto.Id, cancellationToken);
+        var client = await unitOfWork.DownloadClientRepository.GetById(dto.Id, cancellationToken);
         if (client == null)
         {
             var allowedTypes = await GetFreeTypesAsync(cancellationToken);
@@ -82,7 +82,7 @@ public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitO
             unitOfWork.DownloadClientRepository.Update(client);
         }
 
-        await unitOfWork.CommitAsync();
+        await unitOfWork.CommitAsync(cancellationToken);
 
         await configurationProvider.ReloadConfiguration(cancellationToken);
     }

@@ -11,19 +11,12 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.API;
 
-public interface IMonitoredSeriesRepository
+public interface IMonitoredSeriesRepository: IEntityRepository<MonitoredSeries, MonitoredSeriesDto>
 {
     Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(Guid userId, string query, PaginationParams pagination, CancellationToken cancellationToken);
-    Task<MonitoredSeries?> GetMonitoredSeries(Guid id, CancellationToken cancellationToken = default);
-    Task<List<MonitoredSeries>> GetMonitoredSeriesByTitle(string title, CancellationToken cancellationToken);
-    Task<MonitoredSeriesDto?> GetMonitoredSeriesDto(Guid id, CancellationToken cancellationToken = default);
-    Task<List<MonitoredSeries>> GetAllMonitoredSeries(CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetSeriesEligibleForRefresh(CancellationToken cancellationToken = default);
     Task<bool> CheckDuplicateSeries(Guid userId, Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
 
-    void Update(MonitoredSeries series);
-    void Add(MonitoredSeries series);
-    void Remove(MonitoredSeries series);
     void RemoveRange(IEnumerable<MonitoredChapter> chapters);
 }
 

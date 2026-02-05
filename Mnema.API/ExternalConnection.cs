@@ -17,7 +17,7 @@ public interface IConnectionService
     void CommunicateDownloadFailure(DownloadInfo info, Exception ex);
     void CommunicateSubscriptionExhausted(DownloadInfo info);
 
-    Task UpdateConnection(ExternalConnectionDto connection, CancellationToken cancellationToken);
+    Task UpdateConnection(ConnectionDto connection, CancellationToken cancellationToken);
     Task<FormDefinition> GetForm(ConnectionType type, CancellationToken cancellationToken);
 }
 
@@ -39,17 +39,4 @@ public interface IConnectionHandlerService
     Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken);
 }
 
-public interface IConnectionRepository
-{
-    Task<List<Connection>> GetAllConnections(CancellationToken cancellationToken);
-
-    Task<PagedList<ExternalConnectionDto>> GetAllConnectionDtos(PaginationParams pagintation,
-        CancellationToken cancellationToken);
-
-    Task<Connection?> GetConnectionById(Guid connectionId, CancellationToken cancellationToken);
-    Task DeleteConnectionById(Guid connectionId, CancellationToken cancellationToken);
-
-
-    void Add(Connection connection);
-    void Update(Connection connection);
-}
+public interface IConnectionRepository: IEntityRepository<Connection, ConnectionDto>;

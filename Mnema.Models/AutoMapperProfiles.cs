@@ -20,7 +20,7 @@ public class AutoMapperProfiles : Profile
         CreateMap<MnemaUser, UserDto>();
         CreateMap<Notification, NotificationDto>();
         CreateMap<UserPreferences, UserPreferencesDto>();
-        CreateMap<Connection, ExternalConnectionDto>();
+        CreateMap<Connection, ConnectionDto>();
         CreateMap<ContentRelease, ContentReleaseDto>();
         CreateMap<DownloadClient, DownloadClientDto>();
         CreateMap<MonitoredSeries, MonitoredSeriesDto>()

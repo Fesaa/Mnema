@@ -17,10 +17,10 @@ public class ConnectionController(IUnitOfWork unitOfWork, IConnectionService con
     : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<PagedList<ExternalConnectionDto>>> GetExternalConnections(
+    public async Task<ActionResult<PagedList<ConnectionDto>>> GetExternalConnections(
         [FromQuery] PaginationParams paginationParams)
     {
-        return Ok(await unitOfWork.ConnectionRepository.GetAllConnectionDtos(paginationParams,
+        return Ok(await unitOfWork.ConnectionRepository.GetAllDtosPaged(paginationParams,
             HttpContext.RequestAborted));
     }
 
@@ -33,7 +33,7 @@ public class ConnectionController(IUnitOfWork unitOfWork, IConnectionService con
     }
 
     [HttpPost]
-    public async Task<IActionResult> UpdateConnection(ExternalConnectionDto dto)
+    public async Task<IActionResult> UpdateConnection(ConnectionDto dto)
     {
         await connectionService.UpdateConnection(dto, HttpContext.RequestAborted);
 
@@ -43,7 +43,7 @@ public class ConnectionController(IUnitOfWork unitOfWork, IConnectionService con
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteConnection(Guid id, CancellationToken cancellationToken)
     {
-        await unitOfWork.ConnectionRepository.DeleteConnectionById(id, cancellationToken);
+        await unitOfWork.ConnectionRepository.DeleteById(id, cancellationToken);
 
         return Ok();
     }

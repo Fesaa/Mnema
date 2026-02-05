@@ -5,7 +5,7 @@ using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.Entities.Content;
 
-public class MonitoredSeries: IEntityDate
+public class MonitoredSeries: IEntityDate, IDatabaseEntity
 {
     public Guid Id { get; set; }
 

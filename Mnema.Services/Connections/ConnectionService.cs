@@ -46,9 +46,9 @@ internal class ConnectionService(
             => service.CommunicateSubscriptionExhausted(connection, info));
     }
 
-    public async Task UpdateConnection(ExternalConnectionDto dto, CancellationToken cancellationToken)
+    public async Task UpdateConnection(ConnectionDto dto, CancellationToken cancellationToken)
     {
-        var connection = await unitOfWork.ConnectionRepository.GetConnectionById(dto.Id, cancellationToken) ??
+        var connection = await unitOfWork.ConnectionRepository.GetById(dto.Id, cancellationToken) ??
                          new Connection { Type = dto.Type, Metadata = new MetadataBag() };
 
         connection.Name = dto.Name;
@@ -129,7 +129,7 @@ internal class ConnectionService(
                 var scopedUnitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
                 var connections = await scopedUnitOfWork.ConnectionRepository
-                    .GetAllConnections(CancellationToken.None);
+                    .GetAll(CancellationToken.None);
 
                 List<Task> tasks = [];
 

@@ -18,8 +18,7 @@ public class DownloadClientController(IUnitOfWork unitOfWork, IDownloadClientSer
     public async Task<ActionResult<PagedList<DownloadClientDto>>> GetAll(PaginationParams paginationParams)
     {
         var clients =
-            await unitOfWork.DownloadClientRepository.GetAllDownloadClientsAsync(paginationParams,
-                HttpContext.RequestAborted);
+            await unitOfWork.DownloadClientRepository.GetAllDtosPaged(paginationParams, HttpContext.RequestAborted);
 
         return Ok(clients);
     }
@@ -65,7 +64,7 @@ public class DownloadClientController(IUnitOfWork unitOfWork, IDownloadClientSer
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteDownloadClient(Guid id)
     {
-        await unitOfWork.DownloadClientRepository.DeleteByIdAsync(id, HttpContext.RequestAborted);
+        await unitOfWork.DownloadClientRepository.DeleteById(id, HttpContext.RequestAborted);
 
         return Ok();
     }

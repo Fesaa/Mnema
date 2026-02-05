@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.DTOs.UI;
 
-public class PageDto
+public class PageDto: IDatabaseEntity
 {
     public Guid Id { get; set; }
     public required string Title { get; set; }

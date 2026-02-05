@@ -26,8 +26,7 @@ internal class MonitoredSeriesScheduler(
 
     protected override Task<List<MonitoredSeries>> GetEntitiesAsync(IUnitOfWork unitOfWork, CancellationToken cancellationToken)
     {
-        return unitOfWork.MonitoredSeriesRepository
-            .GetAllMonitoredSeries(cancellationToken);
+        return unitOfWork.MonitoredSeriesRepository.GetAll(cancellationToken);
     }
 
     protected override List<Provider> GetProviders(List<MonitoredSeries> entities)

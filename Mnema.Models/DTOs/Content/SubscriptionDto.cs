@@ -1,10 +1,11 @@
 using System;
 using Mnema.Common;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.DTOs.Content;
 
-public class SubscriptionDto
+public class SubscriptionDto: IDatabaseEntity
 {
     /// <inheritdoc cref="Subscription.Id" />
     public Guid Id { get; set; } = Guid.Empty;

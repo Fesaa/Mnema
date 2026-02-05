@@ -8,7 +8,7 @@ public enum ReleaseType { Processed, Imported }
 
 [Index(nameof(Type))]
 [Index(nameof(Type), nameof(ReleaseId), IsUnique = true)]
-public class ContentRelease: IEntityDate
+public class ContentRelease: IEntityDate, IDatabaseEntity
 {
     /// <summary>
     /// The id in the database, not required when loading from a provider

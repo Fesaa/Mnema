@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Mnema.Common;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.DTOs;
 
-public class ExternalConnectionDto
+public class ConnectionDto: IDatabaseEntity
 {
     public Guid Id { get; set; }
 

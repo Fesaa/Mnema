@@ -13,7 +13,7 @@ public enum NotificationColour
 }
 
 [Index(nameof(CreatedUtc)), Index(nameof(UserId))]
-public class Notification : IEntityDate
+public class Notification : IEntityDate, IDatabaseEntity
 {
     public Guid Id { get; set; }
     public required string Title { get; set; }

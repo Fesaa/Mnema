@@ -21,7 +21,8 @@ public enum MonitoredSeriesIncludes
     Chapters = 0,
 }
 
-public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IMonitoredSeriesRepository
+public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
+    : AbstractEntityEntityRepository<MonitoredSeries, MonitoredSeriesDto>(ctx, mapper), IMonitoredSeriesRepository
 {
     public Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(Guid userId, string query, PaginationParams pagination,
         CancellationToken cancellationToken)
@@ -35,36 +36,6 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IM
             .ProjectTo<MonitoredSeriesDto>(mapper.ConfigurationProvider)
             .OrderBy(m => m.Id)
             .AsPagedList(pagination, cancellationToken);
-    }
-
-    public Task<MonitoredSeries?> GetMonitoredSeries(Guid id, CancellationToken cancellationToken = default)
-    {
-        return ctx.MonitoredSeries
-            .Includes(MonitoredSeriesIncludes.Chapters)
-            .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
-    }
-
-    public Task<List<MonitoredSeries>> GetMonitoredSeriesByTitle(string title, CancellationToken cancellationToken)
-    {
-        return ctx.MonitoredSeries
-            .Includes(MonitoredSeriesIncludes.Chapters)
-            .Where(m => m.ValidTitles.Any(t => t.Contains(title)))
-            .ToListAsync(cancellationToken);
-    }
-
-    public Task<MonitoredSeriesDto?> GetMonitoredSeriesDto(Guid id, CancellationToken cancellationToken = default)
-    {
-        return ctx.MonitoredSeries
-            .Includes(MonitoredSeriesIncludes.Chapters)
-            .ProjectTo<MonitoredSeriesDto>(mapper.ConfigurationProvider)
-            .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
-    }
-
-    public Task<List<MonitoredSeries>> GetAllMonitoredSeries(CancellationToken cancellationToken = default)
-    {
-        return ctx.MonitoredSeries
-            .Includes(MonitoredSeriesIncludes.Chapters)
-            .ToListAsync(cancellationToken);
     }
 
     public Task<List<MonitoredSeries>> GetSeriesEligibleForRefresh(CancellationToken cancellationToken = default)
@@ -85,21 +56,6 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper): IM
             .WhereIf(!string.IsNullOrEmpty(dto.MangaBakaId), s => s.MangaBakaId == dto.MangaBakaId)
             .Where(s => s.Format == dto.Format && s.ValidTitles.Intersect(dto.ValidTitles).Any())
             .AnyAsync(cancellationToken);
-    }
-
-    public void Update(MonitoredSeries series)
-    {
-        ctx.MonitoredSeries.Update(series).State = EntityState.Modified;
-    }
-
-    public void Add(MonitoredSeries series)
-    {
-        ctx.MonitoredSeries.Add(series).State = EntityState.Added;
-    }
-
-    public void Remove(MonitoredSeries series)
-    {
-        ctx.MonitoredSeries.Remove(series).State = EntityState.Deleted;
     }
 
     public void RemoveRange(IEnumerable<MonitoredChapter> chapters)
