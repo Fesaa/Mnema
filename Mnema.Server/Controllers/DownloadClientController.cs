@@ -46,7 +46,7 @@ public class DownloadClientController(IUnitOfWork unitOfWork, IDownloadClientSer
     }
 
     [HttpPost]
-    public async Task<IActionResult> UpdateOrCreat(DownloadClientDto downloadClientDto)
+    public async Task<IActionResult> UpdateOrCreate(DownloadClientDto downloadClientDto)
     {
         await downloadClientService.UpdateDownloadClientAsync(downloadClientDto, HttpContext.RequestAborted);
 

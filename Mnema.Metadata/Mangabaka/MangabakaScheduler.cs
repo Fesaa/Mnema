@@ -110,19 +110,14 @@ public class MangabakaScheduler(
         var ctx = scope.ServiceProvider.GetRequiredService<MangabakaDbContext>();
 
         var writerConfig = new IndexWriterConfig(Version, new StandardAnalyzer(Version));
-
         using var writer = new IndexWriter(indexPath, writerConfig);
 
         writer.DeleteAll();
 
-        var query = ctx.Series
-            .Select(s => new {s.Id, s.Title, s.NativeTitle})
-            .OrderBy(s => s.Id);
-
         await foreach (var series in BatchedSeries(ctx, ct: ct))
         {
             var document = new Document();
-            document.AddStringField(nameof(series.Id), series.Id.ToString(), Field.Store.YES);
+            document.AddStringField(nameof(MangabakaSeries.Id), series.Id.ToString(), Field.Store.YES);
             document.AddTextField(nameof(MangabakaSeries.Title), series.Title, Field.Store.NO);
 
             if (series.NativeTitle != null)
