@@ -1086,7 +1086,8 @@ public partial class ParserService: IParserService
         var fullSeriesName = ParseSeries(input, type);
         // Remove series name before parsing volume & chapter for safety
         // e.g. The Long Summer of August _31st_
-        var inputWithoutSeries = input.Replace(fullSeriesName, string.Empty);
+        var inputWithoutSeries = string.IsNullOrEmpty(fullSeriesName)
+            ? input : input.Replace(fullSeriesName, string.Empty);
 
         var series = ParseSeriesCollection(fullSeriesName);
         var volume = ParseVolume(inputWithoutSeries, type);
