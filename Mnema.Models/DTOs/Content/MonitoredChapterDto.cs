@@ -1,9 +1,10 @@
 using System;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.DTOs.Content;
 
-public class MonitoredChapterDto
+public class MonitoredChapterDto: IDatabaseEntity
 {
     public Guid Id { get; set; }
     public string ExternalId { get; set; }

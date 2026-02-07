@@ -1,9 +1,10 @@
 using System;
+using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Models.DTOs.User;
 
-public class NotificationDto
+public class NotificationDto: IDatabaseEntity
 {
     public required Guid Id { get; set; }
     public required string Title { get; set; }

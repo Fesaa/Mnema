@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Entities.UI;
 
 namespace Mnema.Models.Entities.User;
 
-public class MnemaUser
+public class MnemaUser: IDatabaseEntity
 {
     public Guid Id { get; set; }
 

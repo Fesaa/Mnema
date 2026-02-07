@@ -1,7 +1,7 @@
 import {effect, inject, Injectable, signal} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {environment} from "@env/environment";
-import {Page, Provider} from "../_models/page";
+import {AllProviders, Page, Provider} from "../_models/page";
 import {catchError, from, map, mergeMap, Observable, of, switchMap, tap, toArray} from "rxjs";
 import {AccountService} from "./account.service";
 import {FormControlDefinition} from "../generic-form/form";
@@ -92,7 +92,7 @@ export class PageService {
   }
 
   allowedProviders() {
-    return of([Provider.NYAA]);
+    return of(AllProviders);
   }
 
   monitoredSeriesMetadata() {

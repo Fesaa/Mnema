@@ -14,6 +14,7 @@ import {RouterLink} from "@angular/router";
 import {PaginatorComponent} from "@mnema/shared/_component/paginator/paginator.component";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
+import {ProviderNamePipe} from "@mnema/_pipes/provider-name.pipe";
 
 @Component({
   selector: 'app-monitored-series-manager',
@@ -23,46 +24,45 @@ import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
     RouterLink,
     PaginatorComponent,
     UtcToLocalTimePipe,
+    ProviderNamePipe,
   ],
   templateUrl: './monitored-series-manager.component.html',
   styleUrl: './monitored-series-manager.component.scss',
   animations: [dropAnimation]
 })
 export class MonitoredSeriesManagerComponent implements OnInit {
-
-  private readonly modalService = inject(ModalService);
   private readonly navService = inject(NavService);
   protected readonly monitoredSeriesService = inject(MonitoredSeriesService);
-  private readonly toastService = inject(ToastService);
   private readonly pageService = inject(PageService);
 
-  metadata = signal<Map<Provider, FormControlDefinition[]>>(new Map());
   hasAny = signal(false);
+  providers = signal<Provider[]>([]);
 
   pageLoader = computed(() => {
     const filter = this.filter();
 
     return (pn: number, ps: number) => {
-      return this.monitoredSeriesService.all(filter.filterText ?? '', pn, ps);
+      return this.monitoredSeriesService.all(filter.filterText ?? '', filter.provider ?? null , pn, ps);
     }
   });
 
   filterForm = new FormGroup({
     filterText: new FormControl(''),
+    provider: new FormControl<Provider | null>(null),
   });
   filter = toSignal(this.filterForm.valueChanges.pipe(
     debounceTime(400),
     takeUntilDestroyed(),
     distinctUntilChanged(),
-  ), { initialValue: { filterText: '' } });
+  ), { initialValue: { filterText: '', provider: null } });
 
   pageReloader = new EventEmitter<void>();
 
   ngOnInit(): void {
     this.navService.setNavVisibility(true);
 
-    this.pageService.monitoredSeriesMetadata().pipe(
-      tap(m => this.metadata.set(m))
+    this.pageService.allowedProviders().pipe(
+      tap(providers => this.providers.set(providers)),
     ).subscribe();
   }
 

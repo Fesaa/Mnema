@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Mnema.Models.DTOs.User;
+using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.Entities.User;
 
-public class UserPreferences
+public class UserPreferences: IDatabaseEntity
 {
     public Guid Id { get; set; }
 

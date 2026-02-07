@@ -113,7 +113,7 @@ internal class MangabakaMetadataService(
             MangabakaPublicationStatus.Releasing => PublicationStatus.Ongoing,
             MangabakaPublicationStatus.Cancelled => PublicationStatus.Cancelled,
             MangabakaPublicationStatus.Hiatus => PublicationStatus.Paused,
-            MangabakaPublicationStatus.Upcoming => PublicationStatus.Ongoing, // Close enought
+            MangabakaPublicationStatus.Upcoming => PublicationStatus.Ongoing, // Close enough
             _ => throw new ArgumentOutOfRangeException(nameof(publicationStatus), publicationStatus, null)
         };
     }

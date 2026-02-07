@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using Mnema.Common;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.DTOs.Content;
 
-public sealed record MonitoredSeriesDto
+public sealed record MonitoredSeriesDto: IDatabaseEntity
 {
-    public Guid Id { get; init; }
+    public Guid Id { get; set; }
 
     public Guid UserId { get; init; }
 

@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Models.Entities.UI;
 
-public class Page
+public class Page: IDatabaseEntity
 {
     public Guid Id { get; set; }
     public required string Title { get; set; }

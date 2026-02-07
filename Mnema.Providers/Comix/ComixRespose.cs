@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using Mnema.Common.Helpers;
 
 namespace Mnema.Providers.Comix;
 
@@ -171,7 +172,8 @@ internal class ComixChapter
     public int ScanlationGroupId { get; set; }
 
     [JsonPropertyName("is_official")]
-    public int IsOfficial { get; set; }
+    [JsonConverter(typeof(FlexibleBooleanConverter))]
+    public bool IsOfficial { get; set; }
 
     [JsonPropertyName("number")]
     public decimal Number { get; set; }

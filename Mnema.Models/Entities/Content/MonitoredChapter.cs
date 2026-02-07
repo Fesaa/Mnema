@@ -3,7 +3,7 @@ using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.Entities.Content;
 
-public class MonitoredChapter: IEntityDate
+public class MonitoredChapter: IEntityDate, IDatabaseEntity
 {
     public Guid Id { get; set; }
     public string ExternalId { get; set; }

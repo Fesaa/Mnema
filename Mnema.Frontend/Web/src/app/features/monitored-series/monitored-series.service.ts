@@ -84,13 +84,17 @@ export class MonitoredSeriesService {
     return this.httpClient.delete(`${this.baseUrl}/${id}`, {responseType: 'text'});
   }
 
-  all(query: string, pageNumber: number, pageSize: number) {
+  all(query: string, provider: Provider | null, pageNumber: number, pageSize: number) {
     let params = new HttpParams()
       .set('pageNumber', pageNumber)
       .set('pageSize', pageSize);
 
     if (query) {
       params = params.set('query', query);
+    }
+
+    if (provider !== null) {
+      params = params.set('provider', provider);
     }
 
     return this.httpClient.get<PagedList<MonitoredSeries>>(`${this.baseUrl}/all`, { params });

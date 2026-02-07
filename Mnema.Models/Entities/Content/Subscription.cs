@@ -8,7 +8,7 @@ namespace Mnema.Models.Entities.Content;
 
 [Index(nameof(UserId))]
 [Obsolete("Use MonitoredSeries")]
-public class Subscription: IEntityDate
+public class Subscription: IEntityDate, IDatabaseEntity
 {
     public Guid Id { get; set; }
 

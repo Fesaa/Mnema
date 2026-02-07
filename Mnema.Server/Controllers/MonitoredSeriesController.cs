@@ -30,17 +30,18 @@ public class MonitoredSeriesController(
 {
     [HttpGet("all")]
     public async Task<ActionResult<PagedList<MonitoredSeriesDto>>> GetAll([FromQuery] string query = "",
+        [FromQuery] Provider? provider = null,
         [FromQuery] PaginationParams? paginationParams = null)
     {
         paginationParams ??= PaginationParams.Default;
 
-        return Ok(await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeriesDtosForUser(UserId, query, paginationParams, HttpContext.RequestAborted));
+        return Ok(await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeriesDtosForUser(UserId, query, provider, paginationParams, HttpContext.RequestAborted));
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<MonitoredSeriesDto>> Get(Guid id)
     {
-        var series = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeriesDto(id, HttpContext.RequestAborted);
+        var series = await unitOfWork.MonitoredSeriesRepository.GetDtoById(id, HttpContext.RequestAborted);
         if (series == null) return NotFound();
 
         if (series.UserId != UserId) return Forbid();
@@ -67,7 +68,7 @@ public class MonitoredSeriesController(
     [HttpGet("{id:guid}/resolved-series")]
     public async Task<ActionResult<Series>> GetResolvedSeries(Guid id)
     {
-        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetById(id, HttpContext.RequestAborted);
         if (monitoredSeries == null) return NotFound();
 
         if (monitoredSeries.UserId != UserId) return Forbid();
@@ -80,7 +81,7 @@ public class MonitoredSeriesController(
     [HttpPost("{id:guid}/refresh-metadata")]
     public async Task<IActionResult> RefreshMetadata(Guid id)
     {
-        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetById(id, HttpContext.RequestAborted);
         if (monitoredSeries == null) return NotFound();
 
         if (monitoredSeries.UserId != UserId) return Forbid();
@@ -93,7 +94,7 @@ public class MonitoredSeriesController(
     [HttpGet("{id:guid}/search")]
     public async Task<ActionResult<PagedList<SearchResult>>> Search(Guid id, [FromQuery] PaginationParams paginationParams)
     {
-        var mSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        var mSeries = await unitOfWork.MonitoredSeriesRepository.GetById(id, HttpContext.RequestAborted);
         if (mSeries == null) return NotFound();
         if (mSeries.UserId != UserId) return Forbid();
 
@@ -110,7 +111,7 @@ public class MonitoredSeriesController(
     [HttpPost("{id:guid}/download")]
     public async Task<IActionResult> Download(Guid id, SearchResult result)
     {
-        var mSeries = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        var mSeries = await unitOfWork.MonitoredSeriesRepository.GetById(id, HttpContext.RequestAborted);
         if (mSeries == null) return NotFound();
         if (mSeries.UserId != UserId) return Forbid();
 
@@ -136,7 +137,7 @@ public class MonitoredSeriesController(
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var series = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, HttpContext.RequestAborted);
         if (series == null) return NotFound();
 
         if (series.UserId != UserId) return Forbid();
@@ -151,7 +152,7 @@ public class MonitoredSeriesController(
     [HttpPost("{id:guid}/{chapterId:guid}/set-status")]
     public async Task<IActionResult> SetChapterStatus(Guid id, Guid chapterId, [FromQuery] MonitoredChapterStatus status)
     {
-        var series = await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeries(id, HttpContext.RequestAborted);
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, HttpContext.RequestAborted);
         if (series == null) return NotFound();
 
         if (series.UserId != UserId) return Forbid();

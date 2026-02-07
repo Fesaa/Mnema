@@ -1,10 +1,11 @@
 using System;
 using Mnema.Common;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.DTOs.Content;
 
-public class DownloadClientDto
+public class DownloadClientDto: IDatabaseEntity
 {
     public Guid Id { get; set; }
     public DownloadClientType Type { get; set; }
