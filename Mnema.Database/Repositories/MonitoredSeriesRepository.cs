@@ -24,7 +24,8 @@ public enum MonitoredSeriesIncludes
 public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
     : AbstractEntityEntityRepository<MonitoredSeries, MonitoredSeriesDto>(ctx, mapper), IMonitoredSeriesRepository
 {
-    public Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(Guid userId, string query, PaginationParams pagination,
+    public Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(Guid userId, string query,
+        Provider? provider, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
         query = query.ToNormalized();
@@ -33,6 +34,7 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
             .Includes(MonitoredSeriesIncludes.Chapters)
             .Where(m => m.UserId == userId)
             .Where(m => m.NormalizedTitle.Contains(query))
+            .WhereIf(provider.HasValue, m => m.Provider == provider)
             .ProjectTo<MonitoredSeriesDto>(mapper.ConfigurationProvider)
             .OrderBy(m => m.Id)
             .AsPagedList(pagination, cancellationToken);

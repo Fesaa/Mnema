@@ -30,11 +30,12 @@ public class MonitoredSeriesController(
 {
     [HttpGet("all")]
     public async Task<ActionResult<PagedList<MonitoredSeriesDto>>> GetAll([FromQuery] string query = "",
+        [FromQuery] Provider? provider = null,
         [FromQuery] PaginationParams? paginationParams = null)
     {
         paginationParams ??= PaginationParams.Default;
 
-        return Ok(await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeriesDtosForUser(UserId, query, paginationParams, HttpContext.RequestAborted));
+        return Ok(await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeriesDtosForUser(UserId, query, provider, paginationParams, HttpContext.RequestAborted));
     }
 
     [HttpGet("{id:guid}")]
