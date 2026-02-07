@@ -139,15 +139,23 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         app.UseSwagger();
         app.UseSwaggerUI();
         app.UseResponseCaching();
-        app.UseCors(opts =>
-            opts.WithOrigins("http://localhost:4600")
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-        );
+
+        if (env.IsDevelopment())
+        {
+            app.UseCors(opts =>
+                opts.WithOrigins("http://localhost:4600")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+            );
+        }
+        else
+        {
+            app.UseCors();
+        }
+
         app.UseOutputCache();
         app.UseSerilogRequestLogging(opts =>
         {
-            //opts.EnrichDiagnosticContext = LogEnricher.EnrichFromRequest;
             opts.IncludeQueryInRequestPath = true;
         });
         app.UseMiddleware<ExceptionMiddleware>();
