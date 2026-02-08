@@ -22,6 +22,8 @@ public class ComicInfo
     public string SeriesSort { get; set; } = string.Empty;
     public string Number { get; set; } = string.Empty;
     public int Count { get; set; } = 0;
+    [XmlIgnore]
+    public bool Finished { get; set; }
     public string Volume { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
     public string Genre { get; set; } = string.Empty;

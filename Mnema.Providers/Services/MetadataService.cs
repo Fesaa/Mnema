@@ -67,6 +67,7 @@ internal class MetadataService : IMetadataService
         if (count == null) return ci;
 
         ci.Count = count.Value;
+        ci.Finished = finished;
 
         return ci;
     }

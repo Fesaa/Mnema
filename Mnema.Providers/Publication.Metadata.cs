@@ -37,7 +37,11 @@ internal partial class Publication
         var ci = _metadataService.CreateComicInfo(Preferences, Request, Title, Series, chapter, string.Format(ComicInfoNote, provider.ToString()));
         if (ci != null)
         {
-            // TODO: Patch sub done notification back in
+            if (ci.Finished && !_hasNotifiedSubscriptionExhausted)
+            {
+                _hasNotifiedSubscriptionExhausted = true;
+                _connectionService.CommunicateSubscriptionExhausted(DownloadInfo);
+            }
 
             var ciPath = Path.Join(ChapterPath(chapter), "ComicInfo.xml");
             XmlHelper.SerializeToFile(XmlSerializer, ci, ciPath);

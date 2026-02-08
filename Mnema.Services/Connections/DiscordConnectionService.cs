@@ -145,7 +145,7 @@ internal class DiscordConnectionService(
     {
         var embed = new DiscordEmbed
         {
-            Title = "Subscription Exhausted",
+            Title = "Series fully downloaded",
             Description = $"**{info.Name}**\n\n{info.Description}".Limit(MaxDescriptionLength),
             Color = 0xf1c40f, // Yellow
             Timestamp = DateTime.UtcNow,
@@ -167,7 +167,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    private List<DiscordEmbedField> BuildDefaultEmbedFields(DownloadInfo info)
+    private static List<DiscordEmbedField> BuildDefaultEmbedFields(DownloadInfo info)
     {
         var embeds = new List<DiscordEmbedField>
         {
