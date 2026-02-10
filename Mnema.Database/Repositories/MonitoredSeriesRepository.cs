@@ -15,14 +15,8 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.Database.Repositories;
 
-[Flags]
-public enum MonitoredSeriesIncludes
-{
-    Chapters = 0,
-}
-
 public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
-    : AbstractEntityEntityRepository<MonitoredSeries, MonitoredSeriesDto>(ctx, mapper), IMonitoredSeriesRepository
+    : AbstractNavigationalEntityRepository<MonitoredSeries, MonitoredSeriesDto, MonitoredSeriesIncludes>(ctx, mapper), IMonitoredSeriesRepository
 {
     public Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(Guid userId, string query,
         Provider? provider, PaginationParams pagination,
@@ -63,5 +57,10 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
     public void RemoveRange(IEnumerable<MonitoredChapter> chapters)
     {
         ctx.MonitoredChapters.RemoveRange(chapters);
+    }
+
+    protected override IQueryable<MonitoredSeries> EntityWithIncludes(IQueryable<MonitoredSeries> query, MonitoredSeriesIncludes flags)
+    {
+        return query.Includes(flags);
     }
 }

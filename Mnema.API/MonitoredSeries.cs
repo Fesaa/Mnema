@@ -11,7 +11,13 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.API;
 
-public interface IMonitoredSeriesRepository: IEntityRepository<MonitoredSeries, MonitoredSeriesDto>
+[Flags]
+public enum MonitoredSeriesIncludes
+{
+    Chapters = 0,
+}
+
+public interface IMonitoredSeriesRepository: INavigationalEntityRepository<MonitoredSeries, MonitoredSeriesDto, MonitoredSeriesIncludes>
 {
     Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(Guid userId, string query, Provider? provider, PaginationParams pagination, CancellationToken cancellationToken);
     Task<List<MonitoredSeries>> GetSeriesEligibleForRefresh(CancellationToken cancellationToken = default);
