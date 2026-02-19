@@ -18,16 +18,14 @@ public enum ContentFormat
     Comic = 3,
 }
 
-public static class ContentFormatExtensions
+public static class FormatExtensions
 {
-    public static string FileExt(this ContentFormat contentFormat)
+    public static string FileExt(this Format contentFormat)
     {
         return contentFormat switch
         {
-            ContentFormat.Manga => ".cbz",
-            ContentFormat.LightNovel => ".epub",
-            ContentFormat.Book => ".epub",
-            ContentFormat.Comic => ".cbz",
+            Format.Archive => ".cbz",
+            Format.Epub => ".epub",
             _ => throw new ArgumentOutOfRangeException(nameof(contentFormat), contentFormat, null)
         };
     }

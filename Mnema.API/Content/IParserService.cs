@@ -23,6 +23,7 @@ public interface IParserService
     bool IsDefaultChapter(string? chapterNumber);
     bool IsLooseLeafVolume(string? volumeNumber);
     bool IsCoverImage(string filename);
+    bool IsImage(string filePath);
     float MinNumberFromRange(string range);
     float MaxNumberFromRange(string range);
     ParseResult FullParse(string input, ContentFormat type);
