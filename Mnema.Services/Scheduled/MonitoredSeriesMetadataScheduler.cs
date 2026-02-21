@@ -50,7 +50,7 @@ internal class MonitoredSeriesMetadataScheduler(
 
         foreach (var mSeries in series)
         {
-            logger.LogDebug("Refreshing metadata for {Title}", mSeries.Title);
+            logger.LogDebug("Refreshing metadata for {Title} - {Provider}", mSeries.Title, mSeries.Provider);
 
             await monitoredSeriesService.EnrichWithMetadata(mSeries.Id, ct);
 
