@@ -125,7 +125,7 @@ export class MonitoredSeriesComponent {
       question: this.transLoco.translate('monitored-series-detail.confirm-delete', {name: this.series().title})
     }, true).pipe(
       switchMap(() => this.monitoredSeriesService.delete(this.series().id)),
-      tap(() => this.router.navigateByUrl('home')),
+      tap(() => this.router.navigateByUrl('monitored-series')),
     ).subscribe();
   }
 
