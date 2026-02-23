@@ -16,7 +16,6 @@ import {FormatPipe} from "@mnema/features/monitored-series/pipes/format.pipe";
 import {TranslocoDirective, TranslocoService} from "@jsverse/transloco";
 import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
 import {BadgeComponent} from "@mnema/shared/_component/badge/badge.component";
-import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {ModalService} from "@mnema/_services/modal.service";
 import {filter, map, switchMap, tap} from "rxjs";
 import {SeriesInfoComponent} from "@mnema/page/_components/series-info/series-info.component";
@@ -27,13 +26,12 @@ import {
 import {ListSelectModalComponent} from "@mnema/shared/_component/list-select-modal/list-select-modal.component";
 import {EventType, SignalRService} from "@mnema/_services/signal-r.service";
 import {SearchInfo} from "@mnema/_models/Info";
-import {DownloadModalComponent} from "@mnema/page/_components/download-modal/download-modal.component";
 import {ToastService} from "@mnema/_services/toast.service";
 
 @Component({
   selector: 'app-monitored-series',
   standalone: true,
-  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, NgbTooltip],
+  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent],
   templateUrl: './monitored-series.component.html',
   styleUrl: './monitored-series.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

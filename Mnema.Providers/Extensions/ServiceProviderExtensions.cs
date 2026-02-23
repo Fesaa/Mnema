@@ -171,6 +171,7 @@ public static class ServiceProviderExtensions
             client.BaseAddress = new Uri("https://comix.to");
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
+            client.DefaultRequestHeaders.Add(HeaderNames.Referer, "https://comix.to/");
         });
 
         #endregion
