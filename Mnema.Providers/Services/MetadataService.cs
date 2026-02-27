@@ -188,7 +188,13 @@ internal class MetadataService : IMetadataService
         var highestVolume = volumeNumbers.Count == 0 ? null : volumeNumbers.Max();
 
         if (series.HighestVolumeNumber != null)
-            return ((int?)series.HighestVolumeNumber, series.HighestVolumeNumber.SafeEquals(highestVolume));
+        {
+            if (series.HighestChapterNumber == null)
+                return ((int?)series.HighestVolumeNumber, series.HighestVolumeNumber.SafeEquals(highestVolume));
+
+            var everythingDownloaded = series.HighestVolumeNumber.SafeEquals(highestVolume) && series.HighestChapterNumber.SafeEquals(highestChapter);
+            return ((int?)series.HighestVolumeNumber, everythingDownloaded);
+        }
 
         if (series.HighestChapterNumber != null)
             return ((int?)series.HighestChapterNumber, series.HighestChapterNumber.SafeEquals(highestChapter));
