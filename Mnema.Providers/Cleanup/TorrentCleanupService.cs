@@ -114,7 +114,7 @@ internal class TorrentCleanupService(
         var resolution = metadataResolver.ResolveChapter(fileName, context.Series, context.ContentFormat);
 
         var chapterFileName = BuildChapterFileName(context.Title, resolution);
-        var destPath = fileSystem.Path.Join(context.DestinationDirectory, chapterFileName + context.ContentFormat.FileExt());
+        var destPath = fileSystem.Path.Join(context.DestinationDirectory, chapterFileName + context.Format.FileExt());
 
         var comicInfo = metadataService.CreateComicInfo(
             context.Preferences,

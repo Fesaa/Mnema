@@ -12,7 +12,7 @@ public sealed record Chapter
 
     public required string VolumeMarker { get; set; }
     public required string ChapterMarker { get; set; }
-    public float? SortOrder { get; set; } = null;
+    public float? SortOrder { get; set; }
 
     public string? CoverUrl { get; set; }
     public string? RefUrl { get; set; }
@@ -45,6 +45,8 @@ public sealed record Chapter
 
         if (float.TryParse(VolumeMarker, NumberStyle, CultureInfo.InvariantCulture, out var volume)) return volume;
 
+        if (float.TryParse(VolumeMarker, NumberStyle, CultureInfo.CurrentCulture, out var volume2)) return volume2;
+
         return null;
     }
 
@@ -53,6 +55,8 @@ public sealed record Chapter
         if (string.IsNullOrEmpty(ChapterMarker)) return null;
 
         if (float.TryParse(ChapterMarker, NumberStyle, CultureInfo.InvariantCulture, out var chapter)) return chapter;
+
+        if (float.TryParse(ChapterMarker, NumberStyle, CultureInfo.CurrentCulture, out var chapter2)) return chapter2;
 
         return null;
     }

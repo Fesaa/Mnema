@@ -15,32 +15,6 @@ using Mnema.Models.External;
 
 namespace Mnema.Providers.Cleanup;
 
-internal interface IFormatHandler
-{
-    Format SupportedFormat { get; }
-    Task HandleAsync(FormatHandlerContext context);
-}
-
-internal record FormatHandlerContext(
-    string SourceFile,
-    string DestinationPath,
-    string? CoverUrl,
-    ComicInfo? ComicInfo,
-    UserPreferences Preferences,
-    DownloadRequestDto Request
-);
-
-internal class EpubFormatHandler(IFileSystem fileSystem ): IFormatHandler
-{
-    public Format SupportedFormat => Format.Epub;
-    public Task HandleAsync(FormatHandlerContext context)
-    {
-        fileSystem.File.Copy(context.SourceFile, context.DestinationPath);
-
-        return Task.CompletedTask;
-    }
-}
-
 internal class ArchiveFormatHandler(
     IFileSystem fileSystem,
     IImageService imageService,
@@ -49,7 +23,6 @@ internal class ArchiveFormatHandler(
 ) : IFormatHandler
 {
     private static readonly XmlSerializer ComicInfoSerializer = new(typeof(ComicInfo));
-    private static readonly string[] ImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff"];
 
     public Format SupportedFormat => Format.Archive;
 
@@ -83,9 +56,8 @@ internal class ArchiveFormatHandler(
             if (entry.FullName.EndsWith('/')) continue;
 
             var fileName = fileSystem.Path.GetFileName(entry.FullName);
-            var ext = fileSystem.Path.GetExtension(fileName).ToLower();
 
-            if (ImageExtensions.Contains(ext))
+            if (parserService.IsImage(fileName))
             {
                 var localFoundCover = await ProcessImageEntryAsync(
                     context,
@@ -165,41 +137,5 @@ internal class ArchiveFormatHandler(
         await using var coverStream = await httpClient.GetStreamAsync(context.CoverUrl);
         await using var entryStream = await entry.OpenAsync();
         await coverStream.CopyToAsync(entryStream);
-    }
-}
-
-internal class TempDirectoryScope : IDisposable
-{
-    private readonly IFileSystem _fileSystem;
-    private readonly string _tempDirPath;
-
-    public string ExtractPath { get; }
-    public string FinalPath { get; }
-
-    public TempDirectoryScope(IFileSystem fileSystem, string destinationPath)
-    {
-        _fileSystem = fileSystem;
-        var tempDirName = fileSystem.Path.GetFileNameWithoutExtension(destinationPath);
-        _tempDirPath = fileSystem.Path.Join(fileSystem.Path.GetTempPath(), "Mnema", tempDirName);
-        ExtractPath = fileSystem.Path.Join(_tempDirPath, "extract");
-        FinalPath = fileSystem.Path.Join(_tempDirPath, "final");
-
-        InitializeDirectories();
-    }
-
-    private void InitializeDirectories()
-    {
-        if (_fileSystem.Directory.Exists(_tempDirPath))
-            _fileSystem.Directory.Delete(_tempDirPath, true);
-
-        _fileSystem.Directory.CreateDirectory(_tempDirPath);
-        _fileSystem.Directory.CreateDirectory(ExtractPath);
-        _fileSystem.Directory.CreateDirectory(FinalPath);
-    }
-
-    public void Dispose()
-    {
-        if (_fileSystem.Directory.Exists(_tempDirPath))
-            _fileSystem.Directory.Delete(_tempDirPath, true);
     }
 }

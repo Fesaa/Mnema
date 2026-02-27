@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,14 +10,17 @@ using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.External;
 using Mnema.Models.Publication;
 
 namespace Mnema.Server.Controllers;
 
 public class ContentController(
+    IUnitOfWork unitOfWork,
     ISearchService searchService,
     IDownloadService downloadService,
-    IServiceProvider serviceProvider) : BaseApiController
+    IServiceProvider serviceProvider,
+    IMetadataService metadataService) : BaseApiController
 {
     [HttpPost("search")]
     public Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, [FromQuery] PaginationParams? pagination)
@@ -75,6 +79,34 @@ public class ContentController(
         };
 
         return Ok(await repository.ChapterUrls(chapter, HttpContext.RequestAborted));
+    }
+
+    [HttpGet("comic-info")]
+    public async Task<ActionResult<ComicInfo>> GetComicInfo([FromQuery] Provider provider, [FromQuery] string id, [FromQuery] string chapterId)
+    {
+        var repository = serviceProvider.GetKeyedService<IRepository>(provider);
+        if (repository == null)
+            return NotFound();
+
+        var request = new DownloadRequestDto
+        {
+            Provider = provider,
+            Id = id,
+            BaseDir = string.Empty,
+            TempTitle = string.Empty,
+            Metadata = new MetadataBag(),
+        };
+
+        var series = await repository.SeriesInfo(request, HttpContext.RequestAborted);
+        var chapter = series.Chapters.FirstOrDefault(c => c.Id == chapterId);
+        if (chapter == null) return NotFound();
+
+        var pref = await unitOfWork.UserRepository.GetPreferences(UserId);
+
+
+        var ci = metadataService.CreateComicInfo(pref, request, series.Title, series, chapter);
+
+        return Ok(ci);
     }
 
     [HttpPost("download")]

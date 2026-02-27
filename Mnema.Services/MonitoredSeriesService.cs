@@ -33,7 +33,7 @@ public class MonitoredSeriesService(
     public async Task UpdateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto,
         CancellationToken cancellationToken = default)
     {
-        var series = await unitOfWork.MonitoredSeriesRepository.GetById(dto.Id, cancellationToken);
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(dto.Id, MonitoredSeriesIncludes.Chapters, cancellationToken);
         if (series == null) throw new NotFoundException();
 
         if (series.UserId != userId) throw new ForbiddenException();
@@ -209,7 +209,7 @@ public class MonitoredSeriesService(
 
     public async Task<FormDefinition> GetMetadataForm(Guid userId, Guid seriesId, CancellationToken ct = default)
     {
-        var series = await unitOfWork.MonitoredSeriesRepository.GetById(seriesId, ct);
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(seriesId, MonitoredSeriesIncludes.Chapters, ct);
         if (series == null) throw new NotFoundException();
         if (series.UserId != userId) throw new UnauthorizedAccessException();
 
@@ -234,7 +234,7 @@ public class MonitoredSeriesService(
     [AutomaticRetry(Attempts = 1)]
     public async Task EnrichWithMetadata(Guid guid, CancellationToken ct = default)
     {
-        var mSeries = await unitOfWork.MonitoredSeriesRepository.GetById(guid, ct);
+        var mSeries = await unitOfWork.MonitoredSeriesRepository.GetById(guid, MonitoredSeriesIncludes.Chapters, ct);
         if (mSeries == null) return;
 
         var metadata = mSeries.MetadataForDownloadRequest();

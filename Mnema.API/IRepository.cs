@@ -7,6 +7,30 @@ using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.API;
 
+public interface INavigationalEntityRepository<TEntity, TEntityDto, in TFlags>
+    where TEntity : IDatabaseEntity
+    where TEntityDto : IDatabaseEntity
+    where TFlags : struct, Enum
+{
+    Task<TEntity?> GetById(Guid id, TFlags flags = default, CancellationToken ct = default);
+    Task<PagedList<TEntity>> GetAllPaged(PaginationParams paginationParams, TFlags flags = default, CancellationToken ct = default);
+    Task<List<TEntity>> GetAll(TFlags flags = default, CancellationToken ct = default);
+
+    Task<TEntityDto?> GetDtoById(Guid id, TFlags flags = default, CancellationToken ct = default);
+    Task<PagedList<TEntityDto>> GetAllDtosPaged(PaginationParams paginationParams, TFlags flags = default, CancellationToken ct = default);
+    Task<List<TEntityDto>> GetAllDtos(TFlags flags = default, CancellationToken ct = default);
+
+    Task<bool> Exists(Guid id, CancellationToken ct = default);
+    Task DeleteById(Guid id, CancellationToken ct = default);
+
+    void Add(TEntity entity);
+    void AddRange(IEnumerable<TEntity> entities);
+    void Update(TEntity entity);
+    void UpdateRange(IEnumerable<TEntity> entities);
+    void Remove(TEntity entity);
+    void RemoveRange(IEnumerable<TEntity> entities);
+}
+
 public interface IEntityRepository<TEntity, TEntityDto>
     where TEntity : IDatabaseEntity
     where TEntityDto : IDatabaseEntity

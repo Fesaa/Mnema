@@ -50,9 +50,9 @@
                 </app-badge>
                 @if (s.lastDataRefreshUtc) {
                   <span class="small clickable"
-                          (click)="refreshMetadata()"
-                          [ngbTooltip]="t('last-updated', { time: s.lastDataRefreshUtc | utcToLocalTime:'short' })">
+                          (click)="refreshMetadata()">
                     <i class="fa fa-calendar-alt"></i>
+                    {{t('last-updated', { time: s.lastDataRefreshUtc | utcToLocalTime:'short' })}}
                   </span>
                 }
               </div>

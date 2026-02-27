@@ -1,7 +1,9 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
 using Mnema.Common.Helpers;
 using Mnema.Models.External;
@@ -21,17 +23,26 @@ internal partial class Publication
 
     private async Task WriteMetadataForChapter(Chapter chapter)
     {
-        var coverUrl = string.IsNullOrEmpty(chapter.CoverUrl) ? Series!.CoverUrl : chapter.CoverUrl;
+        var coverUrl = string.IsNullOrEmpty(chapter.CoverUrl)
+            ? Series!.NonProxiedCoverUrl ?? Series!.CoverUrl : chapter.CoverUrl;
 
         if (Request.GetBool(RequestConstants.IncludeCover, true))
             if (!string.IsNullOrEmpty(coverUrl))
             {
-                var filePath = Path.Join(ChapterPath(chapter), $"!0000 cover{_fileSystem.Path.GetExtension(coverUrl)}");
-                var client = _httpClientFactory.CreateClient(provider.ToString());
+                try
+                {
+                    var filePath = Path.Join(ChapterPath(chapter),
+                        $"!0000 cover{_fileSystem.Path.GetExtension(coverUrl)}");
+                    var client = _httpClientFactory.CreateClient(provider.ToString());
 
-                await using var stream = await client.GetStreamAsync(coverUrl);
-                await using var file = _fileSystem.File.Create(filePath);
-                await stream.CopyToAsync(file);
+                    await using var stream = await client.GetStreamAsync(coverUrl);
+                    await using var file = _fileSystem.File.Create(filePath);
+                    await stream.CopyToAsync(file);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "[{Title}/{Id}] An exception occured writing the cover from {Url}", Title, Id, coverUrl);
+                }
             }
 
         var ci = _metadataService.CreateComicInfo(Preferences, Request, Title, Series, chapter, string.Format(ComicInfoNote, provider.ToString()));
