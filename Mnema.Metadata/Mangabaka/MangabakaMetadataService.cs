@@ -4,9 +4,11 @@ using Lucene.Net.Search;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Extensions;
+using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
@@ -15,11 +17,12 @@ namespace Mnema.Metadata.Mangabaka;
 
 internal class MangabakaMetadataService(
     ILogger<MangabakaMetadataService> logger,
+    IUnitOfWork unitOfWork,
     MangabakaDbContext ctx,
     [FromKeyedServices(key: MetadataProvider.Mangabaka)] SearcherManager searcherManager
 ): IMetadataProviderService
 {
-    public async Task<PagedList<Series>> Search(MetadataSearchDto search, PaginationParams paginationParams,
+    public async Task<PagedList<MetadataSearchResult>> Search(MetadataSearchDto search, PaginationParams paginationParams,
         CancellationToken cancellationToken)
     {
         var searcher = searcherManager.Acquire();
@@ -52,12 +55,16 @@ internal class MangabakaMetadataService(
                 .Where(s => s.MergedWith == null)
                 .ToListAsync(cancellationToken);
 
+            var monitoredSeriesById = (await unitOfWork.MonitoredSeriesRepository
+                    .GetByMangaBakaIds(seriesData.Select(s => s.Id.ToString()).ToList(), cancellationToken))
+                .ToDictionary(s => s.MangaBakaId, s => s.Id);
+
             var sortedResults = seriesData
                 .OrderByDescending(s => results[s.Id])
-                .Select(ConvertToSeries)
+                .Select(s => ConvertToSeries(s, monitoredSeriesById))
                 .ToList();
 
-            return new PagedList<Series>(sortedResults, totalHits, paginationParams.PageNumber, paginationParams.PageSize);
+            return new PagedList<MetadataSearchResult>(sortedResults, totalHits, paginationParams.PageNumber, paginationParams.PageSize);
         }
         finally
         {
@@ -72,10 +79,15 @@ internal class MangabakaMetadataService(
 
 
         var series = await ctx.Series.FirstOrDefaultAsync(s => s.Id == seriesId, ct);
-        return series == null ? null : ConvertToSeries(series);
+
+        var monitoredSeriesById = series != null ? (await unitOfWork.MonitoredSeriesRepository
+                .GetByMangaBakaIds([series.Id.ToString()], ct))
+            .ToDictionary(s => s.MangaBakaId, s => s.Id) : [];
+
+        return series == null ? null : ConvertToSeries(series, monitoredSeriesById);
     }
 
-    private static Series ConvertToSeries(MangabakaSeries series)
+    private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, Guid> monitoredSeriesIds)
     {
         var publishers = series.Publishers?
             .Select(p => Person.Create(p.Name, PersonRole.Publisher)) ?? [];
@@ -84,9 +96,10 @@ internal class MangabakaMetadataService(
         var artists = series.Artists?
             .Select(p => Person.Create(p, PersonRole.Colorist)) ?? [];
 
-        return new Series
+        return new MetadataSearchResult
         {
             Id = series.Id.ToString(),
+            MonitoredSeriesId = monitoredSeriesIds.GetValueOrDefault(series.Id.ToString()),
             Title = series.Title,
             LocalizedSeries = series.NativeTitle,
             Summary = series.Description ?? string.Empty,

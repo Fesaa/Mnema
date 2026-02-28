@@ -3,7 +3,6 @@ import {PageLoader, PaginatorComponent} from "@mnema/shared/_component/paginator
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {debounceTime, distinctUntilChanged, map, of, tap} from "rxjs";
-import {Series} from "@mnema/page/_components/series-info/_types";
 import {EMPTY_PAGE} from "@mnema/_models/paged-list";
 import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
 import {Provider} from "@mnema/_models/page";
@@ -14,10 +13,15 @@ import {TranslocoDirective} from "@jsverse/transloco";
 import {
   CompactSeriesInfoComponent
 } from "@mnema/features/monitored-series/_components/compact-series-info/compact-series-info.component";
-import {MetadataService, MetadataProvider} from "@mnema/features/monitored-series/metadata.service";
+import {
+  MetadataService,
+  MetadataProvider,
+  MetadataSearchResult
+} from "@mnema/features/monitored-series/metadata.service";
 import {
   EditMonitoredSeriesModalComponent
 } from "@mnema/features/monitored-series/_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
+import {Series} from "@mnema/page/_components/series-info/_types";
 
 @Component({
   selector: 'app-series-search',
@@ -54,7 +58,7 @@ export class SeriesSearchComponent implements OnInit {
     })),
   ), { initialValue: { query: '', provider: MetadataProvider.Hardcover } });
 
-  pageLoader = computed<PageLoader<Series>>(() => {
+  pageLoader = computed<PageLoader<MetadataSearchResult>>(() => {
     const searchOptions = this.searchOptions();
 
     if (!searchOptions.query) {

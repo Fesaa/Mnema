@@ -1081,7 +1081,8 @@
   },
 
   "compact-series-info": {
-    "view-source": "Source"
+    "view-source": "Source",
+    "already-monitored": "Already monitored"
   },
   "series-search": {
     "search": "Search...",

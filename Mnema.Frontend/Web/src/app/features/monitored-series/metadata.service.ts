@@ -10,6 +10,10 @@ export enum MetadataProvider {
   Upstream = 2,
 }
 
+export interface MetadataSearchResult extends Series {
+  monitoredSeriesId: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -19,7 +23,7 @@ export class MetadataService {
   private readonly baseUrl = environment.apiUrl + "Metadata";
 
   search(provider: MetadataProvider, query: string, pageNumber: number, pageSize: number) {
-    return this.httpClient.get<PagedList<Series>>(this.baseUrl + `/search?provider=${provider}&query=${query}&pageNumber=${pageNumber}&pageSize=${pageSize}`);
+    return this.httpClient.get<PagedList<MetadataSearchResult>>(this.baseUrl + `/search?provider=${provider}&query=${query}&pageNumber=${pageNumber}&pageSize=${pageSize}`);
   }
 
   getSeriesById(provider: MetadataProvider, id: string) {
