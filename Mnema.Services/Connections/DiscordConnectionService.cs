@@ -11,6 +11,7 @@ using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services.Connections;
 
@@ -86,7 +87,9 @@ internal class DiscordConnectionService(
         ConnectionEvent.DownloadStarted,
         ConnectionEvent.DownloadFinished,
         ConnectionEvent.DownloadFailure,
-        ConnectionEvent.SubscriptionExhausted
+        ConnectionEvent.SubscriptionExhausted,
+        ConnectionEvent.SeriesMonitored,
+        ConnectionEvent.SeriesUnmonitored,
     ];
 
     public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
@@ -163,6 +166,40 @@ internal class DiscordConnectionService(
             {
                 Url = info.ImageUrl
             };
+
+        return SendMessage(connection, [embed]);
+    }
+
+    public Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
+    {
+        var embed = new DiscordEmbed
+        {
+            Title = "Series monitored",
+            Description = $"**{series.Title}**\n\n{series.Summary}".Limit(MaxDescriptionLength),
+            Color = 0x1F8B4C,
+            Timestamp = DateTime.UtcNow,
+            Footer = new DiscordEmbedFooter
+            {
+                Text = $"ID: {series.Id}"
+            }
+        };
+
+        return SendMessage(connection, [embed]);
+    }
+
+    public Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
+    {
+        var embed = new DiscordEmbed
+        {
+            Title = "Series unmonitored",
+            Description = $"**{series.Title}**\n\n{series.Summary}".Limit(MaxDescriptionLength),
+            Color = 0xED4245,
+            Timestamp = DateTime.UtcNow,
+            Footer = new DiscordEmbedFooter
+            {
+                Text = $"ID: {series.Id}"
+            }
+        };
 
         return SendMessage(connection, [embed]);
     }

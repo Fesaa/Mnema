@@ -22,6 +22,7 @@ public class OnDiskContent
 {
     public string SeriesName { get; set; }
     public string Path { get; set; }
+    public string FileName { get; set; }
     public string? Chapter { get; set; }
     public string? Volume { get; set; }
 }

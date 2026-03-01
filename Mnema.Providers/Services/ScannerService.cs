@@ -75,11 +75,14 @@ public class ScannerService(
         return contents;
     }
 
-    public OnDiskContent ParseContent(string file, ContentFormat contentFormat)
+    public OnDiskContent ParseContent(string path, ContentFormat contentFormat)
     {
+        var file = Path.GetFileName(path);
+
         var content = new OnDiskContent()
         {
-            Path = file,
+            Path = path,
+            FileName = file,
         };
 
         var ci = ParseComicInfoFromFile(file);

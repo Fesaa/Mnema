@@ -88,7 +88,7 @@ public class PublicationLoadingTests
             .ReturnsForAnyArgs([
                 new OnDiskContent
                 {
-                    Path = "Contract Sisters Vol. 1.cbz",
+                    FileName = "Contract Sisters Vol. 1.cbz",
                     Volume = "1",
                     Chapter = string.Empty,
                 }

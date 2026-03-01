@@ -710,7 +710,9 @@
           "DownloadStarted": "Download Started",
           "DownloadFinished": "Download Finished",
           "DownloadFailure": "Download Failure",
-          "SubscriptionExhausted": "Subscription Exhausted"
+          "SubscriptionExhausted": "Subscription Exhausted",
+          "SeriesMonitored": "Series Monitored",
+          "SeriesUnmonitored": "Series Unmonitored"
         }
       },
       "edit": {
@@ -734,7 +736,9 @@
           "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
           "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
           "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
-          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}"
+          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
+          "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
+          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}"
         }
       },
       "Kavita": {
@@ -754,7 +758,9 @@
           "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
           "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
           "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
-          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}"
+          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
+          "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
+          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}"
         }
       },
       "Native": {
@@ -766,7 +772,9 @@
           "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
           "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
           "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
-          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}"
+          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
+          "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
+          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}"
         }
       }
     },
@@ -1101,6 +1109,7 @@
     "select-status": "Set chapter status",
     "confirm-refresh-metadata": "Refresh metadata for {{name}}?",
     "select-search-result": "Search results",
+    "confirm-download": "Are you sure you want to start a download for {{name}}?",
     "download-started": {
       "title": "Started download for {{name}}",
       "summary": ""

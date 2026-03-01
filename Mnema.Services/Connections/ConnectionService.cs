@@ -12,6 +12,7 @@ using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services.Connections;
 
@@ -44,6 +45,18 @@ internal class ConnectionService(
     {
         DoForAll(ConnectionEvent.SubscriptionExhausted, (service, connection)
             => service.CommunicateSubscriptionExhausted(connection, info));
+    }
+
+    public void CommunicateSeriesMonitored(MonitoredSeries series)
+    {
+        DoForAll(ConnectionEvent.SeriesMonitored, (service, connection)
+            => service.CommunicateSeriesMonitored(connection, series));
+    }
+
+    public void CommunicateSeriesUnmonitored(MonitoredSeries series)
+    {
+        DoForAll(ConnectionEvent.SeriesUnmonitored, (service, connection)
+            => service.CommunicateSeriesUnmonitored(connection, series));
     }
 
     public async Task UpdateConnection(ConnectionDto dto, CancellationToken cancellationToken)

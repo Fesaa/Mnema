@@ -124,6 +124,10 @@ export class MonitoredSeriesService {
     return this.httpClient.post(`${this.baseUrl}/${id}/download`, si);
   }
 
+  downloadExternalId(id: string) {
+    return this.httpClient.post(`${this.baseUrl}/${id}/download-external-id`, {});
+  }
+
   refreshMetadata(id: string) {
     return this.httpClient.post(`${this.baseUrl}/${id}/refresh-metadata`, {});
   }
