@@ -25,7 +25,8 @@ public class MonitoredSeriesController(
     IMetadataResolver metadataResolver,
     IMessageService messageService,
     ISearchService searchService,
-    IDownloadService downloadService
+    IDownloadService downloadService,
+    IConnectionService connectionService
 ) : BaseApiController
 {
     [HttpGet("all")]
@@ -145,6 +146,8 @@ public class MonitoredSeriesController(
         unitOfWork.MonitoredSeriesRepository.Remove(series);
 
         await unitOfWork.CommitAsync();
+
+        connectionService.CommunicateSeriesUnmonitored(series);
 
         return Ok();
     }

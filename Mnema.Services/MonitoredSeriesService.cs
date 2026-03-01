@@ -27,7 +27,8 @@ public class MonitoredSeriesService(
     ApplicationConfiguration configuration,
     IUnitOfWork unitOfWork,
     IServiceProvider serviceProvider,
-    IMessageService messageService
+    IMessageService messageService,
+    IConnectionService connectionService
 ): IMonitoredSeriesService
 {
     public async Task UpdateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto,
@@ -91,6 +92,8 @@ public class MonitoredSeriesService(
         unitOfWork.MonitoredSeriesRepository.Add(series);
 
         await unitOfWork.CommitAsync(cancellationToken);
+
+        connectionService.CommunicateSeriesMonitored(series);
 
         BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
 

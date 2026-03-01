@@ -42,5 +42,13 @@ public enum ConnectionEvent
     /// <summary>
     ///     Fired when a subscription has downloaded everything it can find
     /// </summary>
-    SubscriptionExhausted = 3
+    SubscriptionExhausted = 3,
+    /// <summary>
+    ///     Fired when a series is added to the monitored list
+    /// </summary>
+    SeriesMonitored = 4,
+    /// <summary>
+    ///     Fired when a series is removed from the monitored list
+    /// </summary>
+    SeriesUnmonitored = 5,
 }
