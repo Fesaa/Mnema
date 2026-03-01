@@ -212,9 +212,9 @@ internal partial class Publication(
         _connectionService.CommunicateDownloadFinished(DownloadInfo);
     }
 
-    private OnDiskContent? GetContentByPath(string path)
+    private OnDiskContent? GetContentByFileName(string fileName)
     {
-        return ExistingContent.FirstOrDefault(c => c.Path == path);
+        return ExistingContent.FirstOrDefault(c => c.FileName == fileName);
     }
 
     private OnDiskContent? GetContentByName(string name)

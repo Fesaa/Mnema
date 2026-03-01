@@ -101,7 +101,7 @@ internal partial class Publication
         if (!downloadOneShots && string.IsNullOrEmpty(chapter.ChapterMarker)) return false;
 
         // Chapter is present as a download (backwards compat with Media-Provider's old behavior)
-        if (GetContentByPath(VolumeDir(chapter) + ".cbz") != null) return false;
+        if (GetContentByFileName(VolumeDir(chapter) + ".cbz") != null) return false;
 
         var content = GetContentByName(ChapterFileName(chapter));
         if (content == null)
