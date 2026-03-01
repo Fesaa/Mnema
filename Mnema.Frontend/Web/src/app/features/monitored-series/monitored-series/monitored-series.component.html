@@ -21,9 +21,15 @@
                 <h1 class="series-title mb-2 mb-md-0">{{ s.title }}</h1>
 
                 <div class="d-flex flex-wrap gap-2">
-                  <button class="btn btn-sm btn-secondary" (click)="search()">
-                    <i class="fa fa-magnifying-glass"></i>
-                  </button>
+                  @if (!series().externalId) {
+                    <button class="btn btn-sm btn-secondary" (click)="search()">
+                      <i class="fa fa-magnifying-glass"></i>
+                    </button>
+                  } @else {
+                    <button class="btn btn-sm btn-secondary" (click)="download()">
+                      <i class="fa fa-download"></i>
+                    </button>
+                  }
                   <button class="btn btn-sm btn-secondary" (click)="showResolvedSeries()">
                     <i class="fa fa-eye"></i>
                   </button>

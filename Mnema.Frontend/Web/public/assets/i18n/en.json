@@ -1109,6 +1109,7 @@
     "select-status": "Set chapter status",
     "confirm-refresh-metadata": "Refresh metadata for {{name}}?",
     "select-search-result": "Search results",
+    "confirm-download": "Are you sure you want to start a download for {{name}}?",
     "download-started": {
       "title": "Started download for {{name}}",
       "summary": ""
