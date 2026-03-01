@@ -40,7 +40,7 @@ internal class ConnectionService(
             => service.CommunicateDownloadFailure(connection, info, ex));
     }
 
-    public void CommunicateSubscriptionExhausted(DownloadInfo info)
+    public void CommunicateSeriesExhausted(DownloadInfo info)
     {
         DoForAll(ConnectionEvent.SubscriptionExhausted, (service, connection)
             => service.CommunicateSubscriptionExhausted(connection, info));

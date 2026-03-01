@@ -61,8 +61,6 @@ internal partial class Publication(
     private ServerSettingsDto _settings = null!;
     private SpeedTracker? _speedTracker;
 
-    private Subscription? _subscription;
-
     private CancellationTokenSource _tokenSource = new();
 
     /// <summary>

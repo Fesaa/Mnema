@@ -19,7 +19,7 @@ internal partial class Publication
 
     private readonly IMetadataService _metadataService = scope.ServiceProvider.GetRequiredService<IMetadataService>();
 
-    private bool _hasNotifiedSubscriptionExhausted;
+    private bool _hasNotifiedSeriesFullyDownloaded;
 
     private async Task WriteMetadataForChapter(Chapter chapter)
     {
@@ -48,10 +48,10 @@ internal partial class Publication
         var ci = _metadataService.CreateComicInfo(Preferences, Request, Title, Series, chapter, string.Format(ComicInfoNote, provider.ToString()));
         if (ci != null)
         {
-            if (ci.Finished && !_hasNotifiedSubscriptionExhausted)
+            if (IsMonitored && ci.Finished && !_hasNotifiedSeriesFullyDownloaded)
             {
-                _hasNotifiedSubscriptionExhausted = true;
-                _connectionService.CommunicateSubscriptionExhausted(DownloadInfo);
+                _hasNotifiedSeriesFullyDownloaded = true;
+                _connectionService.CommunicateSeriesExhausted(DownloadInfo);
             }
 
             var ciPath = Path.Join(ChapterPath(chapter), "ComicInfo.xml");

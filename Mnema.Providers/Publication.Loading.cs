@@ -16,6 +16,9 @@ namespace Mnema.Providers;
 internal partial class Publication
 {
     private readonly IScannerService _scannerService = scope.ServiceProvider.GetRequiredService<IScannerService>();
+    private MonitoredSeries? _monitoredSeries;
+    private bool IsMonitored => _monitoredSeries != null;
+
 
     public async Task LoadMetadataAsync(CancellationTokenSource source)
     {
@@ -27,6 +30,12 @@ internal partial class Publication
 
         State = ContentState.Loading;
         await _messageService.StateUpdate(Request.UserId, Id, ContentState.Loading);
+
+        var monitoredSeriesId = Request.Metadata.GetGuid(RequestConstants.MonitoredSeriesId);
+        if (monitoredSeriesId != null)
+        {
+            _monitoredSeries = await _unitOfWork.MonitoredSeriesRepository.GetById(monitoredSeriesId.Value, ct: cancellationToken);
+        }
 
         var preferences = await _unitOfWork.UserRepository.GetPreferences(Request.UserId);
         if (preferences == null)
