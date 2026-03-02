@@ -47,14 +47,20 @@ internal class ConnectionService(
             => service.CommunicateSubscriptionExhausted(connection, info));
     }
 
-    public void CommunicateSeriesMonitored(MonitoredSeries series)
+    public async Task CommunicateSeriesMonitored(Guid id, CancellationToken cancellationToken)
     {
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, ct: cancellationToken);
+        if (series == null) return;
+
         DoForAll(ConnectionEvent.SeriesMonitored, (service, connection)
             => service.CommunicateSeriesMonitored(connection, series));
     }
 
-    public void CommunicateSeriesUnmonitored(MonitoredSeries series)
+    public async Task CommunicateSeriesUnmonitored(Guid id, CancellationToken cancellationToken)
     {
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, ct: cancellationToken);
+        if (series == null) return;
+
         DoForAll(ConnectionEvent.SeriesUnmonitored, (service, connection)
             => service.CommunicateSeriesUnmonitored(connection, series));
     }

@@ -17,8 +17,8 @@ public interface IConnectionService
     void CommunicateDownloadFinished(DownloadInfo info);
     void CommunicateDownloadFailure(DownloadInfo info, Exception ex);
     void CommunicateSeriesExhausted(DownloadInfo info);
-    void CommunicateSeriesMonitored(MonitoredSeries series);
-    void CommunicateSeriesUnmonitored(MonitoredSeries series);
+    Task CommunicateSeriesMonitored(Guid id, CancellationToken cancellationToken = default);
+    Task CommunicateSeriesUnmonitored(Guid id, CancellationToken cancellationToken = default);
 
     Task UpdateConnection(ConnectionDto connection, CancellationToken cancellationToken);
     Task<FormDefinition> GetForm(ConnectionType type, CancellationToken cancellationToken);

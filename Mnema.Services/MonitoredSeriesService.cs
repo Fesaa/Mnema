@@ -93,9 +93,9 @@ public class MonitoredSeriesService(
 
         await unitOfWork.CommitAsync(cancellationToken);
 
-        connectionService.CommunicateSeriesMonitored(series);
-
-        BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
+        var jobId = BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
+        if (!string.IsNullOrEmpty(jobId))
+            BackgroundJob.ContinueJobWith(jobId, () => connectionService.CommunicateSeriesMonitored(series.Id, CancellationToken.None));
 
         if (string.IsNullOrEmpty(series.ExternalId)) return;
 

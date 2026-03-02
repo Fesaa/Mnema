@@ -172,7 +172,7 @@ public class MonitoredSeriesController(
 
         await unitOfWork.CommitAsync();
 
-        connectionService.CommunicateSeriesUnmonitored(series);
+        await connectionService.CommunicateSeriesUnmonitored(series.Id);
 
         return Ok();
     }
