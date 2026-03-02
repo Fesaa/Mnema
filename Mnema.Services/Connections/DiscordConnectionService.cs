@@ -49,6 +49,13 @@ internal sealed record DiscordEmbedImage
     public string? ProxyUrl { get; set; }
     public int? Height { get; set; }
     public int? Width { get; set; }
+
+    public DiscordEmbedImage() {}
+
+    public DiscordEmbedImage(string url)
+    {
+        Url = url;
+    }
 }
 
 internal sealed record DiscordEmbedAuthor
@@ -110,10 +117,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.RefUrl)) embed.Url = info.RefUrl;
 
         if (!string.IsNullOrEmpty(info.ImageUrl))
-            embed.Image = new DiscordEmbedImage
-            {
-                Url = info.ImageUrl
-            };
+            embed.Image = new DiscordEmbedImage(info.ImageUrl);
 
         return SendMessage(connection, [embed]);
     }
@@ -136,10 +140,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.RefUrl)) embed.Url = info.RefUrl;
 
         if (!string.IsNullOrEmpty(info.ImageUrl))
-            embed.Image = new DiscordEmbedImage
-            {
-                Url = info.ImageUrl
-            };
+            embed.Image = new DiscordEmbedImage(info.ImageUrl);
 
         return SendMessage(connection, [embed]);
     }
@@ -162,10 +163,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.RefUrl)) embed.Url = info.RefUrl;
 
         if (!string.IsNullOrEmpty(info.ImageUrl))
-            embed.Image = new DiscordEmbedImage
-            {
-                Url = info.ImageUrl
-            };
+            embed.Image = new DiscordEmbedImage(info.ImageUrl);
 
         return SendMessage(connection, [embed]);
     }
@@ -184,6 +182,9 @@ internal class DiscordConnectionService(
             }
         };
 
+        if (!string.IsNullOrEmpty(series.CoverUrl))
+            embed.Image = new DiscordEmbedImage(series.CoverUrl);
+
         return SendMessage(connection, [embed]);
     }
 
@@ -200,6 +201,9 @@ internal class DiscordConnectionService(
                 Text = $"ID: {series.Id}"
             }
         };
+
+        if (!string.IsNullOrEmpty(series.CoverUrl))
+            embed.Image = new DiscordEmbedImage(series.CoverUrl);
 
         return SendMessage(connection, [embed]);
     }
@@ -258,6 +262,12 @@ internal class DiscordConnectionService(
                     Value = info.Provider.ToString(),
                     Inline = true
                 },
+                new DiscordEmbedField()
+                {
+                    Name = "Progress",
+                    Value = progressText,
+                    Inline = true
+                }
             ],
             Footer = new DiscordEmbedFooter
             {
@@ -268,10 +278,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.RefUrl)) embed.Url = info.RefUrl;
 
         if (!string.IsNullOrEmpty(info.ImageUrl))
-            embed.Image = new DiscordEmbedImage
-            {
-                Url = info.ImageUrl
-            };
+            embed.Image = new DiscordEmbedImage(info.ImageUrl);
 
         return SendMessage(connection, [embed]);
     }
