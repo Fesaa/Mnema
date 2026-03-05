@@ -182,6 +182,9 @@ internal class DiscordConnectionService(
             }
         };
 
+        if (!string.IsNullOrEmpty(series.RefUrl))
+            embed.Url = series.RefUrl;
+
         if (!string.IsNullOrEmpty(series.CoverUrl))
             embed.Image = new DiscordEmbedImage(series.CoverUrl);
 
@@ -201,6 +204,9 @@ internal class DiscordConnectionService(
                 Text = $"ID: {series.Id}"
             }
         };
+
+        if (!string.IsNullOrEmpty(series.RefUrl))
+            embed.Url = series.RefUrl;
 
         if (!string.IsNullOrEmpty(series.CoverUrl))
             embed.Image = new DiscordEmbedImage(series.CoverUrl);
