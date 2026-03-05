@@ -185,7 +185,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(series.RefUrl))
             embed.Url = series.RefUrl;
 
-        if (!string.IsNullOrEmpty(series.CoverUrl))
+        if (!string.IsNullOrEmpty(series.CoverUrl) && series.CoverUrl.StartsWith("http"))
             embed.Image = new DiscordEmbedImage(series.CoverUrl);
 
         return SendMessage(connection, [embed]);
@@ -208,7 +208,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(series.RefUrl))
             embed.Url = series.RefUrl;
 
-        if (!string.IsNullOrEmpty(series.CoverUrl))
+        if (!string.IsNullOrEmpty(series.CoverUrl) && series.CoverUrl.StartsWith("http"))
             embed.Image = new DiscordEmbedImage(series.CoverUrl);
 
         return SendMessage(connection, [embed]);
