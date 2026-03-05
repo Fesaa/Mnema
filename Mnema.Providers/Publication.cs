@@ -126,12 +126,12 @@ internal partial class Publication(
             try
             {
                 var src = _fileSystem.Path.Join(_configuration.DownloadDir, path);
-                var dest = _fileSystem.Path.Join(_configuration.BaseDir, path);
+                var dest = _fileSystem.Path.Join(_configuration.BaseDir, path) + ".cbz";
 
                 if (File.Exists(dest))
                     File.Delete(dest);
 
-                await ZipFile.CreateFromDirectoryAsync(src, dest + ".cbz",
+                await ZipFile.CreateFromDirectoryAsync(src, dest,
                     CompressionLevel.SmallestSize, false);
 
                 Directory.Delete(src, true);
