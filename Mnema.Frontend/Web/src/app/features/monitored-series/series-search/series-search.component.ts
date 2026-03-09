@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, EventEmitter, inject, OnInit, signal} from '@angular/core';
 import {PageLoader, PaginatorComponent} from "@mnema/shared/_component/paginator/paginator.component";
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {toSignal} from "@angular/core/rxjs-interop";
@@ -73,18 +73,21 @@ export class SeriesSearchComponent implements OnInit {
     );
   });
 
+  pageReloader = new EventEmitter<void>();
+
   ngOnInit(){
     this.pageService.monitoredSeriesMetadata().pipe(
       tap(m => this.metadata.set(m))
     ).subscribe();
   }
+
   monitor(series: Series) {
     const validTitles = [series.title];
     if (series.localizedSeries) {
       validTitles.push(series.title);
     }
 
-    const [_, component] = this.modalService.open(EditMonitoredSeriesModalComponent, DefaultModalOptions);
+    const [modal, component] = this.modalService.open(EditMonitoredSeriesModalComponent, DefaultModalOptions);
     component.series.set({
       id: '',
       title: series.title,
@@ -101,6 +104,10 @@ export class SeriesSearchComponent implements OnInit {
       lastDataRefreshUtc: '',
       chapters: []
     });
+
+    this.modalService.onClose$(modal).pipe(
+      tap(() => this.pageReloader.emit()),
+    ).subscribe();
   }
 
 

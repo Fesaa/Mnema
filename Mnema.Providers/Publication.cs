@@ -145,7 +145,7 @@ internal partial class Publication(
         _logger.LogDebug("[{Title}/{Id}] Cleanup finished in {Elapsed}ms, removed {Deleted} old files, added {New} new files",
             Title, Id, sw.ElapsedMilliseconds, ToRemovePaths.Count, DownloadedPaths.Count);
 
-        await CleanupNotifications();
+        _connectionService.CommunicateDownloadFinished(DownloadInfo);
     }
 
     public ContentState State { get; private set; } = ContentState.Queued;
@@ -205,11 +205,6 @@ internal partial class Publication(
         {
             _logger.LogWarning(ex, "[{Title}/{Id}] Failed to remove download", Title, Id);
         }
-    }
-
-    private async Task CleanupNotifications()
-    {
-        _connectionService.CommunicateDownloadFinished(DownloadInfo);
     }
 
     private OnDiskContent? GetContentByFileName(string fileName)
