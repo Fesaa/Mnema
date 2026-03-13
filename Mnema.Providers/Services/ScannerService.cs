@@ -221,7 +221,16 @@ public class ScannerService(
                 => string.IsNullOrEmpty(c.Volume) && c.Chapter == chapter.ChapterMarker);
         }
 
-        return onDiskContents.FirstOrDefault(c
+        var exactMatch = onDiskContents.FirstOrDefault(c
             => c.Chapter == chapter.ChapterMarker && c.Volume == chapter.VolumeMarker);
+        if (exactMatch != null)
+            return exactMatch;
+
+        var partialMatches = onDiskContents
+            .Where(c => c.Volume == chapter.VolumeMarker)
+            .ToList();
+
+        // One partial match on volume, assume it's valid
+        return partialMatches.Count == 1 ? partialMatches[0] : null;
     }
 }
