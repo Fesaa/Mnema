@@ -72,7 +72,7 @@
       <button type="button" class="btn btn-secondary" (click)="close()">
         {{t('cancel')}}
       </button>
-      <button type="button" class="btn btn-primary" (click)="save()">
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">
         <span>{{ series().id === '' ? t('create') : t('save')}}</span>
       </button>
     </div>

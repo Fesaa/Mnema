@@ -52,7 +52,7 @@ export class SearchResultComponent implements OnInit{
 
     const newMonitoredSeries: MonitoredSeries = {
       externalId: this.searchResult().id,
-      baseDir: "",
+      baseDir: this.page().customRootDir,
       chapters: [],
       contentFormat: ContentFormat.Manga,
       format: Format.Archive,

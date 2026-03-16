@@ -30,6 +30,7 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
   series = model.required<MonitoredSeries>();
 
   activeTab = signal<'general' | 'metadata' | 'advanced'>('general');
+  saving = signal(false);
 
   formDefinition = signal<FormDefinition | undefined>(undefined);
   metadataFormDefinition = signal<FormDefinition | undefined>(undefined);
@@ -80,7 +81,10 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
 
     const kind = this.series().id === '' ? 'new' : 'update';
 
+    this.saving.set(true);
+
     action$.pipe(
+      tap(() => this.saving.set(false)),
       tap(() => {
         this.toastService.successLoco(`monitored-series.toasts.${kind}.success`, {name: seriesValue.title});
         this.modal.close(true);
