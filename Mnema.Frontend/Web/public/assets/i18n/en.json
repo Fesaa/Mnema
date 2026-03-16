@@ -37,7 +37,8 @@
       "server": "Server",
       "connections": "Connections",
       "download-clients": "Download Clients",
-      "logout": "Logout"
+      "logout": "Logout",
+      "releases": "Releases"
     }
   },
 
@@ -810,6 +811,17 @@
           "qbittorrent": "{{download-client-pipe.qbit-torrent}}"
         }
       }
+    },
+    "releases": {
+      "title": "Releases",
+      "release-name": "Release Name",
+      "content-name": "Content Name",
+      "release-id": "Content Id",
+      "date": "Date",
+      "actions": "Actions",
+      "confirm-delete": "Are you sure you want to remove {{id}}?",
+      "content": "RSS grabbed",
+      "imported": "Imported (QBIT)"
     }
   },
 

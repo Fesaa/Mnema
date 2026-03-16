@@ -24,6 +24,9 @@ export enum ConnectionEvent {
   DownloadStarted = 0,
   DownloadFinished = 1,
   DownloadFailure = 2,
+  SubscriptionExhausted = 3,
+  SeriesMonitored = 4,
+  SeriesUnmonitored = 5,
 }
 
 @Injectable({

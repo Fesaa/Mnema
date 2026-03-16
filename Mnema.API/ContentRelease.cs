@@ -10,7 +10,8 @@ namespace Mnema.API;
 
 public interface IContentReleaseRepository
 {
-    Task<PagedList<ContentReleaseDto>> GetReleases(PaginationParams paginationParams, CancellationToken cancellationToken);
+    Task<PagedList<ContentReleaseDto>> GetReleases(string? query, PaginationParams paginationParams, CancellationToken cancellationToken);
+    Task Delete(Guid id, CancellationToken cancellationToken);
     Task<List<ContentRelease>> GetReleasesSince(DateTime since, CancellationToken cancellationToken = default);
     /// <summary>
     /// Returns the ids that are not already present in the database

@@ -30,13 +30,26 @@ public class ImportedContentReleaseRepository(MnemaDataContext ctx, IMapper mapp
 public abstract class BaseContentReleaseRepository(MnemaDataContext ctx, IMapper mapper, Expression<Func<ContentRelease, bool>> filter): IContentReleaseRepository
 {
 
-    public Task<PagedList<ContentReleaseDto>> GetReleases(PaginationParams paginationParams, CancellationToken cancellationToken)
+    public Task<PagedList<ContentReleaseDto>> GetReleases(string? query, PaginationParams paginationParams,
+        CancellationToken cancellationToken)
     {
+        query = query?.ToLower();
+
         return ctx.ContentReleases
             .Where(filter)
+            .WhereIf(!string.IsNullOrEmpty(query), r => EF.Functions.Like(r.ReleaseId.ToLower(), $"%{query}%")
+            || EF.Functions.Like(r.ReleaseName.ToLower(), $"%{query}%")
+            || EF.Functions.Like(r.ContentName.ToLower(), $"%{query}%"))
             .ProjectTo<ContentReleaseDto>(mapper.ConfigurationProvider)
             .OrderBy(r => r.Id)
             .AsPagedList(paginationParams, cancellationToken);
+    }
+
+    public Task Delete(Guid id, CancellationToken cancellationToken)
+    {
+        return ctx.ContentReleases
+            .Where(r => r.Id == id)
+            .ExecuteDeleteAsync(cancellationToken);
     }
 
     public Task<List<ContentRelease>> GetReleasesSince(DateTime since, CancellationToken cancellationToken = default)
