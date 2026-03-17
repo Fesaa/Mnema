@@ -31,13 +31,19 @@
         <span class="fa fa-download"></span>
       </button>
 
-      <button
-        class="icon-btn"
-        (click)="monitorSeries()"
-        [ngbTooltip]="t('monitor')"
-      >
-        <span class="fa fa-bell"></span>
-      </button>
+      @if (isAlreadyMonitored()) {
+        <button class="icon-btn" routerLink="/monitored-series-detail/{{searchResult().monitoredSeriesId}}" [ngbTooltip]="t('open-monitored')">
+          <span class="fa fa-television"></span>
+        </button>
+      } @else {
+        <button
+          class="icon-btn"
+          (click)="monitorSeries()"
+          [ngbTooltip]="t('monitor')"
+        >
+          <span class="fa fa-bell"></span>
+        </button>
+      }
     </div>
   </div>
 

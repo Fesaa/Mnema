@@ -23,6 +23,7 @@ public interface IMonitoredSeriesRepository: INavigationalEntityRepository<Monit
     Task<List<MonitoredSeries>> GetSeriesEligibleForRefresh(CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByHardcoverIds(List<string> ids, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByMangaBakaIds(List<string> ids, CancellationToken cancellationToken = default);
+    Task<List<MonitoredSeries>> GetByExternalIds(List<string> ids, Provider provider, CancellationToken cancellationToken = default);
     Task<bool> CheckDuplicateSeries(Guid userId, Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
 
     void RemoveRange(IEnumerable<MonitoredChapter> chapters);

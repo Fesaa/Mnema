@@ -452,7 +452,8 @@
       "add-as-sub": "Add as a subscription",
       "sub-header": "Subscribe to: {{name}}",
       "info": "Info",
-      "monitor": "Monitor"
+      "monitor": "Monitor",
+      "open-monitored": "Open monitored"
     },
     "toasts": {
       "search-success": {

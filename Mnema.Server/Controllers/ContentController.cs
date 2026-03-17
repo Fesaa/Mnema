@@ -23,11 +23,29 @@ public class ContentController(
     IMetadataService metadataService) : BaseApiController
 {
     [HttpPost("search")]
-    public Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, [FromQuery] PaginationParams? pagination)
+    public async Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, [FromQuery] PaginationParams? pagination)
     {
         pagination ??= PaginationParams.Default;
 
-        return searchService.Search(searchRequest, pagination, HttpContext.RequestAborted);
+        var results = await searchService.Search(searchRequest, pagination, HttpContext.RequestAborted);
+        var items = results.Items.ToList();
+        var ids = items.Select(i => i.Id).ToList();
+
+        var monitoredSeries = (await unitOfWork.MonitoredSeriesRepository
+            .GetByExternalIds(ids, searchRequest.Provider, HttpContext.RequestAborted))
+            .ToDictionary(m => m.ExternalId, m => m.Id);
+
+        foreach (var item in items)
+        {
+            if (monitoredSeries.TryGetValue(item.Id, out var id))
+            {
+                item.MonitoredSeriesId = id;
+            }
+        }
+
+        results.Items = items;
+
+        return results;
     }
 
     [HttpGet("recently-updated")]

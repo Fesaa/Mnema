@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Mnema.Models.Entities.Content;
 
@@ -18,4 +19,6 @@ public sealed record SearchResult
     public IList<string> Tags { get; set; } = [];
     public string? Url { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
+
+    public Guid? MonitoredSeriesId { get; set; }
 }
