@@ -1,16 +1,17 @@
-import {ChangeDetectionStrategy, Component, computed, HostListener, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, signal} from '@angular/core';
 import {toSignal} from "@angular/core/rxjs-interop";
 import {Breakpoint, UtilityService} from "../_services/utility.service";
-import {RouterLink} from "@angular/router";
+import {NavigationEnd, Router, RouterLink, RouterLinkActive} from "@angular/router";
 import {AccountService} from "../_services/account.service";
 import {NavService} from "../_services/nav.service";
 import {NotificationService} from "../_services/notification.service";
 import {ButtonGroup, ButtonGroupKey, ButtonGroupService} from "../button-grid/button-group.service";
 import {translate, TranslocoPipe} from "@jsverse/transloco";
-import {TitleCasePipe} from "@angular/common";
+import {NgTemplateOutlet, TitleCasePipe} from "@angular/common";
 import {animate, style, transition, trigger} from "@angular/animations";
 import {MobileGridComponent} from "../button-grid/mobile-grid/mobile-grid.component";
 import {BadgeComponent} from "@mnema/shared/_component/badge/badge.component";
+import {filter, tap} from "rxjs";
 
 @Component({
   selector: 'app-nav-header',
@@ -21,7 +22,9 @@ import {BadgeComponent} from "@mnema/shared/_component/badge/badge.component";
     TitleCasePipe,
     MobileGridComponent,
     TranslocoPipe,
-    BadgeComponent
+    BadgeComponent,
+    NgTemplateOutlet,
+    RouterLinkActive
   ],
   animations: [
     trigger('dropdownAnimation', [
@@ -50,15 +53,14 @@ export class NavHeaderComponent {
 
   private readonly accountService = inject(AccountService);
   protected readonly navService = inject(NavService);
-  protected readonly notificationService = inject(NotificationService);
   protected readonly buttonGroupService = inject(ButtonGroupService);
   protected readonly utilityService = inject(UtilityService);
+  private readonly router = inject(Router);
 
   currentUser = this.accountService.currentUser;
   showNav = toSignal(this.navService.showNav$, {initialValue: false});
 
   isMobileGridOpen = signal(false);
-  isAccountDropdownOpen = signal(false);
   expandedGroup = signal<ButtonGroupKey | null>(ButtonGroupKey.Actions);
 
   isMobile = computed(() => this.showNav() && this.utilityService.breakPoint() <= Breakpoint.Mobile);
@@ -81,7 +83,24 @@ export class NavHeaderComponent {
       ]
     },
     ...this.buttonGroupService.dashboardGroups(),
-  ])
+  ]);
+
+  constructor() {
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      tap(e => {
+        console.log(e, this.dashboardGroups());
+        const url = (e as NavigationEnd).url;
+
+        const group = this.dashboardGroups()
+          .find(g => g.buttons.some(b => b.navUrl && url.startsWith(b.navUrl)));
+
+        if (group) {
+          this.expandedGroup.set(group.key);
+        }
+      }),
+    ).subscribe();
+  }
 
   toggleMobileGrid() {
     this.isMobileGridOpen.update(v => !v);
@@ -100,16 +119,5 @@ export class NavHeaderComponent {
     return this.expandedGroup() == key;
   }
 
-  @HostListener('document:click', ['$event'])
-  onClickOutside(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    if (
-      this.isAccountDropdownOpen() &&
-      !target.closest('.account-dropdown') &&
-      !target.closest('.account-toggle')
-    ) {
-      this.isAccountDropdownOpen.set(false);
-    }
-  }
-
+  protected readonly ButtonGroupKey = ButtonGroupKey;
 }

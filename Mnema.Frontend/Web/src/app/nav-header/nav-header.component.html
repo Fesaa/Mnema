@@ -44,22 +44,25 @@
               <div class="group-content" @expandCollapse>
                 @for (btn of group.buttons; track btn.title) {
                   @if (buttonGroupService.shouldRender(btn)) {
-                    <a
-                      class="nav-link sub-link"
-                      routerLink="{{ btn.navUrl }}"
-                      (click)="buttonGroupService.handleButtonClick(btn, $event)"
-                      style="cursor: pointer"
-                    >
-                      <div class="sub-link-content">
-                        @if (btn.icon) {
-                          <i class="{{ btn.icon }} me-2"></i>
-                        }
-                        <span>{{ btn.title }}</span>
-                      </div>
-                      @if (btn.badge) {
-                        <app-badge>{{ btn.badge }}</app-badge>
-                      }
-                    </a>
+
+                    @if (btn.onClick) {
+                      <button class="nav-link sub-link" (click)="btn.onClick()">
+                        <ng-container *ngTemplateOutlet="buttonTemplate; context: { $implicit: btn }"></ng-container>
+                      </button>
+                    } @else if (btn.navUrl) {
+                      <a
+                        class="nav-link sub-link"
+                        [routerLink]="[btn.navUrl]"
+                        [queryParams]="btn.navExtras?.queryParams"
+                        [fragment]="btn.navExtras?.fragment"
+                        [state]="btn.navExtras?.state"
+                        routerLinkActive="active"
+                        [class.settings]="group.key === ButtonGroupKey.Settings"
+                        [routerLinkActiveOptions]="{ exact: true }"
+                      >
+                        <ng-container *ngTemplateOutlet="buttonTemplate; context: { $implicit: btn }"></ng-container>
+                      </a>
+                    }
                   }
                 }
               </div>
@@ -87,3 +90,16 @@
     />
   }
 }
+
+
+<ng-template #buttonTemplate let-btn>
+  <div class="sub-link-content">
+    @if (btn.icon) {
+      <i class="{{ btn.icon }} me-2"></i>
+    }
+    <span>{{ btn.title }}</span>
+  </div>
+  @if (btn.badge) {
+    <app-badge>{{ btn.badge }}</app-badge>
+  }
+</ng-template>

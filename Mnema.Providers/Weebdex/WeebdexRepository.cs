@@ -64,12 +64,11 @@ public class WeebdexRepository: IRepository
         var url = "/manga".SetQueryParam("title", request.Query)
             .AddRange("status", request.Modifiers.GetStrings("status"))
             .AddRange("contentRating", request.Modifiers.GetStrings("contentRating"))
-            .AddRange("includedTags", request.Modifiers.GetStrings("includeTags"))
-            .SetQueryParam("includedTagsMode", request.Modifiers.GetStringOrDefault("includedTagsMode", "AND"))
-            .AddRange("excludedTags", request.Modifiers.GetStrings("excludeTags"))
-            .SetQueryParam("excludedTagsMode", request.Modifiers.GetStringOrDefault("excludedTagsMode", "OR"))
-            .AddPagination(pagination.PageSize, pagination.PageNumber + 1)
-            .AddIncludes();
+            .AddRange("tag", request.Modifiers.GetStrings("includeTags"))
+            .SetQueryParam("tmod", request.Modifiers.GetIntOrDefault("includedTagsMode", 0))
+            .AddRange("tagx", request.Modifiers.GetStrings("excludeTags"))
+            .SetQueryParam("txmod", request.Modifiers.GetIntOrDefault("excludedTagsMode", 0))
+            .AddPagination(pagination.PageSize, pagination.PageNumber + 1);
 
         var result =
             await Client.GetCachedAsync<SearchResponse>(url.ToString(), _cache, cancellationToken: cancellationToken);
@@ -186,7 +185,7 @@ public class WeebdexRepository: IRepository
                 Key = "status",
                 Type = FormType.MultiSelect,
                 Options = Enum.GetValues<Status>()
-                    .Select(s => FormControlOption.Option(s.ToString(), s))
+                    .Select(s => FormControlOption.Option(s.ToString(), s.ToString().ToLower()))
                     .ToList()
             },
             new FormControlDefinition
@@ -194,7 +193,7 @@ public class WeebdexRepository: IRepository
                 Key = "contentRating",
                 Type = FormType.MultiSelect,
                 Options = Enum.GetValues<ContentRating>()
-                    .Select(s => FormControlOption.Option(s.ToString(), s))
+                    .Select(s => FormControlOption.Option(s.ToString(), s.ToString().ToLower()))
                     .ToList()
             },
             new FormControlDefinition
@@ -213,13 +212,13 @@ public class WeebdexRepository: IRepository
             {
                 Type = FormType.DropDown,
                 Key = "includeTagsMode",
-                Options = [FormControlOption.DefaultValue("And", "AND"), FormControlOption.Option("Or", "OR")]
+                Options = [FormControlOption.DefaultValue("And", "0"), FormControlOption.Option("Or", "1")]
             },
             new FormControlDefinition
             {
                 Type = FormType.DropDown,
                 Key = "excludeTagsMode",
-                Options = [FormControlOption.Option("And", "AND"), FormControlOption.DefaultValue("Or", "OR")]
+                Options = [FormControlOption.DefaultValue("Or", "0"), FormControlOption.Option("And", "1")]
             }
         ];
     }

@@ -32,6 +32,21 @@
                   />
                   <label class="form-check-label ms-2 user-select-none" [for]="modifier.key">{{t(modifier.key)}}</label>
                 </div>
+              } @else if (modifier.type === FormType.DropDown) {
+                <div class="">
+                  {{t(modifier.key + '.label')}}
+                  <select class="form-select">
+                    @for (option of modifier.options; track option.key) {
+                      <option
+                        [value]="option.value"
+                        [selected]="option.default"
+                        (click)="onModifierSelection(modifier, option)"
+                      >
+                        {{option.key}}
+                      </option>
+                    }
+                  </select>
+                </div>
               } @else {
                 <app-type-ahead
                   [settings]="constructTypeaheadSettings(modifier)"

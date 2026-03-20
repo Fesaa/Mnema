@@ -57,6 +57,22 @@ public class MetadataBag : GenericBag<string>
 
         return Guid.TryParse(value, out var result) ? result : null;
     }
+
+    public int? GetInt(string key)
+    {
+        var value = GetString(key);
+        if (string.IsNullOrEmpty(value)) return null;
+
+        return int.TryParse(value, out var result) ? result : null;
+    }
+
+    [return:NotNullIfNotNull(nameof(fallback))]
+    public int? GetIntOrDefault(string key, int? fallback = null)
+    {
+        var value = GetInt(key);
+
+        return value ?? fallback;
+    }
 }
 
 public class GenericBag<T> : Dictionary<string, IList<T>>

@@ -483,15 +483,27 @@
     "contentRating": "Content Rating",
     "includeTags": "Included Tags",
     "excludeTags": "Excluded Tags",
-    "includeTagsMode": "Included Tags Mode",
-    "excludeTagsMode": "Excluded Tags Mode",
     "AllowChapters": "Allow Chapters",
     "genres": "Genres",
     "ignored_genres": "Ignored Genres",
     "upload": "Upload Status",
     "search_type": "Search Type",
-    "category": "Category",
-    "filter": "Filter"
+    "category": {
+      "label": "Category"
+    },
+    "filter": {
+      "label": "Filter"
+    },
+    "includeTagsMode": {
+      "label": "Included Tags Mode",
+      "And": "And",
+      "Or": "Or"
+    },
+    "excludeTagsMode": {
+      "label": "Excluded Tags Mode",
+      "And": "And",
+      "Or": "Or"
+    }
   },
 
   "series-info-modal": {
@@ -526,11 +538,20 @@
 
     "age-rating": {
       "0": "Unknown",
-      "1": "Everyone",
-      "2": "Teen",
-      "3": "Teen Plus",
-      "4": "Mature",
-      "5": "Adults Only"
+      "1": "Rating Pending",
+      "2": "Early Childhood",
+      "3": "Everyone",
+      "4": "G",
+      "5": "Everyone 10+",
+      "6": "PG",
+      "7": "Kids to Adults",
+      "8": "Teen",
+      "9": "MA15+",
+      "10": "Mature 17+",
+      "11": "Mature",
+      "12": "R18+",
+      "13": "Adults Only 18+",
+      "14": "X18+"
     }
   },
   "person-role-pipe": {
@@ -622,11 +643,11 @@
       "mappings-tab": "Mappings",
 
       "tags-to-genre-label": "Tags to save as genre",
-      "tags-to-genre-tooltip": "The following tags will be added as a genre when downloading from Dynasty or Bato, add or remove as wanted.",
+      "tags-to-genre-tooltip": "Tags configured here will be saved as Genre.",
       "tags-blacklist-label": "Tags blacklist",
-      "tags-blacklist-tooltip": "Any tags configured here will not be used as either a Genre or Tag. Check documentation for how matching happens.",
+      "tags-blacklist-tooltip": "Any tags configured here will not be used as either a Genre or Tag.",
       "tags-whitelist-label": "Tags whitelist",
-      "tags-whitelist-tooltip": "Any tags configured here will be used as tag, if it's not in the blacklist or configured to be used as a genre. Check documentation for how matching happens.",
+      "tags-whitelist-tooltip": "When configured, only tags in the list will be used. If none are configured all tags will be saved if the download option is enabled",
       "age-rating-mappings-label": "Age Ratings Mappings",
       "age-rating-mappings-tooltip": "Configure which tags and/or genre's will be used to determine the downloaded content's AgeRating. If several are present, the highest will be used.",
       "tags-mappings-label": "Tags Mappings",

@@ -210,17 +210,13 @@ public class MonitoredSeriesService(
         };
     }
 
-    public async Task<FormDefinition> GetMetadataForm(Guid userId, Guid seriesId, CancellationToken ct = default)
+    public async Task<FormDefinition> GetMetadataForm(Guid userId, Provider provider, CancellationToken ct = default)
     {
-        var series = await unitOfWork.MonitoredSeriesRepository.GetById(seriesId, MonitoredSeriesIncludes.Chapters, ct);
-        if (series == null) throw new NotFoundException();
-        if (series.UserId != userId) throw new UnauthorizedAccessException();
-
         var excludedKeys = GetForm().Controls.Select(c => c.Key).ToHashSet();
 
         var allControls = new List<FormControlDefinition>();
 
-        var repository = serviceProvider.GetKeyedService<IContentRepository>(series.Provider);
+        var repository = serviceProvider.GetKeyedService<IContentRepository>(provider);
         if (repository != null)
         {
             var controls = await repository.DownloadMetadata(ct);

@@ -72,7 +72,7 @@ export class SearchFormComponent {
     const settings = new TypeaheadSettings<FormControlOption>();
     settings.id = mod.key
     settings.multiple = mod.type === FormType.MultiSelect;
-    settings.minCharacters = 0;
+    settings.minCharacters = 1;
 
     settings.fetchFn = (f) => {
       if (mod.type === FormType.DropDown) return of(mod.options);

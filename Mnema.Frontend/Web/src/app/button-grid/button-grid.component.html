@@ -80,21 +80,28 @@
           }
 
           @for (button of standAloneButtonsValue; track $index) {
-            <button
-              class="grid-button"
-              type="button"
-              (click)="buttonGroupService.handleButtonClick(button)"
-            >
-              @if (button.badge) {
-                <app-badge class="grid-button-badge" [padding]="'p-2'">{{button.badge}}</app-badge>
-              }
-              <div class="grid-button-content">
-                <div class="grid-button-icon">
-                  <i [class]="button.icon || 'fas fa-circle'" aria-hidden="true"></i>
-                </div>
-                <span class="grid-button-text">{{button.title}}</span>
-              </div>
-            </button>
+
+            @if (button.onClick) {
+              <button
+                class="grid-button"
+                type="button"
+                (click)="button.onClick()"
+              >
+                <ng-container *ngTemplateOutlet="buttonTemplate; context: { $implicit: button }"></ng-container>
+              </button>
+            } @else if (button.navUrl) {
+              <a
+                class="grid-button"
+                [routerLink]="[button.navUrl]"
+                [queryParams]="button.navExtras?.queryParams"
+                [fragment]="button.navExtras?.fragment"
+                [state]="button.navExtras?.state"
+              >
+                <ng-container *ngTemplateOutlet="buttonTemplate; context: { $implicit: button }"></ng-container>
+              </a>
+            }
+
+
           }
 
         </div>
@@ -102,6 +109,18 @@
     }
   }
 }
+
+<ng-template #buttonTemplate let-button>
+  @if (button.badge) {
+    <app-badge class="grid-button-badge" [padding]="'p-2'">{{button.badge}}</app-badge>
+  }
+  <div class="grid-button-content">
+    <div class="grid-button-icon">
+      <i [class]="button.icon || 'fas fa-circle'" aria-hidden="true"></i>
+    </div>
+    <span class="grid-button-text">{{button.title}}</span>
+  </div>
+</ng-template>
 
 <ng-template #listSelectOption let-item>
   <div class="d-flex align-items-center justify-content-between w-100">

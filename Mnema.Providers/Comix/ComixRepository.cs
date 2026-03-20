@@ -146,7 +146,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
     {
         var url = $"api/v2/manga/{request.Id}"
             .SetQueryParam("includes[]", "author")
-            .AddRange("includes", ["artist", "genre"]);
+            .AddRange("includes[]", ["artist", "genre"]);
 
         var res = await Client.GetCachedAsync<ComixRespose<ComixManga>>(url, cache, cancellationToken: cancellationToken);
         if (res.IsErr)

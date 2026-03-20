@@ -25,7 +25,7 @@ export interface Button {
   id?: any;
   icon: string;
   title: string;
-  navUrl?: string | UrlTree;
+  navUrl?: string;
   navExtras?: NavigationExtras;
   onClick?: () => void;
   /**

@@ -98,11 +98,12 @@ export class SeriesSearchComponent implements OnInit {
       format: 0,
       titleOverride: '',
       hardcoverId: this.searchOptions().provider === MetadataProvider.Hardcover ? series.id : '',
-      mangabakaId: this.searchOptions().provider === MetadataProvider.Mangabaka ? series.id : '',
+      mangaBakaId: this.searchOptions().provider === MetadataProvider.Mangabaka ? series.id : '',
       externalId: '',
       summary: "",
       lastDataRefreshUtc: '',
-      chapters: []
+      chapters: [],
+      metadata: {},
     });
 
     this.modalService.onClose$(modal).pipe(
