@@ -16,30 +16,6 @@
           <div class="d-flex flex-column align-items-center gap-4">
 
             <div class="w-100">
-              <h2 class="h2 fw-bold mt-4 mb-4">{{ t('title') }}</h2>
-
-              <div class="d-flex flex-column gap-3">
-                @if (settingsForm.get('subscriptionRefreshHour'); as control) {
-                  <app-settings-item [control]="control" [title]="t('sub-refresh.label')" [tooltip]="t('sub-refresh.tooltip')">
-                    <ng-template #view>{{control.value}}</ng-template>
-                    <ng-template #edit>
-                      <input
-                        type="number"
-                        class="form-control"
-                        id="subscriptionRefreshHour"
-                        formControlName="subscriptionRefreshHour"
-                        [min]="0"
-                        [max]="23"
-                      />
-                    </ng-template>
-                  </app-settings-item>
-                }
-              </div>
-            </div>
-
-            <div class="w-100">
-              <hr class="border mt-5" />
-              <h2 class="h2 fw-bold mt-4 mb-4">{{ t('downloader') }}</h2>
 
               <div class="d-flex flex-column gap-3">
                 @if (getFormControl('maxConcurrentTorrents'); as control) {

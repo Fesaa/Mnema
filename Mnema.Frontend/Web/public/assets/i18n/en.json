@@ -536,11 +536,20 @@
 
     "age-rating": {
       "0": "Unknown",
-      "1": "Everyone",
-      "2": "Teen",
-      "3": "Teen Plus",
-      "4": "Mature",
-      "5": "Adults Only"
+      "1": "Rating Pending",
+      "2": "Early Childhood",
+      "3": "Everyone",
+      "4": "G",
+      "5": "Everyone 10+",
+      "6": "PG",
+      "7": "Kids to Adults",
+      "8": "Teen",
+      "9": "MA15+",
+      "10": "Mature 17+",
+      "11": "Mature",
+      "12": "R18+",
+      "13": "Adults Only 18+",
+      "14": "X18+"
     }
   },
   "person-role-pipe": {

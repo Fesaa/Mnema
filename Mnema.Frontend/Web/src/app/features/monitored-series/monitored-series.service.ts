@@ -7,6 +7,7 @@ import {Provider} from "@mnema/_models/page";
 import {PagedList} from "@mnema/_models/paged-list";
 import {Series} from "@mnema/page/_components/series-info/_types";
 import {SearchInfo} from "@mnema/_models/Info";
+import {MetadataBag} from "@mnema/_models/search";
 
 export type MonitoredSeries = {
   id: string;
@@ -19,12 +20,13 @@ export type MonitoredSeries = {
   format: Format;
   contentFormat: ContentFormat;
   hardcoverId: string,
-  mangabakaId: string;
+  mangaBakaId: string;
   externalId: string;
   titleOverride: string;
   validTitles: string[];
   lastDataRefreshUtc: string;
   chapters: MonitoredChapter[];
+  metadata: MetadataBag;
 }
 
 export enum Format {
@@ -132,10 +134,8 @@ export class MonitoredSeriesService {
     return this.httpClient.post(`${this.baseUrl}/${id}/${chapterId}/set-status?status=${status}`, {});
   }
 
-  getMetadataForm(id: string) {
-    if (!id) return of({key: '', descriptionKey: '', controls: []});
-
-    return this.httpClient.get<FormDefinition>(`${this.baseUrl}/${id}/metadata-form`);
+  getMetadataForm(provider: Provider) {
+    return this.httpClient.get<FormDefinition>(`${this.baseUrl}/metadata-form?provider=${provider}`);
   }
 
   getForm() {

@@ -52,7 +52,7 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
   ngOnInit(): void {
     forkJoin([
       this.monitoredSeriesService.getForm(),
-      this.monitoredSeriesService.getMetadataForm(this.series().id)
+      this.monitoredSeriesService.getMetadataForm(this.series().provider)
     ]).pipe(
       tap(([form, mForm]) => {
         this.formDefinition.set(form);

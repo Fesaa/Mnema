@@ -58,14 +58,14 @@ export class SearchResultComponent implements OnInit{
       format: Format.Archive,
       hardcoverId: "",
       lastDataRefreshUtc: "",
-      mangabakaId: "",
+      mangaBakaId: "",
       provider: this.searchResult().provider,
       summary: "",
       titleOverride: "",
       validTitles: [],
       id: '',
-      title: this.searchResult().name
-
+      title: this.searchResult().name,
+      metadata: {},
     }
 
     component.series.set(newMonitoredSeries);

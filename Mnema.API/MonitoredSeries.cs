@@ -33,7 +33,7 @@ public interface IMonitoredSeriesService
     Task UpdateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     Task CreateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     FormDefinition GetForm();
-    Task<FormDefinition> GetMetadataForm(Guid userId, Guid seriesId, CancellationToken cancellationToken = default);
+    Task<FormDefinition> GetMetadataForm(Guid userId, Provider provider, CancellationToken cancellationToken = default);
 
     Task EnrichWithMetadata(Guid guid, CancellationToken cancellationToken = default);
 }
