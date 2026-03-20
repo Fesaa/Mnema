@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'Mnema.Frontend/Docs/Writerside/**'
+      - '.github/workflows/build-docs.yml'
   workflow_dispatch:
 
 permissions:
