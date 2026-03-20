@@ -61,8 +61,6 @@ internal partial class Publication(
     private ServerSettingsDto _settings = null!;
     private SpeedTracker? _speedTracker;
 
-    private Subscription? _subscription;
-
     private CancellationTokenSource _tokenSource = new();
 
     /// <summary>
@@ -128,12 +126,12 @@ internal partial class Publication(
             try
             {
                 var src = _fileSystem.Path.Join(_configuration.DownloadDir, path);
-                var dest = _fileSystem.Path.Join(_configuration.BaseDir, path);
+                var dest = _fileSystem.Path.Join(_configuration.BaseDir, path) + ".cbz";
 
                 if (File.Exists(dest))
                     File.Delete(dest);
 
-                await ZipFile.CreateFromDirectoryAsync(src, dest + ".cbz",
+                await ZipFile.CreateFromDirectoryAsync(src, dest,
                     CompressionLevel.SmallestSize, false);
 
                 Directory.Delete(src, true);
@@ -147,7 +145,7 @@ internal partial class Publication(
         _logger.LogDebug("[{Title}/{Id}] Cleanup finished in {Elapsed}ms, removed {Deleted} old files, added {New} new files",
             Title, Id, sw.ElapsedMilliseconds, ToRemovePaths.Count, DownloadedPaths.Count);
 
-        await CleanupNotifications();
+        _connectionService.CommunicateDownloadFinished(DownloadInfo);
     }
 
     public ContentState State { get; private set; } = ContentState.Queued;
@@ -209,14 +207,9 @@ internal partial class Publication(
         }
     }
 
-    private async Task CleanupNotifications()
+    private OnDiskContent? GetContentByFileName(string fileName)
     {
-        _connectionService.CommunicateDownloadFinished(DownloadInfo);
-    }
-
-    private OnDiskContent? GetContentByPath(string path)
-    {
-        return ExistingContent.FirstOrDefault(c => c.Path == path);
+        return ExistingContent.FirstOrDefault(c => c.FileName == fileName);
     }
 
     private OnDiskContent? GetContentByName(string name)

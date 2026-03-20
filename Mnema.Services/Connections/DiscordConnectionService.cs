@@ -11,6 +11,7 @@ using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services.Connections;
 
@@ -48,6 +49,13 @@ internal sealed record DiscordEmbedImage
     public string? ProxyUrl { get; set; }
     public int? Height { get; set; }
     public int? Width { get; set; }
+
+    public DiscordEmbedImage() {}
+
+    public DiscordEmbedImage(string url)
+    {
+        Url = url;
+    }
 }
 
 internal sealed record DiscordEmbedAuthor
@@ -86,7 +94,9 @@ internal class DiscordConnectionService(
         ConnectionEvent.DownloadStarted,
         ConnectionEvent.DownloadFinished,
         ConnectionEvent.DownloadFailure,
-        ConnectionEvent.SubscriptionExhausted
+        ConnectionEvent.SubscriptionExhausted,
+        ConnectionEvent.SeriesMonitored,
+        ConnectionEvent.SeriesUnmonitored,
     ];
 
     public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
@@ -107,10 +117,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.RefUrl)) embed.Url = info.RefUrl;
 
         if (!string.IsNullOrEmpty(info.ImageUrl))
-            embed.Image = new DiscordEmbedImage
-            {
-                Url = info.ImageUrl
-            };
+            embed.Image = new DiscordEmbedImage(info.ImageUrl);
 
         return SendMessage(connection, [embed]);
     }
@@ -133,10 +140,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.RefUrl)) embed.Url = info.RefUrl;
 
         if (!string.IsNullOrEmpty(info.ImageUrl))
-            embed.Image = new DiscordEmbedImage
-            {
-                Url = info.ImageUrl
-            };
+            embed.Image = new DiscordEmbedImage(info.ImageUrl);
 
         return SendMessage(connection, [embed]);
     }
@@ -159,10 +163,53 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.RefUrl)) embed.Url = info.RefUrl;
 
         if (!string.IsNullOrEmpty(info.ImageUrl))
-            embed.Image = new DiscordEmbedImage
+            embed.Image = new DiscordEmbedImage(info.ImageUrl);
+
+        return SendMessage(connection, [embed]);
+    }
+
+    public Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
+    {
+        var embed = new DiscordEmbed
+        {
+            Title = "Series monitored",
+            Description = $"**{series.Title}**\n\n{series.Summary}".Limit(MaxDescriptionLength),
+            Color = 0x1F8B4C,
+            Timestamp = DateTime.UtcNow,
+            Footer = new DiscordEmbedFooter
             {
-                Url = info.ImageUrl
-            };
+                Text = $"ID: {series.Id}"
+            }
+        };
+
+        if (!string.IsNullOrEmpty(series.RefUrl))
+            embed.Url = series.RefUrl;
+
+        if (!string.IsNullOrEmpty(series.CoverUrl) && series.CoverUrl.StartsWith("http"))
+            embed.Image = new DiscordEmbedImage(series.CoverUrl);
+
+        return SendMessage(connection, [embed]);
+    }
+
+    public Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
+    {
+        var embed = new DiscordEmbed
+        {
+            Title = "Series unmonitored",
+            Description = $"**{series.Title}**\n\n{series.Summary}".Limit(MaxDescriptionLength),
+            Color = 0xED4245,
+            Timestamp = DateTime.UtcNow,
+            Footer = new DiscordEmbedFooter
+            {
+                Text = $"ID: {series.Id}"
+            }
+        };
+
+        if (!string.IsNullOrEmpty(series.RefUrl))
+            embed.Url = series.RefUrl;
+
+        if (!string.IsNullOrEmpty(series.CoverUrl) && series.CoverUrl.StartsWith("http"))
+            embed.Image = new DiscordEmbedImage(series.CoverUrl);
 
         return SendMessage(connection, [embed]);
     }
@@ -221,6 +268,12 @@ internal class DiscordConnectionService(
                     Value = info.Provider.ToString(),
                     Inline = true
                 },
+                new DiscordEmbedField()
+                {
+                    Name = "Progress",
+                    Value = progressText,
+                    Inline = true
+                }
             ],
             Footer = new DiscordEmbedFooter
             {
@@ -231,10 +284,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.RefUrl)) embed.Url = info.RefUrl;
 
         if (!string.IsNullOrEmpty(info.ImageUrl))
-            embed.Image = new DiscordEmbedImage
-            {
-                Url = info.ImageUrl
-            };
+            embed.Image = new DiscordEmbedImage(info.ImageUrl);
 
         return SendMessage(connection, [embed]);
     }

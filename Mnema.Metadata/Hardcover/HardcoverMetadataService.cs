@@ -2,10 +2,12 @@ using GraphQL;
 using GraphQL.Client.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Helpers;
+using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
@@ -14,12 +16,13 @@ namespace Mnema.Metadata.Hardcover;
 
 public class HardcoverMetadataService(
     ILogger<HardcoverMetadataService> logger,
+    IUnitOfWork unitOfWork,
     [FromKeyedServices(key: MetadataProvider.Hardcover)] IGraphQLClient graphQlClient
     ): IMetadataProviderService
 {
     private const string HardcoverBaseUrl = "https://hardcover.app";
 
-    public async Task<PagedList<Series>> Search(MetadataSearchDto search, PaginationParams paginationParams,
+    public async Task<PagedList<MetadataSearchResult>> Search(MetadataSearchDto search, PaginationParams paginationParams,
         CancellationToken cancellationToken)
     {
         var request = new GraphQLRequest(SearchSeries, new
@@ -36,16 +39,22 @@ public class HardcoverMetadataService(
         // Hardcover returns basically nothing for series in its response... load them manually with a second query
         var seriesIds = response.Data.Series.Results.Hits
             .Select(h => int.TryParse(h.Item.Id, out var result) ? result : 0)
-            .Where(i => i > 0);
+            .Where(i => i > 0)
+            .ToList();
 
         var seriesRequest = new GraphQLRequest(GetSeriesByIds, new { ids = seriesIds });
         var seriesResponse = await graphQlClient.SendQueryAsync<HardcoverGetSeriesInfoByIdsResponse>(seriesRequest, cancellationToken);
         if (seriesResponse.Errors != null)
             throw new MnemaException($"{nameof(SearchSeries)} failed: {string.Join(",", seriesResponse.Errors.Select(x => x.Message))}");
 
-        var series = seriesResponse.Data.Series.Select(ConvertFromHardcoverSeries);
+        var monitoredSeriesById = (await unitOfWork.MonitoredSeriesRepository
+            .GetByHardcoverIds(seriesIds.Select(id => id.ToString()).ToList(), cancellationToken))
+            .ToDictionary(s => s.HardcoverId, s => s.Id);
 
-        return new PagedList<Series>(series, response.Data.Series.Results.Found, response.Data.Series.Page - 1, response.Data.Series.PageSize);
+        var series = seriesResponse.Data.Series
+            .Select(s => ConvertFromHardcoverSeries(s, monitoredSeriesById));
+
+        return new PagedList<MetadataSearchResult>(series,response.Data.Series.Results.Found, response.Data.Series.Page - 1, response.Data.Series.PageSize);
     }
 
     public async Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken)
@@ -62,10 +71,15 @@ public class HardcoverMetadataService(
 
         var series = response.Data.Series;
 
-        return ConvertFromHardcoverSeries(series);
+        var monitoredSeriesById = (await unitOfWork.MonitoredSeriesRepository
+                .GetByHardcoverIds([series.Id.ToString()], cancellationToken))
+            .ToDictionary(s => s.HardcoverId, s => s.Id);
+
+        return ConvertFromHardcoverSeries(series, monitoredSeriesById);
     }
 
-    private static Series ConvertFromHardcoverSeries(HardcoverSeries series)
+    private static MetadataSearchResult ConvertFromHardcoverSeries(HardcoverSeries series,
+        Dictionary<string, Guid> monitoredSeriesIds)
     {
         var realBooks = series.BookSeries.GroupBy(b => b.Position)
             .SelectMany(g =>
@@ -83,9 +97,10 @@ public class HardcoverMetadataService(
             })
             .ToList();
 
-        return new Series
+        return new MetadataSearchResult
         {
             Id = series.Id.ToString(),
+            MonitoredSeriesId = monitoredSeriesIds.GetValueOrDefault(series.Id.ToString()),
             Title = series.Name,
             Summary = series.Description ?? string.Empty,
             Status = series.IsCompleted ?? false ? PublicationStatus.Completed : PublicationStatus.Unknown,

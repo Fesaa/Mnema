@@ -18,6 +18,7 @@ export enum SettingsID {
   Pages = "pages",
   DownloadClients = "download_clients",
   Connections = "connections",
+  Releases = "releases",
 }
 
 export interface Button {
@@ -173,6 +174,13 @@ export class ButtonGroupService {
           navExtras: { fragment: SettingsID.DownloadClients },
           id: SettingsID.DownloadClients
         },
+        {
+          title: translate('button-groups.settings.releases'),
+          icon: 'fa fa-box-open',
+          navUrl: '/settings',
+          navExtras: { fragment: SettingsID.Releases },
+          id: SettingsID.Releases
+        }
       ],
     };
   });

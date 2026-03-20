@@ -7,7 +7,7 @@ import {MonitoredSeries, MonitoredSeriesService} from "@mnema/features/monitored
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factory.service";
 import {FormDefinition} from "@mnema/generic-form/form";
-import {forkJoin, tap} from "rxjs";
+import {catchError, EMPTY, forkJoin, tap} from "rxjs";
 
 @Component({
   selector: 'app-edit-monitored-series-modal',
@@ -30,6 +30,7 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
   series = model.required<MonitoredSeries>();
 
   activeTab = signal<'general' | 'metadata' | 'advanced'>('general');
+  saving = signal(false);
 
   formDefinition = signal<FormDefinition | undefined>(undefined);
   metadataFormDefinition = signal<FormDefinition | undefined>(undefined);
@@ -74,19 +75,27 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
     if (!seriesValue.metadata)
       seriesValue.metadata = {};
 
-    const actions$ = this.series().id === ''
+    const action$ = this.series().id === ''
       ? this.monitoredSeriesService.new(seriesValue)
       : this.monitoredSeriesService.update(seriesValue);
+
     const kind = this.series().id === '' ? 'new' : 'update';
 
-    actions$.subscribe({
-      next: () => {
+    this.saving.set(true);
+
+    action$.pipe(
+      tap(() => this.saving.set(false)),
+      tap(() => {
         this.toastService.successLoco(`monitored-series.toasts.${kind}.success`, {name: seriesValue.title});
-      },
-      error: err => {
+        this.modal.close(true);
+      }),
+      catchError(err => {
         this.toastService.errorLoco(`monitored-series.toasts.${kind}.error`, {name: seriesValue.title}, {msg: err.error.message});
-      }
-    }).add(() => this.modal.close());
+        this.modal.close();
+
+        return EMPTY;
+      })
+    ).subscribe();
   }
 
 }

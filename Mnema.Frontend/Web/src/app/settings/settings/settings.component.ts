@@ -14,6 +14,7 @@ import {
   SettingsID
 } from "../../button-grid/button-group.service";
 import {DownloadClientSettingsComponent} from "./_components/download-client/download-client-settings.component";
+import {ReleaseBrowserComponent} from "@mnema/settings/settings/_components/release-browser/release-browser.component";
 
 @Component({
   selector: 'app-settings',
@@ -24,6 +25,7 @@ import {DownloadClientSettingsComponent} from "./_components/download-client/dow
     ServerSettingsComponent,
     ConnectionSettingsComponent,
     DownloadClientSettingsComponent,
+    ReleaseBrowserComponent,
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']
@@ -42,7 +44,7 @@ export class SettingsComponent {
   readonly visibleSettings = computed(() =>
     this.buttonGroupService.settingsGroup().buttons
       .filter(btn => btn.id && this.buttonGroupService.shouldRender(btn)));
-  
+
   readonly selected = linkedSignal<Button[], SettingsID>({
     source: this.visibleSettings,
     computation: (newSettings, prev) => {

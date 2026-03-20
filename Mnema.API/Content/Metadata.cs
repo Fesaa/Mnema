@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Mnema.Common;
+using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.DTOs.User;
@@ -63,7 +64,7 @@ public interface IMetadataProviderService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <remarks>This may be cached</remarks>
-    Task<PagedList<Series>> Search(MetadataSearchDto search, PaginationParams paginationParams, CancellationToken cancellationToken);
+    Task<PagedList<MetadataSearchResult>> Search(MetadataSearchDto search, PaginationParams paginationParams, CancellationToken cancellationToken);
 
     /// <summary>
     /// Return all known metadata for a given entity from the external provider

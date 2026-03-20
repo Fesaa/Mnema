@@ -37,7 +37,8 @@
       "server": "Server",
       "connections": "Connections",
       "download-clients": "Download Clients",
-      "logout": "Logout"
+      "logout": "Logout",
+      "releases": "Releases"
     }
   },
 
@@ -451,7 +452,8 @@
       "add-as-sub": "Add as a subscription",
       "sub-header": "Subscribe to: {{name}}",
       "info": "Info",
-      "monitor": "Monitor"
+      "monitor": "Monitor",
+      "open-monitored": "Open monitored"
     },
     "toasts": {
       "search-success": {
@@ -731,7 +733,9 @@
           "DownloadStarted": "Download Started",
           "DownloadFinished": "Download Finished",
           "DownloadFailure": "Download Failure",
-          "SubscriptionExhausted": "Subscription Exhausted"
+          "SubscriptionExhausted": "Subscription Exhausted",
+          "SeriesMonitored": "Series Monitored",
+          "SeriesUnmonitored": "Series Unmonitored"
         }
       },
       "edit": {
@@ -755,7 +759,9 @@
           "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
           "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
           "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
-          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}"
+          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
+          "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
+          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}"
         }
       },
       "Kavita": {
@@ -775,7 +781,9 @@
           "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
           "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
           "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
-          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}"
+          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
+          "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
+          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}"
         }
       },
       "Native": {
@@ -787,7 +795,9 @@
           "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
           "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
           "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
-          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}"
+          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
+          "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
+          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}"
         }
       }
     },
@@ -823,6 +833,17 @@
           "qbittorrent": "{{download-client-pipe.qbit-torrent}}"
         }
       }
+    },
+    "releases": {
+      "title": "Releases",
+      "release-name": "Release Name",
+      "content-name": "Content Name",
+      "release-id": "Content Id",
+      "date": "Date",
+      "actions": "Actions",
+      "confirm-delete": "Are you sure you want to remove {{id}}?",
+      "content": "RSS grabbed",
+      "imported": "Imported (QBIT)"
     }
   },
 
@@ -1102,7 +1123,8 @@
   },
 
   "compact-series-info": {
-    "view-source": "Source"
+    "view-source": "Source",
+    "already-monitored": "Already monitored"
   },
   "series-search": {
     "search": "Search...",
@@ -1121,6 +1143,7 @@
     "select-status": "Set chapter status",
     "confirm-refresh-metadata": "Refresh metadata for {{name}}?",
     "select-search-result": "Search results",
+    "confirm-download": "Are you sure you want to start a download for {{name}}?",
     "download-started": {
       "title": "Started download for {{name}}",
       "summary": ""

@@ -12,6 +12,7 @@ using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
 
 namespace Mnema.Services.Connections;
@@ -82,6 +83,16 @@ internal class KavitaConnectionService(
     }
 
     public Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
     {
         throw new NotImplementedException();
     }

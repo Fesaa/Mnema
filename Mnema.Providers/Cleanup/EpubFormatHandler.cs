@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
+using Mnema.Common.Extensions;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.External;
 
@@ -66,153 +67,71 @@ internal class EpubFormatHandler(ILogger<EpubFormatHandler> logger, IFileSystem 
     }
 
     private static void SyncWithComicInfo(XDocument doc, ComicInfo info)
-    {
-        var metadata = doc.Root?.Element(Opf + "metadata") ?? doc.Root?.Element("metadata");
-        if (metadata == null) return;
+{
+    var metadata = doc.Root?.Element(Opf + "metadata") ?? doc.Root?.Element("metadata");
+    if (metadata == null) return;
 
-        UpdateTitle(metadata, info);
-        UpdateDescription(metadata, info.Summary);
-        UpdatePublisher(metadata, info.Publisher);
-        UpdateSubjects(metadata, info.Tags);
-        UpdateCreators(metadata, info);
-        UpdateSeries(metadata, info);
-        UpdateModifiedDate(metadata);
+    metadata.SetElementValue(Dc + "title", info.Title);
+    metadata.SetElementValue(Dc + "description", info.Summary);
+    metadata.SetElementValue(Dc + "publisher", info.Publisher);
+
+    var titleId = metadata.Element(Dc + "title")?.Attribute("id")?.Value;
+    if (!string.IsNullOrEmpty(titleId))
+    {
+        metadata.SetRefinedMetadata(Opf, "file-as", titleId, info.Title);
     }
 
-    private static void UpdateTitle(XElement metadata, ComicInfo info)
-    {
-        var titleEl = metadata.Element(Dc + "title");
-        if (titleEl == null) return;
+    UpdateCreators(metadata, info);
+    UpdateSeries(metadata, info);
 
-        titleEl.Value = info.Title;
-        var titleId = titleEl.Attribute("id")?.Value;
-
-        if (string.IsNullOrEmpty(titleId)) return;
-
-        var sortTitle = metadata.Elements().FirstOrDefault(e =>
-            e.Attribute("property")?.Value == "file-as" &&
-            e.Attribute("refines")?.Value == $"#{titleId}");
-
-        sortTitle?.Value = info.Title;
-    }
-
-    private static void UpdateCreators(XElement metadata, ComicInfo info)
-    {
-        metadata.Elements(Dc + "creator").Remove();
-        metadata.Elements().Where(e => e.Attribute("property")?.Value == "role").Remove();
-
-        var rolesMap = new[]
-        {
-            (Names: info.Writer, Role: "aut"),
-            (Names: info.Penciller, Role: "art"),
-            (Names: info.Colorist, Role: "clr"),
-            (Names: info.Translator, Role: "trl")
-        };
-
-        var idCounter = 1;
-        foreach (var entry in rolesMap.Where(x => !string.IsNullOrWhiteSpace(x.Names)))
-        {
-            var names = entry.Names.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-            foreach (var name in names)
-            {
-                var creatorId = $"creator{idCounter++}";
-
-                metadata.Add(new XElement(Dc + "creator",
-                    new XAttribute("id", creatorId), name));
-
-                metadata.Add(new XElement(Opf + "meta",
-                    new XAttribute("property", "role"),
-                    new XAttribute("refines", $"#{creatorId}"),
-                    new XAttribute("scheme", "marc:relators"),
-                    entry.Role));
-            }
-        }
-    }
+    metadata.GetOrCreateMeta(Opf, "dcterms:modified").Value = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+}
 
     private static void UpdateSeries(XElement metadata, ComicInfo info)
     {
         if (string.IsNullOrWhiteSpace(info.Series)) return;
 
-        var seriesMeta = metadata.Elements().FirstOrDefault(e =>
-            e.Attribute("property")?.Value == "belongs-to-collection");
+        // Legacy Calibre support
+        //metadata.SetOrAddElementValue("calibre:series", info.Series);
 
+        // Modern EPUB 3 Collection logic
+        var seriesMeta = metadata.Elements()
+            .FirstOrDefault(e => e.Attribute("property")?.Value == "belongs-to-collection");
         if (seriesMeta == null)
         {
-            var newId = "seriesid_" + Guid.NewGuid().ToString("N").Substring(0, 8);
-            seriesMeta = new XElement(Opf + "meta",
-                new XAttribute("property", "belongs-to-collection"),
-                new XAttribute("id", newId),
-                info.Series);
-            metadata.Add(seriesMeta);
+            seriesMeta = metadata.GetOrCreateMeta(Opf, "belongs-to-collection");
+            seriesMeta.Add(new XAttribute("id", "series_" + Guid.NewGuid().ToString("N")[..8]));
         }
-        else
-        {
-            seriesMeta.Value = info.Series;
-        }
+        seriesMeta.Value = info.Series;
 
         var seriesId = seriesMeta.Attribute("id")?.Value;
-        if (string.IsNullOrEmpty(seriesId)) return;
-
-        // Update or Add Position
-        var posMeta = metadata.Elements().FirstOrDefault(e =>
-            e.Attribute("property")?.Value == "group-position" &&
-            e.Attribute("refines")?.Value == $"#{seriesId}");
-
-        if (posMeta == null)
+        if (seriesId != null)
         {
-            metadata.Add(new XElement(Opf + "meta",
-                new XAttribute("property", "group-position"),
-                new XAttribute("refines", $"#{seriesId}"),
-                info.Volume));
-        }
-        else
-        {
-            posMeta.Value = info.Volume;
+            metadata.SetRefinedMetadata(Opf, "collection-type", seriesId, "series");
+            metadata.SetRefinedMetadata(Opf, "group-position", seriesId, info.Volume);
         }
     }
 
-    private static void UpdateSubjects(XElement metadata, string? tags)
+    private static void UpdateCreators(XElement metadata, ComicInfo info)
     {
-        if (string.IsNullOrWhiteSpace(tags)) return;
+        // Clean existing
+        metadata.Elements(Dc + "creator").Remove();
+        metadata.Elements().Where(e => e.Attribute("property")?.Value == "role").Remove();
 
-        metadata.Elements(Dc + "subject").Remove();
-        var tagList = tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var roles = new[] {
+            (info.Writer, "aut"), (info.Penciller, "art"), (info.Colorist, "clr"), (info.Translator, "trl")
+        };
 
-        foreach (var tag in tagList)
+        var i = 0;
+        foreach (var (names, role) in roles.Where(r => !string.IsNullOrWhiteSpace(r.Item1)))
         {
-            metadata.Add(new XElement(Dc + "subject", tag));
+            foreach (var name in names!.Split(',', StringSplitOptions.TrimEntries))
+            {
+                var id = $"cr{i++}";
+                var creator = new XElement(Dc + "creator", new XAttribute("id", id), name);
+                metadata.Add(creator);
+                metadata.SetRefinedMetadata(Opf, "role", id, role);
+            }
         }
-    }
-
-    private static void UpdateDescription(XElement metadata, string? summary) =>
-        GetOrAddElement(metadata, Dc + "description").Value = summary ?? string.Empty;
-
-    private static void UpdatePublisher(XElement metadata, string? publisher) =>
-        GetOrAddElement(metadata, Dc + "publisher").Value = publisher ?? string.Empty;
-
-    private static void UpdateModifiedDate(XElement metadata)
-    {
-        var mod = metadata.Elements().FirstOrDefault(e => e.Attribute("property")?.Value == "dcterms:modified");
-        var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
-
-        if (mod != null)
-        {
-            mod.Value = timestamp;
-        }
-        else
-        {
-            metadata.Add(new XElement("meta", new XAttribute("property", "dcterms:modified"), timestamp));
-        }
-    }
-
-    private static XElement GetOrAddElement(XElement parent, XName name)
-    {
-        var el = parent.Element(name);
-        if (el != null) return el;
-
-        var newEl = new XElement(name);
-        parent.Add(newEl);
-        return newEl;
     }
 }

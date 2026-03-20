@@ -7,7 +7,7 @@ import {DownloadRequest} from "../../../_models/search";
 import {ContentService} from "../../../_services/content.service";
 import {ToastService} from "../../../_services/toast.service";
 import {FormControlDefinition, FormDefinition} from "../../../generic-form/form";
-import {tap} from "rxjs";
+import {catchError, tap} from "rxjs";
 import {GenericFormComponent} from "../../../generic-form/generic-form.component";
 import {GenericFormFactoryService} from "../../../generic-form/generic-form-factory.service";
 
@@ -33,6 +33,7 @@ export class DownloadModalComponent implements OnInit {
   defaultDir = model.required<string>();
   rootDir = model.required<string>();
   metadata = model.required<FormControlDefinition[]>();
+  saving = signal(false);
 
   private formDefinition = signal<FormDefinition | undefined>(undefined);
   generalFormDefinition = computed(() => {
@@ -90,16 +91,15 @@ export class DownloadModalComponent implements OnInit {
       ...this.genericFormFactoryService.adjustForGenericMetadata(this.downloadForm.value),
     };
 
-    this.contentService.download(req).subscribe({
-      next: () => {
-        this.toastService.successLoco("page.download-dialog.toasts.download-success", {}, {name: this.info().name});
-      },
-      error: (err) => {
+    this.contentService.download(req).pipe(
+      tap(() => this.saving.set(false)),
+      tap(() => this.toastService.successLoco("page.download-dialog.toasts.download-success", {}, {name: this.info().name})),
+      catchError(err => {
         this.toastService.genericError(err.error.message);
-      }
-    }).add(() => {
-      this.close()
-    })
+        throw err;
+      }),
+      tap(() => this.close())
+    ).subscribe();
 
   }
 

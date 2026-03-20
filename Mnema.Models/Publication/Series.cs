@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Mnema.Models.Publication;
 
-public sealed record Series
+public record Series
 {
     public required string Id { get; set; }
     public required string Title { get; set; }

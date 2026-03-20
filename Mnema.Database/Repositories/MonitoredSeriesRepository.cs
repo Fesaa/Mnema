@@ -44,6 +44,29 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
             .ToListAsync(cancellationToken);
     }
 
+    public Task<List<MonitoredSeries>> GetByHardcoverIds(List<string> ids, CancellationToken cancellationToken = default)
+    {
+        return ctx.MonitoredSeries
+            .Includes(MonitoredSeriesIncludes.Chapters)
+            .Where(s => ids.Contains(s.HardcoverId))
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<List<MonitoredSeries>> GetByMangaBakaIds(List<string> ids, CancellationToken cancellationToken = default)
+    {
+        return ctx.MonitoredSeries
+            .Includes(MonitoredSeriesIncludes.Chapters)
+            .Where(s => ids.Contains(s.MangaBakaId))
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<List<MonitoredSeries>> GetByExternalIds(List<string> ids, Provider provider, CancellationToken cancellationToken = default)
+    {
+        return ctx.MonitoredSeries
+            .Where(s => ids.Contains(s.ExternalId) && s.Provider == provider)
+            .ToListAsync(cancellationToken);
+    }
+
     public Task<bool> CheckDuplicateSeries(Guid userId, Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
     {
         return ctx.MonitoredSeries

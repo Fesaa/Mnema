@@ -25,7 +25,8 @@ public class MonitoredSeriesController(
     IMetadataResolver metadataResolver,
     IMessageService messageService,
     ISearchService searchService,
-    IDownloadService downloadService
+    IDownloadService downloadService,
+    IConnectionService connectionService
 ) : BaseApiController
 {
     [HttpGet("all")]
@@ -101,7 +102,7 @@ public class MonitoredSeriesController(
         var req = new SearchRequest
         {
             Provider = mSeries.Provider,
-            Query = mSeries.Title,
+            Query = mSeries.Metadata.GetStringOrDefault(RequestConstants.TitleOverride, mSeries.Title),
             Modifiers = mSeries.MetadataForDownloadRequest()
         };
 
@@ -134,6 +135,31 @@ public class MonitoredSeriesController(
         return Ok();
     }
 
+    [HttpPost("{id:guid}/download-external-id")]
+    public async Task<IActionResult> DownloadExternalId(Guid id)
+    {
+        var mSeries = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
+        if (mSeries == null) return NotFound();
+        if (mSeries.UserId != UserId) return Forbid();
+
+        if (string.IsNullOrWhiteSpace(mSeries.ExternalId)) return BadRequest();
+
+        var req = new DownloadRequestDto
+        {
+            Provider = mSeries.Provider,
+            Id = mSeries.ExternalId,
+            BaseDir = mSeries.BaseDir,
+            TempTitle = mSeries.Title,
+            Metadata = mSeries.MetadataForDownloadRequest(),
+            UserId = UserId,
+            StartImmediately = true
+        };
+
+        await downloadService.StartDownload(req);
+
+        return Ok();
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -145,6 +171,8 @@ public class MonitoredSeriesController(
         unitOfWork.MonitoredSeriesRepository.Remove(series);
 
         await unitOfWork.CommitAsync();
+
+        await connectionService.CommunicateSeriesUnmonitored(series.Id);
 
         return Ok();
     }

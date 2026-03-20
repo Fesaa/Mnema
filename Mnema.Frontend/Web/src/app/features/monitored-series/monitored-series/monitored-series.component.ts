@@ -104,6 +104,14 @@ export class MonitoredSeriesComponent {
     ).subscribe();
   }
 
+  download() {
+    this.modalService.confirm$({
+      question: this.transLoco.translate('monitored-series-detail.confirm-download', {name: this.series().title})
+    }, true).pipe(
+      switchMap(() => this.monitoredSeriesService.downloadExternalId(this.series().id)),
+    ).subscribe();
+  }
+
   showResolvedSeries() {
     this.monitoredSeriesService.resolvedSeries(this.series().id).pipe(
       tap(series => {

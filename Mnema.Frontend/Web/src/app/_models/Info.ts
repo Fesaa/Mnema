@@ -11,4 +11,5 @@ export type SearchInfo = {
   imageUrl: string;
   url: string;
   provider: Provider;
+  monitoredSeriesId?: string;
 }

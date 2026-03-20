@@ -7,6 +7,7 @@ using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.Content;
 
 namespace Mnema.API;
 
@@ -15,7 +16,9 @@ public interface IConnectionService
     void CommunicateDownloadStarted(DownloadInfo info);
     void CommunicateDownloadFinished(DownloadInfo info);
     void CommunicateDownloadFailure(DownloadInfo info, Exception ex);
-    void CommunicateSubscriptionExhausted(DownloadInfo info);
+    void CommunicateSeriesExhausted(DownloadInfo info);
+    Task CommunicateSeriesMonitored(Guid id, CancellationToken cancellationToken = default);
+    Task CommunicateSeriesUnmonitored(Guid id, CancellationToken cancellationToken = default);
 
     Task UpdateConnection(ConnectionDto connection, CancellationToken cancellationToken);
     Task<FormDefinition> GetForm(ConnectionType type, CancellationToken cancellationToken);
@@ -29,6 +32,8 @@ public interface IConnectionHandlerService
     Task CommunicateDownloadFinished(Connection connection, DownloadInfo info);
     Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex);
     Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info);
+    Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series);
+    Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series);
 
     /// <summary>
     ///     Returns the form for configuration this specific external service

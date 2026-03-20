@@ -1,10 +1,12 @@
 import {ChangeDetectionStrategy, Component, computed, input, output} from '@angular/core';
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {Series} from "@mnema/page/_components/series-info/_types";
+import {MetadataSearchResult} from "@mnema/features/monitored-series/metadata.service";
+import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-compact-series-info',
-  imports: [TranslocoDirective],
+  imports: [TranslocoDirective, RouterLink],
   templateUrl: './compact-series-info.component.html',
   styleUrl: './compact-series-info.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,6 +19,15 @@ export class CompactSeriesInfoComponent {
   buttonClick = output<Series>();
 
   protected seriesTitle = computed(() => this.series()?.title ?? translate('shared.unknown'));
+
+  protected monitoredSeriesId = computed(() => {
+    const series = this.series();
+    if (Object.hasOwn(series, 'monitoredSeriesId')) {
+      return (series as MetadataSearchResult).monitoredSeriesId;
+    }
+
+    return null;
+  });
 
   protected firstChapter = computed(() => {
     if (this.series().chapters.length > 0) {

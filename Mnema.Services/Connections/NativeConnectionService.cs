@@ -9,6 +9,7 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Services.Connections;
@@ -76,6 +77,16 @@ internal class NativeConnectionService(
             Colour = NotificationColour.Primary,
             UserId = info.UserId
         });
+    }
+
+    public Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
+    {
+        throw new NotImplementedException();
     }
 
     public Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)

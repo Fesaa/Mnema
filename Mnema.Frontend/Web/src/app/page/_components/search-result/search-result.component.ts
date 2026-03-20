@@ -1,4 +1,4 @@
-import {Component, inject, input, OnInit, signal} from '@angular/core';
+import {Component, computed, inject, input, OnInit, signal} from '@angular/core';
 import {SearchInfo} from "@mnema/_models/Info";
 import {Page} from "@mnema/_models/page";
 import {bounceIn200ms} from "@mnema/_animations/bounce-in";
@@ -18,6 +18,7 @@ import {
   EditMonitoredSeriesModalComponent
 } from "@mnema/features/monitored-series/_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
 import {ContentFormat, Format, MonitoredSeries} from "@mnema/features/monitored-series/monitored-series.service";
+import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-search-result',
@@ -25,6 +26,7 @@ import {ContentFormat, Format, MonitoredSeries} from "@mnema/features/monitored-
     TranslocoDirective,
     NgStyle,
     NgbTooltip,
+    RouterLink,
   ],
   templateUrl: './search-result.component.html',
   styleUrl: './search-result.component.scss',
@@ -41,6 +43,7 @@ export class SearchResultComponent implements OnInit{
   metadata = input.required<FormControlDefinition[]>();
 
   imageSource = signal<string | null>(null);
+  isAlreadyMonitored = computed(() => !!this.searchResult().monitoredSeriesId)
 
 
   ngOnInit(): void {
@@ -52,7 +55,7 @@ export class SearchResultComponent implements OnInit{
 
     const newMonitoredSeries: MonitoredSeries = {
       externalId: this.searchResult().id,
-      baseDir: "",
+      baseDir: this.page().customRootDir,
       chapters: [],
       contentFormat: ContentFormat.Manga,
       format: Format.Archive,

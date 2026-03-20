@@ -29,4 +29,11 @@
       <app-download-client-settings />
     }
   }
+
+  @defer (when selected() === SettingsID.Releases; prefetch on idle) {
+    @if (selected() === SettingsID.Releases && canSee(SettingsID.Releases)) {
+      <app-release-browser />
+    }
+  }
+
 </div>

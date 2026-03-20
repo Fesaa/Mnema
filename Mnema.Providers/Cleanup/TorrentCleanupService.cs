@@ -96,13 +96,28 @@ internal class TorrentCleanupService(
         var files = fileSystem.Directory.GetFiles(context.DownloadDirectory, "*", SearchOption.AllDirectories);
         var allowedExtensions = parserService.FileExtensionsForFormat(context.Format);
 
-        await Parallel.ForEachAsync(files.Where(Filter), ParallelOptions,
+        var validFiles = files.Where(Filter).ToList();
+        if (validFiles.Count == 0)
+        {
+            logger.LogWarning("[{Title}/{Id}] No files found in directory {Directory} that match the format",
+                context.Title, context.Series?.Id, context.DownloadDirectory);
+            return;
+        }
+
+        await Parallel.ForEachAsync(validFiles, ParallelOptions,
             async (f, _) => await ProcessSingleFileAsync(context, f));
         return;
 
         bool Filter(string f)
         {
-            return allowedExtensions.IsMatch(fileSystem.Path.GetExtension(f));
+            var allowed = allowedExtensions.IsMatch(fileSystem.Path.GetExtension(f));
+            if (!allowed)
+            {
+                logger.LogDebug("[{Title}/{Id}] Skipping file {FileName} as it does not match the format {Format}",
+                    context.Title, context.Series?.Id, f, context.Format);
+            }
+
+            return allowed;
         }
     }
 

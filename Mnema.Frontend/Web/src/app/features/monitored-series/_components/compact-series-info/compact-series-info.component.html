@@ -29,7 +29,14 @@
               </a>
             }
 
-            @if (buttonLabel()) {
+            @if (monitoredSeriesId(); as monitoredSeriesId) {
+              <button
+                [routerLink]="['/monitored-series-detail', monitoredSeriesId]"
+                class="btn btn-sm btn-primary"
+              >
+                {{t('already-monitored')}}
+              </button>
+            } @else if (buttonLabel()) {
               <button type="button"
                       class="btn btn-sm btn-primary"
                       (click)="onButtonClick()">

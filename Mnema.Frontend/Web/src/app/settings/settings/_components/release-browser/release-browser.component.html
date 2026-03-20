@@ -1,0 +1,54 @@
+<div class="mt-4" *transloco="let t; prefix: 'settings.releases'">
+
+  <h2 class="h2 fw-bold mt-4 mb-3">{{ t('title') }}</h2>
+
+  <div class="d-flex justify-content-between mb-3">
+
+    <div>
+      <input [formField]="queryForm" class="form-control" [placeholder]="t('search-placeholder')">
+    </div>
+
+    <button type="button" class="btn btn-primary" (click)="toggle()">
+      {{imported() ? t('imported') : t('content')}}
+      <i class="fa fa-toggle-{{imported() ? 'on' : 'off'}}"></i>
+    </button>
+  </div>
+
+  <app-table
+    [pageLoader]="pageLoader()"
+    [trackByIdFunc]="trackBy"
+    [noMobileCards]="true"
+    [reloader]="pageReloader"
+  >
+    <ng-template #header>
+      <tr>
+        <th class="table-header-cell">{{t('release-name')}}</th>
+        <th class="table-header-cell">{{t('content-name')}}</th>
+        <th class="table-header-cell">{{t('release-id')}}</th>
+        <th class="table-header-cell">{{t('date')}}</th>
+        <th class="table-header-cell">{{t('actions')}}</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #cell let-item>
+      <td class="table-cell">{{ item.releaseName | defaultValue }}</td>
+      <td class="table-cell">{{ item.contentName | defaultValue }}</td>
+      <td class="table-cell"><code>{{ item.releaseId }}</code></td>
+      <td class="table-cell">{{ item.releaseDate | date:'shortDate' }}</td>
+
+      <td class="table-cell d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-small text-danger" (click)="delete(item)">
+          <i class="fa fa-trash"></i>
+        </button>
+      </td>
+    </ng-template>
+
+    <ng-template #empty>
+      <tr>
+        <td colspan="5" class="py-5 text-center text-muted">
+          <h5>No releases found</h5>
+        </td>
+      </tr>
+    </ng-template>
+  </app-table>
+</div>
