@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE instance-profile
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
+
+<instance-profile id="m"
+                 name="Mnema"
+                 start-page="Overview.md">
+
+    <toc-element topic="Overview.md"/>
+    <toc-element topic="Set-up.md"/>
+    <toc-element topic="OpenId-Connect.md"/>
+    <toc-element topic="Settings.md">
+        <toc-element topic="Preferences.md"/>
+        <toc-element topic="Pages.md"/>
+        <toc-element topic="Server.md"/>
+        <toc-element topic="Connections.md"/>
+        <toc-element topic="Download-Clients.md"/>
+    </toc-element>
+    <toc-element topic="Downloading.md">
+        <toc-element topic="Customise-a-download.md"/>
+        <toc-element topic="Automatic-Downloads.md"/>
+    </toc-element>
+    <toc-element topic="Monitored-Series.md" />
+</instance-profile>

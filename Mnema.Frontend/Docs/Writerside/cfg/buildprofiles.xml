@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE buildprofiles SYSTEM "https://resources.jetbrains.com/writerside/1.0/build-profiles.dtd">
+<buildprofiles xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/build-profiles.xsd"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <build-profile instance="m">
+        <variables>
+            <download-title>Get Mnema</download-title>
+            <download-page>https://github.com/Fesaa/Mnema/pkgs/container/mnema</download-page>
+            <showDownloadButton>true</showDownloadButton>
+            <custom-favicons>favicon.ico</custom-favicons>
+            <header-logo>header-logo.png</header-logo>
+            <primary-color>strawberry</primary-color>
+            <noindex-content>true</noindex-content>
+        </variables>
+        <footer>
+            <social type="github" href="https://github.com/Fesaa/Mnema" />
+            <copyright>2026 Amelia</copyright>
+        </footer>
+    </build-profile>
+
+    <shortcuts>
+        <src>keymap.xml</src>
+        <layout name="Windows" display-name="Windows"/>
+        <layout name="macOS" display-name="macOS"/>
+        <layout name="Linux" display-name="Linux"/>
+    </shortcuts>
+
+</buildprofiles>
