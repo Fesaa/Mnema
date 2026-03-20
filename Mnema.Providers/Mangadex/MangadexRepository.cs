@@ -63,12 +63,12 @@ internal class MangadexRepository : IRepository
         CancellationToken cancellationToken)
     {
         var url = "/manga".SetQueryParam("title", request.Query)
-            .AddRange("status", request.Modifiers.GetStrings("status"))
-            .AddRange("contentRating", request.Modifiers.GetStrings("contentRating"))
-            .AddRange("publicationDemographic", request.Modifiers.GetStrings("publicationDemographic"))
-            .AddRange("includedTags", request.Modifiers.GetStrings("includeTags"))
+            .AddRange("status[]", request.Modifiers.GetStrings("status"))
+            .AddRange("contentRating[]", request.Modifiers.GetStrings("contentRating"))
+            .AddRange("publicationDemographic[]", request.Modifiers.GetStrings("publicationDemographic"))
+            .AddRange("includedTags[]", request.Modifiers.GetStrings("includeTags"))
             .SetQueryParam("includedTagsMode", request.Modifiers.GetStringOrDefault("includedTagsMode", "AND"))
-            .AddRange("excludedTags", request.Modifiers.GetStrings("excludeTags"))
+            .AddRange("excludedTags[]", request.Modifiers.GetStrings("excludeTags"))
             .SetQueryParam("excludedTagsMode", request.Modifiers.GetStringOrDefault("excludedTagsMode", "OR"))
             .AddOffsetPagination(pagination)
             .AddIncludes();
