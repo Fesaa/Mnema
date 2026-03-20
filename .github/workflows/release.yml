@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - "main"
+    paths-ignore:
+      - '.github/**'
+      - 'Mnema.Frontend/Docs/**'
 
 jobs:
   push_to_registry:
