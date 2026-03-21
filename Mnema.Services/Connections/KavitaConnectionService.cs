@@ -97,6 +97,11 @@ internal class KavitaConnectionService(
         throw new NotImplementedException();
     }
 
+    public Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries info, int amount)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
     {
         return Task.FromResult<List<FormControlDefinition>>([

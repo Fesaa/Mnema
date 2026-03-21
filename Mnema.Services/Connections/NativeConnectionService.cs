@@ -28,7 +28,8 @@ internal class NativeConnectionService(
         ConnectionEvent.DownloadStarted,
         ConnectionEvent.DownloadFinished,
         ConnectionEvent.DownloadFailure,
-        ConnectionEvent.SubscriptionExhausted
+        ConnectionEvent.SubscriptionExhausted,
+        ConnectionEvent.TooManyForAutomatedDownload
     ];
 
     public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
@@ -87,6 +88,18 @@ internal class NativeConnectionService(
     public Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
     {
         throw new NotImplementedException();
+    }
+
+    public Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries info, int amount)
+    {
+        return SendNotification(new Notification()
+        {
+            Title = "Manual intervention required",
+            Summary = $"Cannot automatically start download for {info.Title} as it wants to download {amount} chapters at once.",
+            Body = string.Empty,
+            Colour = NotificationColour.Warning,
+            UserId = info.UserId
+        });
     }
 
     public Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
