@@ -49,7 +49,7 @@
                 </div>
               } @else {
                 <app-type-ahead
-                  [settings]="constructTypeaheadSettings(modifier)"
+                  [settings]="settings()[modifier.key]"
                   (selectedData)="onModifierSelection(modifier, $event)"
                 >
                   <ng-template #label>{{t(modifier.key)}}</ng-template>
