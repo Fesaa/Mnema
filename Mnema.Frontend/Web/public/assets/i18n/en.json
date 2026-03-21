@@ -735,7 +735,8 @@
           "DownloadFailure": "Download Failure",
           "SubscriptionExhausted": "Subscription Exhausted",
           "SeriesMonitored": "Series Monitored",
-          "SeriesUnmonitored": "Series Unmonitored"
+          "SeriesUnmonitored": "Series Unmonitored",
+          "TooManyForAutomatedDownload": "Too many for automated download"
         }
       },
       "edit": {
@@ -761,7 +762,8 @@
           "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
           "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
           "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
-          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}"
+          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
+          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}"
         }
       },
       "Kavita": {
@@ -783,7 +785,8 @@
           "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
           "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
           "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
-          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}"
+          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
+          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}"
         }
       },
       "Native": {
@@ -797,7 +800,8 @@
           "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
           "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
           "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
-          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}"
+          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
+          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}"
         }
       }
     },

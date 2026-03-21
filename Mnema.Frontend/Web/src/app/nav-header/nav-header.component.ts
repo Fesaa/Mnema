@@ -89,7 +89,6 @@ export class NavHeaderComponent {
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd),
       tap(e => {
-        console.log(e, this.dashboardGroups());
         const url = (e as NavigationEnd).url;
 
         const group = this.dashboardGroups()

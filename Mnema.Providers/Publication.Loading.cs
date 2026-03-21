@@ -70,6 +70,12 @@ internal partial class Publication
             return;
         }
 
+        if (_monitoredSeries != null && QueuedChapters.Count > 10)
+        {
+            _connectionService.CommunicateTooManyForAutomatedDownload(_monitoredSeries!, QueuedChapters.Count);
+            Request.StartImmediately = false;
+        }
+
         State = Request.StartImmediately ? ContentState.Ready : ContentState.Waiting;
         await _messageService.UpdateContent(Request.UserId, DownloadInfo);
 

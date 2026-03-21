@@ -51,4 +51,8 @@ public enum ConnectionEvent
     ///     Fired when a series is removed from the monitored list
     /// </summary>
     SeriesUnmonitored = 5,
+    /// <summary>
+    ///     Fired when an automated download from a monitored series wants to download > 10 chapters. Requiring manual approval
+    /// </summary>
+    TooManyForAutomatedDownload = 6,
 }

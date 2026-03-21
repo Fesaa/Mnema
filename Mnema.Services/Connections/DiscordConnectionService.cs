@@ -97,6 +97,7 @@ internal class DiscordConnectionService(
         ConnectionEvent.SubscriptionExhausted,
         ConnectionEvent.SeriesMonitored,
         ConnectionEvent.SeriesUnmonitored,
+        ConnectionEvent.TooManyForAutomatedDownload,
     ];
 
     public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
@@ -198,6 +199,30 @@ internal class DiscordConnectionService(
             Title = "Series unmonitored",
             Description = $"**{series.Title}**\n\n{series.Summary}".Limit(MaxDescriptionLength),
             Color = 0xED4245,
+            Timestamp = DateTime.UtcNow,
+            Footer = new DiscordEmbedFooter
+            {
+                Text = $"ID: {series.Id}"
+            }
+        };
+
+        if (!string.IsNullOrEmpty(series.RefUrl))
+            embed.Url = series.RefUrl;
+
+        if (!string.IsNullOrEmpty(series.CoverUrl) && series.CoverUrl.StartsWith("http"))
+            embed.Image = new DiscordEmbedImage(series.CoverUrl);
+
+        return SendMessage(connection, [embed]);
+    }
+
+    public Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries series, int amount)
+    {
+        var embed = new DiscordEmbed
+        {
+            Title = "Manual intervention required",
+            Description =
+                $"Cannot automatically start download for {series.Title} as it wants to download {amount} chapters at once.",
+            Color = 0xE67E22,
             Timestamp = DateTime.UtcNow,
             Footer = new DiscordEmbedFooter
             {

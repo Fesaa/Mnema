@@ -29,13 +29,24 @@ export class SearchFormComponent {
 
   searchForm: FormGroup;
 
+  settings = signal<Record<string, TypeaheadSettings<FormControlOption>>>({});
+
   constructor(private fb: FormBuilder) {
     this.searchForm = this.fb.group({query: ['']});
 
     effect(() => {
       this.searchForm.get('query')?.setValue('');
       this.setDefaultValues();
+      this.loadTypeaheadSettings();
     });
+  }
+
+  private loadTypeaheadSettings() {
+    const settings: Record<string, TypeaheadSettings<FormControlOption>> = {};
+    this.modifiers().forEach(mod => {
+      settings[mod.key] = this.constructTypeaheadSettings(mod);
+    });
+    this.settings.set(settings);
   }
 
   private setDefaultValues(): void {
@@ -72,7 +83,7 @@ export class SearchFormComponent {
     const settings = new TypeaheadSettings<FormControlOption>();
     settings.id = mod.key
     settings.multiple = mod.type === FormType.MultiSelect;
-    settings.minCharacters = 1;
+    settings.minCharacters = mod.options.length > 10 ? 1 : 0;
 
     settings.fetchFn = (f) => {
       if (mod.type === FormType.DropDown) return of(mod.options);
