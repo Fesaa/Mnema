@@ -3,7 +3,7 @@ using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.DTOs.Content;
 
-public class ContentReleaseDto: IDatabaseEntity
+public class ContentReleaseDto: IDatabaseEntity, IEntityDate
 {
     /// <summary>
     /// The id in the database, not required when loading from a provider
