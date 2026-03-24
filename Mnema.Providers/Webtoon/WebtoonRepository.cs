@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Fizzler.Systems.HtmlAgilityPack;
 using Flurl;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
@@ -25,9 +29,12 @@ namespace Mnema.Providers.Webtoon;
 internal class WebtoonRepository(
     ILogger<WebtoonRepository> logger,
     IDistributedCache cache,
-    IHttpClientFactory httpClientFactory)
+    IHttpClientFactory httpClientFactory,
+    IUnitOfWork unitOfWork)
     : IRepository
 {
+    private const string format = "dddd, dd MMM yyyy HH:mm:ss 'GMT'";
+    private static readonly XmlSerializer XmlSerializer = new(typeof(RssFeed));
     private HttpClient Client => httpClientFactory.CreateClient(nameof(Provider.Webtoons));
 
     public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination,
@@ -163,9 +170,58 @@ internal class WebtoonRepository(
             .ToList();
     }
 
-    public Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken)
+    public async Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken)
     {
-        return Task.FromResult<IList<ContentRelease>>([]);
+        var monitoredWebtoons = await unitOfWork.MonitoredSeriesRepository
+            .GetByProvider(Provider.Webtoons, cancellationToken);
+        if (monitoredWebtoons.Count == 0) return [];
+
+        var toCheckIds = monitoredWebtoons
+            .Select(m => m.ExternalId)
+            .ToList();
+
+        List<ContentRelease> releases = [];
+
+        foreach (var id in toCheckIds)
+        {
+            var rssUrl = id.Replace("/canvas/", "/challenge/").Replace("/list?title_no=", "/rss?title_no=");
+
+            var result = await Client.GetCachedStringAsync(rssUrl, cache, cancellationToken: cancellationToken);
+            if (result.IsErr)
+            {
+                logger.LogWarning(result.Error, $"Failed to retrieve recently updated chapters for {id}");
+                continue;
+            }
+
+            var feed = (RssFeed?) XmlSerializer.Deserialize(new StringReader(result.Unwrap()));
+            if (feed == null)
+            {
+                logger.LogDebug("Failed to deserialize RSS feed for {id}", id);
+                continue;
+            }
+
+            if (feed.Channel.Items.Count == 0) continue;
+
+            // As we are observing rss feeds for the actual items, it is enough to append only the last one.
+            // As if we haven't done downloaded this release (chapter), we will download any others as well
+            var lastItem = feed.Channel.Items.First();
+            releases.Add(new ContentRelease
+            {
+                ReleaseId = lastItem.Link,
+                ReleaseName = lastItem.Title,
+                Provider = Provider.Webtoons,
+                ContentId = id,
+                ContentName = feed.Channel.Title,
+                ReleaseDate = DateTimeOffset.TryParseExact(lastItem.PubDate, format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var offset)
+                    ? offset.DateTime
+                    : DateTime.UtcNow,
+            });
+
+            // Webtoons annoying rate limits, let us sleep a little bit.
+            await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+        }
+
+        return releases;
     }
 
     public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)

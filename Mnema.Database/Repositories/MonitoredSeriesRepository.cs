@@ -67,6 +67,13 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
             .ToListAsync(cancellationToken);
     }
 
+    public Task<List<MonitoredSeries>> GetByProvider(Provider provider, CancellationToken cancellationToken = default)
+    {
+        return ctx.MonitoredSeries
+            .Where(s => s.Provider == provider)
+            .ToListAsync(cancellationToken);
+    }
+
     public Task<bool> CheckDuplicateSeries(Guid userId, Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
     {
         return ctx.MonitoredSeries
