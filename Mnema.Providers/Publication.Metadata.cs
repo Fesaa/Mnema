@@ -1,10 +1,12 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
+using Mnema.Common.Extensions;
 using Mnema.Common.Helpers;
 using Mnema.Models.External;
 using Mnema.Models.Publication;
@@ -32,7 +34,7 @@ internal partial class Publication
                 try
                 {
                     var filePath = Path.Join(ChapterPath(chapter),
-                        $"!0000 cover{_fileSystem.Path.GetExtension(coverUrl)}");
+                        $"!0000 cover{coverUrl.GetUrlExtension()}");
                     var client = _httpClientFactory.CreateClient(provider.ToString());
 
                     await using var stream = await client.GetStreamAsync(coverUrl);

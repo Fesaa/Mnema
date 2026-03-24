@@ -70,6 +70,14 @@ public static class StringExtensions
         {
             return string.IsNullOrEmpty(s) ? defaultValue : float.Parse(s, CultureInfo.InvariantCulture);
         }
+
+        public string GetUrlExtension()
+        {
+            if (string.IsNullOrWhiteSpace(s)) return string.Empty;
+
+            var path = s.Split(['?', '#'], StringSplitOptions.RemoveEmptyEntries)[0];
+            return Path.GetExtension(path);
+        }
     }
 
     extension(string s)
