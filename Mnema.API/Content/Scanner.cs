@@ -18,4 +18,5 @@ public interface IScannerService
     Task<TorrentScanResult> ParseTorrentFile(string remoteUrl, ContentFormat contentFormat, CancellationToken cancellationToken);
 
     OnDiskContent? FindMatch(List<OnDiskContent> onDiskContents, Chapter chapter);
+    MonitoredChapter? FindMatch(List<MonitoredChapter> monitoredChapters, Chapter chapter);
 }

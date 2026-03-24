@@ -103,6 +103,12 @@ internal partial class Publication
 
     private bool ShouldDownloadChapter(Chapter chapter)
     {
+        if (_monitoredSeries != null)
+        {
+            var monitoredChapter = _scannerService.FindMatch(_monitoredSeries.Chapters, chapter);
+            if (monitoredChapter?.Status == MonitoredChapterStatus.NotMonitored) return false;
+        }
+
         var downloadOneShots = Request.GetBool(RequestConstants.DownloadOneShotKey);
         if (!downloadOneShots && string.IsNullOrEmpty(chapter.ChapterMarker)) return false;
 

@@ -233,4 +233,40 @@ public class ScannerService(
         // One partial match on volume, assume it's valid
         return partialMatches.Count == 1 ? partialMatches[0] : null;
     }
+
+    public MonitoredChapter? FindMatch(List<MonitoredChapter> monitoredChapters, Chapter chapter)
+    {
+        if (string.IsNullOrEmpty(chapter.VolumeMarker) && string.IsNullOrEmpty(chapter.ChapterMarker))
+        {
+            return null;
+        }
+
+        if (string.IsNullOrEmpty(chapter.ChapterMarker))
+        {
+            var volumeMatches = monitoredChapters.Where(c => c.Volume == chapter.VolumeMarker).ToList();
+
+            if (volumeMatches.Count == 1)
+                return volumeMatches[0];
+
+            return volumeMatches.FirstOrDefault(c => string.IsNullOrEmpty(c.Chapter));
+        }
+
+        if (string.IsNullOrEmpty(chapter.VolumeMarker))
+        {
+            return monitoredChapters.FirstOrDefault(c
+                => string.IsNullOrEmpty(c.Volume) && c.Chapter == chapter.ChapterMarker);
+        }
+
+        var exactMatch = monitoredChapters.FirstOrDefault(c
+            => c.Chapter == chapter.ChapterMarker && c.Volume == chapter.VolumeMarker);
+        if (exactMatch != null)
+            return exactMatch;
+
+        var partialMatches = monitoredChapters
+            .Where(c => c.Volume == chapter.VolumeMarker)
+            .ToList();
+
+        // One partial match on volume, assume it's valid
+        return partialMatches.Count == 1 ? partialMatches[0] : null;
+    }
 }

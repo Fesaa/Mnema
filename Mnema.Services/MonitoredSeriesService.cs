@@ -285,7 +285,7 @@ public class MonitoredSeriesService(
             {
                 status = MonitoredChapterStatus.Available;
             }
-            else if (chapter.ReleaseDate >= DateTime.UtcNow)
+            else if (chapter.ReleaseDate?.Date > DateTime.UtcNow.Date)
             {
                 status = MonitoredChapterStatus.Upcoming;
             }

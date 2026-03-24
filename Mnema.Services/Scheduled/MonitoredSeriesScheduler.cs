@@ -111,7 +111,14 @@ internal class MonitoredSeriesScheduler(
             // Require exact match
             if (!string.IsNullOrEmpty(monitoredRelease.ExternalId))
             {
-                if (monitoredRelease.ExternalId != release.ContentId) continue;
+                if (monitoredRelease.ExternalId != release.ContentId)
+                    continue;
+
+                var chapter = monitoredRelease.Chapters
+                    .FirstOrDefault(c => c.ExternalId == release.ReleaseId);
+
+                if (chapter?.Status == MonitoredChapterStatus.NotMonitored)
+                    return null;
 
                 return monitoredRelease;
             }
@@ -126,6 +133,13 @@ internal class MonitoredSeriesScheduler(
             var (_, chapters) = await scannerService.ParseTorrentFile(release.DownloadUrl, monitoredRelease.ContentFormat, ct);
             var formats = chapters.Select(c => parserService.ParseFormat(c.Title));
             if (!formats.Contains(monitoredRelease.Format))
+                continue;
+
+            var allIgnored = chapters
+                .Select(chapter => scannerService.FindMatch(monitoredRelease.Chapters, chapter))
+                .All(c => c?.Status == MonitoredChapterStatus.NotMonitored);
+
+            if (allIgnored)
                 continue;
 
             return monitoredRelease;

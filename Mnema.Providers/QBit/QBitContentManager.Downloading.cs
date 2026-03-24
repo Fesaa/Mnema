@@ -33,7 +33,9 @@ internal partial class QBitContentManager
         var scannerService = serviceProvider.GetRequiredService<IScannerService>();
         var connectionService = serviceProvider.GetRequiredService<IConnectionService>();
         var signalR = serviceProvider.GetRequiredService<IMessageService>();
+        var unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
 
+        var monitoredSeriesId = request.Metadata.GetGuid(RequestConstants.MonitoredSeriesId);
         var series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata, ct);
         var title = request.Metadata.GetString(RequestConstants.TitleOverride)
             .OrNonEmpty(series?.Title, parserService.ParseSeries(request.TempTitle, cFormat));
@@ -44,12 +46,24 @@ internal partial class QBitContentManager
             return;
         }
 
+        MonitoredSeries? mSeries = null;
+        if (monitoredSeriesId != null)
+        {
+            mSeries = await unitOfWork.MonitoredSeriesRepository.GetById(monitoredSeriesId.Value, ct: ct);
+        }
+
         var downloadDir = Path.Join(request.BaseDir, title);
         var existingContent = scannerService.ScanDirectory(downloadDir, cFormat, format, ct);
         var (size, chapters) = await scannerService.ParseTorrentFile(request.DownloadUrl, cFormat, ct);
 
         var toDownloadChapters = chapters.Where(c =>
         {
+            if (mSeries != null)
+            {
+                var mChapter = scannerService.FindMatch(mSeries.Chapters, c);
+                if (mChapter?.Status == MonitoredChapterStatus.NotMonitored) return false;
+            }
+
             var match = scannerService.FindMatch(existingContent, c);
             return match == null;
         }).ToList();
