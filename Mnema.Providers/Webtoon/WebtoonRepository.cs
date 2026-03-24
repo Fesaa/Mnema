@@ -218,7 +218,7 @@ internal class WebtoonRepository(
             });
 
             // Webtoons annoying rate limits, let us sleep a little bit.
-            await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(25), cancellationToken);
         }
 
         return releases;
