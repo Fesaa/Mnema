@@ -213,7 +213,7 @@ internal class WebtoonRepository(
                 ContentId = id,
                 ContentName = feed.Channel.Title,
                 ReleaseDate = DateTimeOffset.TryParseExact(lastItem.PubDate, format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var offset)
-                    ? offset.DateTime
+                    ? offset.DateTime.ToUniversalTime()
                     : DateTime.UtcNow,
             });
 
