@@ -32,6 +32,30 @@ public static class XmlExtensions
         }
 
         /// <summary>
+        /// Sets a Calibre-style meta element: <meta name="key" content="value"/>
+        /// Creates it if it doesn't exist, updates content if it does.
+        /// </summary>
+        public XElement SetOrAddMetaValue(string name, string? value)
+        {
+            var el = parent.Elements("meta")
+                .FirstOrDefault(e => (string?)e.Attribute("name") == name);
+
+            if (el == null)
+            {
+                el = new XElement("meta",
+                    new XAttribute("name", name),
+                    new XAttribute("content", value ?? string.Empty));
+                parent.Add(el);
+            }
+            else
+            {
+                el.SetAttributeValue("content", value ?? string.Empty);
+            }
+
+            return el;
+        }
+
+        /// <summary>
         /// Finds or creates a meta tag with a specific property attribute.
         /// </summary>
         public XElement GetOrCreateMeta(XNamespace ns, string property, string? refines = null)

@@ -92,7 +92,8 @@ internal class EpubFormatHandler(ILogger<EpubFormatHandler> logger, IFileSystem 
         if (string.IsNullOrWhiteSpace(info.Series)) return;
 
         // Legacy Calibre support
-        //metadata.SetOrAddElementValue("calibre:series", info.Series);
+        metadata.SetOrAddMetaValue("calibre:series", info.Series);
+        metadata.SetOrAddMetaValue("calibre:series_index", info.Volume);
 
         // Modern EPUB 3 Collection logic
         var seriesMeta = metadata.Elements()
