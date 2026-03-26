@@ -22,6 +22,9 @@ internal class EpubFormatHandler(ILogger<EpubFormatHandler> logger, IFileSystem 
     public Format SupportedFormat => Format.Epub;
     public async Task HandleAsync(FormatHandlerContext context)
     {
+        if (fileSystem.File.Exists(context.DestinationPath))
+            fileSystem.File.Delete(context.DestinationPath);
+
         fileSystem.File.Copy(context.SourceFile, context.DestinationPath);
 
         if (context.ComicInfo == null) return;

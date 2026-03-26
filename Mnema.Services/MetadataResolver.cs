@@ -282,13 +282,22 @@ public class MetadataResolver(
         if (series == null || (string.IsNullOrEmpty(chapter) && string.IsNullOrEmpty(volume)))
             return null;
 
-        return series.Chapters.FirstOrDefault(c =>
+        var match = series.Chapters.FirstOrDefault(c =>
         {
             if (string.IsNullOrEmpty(chapter) && MatchingIfNotNull(c.VolumeMarker, volume))
                 return true;
 
             return MatchingIfNotNull(c.VolumeMarker, volume) && MatchingIfNotNull(chapter, c.ChapterMarker);
         });
+
+        if (match != null)
+            return match;
+
+        var matchingVolumes = series.Chapters
+            .Where(c => MatchingIfNotNull(c.VolumeMarker, volume))
+            .ToList();
+
+        return matchingVolumes.Count == 1 ? matchingVolumes[0] : null;
 
         static bool MatchingIfNotNull(string? first, string? second)
             => !string.IsNullOrEmpty(first) && !string.IsNullOrEmpty(second) && first == second;

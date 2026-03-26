@@ -123,7 +123,7 @@ internal class TorrentCleanupService(
 
     private async Task ProcessSingleFileAsync(CleanupContext context, string sourceFile)
     {
-        logger.LogTrace("Processing file {FileName} for cleanup", sourceFile);
+        logger.LogDebug("Processing file {FileName} for cleanup", sourceFile);
 
         var fileName = fileSystem.Path.GetFileName(sourceFile);
         var resolution = metadataResolver.ResolveChapter(fileName, context.Series, context.ContentFormat);
@@ -138,6 +138,12 @@ internal class TorrentCleanupService(
             context.Series,
             resolution.ChapterEntity
         );
+
+        if (string.IsNullOrEmpty(comicInfo?.Volume) && !string.IsNullOrEmpty(resolution.Volume))
+            comicInfo?.Volume = resolution.Volume;
+
+        if (string.IsNullOrEmpty(comicInfo?.Number) && !string.IsNullOrEmpty(resolution.Chapter))
+            comicInfo?.Number = resolution.Chapter;
 
         var coverUrl = resolution.ChapterEntity?.CoverUrl ?? context.Series?.CoverUrl;
 
