@@ -56,7 +56,7 @@ internal partial class Publication(
     /// <summary>
     ///     List of <see cref="Chapter.Id" /> that are queued for downloading
     /// </summary>
-    internal IList<string> QueuedChapters = [];
+    internal ISet<string> QueuedChapters = new HashSet<string>();
 
     private ServerSettingsDto _settings = null!;
     private SpeedTracker? _speedTracker;

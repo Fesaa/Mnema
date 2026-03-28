@@ -95,7 +95,7 @@ internal partial class Publication
         QueuedChapters = Series!.Chapters
             .Where(ShouldDownloadChapter)
             .Select(c => c.Id)
-            .ToList();
+            .ToHashSet();
 
         if (sw.Elapsed.Seconds > 5)
             _logger.LogWarning("[{Title}/{Id}] Checking for existing content took a long time: {Elapsed}s", Title, Id, sw.Elapsed.Seconds);
