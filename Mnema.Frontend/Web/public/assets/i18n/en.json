@@ -487,7 +487,9 @@
     "genres": "Genres",
     "ignored_genres": "Ignored Genres",
     "upload": "Upload Status",
-    "search_type": "Search Type",
+    "search_type": {
+      "label": "Search Type"
+    },
     "category": {
       "label": "Category"
     },
@@ -847,7 +849,8 @@
       "actions": "Actions",
       "confirm-delete": "Are you sure you want to remove {{id}}?",
       "content": "RSS grabbed",
-      "imported": "Imported (QBIT)"
+      "imported": "Imported (QBIT)",
+      "placeholder": "Search..."
     }
   },
 
