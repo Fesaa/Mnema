@@ -94,7 +94,7 @@ public class WeebdexRepository: IRepository
 
     public async Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken)
     {
-        var url = "chapter"
+        var url = "chapter/updates"
             .SetQueryParam("limit", 32)
             .SetQueryParam("offset", 0)
             .SetQueryParam("includes[]", "manga")
@@ -113,6 +113,7 @@ public class WeebdexRepository: IRepository
                 ReleaseId = chapter.Id,
                 ReleaseName = chapter.Title ?? string.Empty,
                 ContentId = chapter.Relationships.Manga.Id,
+                ContentName = chapter.Relationships.Manga.Title,
                 ReleaseDate = chapter.CreatedAt,
                 Provider = Provider.Weebdex
             })

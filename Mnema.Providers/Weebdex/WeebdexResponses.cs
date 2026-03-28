@@ -288,7 +288,7 @@ internal sealed record PageData
 internal sealed record ChapterRelationships
 {
     [JsonPropertyName("manga")]
-    public Identifiable Manga { get; set; }
+    public Manga Manga { get; set; }
 
     [JsonPropertyName("groups")]
     public List<Group>? Groups { get; set; }
