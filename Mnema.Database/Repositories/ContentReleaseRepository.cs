@@ -41,7 +41,7 @@ public abstract class BaseContentReleaseRepository(MnemaDataContext ctx, IMapper
             || EF.Functions.Like(r.ReleaseName.ToLower(), $"%{query}%")
             || EF.Functions.Like(r.ContentName.ToLower(), $"%{query}%"))
             .ProjectTo<ContentReleaseDto>(mapper.ConfigurationProvider)
-            .OrderBy(r => r.CreatedUtc)
+            .OrderByDescending(r => r.CreatedUtc)
             .AsPagedList(paginationParams, cancellationToken);
     }
 
