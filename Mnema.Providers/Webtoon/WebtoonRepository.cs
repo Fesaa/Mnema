@@ -87,50 +87,59 @@ internal class WebtoonRepository(
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
     {
         var allowPartialChapterData = request.Metadata.GetBool(RequestConstants.AllowPartialChapterData);
-
         var baseUrl = Client.BaseAddress!.ToString().TrimEnd('/');
-        var url = $"{baseUrl}/{request.Id}";
 
-        var result = await Client.GetCachedStringAsync(url, cache, cancellationToken: cancellationToken);
-        if (result.IsErr) throw new MnemaException($"Failed to get series info for {request.Id}", result.Error);
+        List<string> pagesToVisit = [$"/{request.Id}"];
+        HashSet<string> visitedPages = [];
+        List<Chapter> chapters = [];
 
-        var document = result.Unwrap().ToHtmlDocument();
+        HtmlNode? infoHeaderNode = null;
+        HtmlNode? detailNode = null;
 
-        var infoHeaderNode = document.DocumentNode.QuerySelector(".detail_header .info");
-        var detailNode = document.DocumentNode.QuerySelector(".detail");
-
-        var chapters = ParseChapters(document);
-        var pages = ParsePages(document.DocumentNode);
-
-        // Load other chapters if required. This will be false when loading from recently updated
-        // So we don't need to load an insane number of chapters to download the last 2
-        if (!allowPartialChapterData)
+        for (var index = 0; index < pagesToVisit.Count; index++)
         {
-            for (var index = 1; pages.Count > index; index++)
+            var currentPageSuffix = pagesToVisit[index];
+
+            if (!visitedPages.Add(currentPageSuffix))
+                continue;
+
+            var pageUrl = baseUrl + currentPageSuffix;
+            logger.LogDebug("Fetching page {pageUrl}", currentPageSuffix);
+
+            var result = await Client.GetCachedStringAsync(pageUrl, cache, cancellationToken: cancellationToken);
+            if (result.IsErr)
+                throw new MnemaException($"Failed to get series info for {request.Id} on page {pageUrl}", result.Error);
+
+            var document = result.Unwrap().ToHtmlDocument();
+
+            infoHeaderNode ??= document.DocumentNode.QuerySelector(".detail_header .info");
+            detailNode ??= document.DocumentNode.QuerySelector(".detail");
+
+            chapters.AddRange(ParseChapters(document));
+
+            if (allowPartialChapterData)
+                break;
+
+            var discoveredPages = ParsePages(document.DocumentNode);
+            foreach (var p in discoveredPages)
             {
-                var pageUrl = baseUrl + pages[index];
-                logger.LogDebug("Fetching page {pageUrl}", pages[index]);
-
-                result = await Client.GetCachedStringAsync(pageUrl, cache, cancellationToken: cancellationToken);
-                if (result.IsErr)
-                    throw new MnemaException($"Failed to get series info for {request.Id} on page {pageUrl}", result.Error);
-
-                if (index == pages.Count - 1 && pages.Count > 10) index = 1;
-
-                document = result.Unwrap().ToHtmlDocument();
-
-                chapters.AddRange(ParseChapters(document));
-                pages = ParsePages(document.DocumentNode);
-
-                await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+                if (!visitedPages.Contains(p) && !pagesToVisit.Contains(p))
+                {
+                    pagesToVisit.Add(p);
+                }
             }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
         }
+
+        if (infoHeaderNode == null || detailNode == null)
+            throw new MnemaException($"Failed to parse series metadata for {request.Id}");
 
         return new Series
         {
             Id = request.Id,
-            RefUrl = url,
-            Title = infoHeaderNode.QuerySelector(".subj").InnerText.Trim('\n', '\t'),
+            RefUrl = $"{baseUrl}/{request.Id}",
+            Title = infoHeaderNode.QuerySelector(".subj")?.InnerText.Trim('\n', '\t') ?? "Unknown",
             Summary = detailNode.QuerySelector(".summary")?.InnerText ?? string.Empty,
             Status = detailNode.QuerySelector(".day_info")?.InnerText.Contains("COMPLETED") ?? false
                 ? PublicationStatus.Completed
@@ -146,17 +155,26 @@ internal class WebtoonRepository(
                 })
                 .ToList() ?? [],
             Links = [],
-            Chapters = chapters.Select((chapter, idx) => chapter with
-            {
-                SortOrder = idx,
-            }).ToList()
+            Chapters = chapters.Select((chapter, idx) => chapter with { SortOrder = idx }).ToList()
         };
 
         List<string> ParsePages(HtmlNode rootNode)
         {
             return rootNode.QuerySelectorAll(".paginate a")
                 .Select(node => node.GetAttributeValue("href", string.Empty))
-                .Where(x => !string.IsNullOrEmpty(x))
+                .Select(href => {
+                    var clean = href.Split('#')[0];
+                    clean = clean.Replace("&amp;", "&");
+
+                    // 3. Normalize: Webtoon uses "?page=1" and no param interchangeably.
+                    // If the URL ends in page=1, we strip it to match the initial ID-only URL.
+                    if (clean.EndsWith("&page=1") || clean.EndsWith("?page=1"))
+                        return clean.Replace("&page=1", "").Replace("?page=1", "");
+
+                    return clean;
+                })
+                .Where(x => !string.IsNullOrWhiteSpace(x) && x != "/" && x != "#")
+                .Distinct()
                 .ToList();
         }
     }
