@@ -6,10 +6,6 @@ it will start an automatic download with the options you've configured before.
 
 ![overview_monitored_series_screen.png](overview_monitored_series_screen.png)
 
-<warning>
-    Automatic downloads currently do not work for <code>Webtoons</code>, you will need to trigger the downloads manually
-</warning>
-
 ## Series page
 
 Each series gets its own entry, where you can view some of the relevant metadata and configure all its options. If the series
