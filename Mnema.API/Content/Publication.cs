@@ -45,4 +45,5 @@ public static class RequestConstants
     public const string MangaBakaKey = "manga_baka_id";
     public const string ExternalIdKey = "external_id";
     public const string MonitoredSeriesId = "monitored_series_id";
+    public const string AllowPartialChapterData = "allow_partial_chapter_data";
 }

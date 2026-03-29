@@ -67,6 +67,8 @@ internal class MonitoredSeriesScheduler(
 
             try
             {
+                var metadata = match.MetadataForDownloadRequest();
+                metadata.SetBool(RequestConstants.AllowPartialChapterData, true);
 
                 await downloadService.StartDownload(new DownloadRequestDto
                 {
@@ -74,7 +76,7 @@ internal class MonitoredSeriesScheduler(
                     Id = release.ContentId ?? release.ReleaseId,
                     BaseDir = match.BaseDir,
                     TempTitle = release.ContentName,
-                    Metadata = match.MetadataForDownloadRequest(),
+                    Metadata = metadata,
                     DownloadUrl = release.DownloadUrl,
                     StartImmediately = true,
                     UserId = match.UserId,

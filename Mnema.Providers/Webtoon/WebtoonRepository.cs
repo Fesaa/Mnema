@@ -86,6 +86,8 @@ internal class WebtoonRepository(
 
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
     {
+        var allowPartialChapterData = request.Metadata.GetBool(RequestConstants.AllowPartialChapterData);
+
         var baseUrl = Client.BaseAddress!.ToString().TrimEnd('/');
         var url = $"{baseUrl}/{request.Id}";
 
@@ -100,23 +102,28 @@ internal class WebtoonRepository(
         var chapters = ParseChapters(document);
         var pages = ParsePages(document.DocumentNode);
 
-        for (var index = 1; pages.Count > index; index++)
+        // Load other chapters if required. This will be false when loading from recently updated
+        // So we don't need to load an insane number of chapters to download the last 2
+        if (!allowPartialChapterData)
         {
-            var pageUrl = baseUrl + pages[index];
-            logger.LogDebug("Fetching page {pageUrl}", pages[index]);
+            for (var index = 1; pages.Count > index; index++)
+            {
+                var pageUrl = baseUrl + pages[index];
+                logger.LogDebug("Fetching page {pageUrl}", pages[index]);
 
-            result = await Client.GetCachedStringAsync(pageUrl, cache, cancellationToken: cancellationToken);
-            if (result.IsErr)
-                throw new MnemaException($"Failed to get series info for {request.Id} on page {pageUrl}", result.Error);
+                result = await Client.GetCachedStringAsync(pageUrl, cache, cancellationToken: cancellationToken);
+                if (result.IsErr)
+                    throw new MnemaException($"Failed to get series info for {request.Id} on page {pageUrl}", result.Error);
 
-            if (index == pages.Count - 1 && pages.Count > 10) index = 1;
+                if (index == pages.Count - 1 && pages.Count > 10) index = 1;
 
-            document = result.Unwrap().ToHtmlDocument();
+                document = result.Unwrap().ToHtmlDocument();
 
-            chapters.AddRange(ParseChapters(document));
-            pages = ParsePages(document.DocumentNode);
+                chapters.AddRange(ParseChapters(document));
+                pages = ParsePages(document.DocumentNode);
 
-            await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+                await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+            }
         }
 
         return new Series

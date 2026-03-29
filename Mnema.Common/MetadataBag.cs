@@ -73,6 +73,21 @@ public class MetadataBag : GenericBag<string>
 
         return value ?? fallback;
     }
+
+    public void SetBool(string key, bool b)
+    {
+        SetValue(key, b ? "true" : "false");
+    }
+
+    public void SetInt(string key, int i)
+    {
+        SetValue(key, i.ToString());
+    }
+
+    public void SetEnum<TEnum>(string key, TEnum value) where TEnum : struct, Enum
+    {
+        SetValue(key, value.ToString());
+    }
 }
 
 public class GenericBag<T> : Dictionary<string, IList<T>>
