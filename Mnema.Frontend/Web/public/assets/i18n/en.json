@@ -850,7 +850,7 @@
       "confirm-delete": "Are you sure you want to remove {{id}}?",
       "content": "RSS grabbed",
       "imported": "Imported (QBIT)",
-      "placeholder": "Search..."
+      "search-placeholder": "Search..."
     }
   },
 
