@@ -360,6 +360,14 @@ internal class DiscordConnectionService(
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         var response = await httpClient.PostAsync(url, content);
+        if (response.IsSuccessStatusCode)
+            return;
+
+        // Retry after 1s if the first attempt failed
+        await Task.Delay(1000);
+
+        response = await httpClient.PostAsync(url, content);
         response.EnsureSuccessStatusCode();
+
     }
 }
