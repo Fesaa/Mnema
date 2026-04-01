@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
+using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
@@ -78,9 +79,9 @@ internal class DiscordConnectionService(
     HttpClient httpClient
 ) : IConnectionHandlerService
 {
-    private const string WebhookKey = "webhook";
-    private const string UsernameKey = "username";
-    private const string AvatarKey = "avatar";
+    private static readonly IMetadataKey<string?> WebhookKey = MetadataKeys.OptionalString("webhook");
+    private static readonly IMetadataKey<string?> UsernameKey = MetadataKeys.OptionalString("username");
+    private static readonly IMetadataKey<string?> AvatarKey = MetadataKeys.OptionalString("avatar");
 
     private const int MaxDescriptionLength = 4096;
 
@@ -320,7 +321,7 @@ internal class DiscordConnectionService(
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
-                Key = WebhookKey,
+                Key = WebhookKey.Key,
                 Type = FormType.Text,
                 ForceSingle = true,
                 Validators = new FormValidatorsBuilder()
@@ -329,12 +330,12 @@ internal class DiscordConnectionService(
             },
             new FormControlDefinition
             {
-                Key = UsernameKey,
+                Key = UsernameKey.Key,
                 Type = FormType.Text
             },
             new FormControlDefinition
             {
-                Key = AvatarKey,
+                Key = AvatarKey.Key,
                 Type = FormType.Text
             }
         ]);
@@ -342,7 +343,7 @@ internal class DiscordConnectionService(
 
     private async Task SendMessage(Connection connection, DiscordEmbed[] embeds)
     {
-        var url = connection.Metadata.GetString(WebhookKey);
+        var url = connection.Metadata.GetKey(WebhookKey);
         if (string.IsNullOrEmpty(url))
         {
             logger.LogWarning("No webhook URL provided for connection {Guid}, cannot send message", connection.Id);
@@ -351,8 +352,8 @@ internal class DiscordConnectionService(
 
         var message = new DiscordMessage
         {
-            Username = connection.Metadata.GetStringOrDefault(UsernameKey, null),
-            AvatarUrl = connection.Metadata.GetStringOrDefault(AvatarKey, null),
+            Username = connection.Metadata.GetKey(UsernameKey),
+            AvatarUrl = connection.Metadata.GetKey(AvatarKey),
             Embeds = embeds
         };
 

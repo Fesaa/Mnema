@@ -20,7 +20,7 @@ internal class WeebdexLoadVolumesHook : IPreDownloadHook
 
         var coverImages = await mangadexRepository.GetCoverImages(publication.Series.Id, cancellationToken);
 
-        var lang = publication.Request.GetStringOrDefault(RequestConstants.LanguageKey, "en");
+        var lang = publication.Request.GetKey(RequestConstants.LanguageKey);
 
         var firstCover = coverImages.FirstOrDefault(LangFilter) ?? coverImages.FirstOrDefault();
         var lastCover = coverImages.LastOrDefault(LangFilter) ?? coverImages.LastOrDefault();

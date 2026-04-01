@@ -23,7 +23,7 @@ internal class LoadVolumesHook : IPreDownloadHook
 
         var coverImages = await mangadexRepository.GetCoverImages(publication.Series.Id, cancellationToken);
 
-        var lang = publication.Request.GetStringOrDefault(RequestConstants.LanguageKey, "en");
+        var lang = publication.Request.GetKey(RequestConstants.LanguageKey);
 
         var firstCover = coverImages.Data.FirstOrDefault(LangFilter) ?? coverImages.Data.FirstOrDefault();
         var lastCover = coverImages.Data.LastOrDefault(LangFilter) ?? coverImages.Data.LastOrDefault();

@@ -24,8 +24,8 @@ internal partial class QBitContentManager
         if (string.IsNullOrEmpty(request.DownloadUrl))
             return;
 
-        var cFormat = request.Metadata.GetRequiredEnum<ContentFormat>(RequestConstants.ContentFormatKey);
-        var format = request.Metadata.GetRequiredEnum<Format>(RequestConstants.FormatKey);
+        var cFormat = request.Metadata.GetKey(RequestConstants.ContentFormatKey);
+        var format = request.Metadata.GetKey(RequestConstants.FormatKey);
 
         var serviceProvider = scopeFactory.CreateScope().ServiceProvider;
         var metadataResolver = serviceProvider.GetRequiredService<IMetadataResolver>();
@@ -35,9 +35,9 @@ internal partial class QBitContentManager
         var signalR = serviceProvider.GetRequiredService<IMessageService>();
         var unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
 
-        var monitoredSeriesId = request.Metadata.GetGuid(RequestConstants.MonitoredSeriesId);
+        var monitoredSeriesId = request.Metadata.GetKey(RequestConstants.MonitoredSeriesId);
         var series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata, ct);
-        var title = request.Metadata.GetString(RequestConstants.TitleOverride)
+        var title = request.Metadata.GetKey(RequestConstants.TitleOverride)
             .OrNonEmpty(series?.Title, parserService.ParseSeries(request.TempTitle, cFormat));
 
         if (string.IsNullOrEmpty(title))

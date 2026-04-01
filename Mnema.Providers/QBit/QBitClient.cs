@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
+using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
@@ -18,9 +19,9 @@ internal class QBitClient(
     IServiceScopeFactory scopeFactory
 ) : IQBitClient
 {
-    private const string UrlKey = "url";
-    private const string UsernameKey = "username";
-    private const string PasswordKey = "password";
+    private static readonly IMetadataKey<string?> UrlKey = MetadataKeys.OptionalString("url");
+    private static readonly IMetadataKey<string?> UsernameKey = MetadataKeys.OptionalString("username");
+    private static readonly IMetadataKey<string?> PasswordKey = MetadataKeys.OptionalString("password");
 
     private QBittorrentClient? _client;
     private DownloadClient? _downloadClientMetadata;
@@ -140,9 +141,9 @@ internal class QBitClient(
                 return null;
             }
 
-            var url = downloadClient.Metadata.GetString(UrlKey);
-            var username = downloadClient.Metadata.GetString(UsernameKey);
-            var password = downloadClient.Metadata.GetString(PasswordKey);
+            var url = downloadClient.Metadata.GetKey(UrlKey);
+            var username = downloadClient.Metadata.GetKey(UsernameKey);
+            var password = downloadClient.Metadata.GetKey(PasswordKey);
 
             if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {

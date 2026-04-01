@@ -26,9 +26,9 @@ public class MetadataResolver(
     public async Task<Series?> ResolveSeriesAsync(Provider provider, MetadataBag metadata,
         CancellationToken cancellationToken = default)
     {
-        var hardCoverId = metadata.GetString(RequestConstants.HardcoverSeriesIdKey);
-        var mangaBakaId = metadata.GetString(RequestConstants.MangaBakaKey);
-        var externalId = metadata.GetString(RequestConstants.ExternalIdKey);
+        var hardCoverId = metadata.GetKey(RequestConstants.HardcoverSeriesIdKey);
+        var mangaBakaId = metadata.GetKey(RequestConstants.MangaBakaKey);
+        var externalId = metadata.GetKey(RequestConstants.ExternalIdKey);
 
         Dictionary<MetadataProvider, Series?> series = [];
 

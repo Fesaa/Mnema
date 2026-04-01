@@ -97,7 +97,7 @@ internal class ConnectionService(
         else
             unitOfWork.ConnectionRepository.Update(connection);
 
-        await unitOfWork.CommitAsync();
+        await unitOfWork.CommitAsync(cancellationToken);
     }
 
     public async Task<FormDefinition> GetForm(ConnectionType type, CancellationToken cancellationToken)

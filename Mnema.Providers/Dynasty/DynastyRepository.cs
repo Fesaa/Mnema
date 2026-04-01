@@ -37,6 +37,8 @@ internal class DynastyRepository(
     private const string SeriesReleaseDateFormat = "MMM d \\'yy";
     private const int JsonOffset = 2;
 
+    private static readonly IMetadataKey<bool> AllowChapters = MetadataKeys.Bool("AllowChapters");
+
     private static readonly Regex ChapterTitleRegex =
         new(@"Chapter\s+([\d.]+)(?::\s*(.+))?", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
@@ -48,7 +50,7 @@ internal class DynastyRepository(
     {
         var url = "/search"
             .SetQueryParam("q", request.Query)
-            .SetQueryParamIf(request.Modifiers.GetBool("AllowChapters"), "classes[]", "Chapter")
+            .SetQueryParamIf(request.Modifiers.GetKey(AllowChapters), "classes[]", "Chapter")
             .AppendQueryParam("classes[]", "Series")
             .SetQueryParam("page", pagination.PageNumber + 1); // Dynasty is 1 indexed
 
@@ -173,30 +175,30 @@ internal class DynastyRepository(
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
-                Key = RequestConstants.DownloadOneShotKey,
+                Key = RequestConstants.DownloadOneShotKey.Key,
                 Type = FormType.Switch
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.IncludeNotMatchedTagsKey,
+                Key = RequestConstants.IncludeNotMatchedTagsKey.Key,
                 Type = FormType.Switch,
                 Advanced = true
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.IncludeCover,
+                Key = RequestConstants.IncludeCover.Key,
                 Type = FormType.Switch,
                 DefaultOption = "true"
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.TitleOverride,
+                Key = RequestConstants.TitleOverride.Key,
                 Type = FormType.Text,
                 Advanced = true
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.SkipVolumeWithoutChapter,
+                Key = RequestConstants.SkipVolumeWithoutChapter.Key,
                 Type = FormType.Switch,
                 Advanced = true
             }
@@ -209,7 +211,7 @@ internal class DynastyRepository(
             new FormControlDefinition
             {
                 Type = FormType.Switch,
-                Key = "AllowChapters",
+                Key = AllowChapters.Key,
                 Options = []
             }
         ]);

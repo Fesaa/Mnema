@@ -47,13 +47,13 @@ public static class MonitoredSeriesExtensions
     public static MetadataBag MetadataForDownloadRequest(this MonitoredSeries monitoredSeries)
     {
         var bag = monitoredSeries.Metadata;
-        bag.SetValue(RequestConstants.HardcoverSeriesIdKey, monitoredSeries.HardcoverId);
-        bag.SetValue(RequestConstants.MangaBakaKey, monitoredSeries.MangaBakaId);
-        bag.SetValue(RequestConstants.ExternalIdKey, monitoredSeries.ExternalId);
-        bag.SetValue(RequestConstants.FormatKey, monitoredSeries.Format.ToString());
-        bag.SetValue(RequestConstants.ContentFormatKey, monitoredSeries.ContentFormat.ToString());
-        bag.SetValue(RequestConstants.TitleOverride, monitoredSeries.TitleOverride);
-        bag.SetValue(RequestConstants.MonitoredSeriesId, monitoredSeries.Id.ToString());
+        bag.SetKey(RequestConstants.HardcoverSeriesIdKey, monitoredSeries.HardcoverId);
+        bag.SetKey(RequestConstants.MangaBakaKey, monitoredSeries.MangaBakaId);
+        bag.SetKey(RequestConstants.ExternalIdKey, monitoredSeries.ExternalId);
+        bag.SetKey(RequestConstants.FormatKey, monitoredSeries.Format);
+        bag.SetKey(RequestConstants.ContentFormatKey, monitoredSeries.ContentFormat);
+        bag.SetKey(RequestConstants.TitleOverride, monitoredSeries.TitleOverride);
+        bag.SetKey(RequestConstants.MonitoredSeriesId, monitoredSeries.Id);
 
         return bag;
     }

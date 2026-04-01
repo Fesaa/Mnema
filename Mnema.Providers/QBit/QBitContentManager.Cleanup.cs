@@ -56,7 +56,7 @@ internal partial class QBitContentManager
             var cleanupService = scope.ServiceProvider.GetRequiredService<ICleanupService>();
             await cleanupService.CleanupAsync(torrent, ct);
 
-            var monitoredSeriesId = torrent.Request.Metadata.GetGuid(RequestConstants.MonitoredSeriesId);
+            var monitoredSeriesId = torrent.Request.Metadata.GetKey(RequestConstants.MonitoredSeriesId);
             if (monitoredSeriesId != null)
             {
                 BackgroundJob.Enqueue(() =>

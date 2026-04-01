@@ -29,7 +29,7 @@ internal partial class PublicationManager
                 await DeleteFiles(publication);
             }
 
-            var monitoredSeriesId = publication.Request.Metadata.GetGuid(RequestConstants.MonitoredSeriesId);
+            var monitoredSeriesId = publication.Request.Metadata.GetKey(RequestConstants.MonitoredSeriesId);
             if (monitoredSeriesId != null)
             {
                 BackgroundJob.Enqueue(() =>

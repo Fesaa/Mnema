@@ -41,6 +41,13 @@ public class WeebdexRepository: IRepository
             ["engtl"] = "{0}"
         };
 
+    private static readonly IMetadataKey<int> IncludeTagsMode = MetadataKeys.Int("includeTagsMode", 0);
+    private static readonly IMetadataKey<int> ExcludeTagsMode = MetadataKeys.Int("excludeTagsMode", 0);
+    private static readonly IMetadataKey<IEnumerable<string>> Status = MetadataKeys.Strings("status");
+    private static readonly IMetadataKey<IEnumerable<string>> ContentRating = MetadataKeys.Strings("contentRating");
+    private static readonly IMetadataKey<IEnumerable<string>> IncludedTags = MetadataKeys.Strings("includeTags");
+    private static readonly IMetadataKey<IEnumerable<string>> ExcludedTags = MetadataKeys.Strings("excludeTags");
+
     private readonly IDistributedCache _cache;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<WeebdexRepository> _logger;
@@ -62,12 +69,12 @@ public class WeebdexRepository: IRepository
     public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken)
     {
         var url = "/manga".SetQueryParam("title", request.Query)
-            .AddRange("status", request.Modifiers.GetStrings("status"))
-            .AddRange("contentRating", request.Modifiers.GetStrings("contentRating"))
-            .AddRange("tag", request.Modifiers.GetStrings("includeTags"))
-            .SetQueryParam("tmod", request.Modifiers.GetIntOrDefault("includedTagsMode", 0))
-            .AddRange("tagx", request.Modifiers.GetStrings("excludeTags"))
-            .SetQueryParam("txmod", request.Modifiers.GetIntOrDefault("excludedTagsMode", 0))
+            .AddRange("status", request.Modifiers.GetKey(Status))
+            .AddRange("contentRating", request.Modifiers.GetKey(ContentRating))
+            .AddRange("tag", request.Modifiers.GetKey(IncludedTags))
+            .SetQueryParam("tmod", request.Modifiers.GetKey(IncludeTagsMode))
+            .AddRange("tagx", request.Modifiers.GetKey(ExcludedTags))
+            .SetQueryParam("txmod", request.Modifiers.GetKey(ExcludeTagsMode))
             .AddPagination(pagination.PageSize, pagination.PageNumber + 1);
 
         var result =
@@ -126,7 +133,7 @@ public class WeebdexRepository: IRepository
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
-                Key = RequestConstants.LanguageKey,
+                Key = RequestConstants.LanguageKey.Key,
                 Type = FormType.DropDown,
                 DefaultOption = "en",
                 Options =
@@ -141,36 +148,30 @@ public class WeebdexRepository: IRepository
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.ScanlationGroupKey,
+                Key = RequestConstants.ScanlationGroupKey.Key,
                 Advanced = true,
                 Type = FormType.Text
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.DownloadOneShotKey,
+                Key = RequestConstants.DownloadOneShotKey.Key,
                 Type = FormType.Switch
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.IncludeCover,
+                Key = RequestConstants.IncludeCover.Key,
                 Type = FormType.Switch,
                 DefaultOption = "true"
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.UpdateCover,
-                Advanced = true,
-                Type = FormType.Switch
-            },
-            new FormControlDefinition
-            {
-                Key = RequestConstants.TitleOverride,
+                Key = RequestConstants.TitleOverride.Key,
                 Advanced = true,
                 Type = FormType.Text
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.AllowNonMatchingScanlationGroupKey,
+                Key = RequestConstants.AllowNonMatchingScanlationGroupKey.Key,
                 Advanced = true,
                 Type = FormType.Switch,
                 DefaultOption = "true"
@@ -183,7 +184,7 @@ public class WeebdexRepository: IRepository
         return [
             new FormControlDefinition
             {
-                Key = "status",
+                Key = Status.Key,
                 Type = FormType.MultiSelect,
                 Options = Enum.GetValues<Status>()
                     .Select(s => FormControlOption.Option(s.ToString(), s.ToString().ToLower()))
@@ -191,7 +192,7 @@ public class WeebdexRepository: IRepository
             },
             new FormControlDefinition
             {
-                Key = "contentRating",
+                Key = ContentRating.Key,
                 Type = FormType.MultiSelect,
                 Options = Enum.GetValues<ContentRating>()
                     .Select(s => FormControlOption.Option(s.ToString(), s.ToString().ToLower()))
@@ -200,25 +201,25 @@ public class WeebdexRepository: IRepository
             new FormControlDefinition
             {
                 Type = FormType.MultiSelect,
-                Key = "includeTags",
+                Key = IncludedTags.Key,
                 Options = await _tagOptions
             },
             new FormControlDefinition
             {
                 Type = FormType.MultiSelect,
-                Key = "excludeTags",
+                Key = ExcludedTags.Key,
                 Options = await _tagOptions
             },
             new FormControlDefinition
             {
                 Type = FormType.DropDown,
-                Key = "includeTagsMode",
+                Key = IncludeTagsMode.Key,
                 Options = [FormControlOption.DefaultValue("And", "0"), FormControlOption.Option("Or", "1")]
             },
             new FormControlDefinition
             {
                 Type = FormType.DropDown,
-                Key = "excludeTagsMode",
+                Key = ExcludeTagsMode.Key,
                 Options = [FormControlOption.DefaultValue("Or", "0"), FormControlOption.Option("And", "1")]
             }
         ];
@@ -229,7 +230,7 @@ public class WeebdexRepository: IRepository
         var id = request.Id;
         var url = $"/manga/{id}".AddIncludes();
 
-        var language = request.GetStringOrDefault(RequestConstants.LanguageKey, "en");
+        var language = request.GetKey(RequestConstants.LanguageKey);
 
         var result =
             await Client.GetCachedAsync<Manga>(url.ToString(), _cache, cancellationToken: cancellationToken);
@@ -341,8 +342,8 @@ public class WeebdexRepository: IRepository
     {
         if (chapters == null) return [];
 
-        var scanlationGroup = request.GetStringOrDefault(RequestConstants.ScanlationGroupKey, string.Empty);
-        var allowNonMatching = request.GetBool(RequestConstants.AllowNonMatchingScanlationGroupKey, true);
+        var scanlationGroup = request.GetKey(RequestConstants.ScanlationGroupKey);
+        var allowNonMatching = request.GetKey(RequestConstants.AllowNonMatchingScanlationGroupKey);
 
         return chapters
             .GroupBy(c => string.IsNullOrEmpty(c.ChapterNumber)

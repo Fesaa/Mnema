@@ -30,7 +30,7 @@ public class MetadataServiceTest
             TempTitle = string.Empty,
             Metadata = new MetadataBag
             {
-                [RequestConstants.IncludeNotMatchedTagsKey] = ["true"]
+                [RequestConstants.IncludeNotMatchedTagsKey.Key] = ["true"]
             }
         };
     }
@@ -318,7 +318,7 @@ public class MetadataServiceTest
         };
 
         var req = Request();
-        req.Metadata[RequestConstants.IncludeNotMatchedTagsKey] = ["true"];
+        req.Metadata[RequestConstants.IncludeNotMatchedTagsKey.Key] = ["true"];
         var (_, processedTags) = sut.ProcessTags(preferences, tags, req);
 
         Assert.Contains("action", processedTags);

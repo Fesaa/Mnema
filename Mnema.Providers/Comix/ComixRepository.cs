@@ -29,9 +29,6 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
         var url = "api/v2/manga"
             .SetQueryParam("keyword", request.Query)
             .SetQueryParam("order[relevance]", "desc")
-            .AddRange("exclude_genres[]", request.Modifiers.GetStrings("exclude_genres"))
-            .AddRange("genres[]", request.Modifiers.GetStrings("genres"))
-            .SetQueryParam("genres_mode", request.Modifiers.GetStringOrDefault("genres_mode", "and"))
             .AddPagination(pagination.PageSize, pagination.PageNumber + 1); // 1 based
 
         var res = await Client.GetCachedAsync<ComixRespose<ComixPaginatedResult<ComixManga>>>(url, cache, cancellationToken: cancellationToken);
@@ -85,7 +82,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
-                Key = RequestConstants.LanguageKey,
+                Key = RequestConstants.LanguageKey.Key,
                 Type = FormType.DropDown,
                 DefaultOption = "en",
                 Options =
@@ -100,36 +97,30 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.ScanlationGroupKey,
+                Key = RequestConstants.ScanlationGroupKey.Key,
                 Advanced = true,
                 Type = FormType.Text
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.DownloadOneShotKey,
+                Key = RequestConstants.DownloadOneShotKey.Key,
                 Type = FormType.Switch
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.IncludeCover,
+                Key = RequestConstants.IncludeCover.Key,
                 Type = FormType.Switch,
                 DefaultOption = "true"
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.UpdateCover,
-                Advanced = true,
-                Type = FormType.Switch
-            },
-            new FormControlDefinition
-            {
-                Key = RequestConstants.TitleOverride,
+                Key = RequestConstants.TitleOverride.Key,
                 Advanced = true,
                 Type = FormType.Text
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.AllowNonMatchingScanlationGroupKey,
+                Key = RequestConstants.AllowNonMatchingScanlationGroupKey.Key,
                 Advanced = true,
                 Type = FormType.Switch,
                 DefaultOption = "true"
@@ -152,7 +143,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
         if (res.IsErr)
             throw new MnemaException($"Failed to retrieve information for manga {request.Id}", res.Error);
 
-        var language = request.GetStringOrDefault(RequestConstants.LanguageKey, "en");
+        var language = request.GetKey(RequestConstants.LanguageKey);
 
         var manga = res.Unwrap().Result;
         var chapters = await GetSeriesChapters(manga.HashId, cancellationToken: cancellationToken);
@@ -220,8 +211,8 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
     private static List<ComixChapter> FilterChapters(IList<ComixChapter> chapters, string language,
         DownloadRequestDto request)
     {
-        var scanlationGroup = request.GetStringOrDefault(RequestConstants.ScanlationGroupKey, string.Empty);
-        var allowNonMatching = request.GetBool(RequestConstants.AllowNonMatchingScanlationGroupKey, true);
+        var scanlationGroup = request.GetKey(RequestConstants.ScanlationGroupKey);
+        var allowNonMatching = request.GetKey(RequestConstants.AllowNonMatchingScanlationGroupKey);
 
         return chapters
             .GroupBy(c => c.Number)

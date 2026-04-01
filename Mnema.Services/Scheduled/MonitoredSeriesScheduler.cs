@@ -68,7 +68,7 @@ internal class MonitoredSeriesScheduler(
             try
             {
                 var metadata = match.MetadataForDownloadRequest();
-                metadata.SetBool(RequestConstants.AllowPartialChapterData, true);
+                metadata.SetKey(RequestConstants.AllowPartialChapterData, true);
 
                 await downloadService.StartDownload(new DownloadRequestDto
                 {

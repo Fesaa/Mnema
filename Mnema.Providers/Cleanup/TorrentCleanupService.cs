@@ -53,8 +53,8 @@ internal class TorrentCleanupService(
 
         torrent.Series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata);
 
-        var format = request.Metadata.GetEnum<Format>(RequestConstants.FormatKey) ?? Format.Archive;
-        var contentFormat = request.Metadata.GetEnum<ContentFormat>(RequestConstants.ContentFormatKey) ?? ContentFormat.Manga;
+        var format = request.Metadata.GetKey(RequestConstants.FormatKey);
+        var contentFormat = request.Metadata.GetKey(RequestConstants.ContentFormatKey);
 
         var title = ResolveTitle(request, torrent.Series, torrent, contentFormat);
         var destDir = PrepareDestinationDirectory(request, title);
@@ -73,7 +73,7 @@ internal class TorrentCleanupService(
 
     private string ResolveTitle(DownloadRequestDto request, Series? series, QBitTorrent torrent, ContentFormat contentFormat)
     {
-        return request.Metadata.GetString(RequestConstants.TitleOverride)
+        return request.Metadata.GetKey(RequestConstants.TitleOverride)
             .OrNonEmpty(
                 series?.Title,
                 parserService.ParseSeries(torrent.Title, contentFormat),

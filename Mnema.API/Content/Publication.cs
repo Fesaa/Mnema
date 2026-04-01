@@ -1,6 +1,9 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Mnema.Common;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.Content;
 
 namespace Mnema.API.Content;
 
@@ -29,21 +32,19 @@ public class OnDiskContent
 
 public static class RequestConstants
 {
-    public const string LanguageKey = "tl-lang";
-    public const string AllowNonMatchingScanlationGroupKey = "allow_non_matching_scanlation_group";
-    public const string DownloadOneShotKey = "download_one_shot";
-    public const string IncludeNotMatchedTagsKey = "include_not_matched_tags";
-    public const string IncludeCover = "include_cover";
-    public const string UpdateCover = "update_cover";
-    public const string TitleOverride = "title_override";
-    public const string AssignEmptyVolumes = "assign_empty_volumes";
-    public const string ScanlationGroupKey = "scanlation_group";
-    public const string SkipVolumeWithoutChapter = "skip_volume_without_chapter";
-    public const string FormatKey = "format";
-    public const string ContentFormatKey = "content_format";
-    public const string HardcoverSeriesIdKey = "hardcover_series_id";
-    public const string MangaBakaKey = "manga_baka_id";
-    public const string ExternalIdKey = "external_id";
-    public const string MonitoredSeriesId = "monitored_series_id";
-    public const string AllowPartialChapterData = "allow_partial_chapter_data";
+    public static readonly IMetadataKey<string> LanguageKey = MetadataKeys.String("tl-lang", "en");
+    public static readonly IMetadataKey<bool> AllowNonMatchingScanlationGroupKey = MetadataKeys.Bool("allow_non_matching_scanlation_group", true);
+    public static readonly IMetadataKey<bool> DownloadOneShotKey = MetadataKeys.Bool("download_one_shot");
+    public static readonly IMetadataKey<bool> IncludeNotMatchedTagsKey = MetadataKeys.Bool("include_not_matched_tags");
+    public static readonly IMetadataKey<bool> IncludeCover = MetadataKeys.Bool("include_cover", true);
+    public static readonly IMetadataKey<string?> TitleOverride = MetadataKeys.OptionalString("title_override");
+    public static readonly IMetadataKey<string> ScanlationGroupKey = MetadataKeys.String("scanlation_group", string.Empty);
+    public static readonly IMetadataKey<bool> SkipVolumeWithoutChapter = MetadataKeys.Bool("skip_volume_without_chapter");
+    public static readonly IMetadataKey<Format> FormatKey = MetadataKeys.Enum<Format>("format");
+    public static readonly IMetadataKey<ContentFormat> ContentFormatKey = MetadataKeys.Enum<ContentFormat>("content_format");
+    public static readonly IMetadataKey<string?> HardcoverSeriesIdKey = MetadataKeys.OptionalString("hardcover_series_id");
+    public static readonly IMetadataKey<string?> MangaBakaKey = MetadataKeys.OptionalString("manga_baka_id");
+    public static readonly IMetadataKey<string?> ExternalIdKey = MetadataKeys.OptionalString("external_id");
+    public static readonly IMetadataKey<Guid?> MonitoredSeriesId = MetadataKeys.OptionalGuid("monitored_series_id");
+    public static readonly IMetadataKey<bool> AllowPartialChapterData = MetadataKeys.Bool("allow_partial_chapter_data");
 }

@@ -253,36 +253,30 @@ internal class BatoRepository(ILogger<BatoRepository> logger, IDistributedCache 
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
-                Key = RequestConstants.ScanlationGroupKey,
+                Key = RequestConstants.ScanlationGroupKey.Key,
                 Advanced = true,
                 Type = FormType.Text
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.DownloadOneShotKey,
+                Key = RequestConstants.DownloadOneShotKey.Key,
                 Type = FormType.Switch
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.IncludeCover,
+                Key = RequestConstants.IncludeCover.Key,
                 Type = FormType.Switch,
                 DefaultOption = "true"
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.UpdateCover,
-                Advanced = true,
-                Type = FormType.Switch
-            },
-            new FormControlDefinition
-            {
-                Key = RequestConstants.TitleOverride,
+                Key = RequestConstants.TitleOverride.Key,
                 Advanced = true,
                 Type = FormType.Text
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.AllowNonMatchingScanlationGroupKey,
+                Key = RequestConstants.AllowNonMatchingScanlationGroupKey.Key,
                 Advanced = true,
                 Type = FormType.Switch,
                 DefaultOption = "true"

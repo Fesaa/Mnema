@@ -38,8 +38,8 @@ public class MetadataResolverTests
             .Returns(mangabakaSeries);
 
         var metadata = new MetadataBag();
-        metadata.SetValue(RequestConstants.HardcoverSeriesIdKey, "1");
-        metadata.SetValue(RequestConstants.MangaBakaKey, "2");
+        metadata.SetValue(RequestConstants.HardcoverSeriesIdKey.Key, "1");
+        metadata.SetValue(RequestConstants.MangaBakaKey.Key, "2");
 
         return new MetadataResolver(
             settingsService,

@@ -127,8 +127,8 @@ internal class ArchiveFormatHandler(
 
     private async Task AddCoverIfNeededAsync(FormatHandlerContext context, ZipArchive destArchive, bool foundCover)
     {
-        if (!context.Request.GetBool(RequestConstants.IncludeCover)) return;
-        if (foundCover && !context.Request.GetBool(RequestConstants.UpdateCover)) return;
+        if (!context.Request.GetKey(RequestConstants.IncludeCover)) return;
+        if (foundCover) return;
         if (string.IsNullOrEmpty(context.CoverUrl)) return;
 
         var ext = fileSystem.Path.GetExtension(context.CoverUrl);

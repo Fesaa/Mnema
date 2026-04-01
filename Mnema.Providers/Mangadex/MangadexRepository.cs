@@ -41,6 +41,14 @@ internal class MangadexRepository : IRepository
             ["engtl"] = "{0}"
         };
 
+    private static readonly IMetadataKey<IEnumerable<string>> Status = MetadataKeys.Strings("status");
+    private static readonly IMetadataKey<IEnumerable<string>> ContentRating = MetadataKeys.Strings("contentRating");
+    private static readonly IMetadataKey<IEnumerable<string>> PublicationDemographic = MetadataKeys.Strings("publicationDemographic");
+    private static readonly IMetadataKey<IEnumerable<string>> IncludedTags = MetadataKeys.Strings("includeTags");
+    private static readonly IMetadataKey<string> IncludedTagsMode = MetadataKeys.String("status", "AND");
+    private static readonly IMetadataKey<IEnumerable<string>> ExcludedTags = MetadataKeys.Strings("excludeTags");
+    private static readonly IMetadataKey<string> ExcludedTagsMode = MetadataKeys.String("excludedTagsMode", "OR");
+
     private readonly IDistributedCache _cache;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<MangadexRepository> _logger;
@@ -63,13 +71,13 @@ internal class MangadexRepository : IRepository
         CancellationToken cancellationToken)
     {
         var url = "/manga".SetQueryParam("title", request.Query)
-            .AddRange("status[]", request.Modifiers.GetStrings("status"))
-            .AddRange("contentRating[]", request.Modifiers.GetStrings("contentRating"))
-            .AddRange("publicationDemographic[]", request.Modifiers.GetStrings("publicationDemographic"))
-            .AddRange("includedTags[]", request.Modifiers.GetStrings("includeTags"))
-            .SetQueryParam("includedTagsMode", request.Modifiers.GetStringOrDefault("includedTagsMode", "AND"))
-            .AddRange("excludedTags[]", request.Modifiers.GetStrings("excludeTags"))
-            .SetQueryParam("excludedTagsMode", request.Modifiers.GetStringOrDefault("excludedTagsMode", "OR"))
+            .AddRange("status[]", request.Modifiers.GetKey(Status))
+            .AddRange("contentRating[]", request.Modifiers.GetKey(ContentRating))
+            .AddRange("publicationDemographic[]", request.Modifiers.GetKey(PublicationDemographic))
+            .AddRange("includedTags[]", request.Modifiers.GetKey(IncludedTags))
+            .SetQueryParam("includedTagsMode", request.Modifiers.GetKey(IncludedTagsMode))
+            .AddRange("excludedTags[]", request.Modifiers.GetKey(ExcludedTags))
+            .SetQueryParam("excludedTagsMode", request.Modifiers.GetKey(ExcludedTagsMode))
             .AddOffsetPagination(pagination)
             .AddIncludes();
 
@@ -104,7 +112,7 @@ internal class MangadexRepository : IRepository
             await Client.GetCachedAsync<MangaResponse>(url.ToString(), _cache, cancellationToken: cancellationToken);
         if (result.IsErr) throw new MnemaException($"Failed to retrieve information for manga {id}", result.Error);
 
-        var language = request.GetStringOrDefault(RequestConstants.LanguageKey, "en");
+        var language = request.GetKey(RequestConstants.LanguageKey);
 
         var manga = result.Unwrap().Data;
         var chapters = await GetChaptersForSeries(id, language, cancellationToken);
@@ -224,7 +232,7 @@ internal class MangadexRepository : IRepository
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
-                Key = RequestConstants.LanguageKey,
+                Key = RequestConstants.LanguageKey.Key,
                 Type = FormType.DropDown,
                 DefaultOption = "en",
                 Options =
@@ -239,36 +247,30 @@ internal class MangadexRepository : IRepository
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.ScanlationGroupKey,
+                Key = RequestConstants.ScanlationGroupKey.Key,
                 Advanced = true,
                 Type = FormType.Text
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.DownloadOneShotKey,
+                Key = RequestConstants.DownloadOneShotKey.Key,
                 Type = FormType.Switch
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.IncludeCover,
+                Key = RequestConstants.IncludeCover.Key,
                 Type = FormType.Switch,
                 DefaultOption = "true"
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.UpdateCover,
-                Advanced = true,
-                Type = FormType.Switch
-            },
-            new FormControlDefinition
-            {
-                Key = RequestConstants.TitleOverride,
+                Key = RequestConstants.TitleOverride.Key,
                 Advanced = true,
                 Type = FormType.Text
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.AllowNonMatchingScanlationGroupKey,
+                Key = RequestConstants.AllowNonMatchingScanlationGroupKey.Key,
                 Advanced = true,
                 Type = FormType.Switch,
                 DefaultOption = "true"
@@ -283,7 +285,7 @@ internal class MangadexRepository : IRepository
             new FormControlDefinition
             {
                 Type = FormType.MultiSelect,
-                Key = "status",
+                Key = Status.Key,
                 Options =
                 [
                     FormControlOption.Option("Cancelled", "cancelled"),
@@ -295,7 +297,7 @@ internal class MangadexRepository : IRepository
             new FormControlDefinition
             {
                 Type = FormType.MultiSelect,
-                Key = "contentRating",
+                Key = ContentRating.Key,
                 Options =
                 [
                     FormControlOption.Option("Safe", "safe"),
@@ -307,25 +309,25 @@ internal class MangadexRepository : IRepository
             new FormControlDefinition
             {
                 Type = FormType.MultiSelect,
-                Key = "includeTags",
+                Key = IncludedTags.Key,
                 Options = await _tagOptions
             },
             new FormControlDefinition
             {
                 Type = FormType.MultiSelect,
-                Key = "excludeTags",
+                Key = ExcludedTags.Key,
                 Options = await _tagOptions
             },
             new FormControlDefinition
             {
                 Type = FormType.DropDown,
-                Key = "includeTagsMode",
+                Key = IncludedTagsMode.Key,
                 Options = [FormControlOption.DefaultValue("And", "AND"), FormControlOption.Option("Or", "OR")]
             },
             new FormControlDefinition
             {
                 Type = FormType.DropDown,
-                Key = "excludeTagsMode",
+                Key = ExcludedTagsMode.Key,
                 Options = [FormControlOption.Option("And", "AND"), FormControlOption.DefaultValue("Or", "OR")]
             }
         ];
@@ -360,8 +362,8 @@ internal class MangadexRepository : IRepository
     private static List<ChapterData> FilterChapters(IList<ChapterData> chapters, string language,
         DownloadRequestDto request)
     {
-        var scanlationGroup = request.GetStringOrDefault(RequestConstants.ScanlationGroupKey, string.Empty);
-        var allowNonMatching = request.GetBool(RequestConstants.AllowNonMatchingScanlationGroupKey, true);
+        var scanlationGroup = request.GetKey(RequestConstants.ScanlationGroupKey);
+        var allowNonMatching = request.GetKey(RequestConstants.AllowNonMatchingScanlationGroupKey);
 
         return chapters
             .GroupBy(c => string.IsNullOrEmpty(c.Attributes.Chapter)

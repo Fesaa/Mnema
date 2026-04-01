@@ -102,7 +102,7 @@ public class MonitoredSeriesController(
         var req = new SearchRequest
         {
             Provider = mSeries.Provider,
-            Query = mSeries.Metadata.GetStringOrDefault(RequestConstants.TitleOverride, mSeries.Title),
+            Query = mSeries.Metadata.GetKey(RequestConstants.TitleOverride) ?? mSeries.Title,
             Modifiers = mSeries.MetadataForDownloadRequest()
         };
 

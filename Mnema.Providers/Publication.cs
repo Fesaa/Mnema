@@ -173,8 +173,8 @@ internal partial class Publication(
     public string Id => Series != null ? Series.Id : Request.Id;
 
     public string Title => Series == null
-        ? Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(Request.TempTitle, Request.Id)
-        : Request.GetString(RequestConstants.TitleOverride).OrNonEmpty(Series.Title, Request.Id);
+        ? Request.GetKey(RequestConstants.TitleOverride).OrNonEmpty(Request.TempTitle, Request.Id)
+        : Request.GetKey(RequestConstants.TitleOverride).OrNonEmpty(Series.Title, Request.Id);
 
     public string DownloadDir => Series != null ? Path.Join(Request.BaseDir, Title) : Request.BaseDir;
 

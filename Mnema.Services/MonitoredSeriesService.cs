@@ -129,7 +129,7 @@ public class MonitoredSeriesService(
                 },
                 new FormControlDefinition
                 {
-                    Key = RequestConstants.TitleOverride,
+                    Key = RequestConstants.TitleOverride.Key,
                     Field = "titleOverride",
                     Type = FormType.Text,
                 },
@@ -164,7 +164,7 @@ public class MonitoredSeriesService(
                 },
                 new FormControlDefinition
                 {
-                    Key = RequestConstants.FormatKey,
+                    Key = RequestConstants.FormatKey.Key,
                     Field = "format",
                     Type = FormType.DropDown,
                     ValueType = FormValueType.Integer,
@@ -177,7 +177,7 @@ public class MonitoredSeriesService(
                 },
                 new FormControlDefinition
                 {
-                    Key = RequestConstants.ContentFormatKey,
+                    Key = RequestConstants.ContentFormatKey.Key,
                     Field = "contentFormat",
                     Type = FormType.DropDown,
                     ValueType = FormValueType.Integer,
@@ -190,19 +190,19 @@ public class MonitoredSeriesService(
                 },
                 new FormControlDefinition
                 {
-                    Key = RequestConstants.HardcoverSeriesIdKey,
+                    Key = RequestConstants.HardcoverSeriesIdKey.Key,
                     Field = "hardcoverId",
                     Type = FormType.Text,
                 },
                 new FormControlDefinition
                 {
-                    Key = RequestConstants.MangaBakaKey,
+                    Key = RequestConstants.MangaBakaKey.Key,
                     Field = "mangaBakaId",
                     Type = FormType.Text,
                 },
                 new FormControlDefinition
                 {
-                    Key = RequestConstants.ExternalIdKey,
+                    Key = RequestConstants.ExternalIdKey.Key,
                     Field = "externalId",
                     Type = FormType.Text,
                 },
@@ -245,9 +245,12 @@ public class MonitoredSeriesService(
             return;
         }
 
-        var title = metadata.GetStringOrDefault(RequestConstants.TitleOverride, series.Title);
+        var title = metadata.GetKey(RequestConstants.TitleOverride) ?? series.Title;
         if (string.IsNullOrEmpty(title))
+        {
+            logger.LogWarning("Resolved series {Title} has no title. not using as metadata", mSeries.Title);
             return;
+        }
 
         if (!string.IsNullOrEmpty(series.CoverUrl))
         {

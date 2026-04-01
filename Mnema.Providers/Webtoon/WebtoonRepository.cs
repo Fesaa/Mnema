@@ -86,7 +86,7 @@ internal class WebtoonRepository(
 
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
     {
-        var allowPartialChapterData = request.Metadata.GetBool(RequestConstants.AllowPartialChapterData);
+        var allowPartialChapterData = request.Metadata.GetKey(RequestConstants.AllowPartialChapterData);
         var baseUrl = Client.BaseAddress!.ToString().TrimEnd('/');
 
         List<string> pagesToVisit = [$"/{request.Id}"];
@@ -254,13 +254,13 @@ internal class WebtoonRepository(
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
-                Key = RequestConstants.IncludeCover,
+                Key = RequestConstants.IncludeCover.Key,
                 Type = FormType.Switch,
                 DefaultOption = "true"
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.TitleOverride,
+                Key = RequestConstants.TitleOverride.Key,
                 Type = FormType.Text,
                 Advanced = true
             }

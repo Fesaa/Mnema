@@ -27,18 +27,8 @@ public sealed record DownloadRequestDto
 
     public required MetadataBag Metadata { get; set; }
 
-    public string? GetString(string key)
+    public T GetKey<T>(IMetadataKey<T> key)
     {
-        return Metadata.GetString(key);
-    }
-
-    public string GetStringOrDefault(string key, string defaultValue)
-    {
-        return Metadata.GetStringOrDefault(key, defaultValue);
-    }
-
-    public bool GetBool(string key, bool fallback = false)
-    {
-        return Metadata.GetBool(key, fallback);
+        return Metadata.GetKey(key);
     }
 }

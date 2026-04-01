@@ -115,7 +115,7 @@ internal class MetadataService : IMetadataService
 
             if (TagAllowedAsGenre(tag)) return false;
 
-            if (request.GetBool(RequestConstants.IncludeNotMatchedTagsKey) && whiteListed.Count == 0) return true;
+            if (request.GetKey(RequestConstants.IncludeNotMatchedTagsKey) && whiteListed.Count == 0) return true;
 
             return whiteListed.Contains(tagValue) || whiteListed.Contains(tagId);
         }

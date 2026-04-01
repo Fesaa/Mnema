@@ -89,7 +89,7 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
-                Key = RequestConstants.FormatKey,
+                Key = RequestConstants.FormatKey.Key,
                 Type = FormType.DropDown,
                 ValueType = FormValueType.Integer,
                 Options = Enum.GetValues<Format>()
@@ -102,7 +102,7 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.ContentFormatKey,
+                Key = RequestConstants.ContentFormatKey.Key,
                 Type = FormType.DropDown,
                 ValueType = FormValueType.Integer,
                 Options = Enum.GetValues<ContentFormat>()
@@ -115,19 +115,19 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.HardcoverSeriesIdKey,
+                Key = RequestConstants.HardcoverSeriesIdKey.Key,
                 Type = FormType.Text,
                 ValueType = FormValueType.Integer,
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.MangaBakaKey,
+                Key = RequestConstants.MangaBakaKey.Key,
                 Type = FormType.Text,
                 ValueType = FormValueType.Integer,
             },
             new FormControlDefinition
             {
-                Key = RequestConstants.TitleOverride,
+                Key = RequestConstants.TitleOverride.Key,
                 Type = FormType.Text
             },
         ]);

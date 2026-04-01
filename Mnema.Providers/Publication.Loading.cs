@@ -31,7 +31,7 @@ internal partial class Publication
         State = ContentState.Loading;
         await _messageService.StateUpdate(Request.UserId, Id, ContentState.Loading);
 
-        var monitoredSeriesId = Request.Metadata.GetGuid(RequestConstants.MonitoredSeriesId);
+        var monitoredSeriesId = Request.Metadata.GetKey(RequestConstants.MonitoredSeriesId);
         if (monitoredSeriesId != null)
         {
             _monitoredSeries = await _unitOfWork.MonitoredSeriesRepository.GetById(monitoredSeriesId.Value, ct: cancellationToken);
@@ -109,7 +109,7 @@ internal partial class Publication
             if (monitoredChapter?.Status == MonitoredChapterStatus.NotMonitored) return false;
         }
 
-        var downloadOneShots = Request.GetBool(RequestConstants.DownloadOneShotKey);
+        var downloadOneShots = Request.GetKey(RequestConstants.DownloadOneShotKey);
         if (!downloadOneShots && string.IsNullOrEmpty(chapter.ChapterMarker)) return false;
 
         // Chapter is present as a download (backwards compat with Media-Provider's old behavior)
@@ -123,7 +123,7 @@ internal partial class Publication
             if (content == null)
             {
                 // Some providers, *dynasty*, have terrible naming schemes for specials.
-                if (Request.GetBool(RequestConstants.SkipVolumeWithoutChapter) &&
+                if (Request.GetKey(RequestConstants.SkipVolumeWithoutChapter) &&
                     !string.IsNullOrEmpty(chapter.VolumeMarker)) return !string.IsNullOrEmpty(chapter.ChapterMarker);
 
                 return true;
@@ -150,17 +150,7 @@ internal partial class Publication
 
         if (string.IsNullOrWhiteSpace(Series.Title)) throw new MnemaException("No series title is set");
 
-        _logger.LogDebug(
-            "[{Title}/{Id}] Successfully loaded series information with {Chapters} chapters in {Elapsed}ms",
+        _logger.LogDebug("[{Title}/{Id}] Successfully loaded series information with {Chapters} chapters in {Elapsed}ms",
             Title, Id, Series.Chapters.Count, sw.ElapsedMilliseconds);
-
-        if (!Request.GetBool(RequestConstants.AssignEmptyVolumes)) return;
-
-        var hasAnyVolumes = Series.Chapters.Any(c => !string.IsNullOrEmpty(c.VolumeMarker));
-        if (!hasAnyVolumes) return;
-
-        foreach (var chapter in Series.Chapters.Where(c =>
-                     string.IsNullOrEmpty(c.VolumeMarker) && !string.IsNullOrEmpty(c.ChapterMarker)))
-            chapter.VolumeMarker = "1";
     }
 }

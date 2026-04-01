@@ -30,10 +30,10 @@ internal class KavitaConnectionService(
     ApplicationConfiguration applicationConfiguration
 ) : IConnectionHandlerService
 {
-    private const string ApiKey = "api-key";
-    private const string UrlKey = "url";
-    private const string BaseDirSrcKey = "basedir-src";
-    private const string BaseDirDestKey = "basedir-dest";
+    private static readonly IMetadataKey<string> ApiKey = MetadataKeys.String("api-key");
+    private static readonly IMetadataKey<string> UrlKey = MetadataKeys.String("basedir");
+    private static readonly IMetadataKey<string?> BaseDirSrcKey = MetadataKeys.OptionalString("basedir-src");
+    private static readonly IMetadataKey<string?> BaseDirDestKey = MetadataKeys.OptionalString("basedir-dest");
 
     public List<ConnectionEvent> SupportedEvents { get; } = [ConnectionEvent.DownloadFinished];
 
@@ -44,16 +44,16 @@ internal class KavitaConnectionService(
 
     public async Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
     {
-        var url = connection.Metadata.GetString(UrlKey);
-        var authKey = connection.Metadata.GetString(ApiKey);
+        var url = connection.Metadata.GetKey(UrlKey);
+        var authKey = connection.Metadata.GetKey(ApiKey);
         if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(authKey))
         {
             logger.LogWarning("Kavita url or auth key is empty, but connection is registered. Cannot communicate");
             return;
         }
 
-        var baseDirSrc = connection.Metadata.GetString(BaseDirSrcKey);
-        var baseDirDest = connection.Metadata.GetString(BaseDirDestKey);
+        var baseDirSrc = connection.Metadata.GetKey(BaseDirSrcKey);
+        var baseDirDest = connection.Metadata.GetKey(BaseDirDestKey);
 
         var baseDir = Path.Join(applicationConfiguration.BaseDir, info.DownloadDir);
         if (!string.IsNullOrEmpty(baseDirSrc) && !string.IsNullOrEmpty(baseDirDest))
@@ -107,7 +107,7 @@ internal class KavitaConnectionService(
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
-                Key = ApiKey,
+                Key = ApiKey.Key,
                 Type = FormType.Text,
                 Validators = new FormValidatorsBuilder()
                     .WithRequired()
@@ -117,7 +117,7 @@ internal class KavitaConnectionService(
             },
             new FormControlDefinition
             {
-                Key = UrlKey,
+                Key = UrlKey.Key,
                 Type = FormType.Text,
                 Validators = new FormValidatorsBuilder()
                     .WithIsUrl()
@@ -125,12 +125,12 @@ internal class KavitaConnectionService(
             },
             new FormControlDefinition
             {
-                Key = BaseDirSrcKey,
+                Key = BaseDirSrcKey.Key,
                 Type = FormType.Text
             },
             new FormControlDefinition
             {
-                Key = BaseDirDestKey,
+                Key = BaseDirDestKey.Key,
                 Type = FormType.Text
             },
         ]);

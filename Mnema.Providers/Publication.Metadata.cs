@@ -28,7 +28,7 @@ internal partial class Publication
         var coverUrl = string.IsNullOrEmpty(chapter.CoverUrl)
             ? Series!.NonProxiedCoverUrl ?? Series!.CoverUrl : chapter.CoverUrl;
 
-        if (Request.GetBool(RequestConstants.IncludeCover, true))
+        if (Request.GetKey(RequestConstants.IncludeCover))
             if (!string.IsNullOrEmpty(coverUrl))
             {
                 try
