@@ -45,9 +45,9 @@ internal class MangadexRepository : IRepository
     private static readonly IMetadataKey<IEnumerable<string>> ContentRating = MetadataKeys.Strings("contentRating");
     private static readonly IMetadataKey<IEnumerable<string>> PublicationDemographic = MetadataKeys.Strings("publicationDemographic");
     private static readonly IMetadataKey<IEnumerable<string>> IncludedTags = MetadataKeys.Strings("includeTags");
-    private static readonly IMetadataKey<string> IncludedTagsMode = MetadataKeys.String("status", "AND");
+    private static readonly IMetadataKey<string> IncludedTagsMode = MetadataKeys.String("includeTagsMode", "AND");
     private static readonly IMetadataKey<IEnumerable<string>> ExcludedTags = MetadataKeys.Strings("excludeTags");
-    private static readonly IMetadataKey<string> ExcludedTagsMode = MetadataKeys.String("excludedTagsMode", "OR");
+    private static readonly IMetadataKey<string> ExcludedTagsMode = MetadataKeys.String("excludeTagsMode", "OR");
 
     private readonly IDistributedCache _cache;
     private readonly IHttpClientFactory _httpClientFactory;
