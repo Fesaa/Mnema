@@ -114,7 +114,9 @@ public class HardcoverMetadataService(
             {
                 var book = b.Book;
 
-                var chapterTitle = book.Title;
+                var chapterTitle = book.Title
+                    .Replace("(Manga)", string.Empty)
+                    .Replace("(Light Novel)", string.Empty);
                 var subtitle = string.Empty;
 
                 var volumePositionMarker = $"Vol. {b.Position}:";
