@@ -114,10 +114,22 @@ public class HardcoverMetadataService(
             {
                 var book = b.Book;
 
+                var chapterTitle = book.Title;
+                var subtitle = string.Empty;
+
+                var volumePositionMarker = $"Vol. {b.Position}:";
+                var volumePositionMarkerIndex = chapterTitle.IndexOf(volumePositionMarker, StringComparison.InvariantCultureIgnoreCase);
+
+                if (volumePositionMarkerIndex > -1)
+                {
+                    var subtitleStartIndex = volumePositionMarkerIndex + volumePositionMarker.Length;
+                    subtitle = chapterTitle[subtitleStartIndex..].Trim();
+                }
+
                 return new Chapter
                 {
                     Id = book.Id.ToString(),
-                    Title = book.Title,
+                    Title = string.IsNullOrEmpty(subtitle) ? chapterTitle : subtitle,
                     Summary = book.Description ?? string.Empty,
                     CoverUrl = book.Image?.Url,
                     RefUrl = $"{HardcoverBaseUrl}/books/{book.Slug}",
