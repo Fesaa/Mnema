@@ -31,7 +31,7 @@ internal class KavitaConnectionService(
 ) : IConnectionHandlerService
 {
     private static readonly IMetadataKey<string> ApiKey = MetadataKeys.String("api-key");
-    private static readonly IMetadataKey<string> UrlKey = MetadataKeys.String("basedir");
+    private static readonly IMetadataKey<string> UrlKey = MetadataKeys.String("url");
     private static readonly IMetadataKey<string?> BaseDirSrcKey = MetadataKeys.OptionalString("basedir-src");
     private static readonly IMetadataKey<string?> BaseDirDestKey = MetadataKeys.OptionalString("basedir-dest");
 
