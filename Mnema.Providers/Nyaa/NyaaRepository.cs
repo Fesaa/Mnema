@@ -130,6 +130,13 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
                 Key = RequestConstants.TitleOverride.Key,
                 Type = FormType.Text
             },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.IncludeCover.Key,
+                Type = FormType.Switch,
+                DefaultOption = "false",
+                Advanced = true,
+            }
         ]);
     }
 
