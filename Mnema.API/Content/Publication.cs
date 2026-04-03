@@ -47,4 +47,5 @@ public static class RequestConstants
     public static readonly IMetadataKey<string?> ExternalIdKey = MetadataKeys.OptionalString("external_id");
     public static readonly IMetadataKey<Guid?> MonitoredSeriesId = MetadataKeys.OptionalGuid("monitored_series_id");
     public static readonly IMetadataKey<bool> AllowPartialChapterData = MetadataKeys.Bool("allow_partial_chapter_data");
+    public static readonly IMetadataKey<bool> FirstDownload = MetadataKeys.Bool("first_download");
 }

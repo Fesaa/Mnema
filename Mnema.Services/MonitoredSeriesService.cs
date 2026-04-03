@@ -99,13 +99,16 @@ public class MonitoredSeriesService(
 
         if (string.IsNullOrEmpty(series.ExternalId)) return;
 
+        var metadata = series.MetadataForDownloadRequest();
+        metadata.SetKey(RequestConstants.FirstDownload, true);
+
         await downloadService.StartDownload(new DownloadRequestDto
         {
             Provider = series.Provider,
             Id = series.ExternalId,
             BaseDir = series.BaseDir,
             TempTitle = series.Title,
-            Metadata = series.MetadataForDownloadRequest(),
+            Metadata = metadata,
             StartImmediately = true,
             UserId = userId,
         });
