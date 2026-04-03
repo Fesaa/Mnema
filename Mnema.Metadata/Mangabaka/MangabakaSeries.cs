@@ -61,14 +61,14 @@ internal class MangabakaSeries
     [Column("published_start_date")]
     public DateOnly? StartDate { get; set; }
 
-    [Column("published_end_date_is_estimated")]
+    [Column("published_end_date")]
     public DateOnly? EndDate { get; set; }
 
     [Column("published_start_date_is_estimated")]
-    public bool StartDateIsEstimated { get; set; }
+    public bool? StartDateIsEstimated { get; set; }
 
-    [Column("published_is_estimated")]
-    public bool EndDateIsEstimated { get; set; }
+    [Column("published_end_date_is_estimated")]
+    public bool? EndDateIsEstimated { get; set; }
 
     [Column("romanized_title")]
     public string? RomanizedTitle { get; set; }
@@ -398,6 +398,11 @@ internal class MangabakaSeries
     {
         var enTitle = Titles?.FirstOrDefault(t => t.Language == "en");
         return enTitle?.Title;
+    }
+
+    public string? OfficalNonNative()
+    {
+        return Titles?.FirstOrDefault(t => !t.Traits.Contains("native") && t.Traits.Contains("official"))?.Title;
     }
 
     public string? NativeTitle()

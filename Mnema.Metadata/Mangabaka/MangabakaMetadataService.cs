@@ -104,7 +104,7 @@ internal class MangabakaMetadataService(
         {
             Id = series.Id.ToString(),
             MonitoredSeriesId = monitoredSeriesIds.GetValueOrDefault(series.Id.ToString()),
-            Title = series.EnglishTitle() ?? series.NativeTitle() ?? "This has no Title :(",
+            Title = series.EnglishTitle() ?? series.OfficalNonNative() ?? series.NativeTitle() ?? "This has no Title :(",
             LocalizedSeries = series.NativeTitle(),
             Summary = series.Description ?? string.Empty,
             Status = FromMangabakaPublicationStatus(series.Status),
