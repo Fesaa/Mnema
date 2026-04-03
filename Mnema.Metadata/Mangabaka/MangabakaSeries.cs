@@ -27,6 +27,21 @@ public class MangabakaPublisher
     public string Name { get; set; }
 }
 
+public class MangabakaTitle
+{
+    [JsonPropertyName("language")]
+    public string Language { get; set; }
+
+    [JsonPropertyName("traits")]
+    public List<string> Traits { get; set; }
+
+    [JsonPropertyName("title")]
+    public string Title { get; set; }
+
+    [JsonPropertyName("is_primary")]
+    public bool IsPrimary { get; set;}
+}
+
 [Table("series", Schema = "main")]
 internal class MangabakaSeries
 {
@@ -40,11 +55,20 @@ internal class MangabakaSeries
     [Column("merged_with")]
     public int? MergedWith { get; set; }
 
-    [Column("title")]
-    public string Title { get; set; }
+    [Column("titles")]
+    public List<MangabakaTitle>? Titles { get; set; }
 
-    [Column("native_title")]
-    public string? NativeTitle { get; set; }
+    [Column("published_start_date")]
+    public DateOnly? StartDate { get; set; }
+
+    [Column("published_end_date")]
+    public DateOnly? EndDate { get; set; }
+
+    [Column("published_start_date_is_estimated")]
+    public bool? StartDateIsEstimated { get; set; }
+
+    [Column("published_end_date_is_estimated")]
+    public bool? EndDateIsEstimated { get; set; }
 
     [Column("romanized_title")]
     public string? RomanizedTitle { get; set; }
@@ -108,9 +132,6 @@ internal class MangabakaSeries
 
     [Column("description")]
     public string? Description { get; set; }
-
-    [Column("year")]
-    public int? Year { get; set; }
 
     [Column("status")]
     public MangabakaPublicationStatus Status { get; set; }

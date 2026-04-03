@@ -114,6 +114,7 @@ internal partial class QBitContentManager
             ImageUrl = series?.CoverUrl,
             RefUrl = series?.RefUrl,
             Size = string.Empty,
+            ReDownloadSize = string.Empty,
             TotalSize = size,
             Downloading = request.StartImmediately,
             Progress = 0,

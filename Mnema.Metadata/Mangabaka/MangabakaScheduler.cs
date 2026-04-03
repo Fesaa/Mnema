@@ -118,10 +118,10 @@ public class MangabakaScheduler(
         {
             var document = new Document();
             document.AddStringField(nameof(MangabakaSeries.Id), series.Id.ToString(), Field.Store.YES);
-            document.AddTextField(nameof(MangabakaSeries.Title), series.Title, Field.Store.NO);
+            document.AddTextField(MangabakaMetadataService.TitleField, series.Title, Field.Store.NO);
 
-            if (series.NativeTitle != null)
-                document.AddTextField(nameof(MangabakaSeries.NativeTitle), series.NativeTitle, Field.Store.NO);
+            if (!string.IsNullOrWhiteSpace(series.NativeTitle))
+                document.AddTextField(MangabakaMetadataService.NativeTitleField, series.NativeTitle, Field.Store.NO);
 
             writer.AddDocument(document);
         }
@@ -147,8 +147,9 @@ public class MangabakaScheduler(
 
             var items = await ctx.Series
                 .AsNoTracking()
-                .Select(s => new { s.Id , s.Title, s.NativeTitle})
-        .OrderBy(s => s.Id)
+                .Where(s => s.MergedWith == null)
+                .Select(s => new { s.Id , s.Titles})
+                .OrderBy(s => s.Id)
                 .Where(s => s.Id > seekId)
                 .Take(batchSize)
                 .ToListAsync(cancellationToken: ct);
@@ -157,7 +158,11 @@ public class MangabakaScheduler(
                 yield break;
 
             foreach (var series in items)
-                yield return new MangabakaIndexerSeries(series.Id, series.Title, series.NativeTitle);
+                yield return new MangabakaIndexerSeries(
+                    series.Id,
+                    series.Titles.FindBestTitle(),
+                    series.Titles.FindBestNativeTitle()
+                    );
 
             currentCursor = items[^1].Id;
             hasMore = items.Count >= batchSize;

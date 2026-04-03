@@ -56,6 +56,7 @@ public class QBitTorrent(DownloadRequestDto request, TorrentInfo torrentInfo) : 
         Description = Series?.Summary,
         ImageUrl = Series?.CoverUrl,
         RefUrl = Series?.RefUrl,
+        ReDownloadSize = string.Empty,
         Size = torrentInfo.Size.AsHumanReadableSize(),
         TotalSize = torrentInfo.TotalSize?.AsHumanReadableSize() ?? string.Empty,
         Downloading = State == ContentState.Downloading,

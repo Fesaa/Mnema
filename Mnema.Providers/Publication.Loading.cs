@@ -70,7 +70,8 @@ internal partial class Publication
             return;
         }
 
-        if (_monitoredSeries != null && QueuedChapters.Count > 10)
+        if (_monitoredSeries != null && !Request.GetKey(RequestConstants.FirstDownload) &&
+            (QueuedChapters.Count > 10 || QueuedChapters.Count - ReDownloads == Series!.Chapters.Count))
         {
             _connectionService.CommunicateTooManyForAutomatedDownload(_monitoredSeries!, QueuedChapters.Count);
             Request.StartImmediately = false;
@@ -136,6 +137,7 @@ internal partial class Publication
         {
             _logger.LogDebug("[{Title}/{Id}] Redownloading chapter {ChapterMarker} as volume changed from {Old} to {New}",
                 Title, Id, chapter.ChapterMarker, content.Volume.I(), chapter.VolumeMarker);
+            ReDownloads++;
             ToRemovePaths.Add(content.Path);
         }
 

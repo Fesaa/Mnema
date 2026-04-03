@@ -22,6 +22,10 @@ internal class MangabakaMetadataService(
     [FromKeyedServices(key: MetadataProvider.Mangabaka)] SearcherManager searcherManager
 ): IMetadataProviderService
 {
+
+    internal const string TitleField = "Title";
+    internal const string NativeTitleField = "NativeTitle";
+
     public async Task<PagedList<MetadataSearchResult>> Search(MetadataSearchDto search, PaginationParams paginationParams,
         CancellationToken cancellationToken)
     {
@@ -29,7 +33,7 @@ internal class MangabakaMetadataService(
         try
         {
             var analyzer = new StandardAnalyzer(MangabakaScheduler.Version);
-            var fields = new[] { nameof(MangabakaSeries.Title), nameof(MangabakaSeries.NativeTitle) };
+            var fields = new[] { TitleField, NativeTitleField };
 
             var parser = new MultiFieldQueryParser(MangabakaScheduler.Version, fields, analyzer)
             {
@@ -100,8 +104,8 @@ internal class MangabakaMetadataService(
         {
             Id = series.Id.ToString(),
             MonitoredSeriesId = monitoredSeriesIds.GetValueOrDefault(series.Id.ToString()),
-            Title = series.Title,
-            LocalizedSeries = series.NativeTitle,
+            Title = series.Titles.FindBestTitle(),
+            LocalizedSeries = series.Titles.FindBestNativeTitle(),
             Summary = series.Description ?? string.Empty,
             Status = FromMangabakaPublicationStatus(series.Status),
             RefUrl = $"https://mangabaka.org/{series.Id}",
@@ -111,7 +115,7 @@ internal class MangabakaMetadataService(
             People = publishers.Concat(writers).Concat(artists).ToList(),
             Links = series.Links ?? [],
             CoverUrl = series.CoverX350X3,
-            Year = series.Year,
+            Year = series.StartDate?.Year,
             HighestVolumeNumber = series.FinalVolume.AsFloat(),
             HighestChapterNumber = series.FinalChapter.AsFloat(),
             Chapters = []
