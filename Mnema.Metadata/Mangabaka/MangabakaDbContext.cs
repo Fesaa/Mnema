@@ -46,5 +46,13 @@ internal class MangabakaDbContext(DbContextOptions<MangabakaDbContext> options):
             .HasConversion(
                 v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
                 v => string.IsNullOrEmpty(v) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(v, JsonSerializerOptions.Default));
+
+        modelBuilder.Entity<MangabakaSeries>()
+            .Property(s => s.Titles)
+            .HasColumnType("TEXT")
+            .IsRequired(false)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
+                v => string.IsNullOrEmpty(v) ? new List<MangabakaTitle>() : JsonSerializer.Deserialize<List<MangabakaTitle>>(v, JsonSerializerOptions.Default) ?? new List<MangabakaTitle>());
     }
 }

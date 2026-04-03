@@ -27,6 +27,21 @@ public class MangabakaPublisher
     public string Name { get; set; }
 }
 
+public class MangabakaTitle
+{
+    [JsonPropertyName("language")]
+    public string Language { get; set; }
+
+    [JsonPropertyName("traits")]
+    public List<string> Traits { get; set; }
+
+    [JsonPropertyName("title")]
+    public string Title { get; set; }
+
+    [JsonPropertyName("is_primary")]
+    public bool IsPrimary { get; set;}
+}
+
 [Table("series", Schema = "main")]
 internal class MangabakaSeries
 {
@@ -40,11 +55,8 @@ internal class MangabakaSeries
     [Column("merged_with")]
     public int? MergedWith { get; set; }
 
-    [Column("title")]
-    public string Title { get; set; }
-
-    [Column("native_title")]
-    public string? NativeTitle { get; set; }
+    [Column("titles")]
+    public List<MangabakaTitle>? Titles { get; set; }
 
     [Column("romanized_title")]
     public string? RomanizedTitle { get; set; }
@@ -372,4 +384,16 @@ internal class MangabakaSeries
 
     [Column("secondary_titles_uk")]
     public string? SecondaryTitlesUk { get; set; }
+
+    public string? EnglishTitle()
+    {
+        var enTitle = Titles?.FirstOrDefault(t => t.Language == "en");
+        return enTitle?.Title;
+    }
+
+    public string? NativeTitle()
+    {
+        var native = Titles?.FirstOrDefault(t => t.Traits.Contains("native"));
+        return native?.Title;
+    }
 }

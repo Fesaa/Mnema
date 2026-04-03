@@ -22,6 +22,10 @@ internal class MangabakaMetadataService(
     [FromKeyedServices(key: MetadataProvider.Mangabaka)] SearcherManager searcherManager
 ): IMetadataProviderService
 {
+
+    internal const string TitleField = "Title";
+    internal const string NativeTitleField = "NativeTitle";
+
     public async Task<PagedList<MetadataSearchResult>> Search(MetadataSearchDto search, PaginationParams paginationParams,
         CancellationToken cancellationToken)
     {
@@ -29,7 +33,7 @@ internal class MangabakaMetadataService(
         try
         {
             var analyzer = new StandardAnalyzer(MangabakaScheduler.Version);
-            var fields = new[] { nameof(MangabakaSeries.Title), nameof(MangabakaSeries.NativeTitle) };
+            var fields = new[] { TitleField, NativeTitleField };
 
             var parser = new MultiFieldQueryParser(MangabakaScheduler.Version, fields, analyzer)
             {
@@ -100,8 +104,8 @@ internal class MangabakaMetadataService(
         {
             Id = series.Id.ToString(),
             MonitoredSeriesId = monitoredSeriesIds.GetValueOrDefault(series.Id.ToString()),
-            Title = series.Title,
-            LocalizedSeries = series.NativeTitle,
+            Title = series.EnglishTitle() ?? series.NativeTitle() ?? "This has no Title :(",
+            LocalizedSeries = series.NativeTitle(),
             Summary = series.Description ?? string.Empty,
             Status = FromMangabakaPublicationStatus(series.Status),
             RefUrl = $"https://mangabaka.org/{series.Id}",
