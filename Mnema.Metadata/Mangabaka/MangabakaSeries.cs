@@ -393,21 +393,4 @@ internal class MangabakaSeries
 
     [Column("secondary_titles_uk")]
     public string? SecondaryTitlesUk { get; set; }
-
-    public string? EnglishTitle()
-    {
-        var enTitle = Titles?.FirstOrDefault(t => t.Language == "en");
-        return enTitle?.Title;
-    }
-
-    public string? OfficalNonNative()
-    {
-        return Titles?.FirstOrDefault(t => !t.Traits.Contains("native") && t.Traits.Contains("official"))?.Title;
-    }
-
-    public string? NativeTitle()
-    {
-        var native = Titles?.FirstOrDefault(t => t.Traits.Contains("native"));
-        return native?.Title;
-    }
 }

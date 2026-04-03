@@ -158,13 +158,11 @@ public class MangabakaScheduler(
                 yield break;
 
             foreach (var series in items)
-            {
-                var enTitle = series.Titles?.FirstOrDefault(t => t.Language == "en");
-                var nativeTitle = series.Titles?.FirstOrDefault(t => t.Traits.Contains("native"));
-
-                if (!string.IsNullOrEmpty(enTitle?.Title))
-                    yield return new MangabakaIndexerSeries(series.Id, enTitle.Title, nativeTitle?.Title);
-            }
+                yield return new MangabakaIndexerSeries(
+                    series.Id,
+                    series.Titles.FindBestTitle(),
+                    series.Titles.FindBestNativeTitle()
+                    );
 
             currentCursor = items[^1].Id;
             hasMore = items.Count >= batchSize;
