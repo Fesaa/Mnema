@@ -270,6 +270,15 @@ internal class DiscordConnectionService(
             }
         };
 
+        if (!string.IsNullOrEmpty(info.ReDownloadSize))
+        {
+            embeds.Add(new()
+            {
+                Name = "Re-download",
+                Value = info.ReDownloadSize,
+                Inline = true
+            });
+        }
 
         return embeds;
     }

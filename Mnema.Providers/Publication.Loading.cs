@@ -136,6 +136,7 @@ internal partial class Publication
         {
             _logger.LogDebug("[{Title}/{Id}] Redownloading chapter {ChapterMarker} as volume changed from {Old} to {New}",
                 Title, Id, chapter.ChapterMarker, content.Volume.I(), chapter.VolumeMarker);
+            ReDownloads++;
             ToRemovePaths.Add(content.Path);
         }
 

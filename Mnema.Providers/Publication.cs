@@ -58,6 +58,8 @@ internal partial class Publication(
     /// </summary>
     internal ISet<string> QueuedChapters = new HashSet<string>();
 
+    internal int ReDownloads = 0;
+
     private ServerSettingsDto _settings = null!;
     private SpeedTracker? _speedTracker;
 
@@ -160,6 +162,7 @@ internal partial class Publication(
         ImageUrl = Series?.NonProxiedCoverUrl ?? Series?.CoverUrl,
         RefUrl = Series?.RefUrl,
         Size = _userSelectedIds.Count > 0 ? $"{_userSelectedIds.Count} Chapters" : $"{QueuedChapters.Count} Chapters",
+        ReDownloadSize = $"{ReDownloads} Chapters",
         TotalSize = $"{Series?.Chapters.Count ?? 0} Chapters",
         Downloading = State == ContentState.Downloading,
         Progress = Math.Floor(_speedTracker?.Progress() ?? 0),
