@@ -115,7 +115,7 @@ internal class MangabakaMetadataService(
             People = publishers.Concat(writers).Concat(artists).ToList(),
             Links = series.Links ?? [],
             CoverUrl = series.CoverX350X3,
-            Year = series.Year,
+            Year = series.StartDate?.Year,
             HighestVolumeNumber = series.FinalVolume.AsFloat(),
             HighestChapterNumber = series.FinalChapter.AsFloat(),
             Chapters = []

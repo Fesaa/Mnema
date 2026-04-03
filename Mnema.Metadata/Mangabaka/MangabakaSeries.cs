@@ -58,6 +58,18 @@ internal class MangabakaSeries
     [Column("titles")]
     public List<MangabakaTitle>? Titles { get; set; }
 
+    [Column("published_start_date")]
+    public DateOnly? StartDate { get; set; }
+
+    [Column("published_end_date_is_estimated")]
+    public DateOnly? EndDate { get; set; }
+
+    [Column("published_start_date_is_estimated")]
+    public bool StartDateIsEstimated { get; set; }
+
+    [Column("published_is_estimated")]
+    public bool EndDateIsEstimated { get; set; }
+
     [Column("romanized_title")]
     public string? RomanizedTitle { get; set; }
 
@@ -120,9 +132,6 @@ internal class MangabakaSeries
 
     [Column("description")]
     public string? Description { get; set; }
-
-    [Column("year")]
-    public int? Year { get; set; }
 
     [Column("status")]
     public MangabakaPublicationStatus Status { get; set; }
