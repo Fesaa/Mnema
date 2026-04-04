@@ -102,6 +102,11 @@ internal class KavitaConnectionService(
         throw new NotImplementedException();
     }
 
+    public Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
     {
         return Task.FromResult<List<FormControlDefinition>>([

@@ -55,4 +55,8 @@ public enum ConnectionEvent
     ///     Fired when an automated download from a monitored series wants to download > 10 chapters. Requiring manual approval
     /// </summary>
     TooManyForAutomatedDownload = 6,
+    /// <summary>
+    ///     Fired when a download client is locked or unlocked
+    /// </summary>
+    DownloadClientEvents = 7,
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -11,6 +12,11 @@ namespace Mnema.Database.Repositories;
 
 public class UserRepository(MnemaDataContext ctx, IMapper mapper) : IUserRepository
 {
+    public Task<List<MnemaUser>> GetUsers()
+    {
+        return ctx.Users.ToListAsync();
+    }
+
     public async Task<MnemaUser> GetUserById(Guid id, UserIncludes includes = UserIncludes.Preferences)
     {
         var user = await ctx.Users

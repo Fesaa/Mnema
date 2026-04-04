@@ -15,7 +15,8 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services;
 
-public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitOfWork unitOfWork, IServiceProvider serviceProvider): IDownloadClientService
+public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitOfWork unitOfWork,
+    IServiceProvider serviceProvider, IConnectionService connectionService): IDownloadClientService
 {
     public async Task MarkAsFailed(Guid id, CancellationToken cancellationToken)
     {
@@ -31,6 +32,8 @@ public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitO
         BackgroundJob.Schedule(
             ()  => ReleaseFailedLock(id, CancellationToken.None),
             TimeSpan.FromHours(1));
+
+        connectionService.CommunicateDownloadClientEvent(client);
     }
 
     public async Task ReleaseFailedLock(Guid id, CancellationToken cancellationToken)
@@ -45,6 +48,8 @@ public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitO
 
         unitOfWork.DownloadClientRepository.Update(client);
         await unitOfWork.CommitAsync(cancellationToken);
+
+        connectionService.CommunicateDownloadClientEvent(client);
     }
 
     public async Task UpdateDownloadClientAsync(DownloadClientDto dto, CancellationToken cancellationToken)

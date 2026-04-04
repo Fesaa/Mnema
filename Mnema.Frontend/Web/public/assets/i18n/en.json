@@ -742,7 +742,8 @@
           "SubscriptionExhausted": "Subscription Exhausted",
           "SeriesMonitored": "Series Monitored",
           "SeriesUnmonitored": "Series Unmonitored",
-          "TooManyForAutomatedDownload": "Too many for automated download"
+          "TooManyForAutomatedDownload": "Too many for automated download",
+          "DownloadClientEvents": "Download client events"
         }
       },
       "edit": {
@@ -769,7 +770,8 @@
           "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
           "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
           "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
-          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}"
+          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
+          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}"
         }
       },
       "Kavita": {
@@ -792,7 +794,8 @@
           "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
           "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
           "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
-          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}"
+          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
+          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}"
         }
       },
       "Native": {
@@ -807,7 +810,8 @@
           "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
           "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
           "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
-          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}"
+          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
+          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}"
         }
       }
     },

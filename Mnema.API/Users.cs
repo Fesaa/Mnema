@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities.User;
@@ -16,6 +17,7 @@ public enum UserIncludes
 
 public interface IUserRepository
 {
+    Task<List<MnemaUser>> GetUsers();
     Task<MnemaUser> GetUserById(Guid id, UserIncludes includes = UserIncludes.Preferences);
     Task<MnemaUser?> GetUserByIdOrDefault(Guid id, UserIncludes includes = UserIncludes.Preferences);
     Task<UserPreferences> GetPreferences(Guid id);
