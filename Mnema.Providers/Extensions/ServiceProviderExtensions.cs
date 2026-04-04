@@ -82,12 +82,8 @@ public static class ServiceProviderExtensions
 
         services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Weebdex);
 
-        services.AddScoped<WeebdexRepository>();
-        services.AddKeyedScoped<IContentRepository>(Provider.Weebdex,
-            (s, _) => s.GetRequiredService<WeebdexRepository>());
-        services.AddKeyedScoped<IRepository>(Provider.Weebdex,
-            (s, _) => s.GetRequiredService<WeebdexRepository>());
-
+        services.AddKeyedScoped<IContentRepository, NoOpRepository>(Provider.Weebdex);
+        services.AddKeyedScoped<IRepository, NoOpRepository>(Provider.Weebdex);
         services.AddKeyedScoped<IPreDownloadHook, WeebdexLoadVolumesHook>(Provider.Weebdex);
         services.AddHttpClient(nameof(Provider.Weebdex), client =>
         {
