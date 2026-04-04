@@ -1,6 +1,6 @@
 # OpenID Connect
 
-As detailed in the [](Set-up.md) guide, Mnema relies exclusively on **OpenID Connect (OIDC)** for user management and authentication. This is a strict requirement; the application will not initialize without a valid OIDC configuration.
+As detailed in the [](Overview.md) guide, Mnema relies exclusively on **OpenID Connect (OIDC)** for user management and authentication. If you decide to disable authentication everyone will log in as `User` and has all roles
 
 Access control is governed by granular roles. Mnema expects these roles to be present in the `roles` claim at the root of the identity token. Any logical grouping or mapping of users to these permissions should be managed directly within your Identity Provider (IdP).
 

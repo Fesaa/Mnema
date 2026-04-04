@@ -10,8 +10,6 @@ You may use both methods simultaneously; a common best practice is to define gen
 
 ## Configuration Reference
 
-The application follows standard .NET configuration patterns. You can define these values in `appsettings.json` or via environment variables using the double underscore (`__`) notation.
-
 > **Logging:** You can fully configure application logging using **Serilog** via the `Serilog` configuration section or corresponding environment variables.
 
 | Variable (JSON Path)         | Description                                                                         |
@@ -20,9 +18,10 @@ The application follows standard .NET configuration patterns. You can define the
 | `ConnectionStrings:Redis`    | Connection string for the Redis cache.                                              |
 | `ConnectionStrings:Postgres` | **Required.** Connection string for the PostgreSQL database.                        |
 | **Authentication**           |                                                                                     |
-| `OpenIdConnect:Authority`    | **Required.** The OIDC Identity Provider URL.                                       |
-| `OpenIdConnect:ClientId`     | **Required.** The registered Client ID for the application.                         |
-| `OpenIdConnect:Secret`       | **Required.** The secret key for OIDC handshake.                                    |
+| `OpenIdConnect:Authority`    | The OIDC Identity Provider URL.                                                     |
+| `OpenIdConnect:ClientId`     | The registered Client ID for the application.                                       |
+| `OpenIdConnect:Secret`       | The secret key for OIDC handshake.                                                  |
+| `NoAuthentication`           | Set the `true` if you wish to disable Authentication                                |
 | `Authentication:Hardcover`   | Your hardcover ApiKey, required if you wish to use hardcover as a metadata provider |
 | **Storage**                  |                                                                                     |
 | `Application:BaseDir`        | **Required.** The root directory for media storage.                                 |
@@ -30,6 +29,11 @@ The application follows standard .NET configuration patterns. You can define the
 | **System & Libs**            |                                                                                     |
 | `TZ`                         | Sets the system timezone for the runtime (e.g., `Europe/Brussels`).                 |
 | `AutoMapperLicense`          | Optional license key. Displays a warning on start if missing and not suppressed.    |
+
+
+<warning>
+    It is advised to use OIDC to secure your application, when disabling authentication make sure Mnema is not publicly accesible
+</warning>
 
 ---
 
