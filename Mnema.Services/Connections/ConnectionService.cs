@@ -71,6 +71,12 @@ internal class ConnectionService(
             => service.CommunicateTooManyForAutomatedDownload(connection, info, amount));
     }
 
+    public void CommunicateDownloadClientEvent(DownloadClient client)
+    {
+        DoForAll(ConnectionEvent.DownloadClientEvents, (service, connection)
+            => service.CommunicateDownloadClientEvent(connection, client));
+    }
+
     public async Task UpdateConnection(ConnectionDto dto, CancellationToken cancellationToken)
     {
         var connection = await unitOfWork.ConnectionRepository.GetById(dto.Id, cancellationToken) ??

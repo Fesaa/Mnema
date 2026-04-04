@@ -127,7 +127,9 @@
     "hardcover_series_id-title": "{{provider-metadata.hardcover_series_id-title}}",
     "hardcover_series_id-tooltip": "{{provider-metadata.hardcover_series_id-tooltip}}",
     "manga_baka_id-title": "{{provider-metadata.manga_baka_id-title}}",
-    "manga_baka_id-tooltip": "{{provider-metadata.manga_baka_id-tooltip}}"
+    "manga_baka_id-tooltip": "{{provider-metadata.manga_baka_id-tooltip}}",
+    "ignore_non_matched_volumes-title": "{{provider-metadata.ignore_non_matched_volumes-title}}",
+    "ignore_non_matched_volumes-tooltip": "{{provider-metadata.ignore_non_matched_volumes-tooltip}}"
   },
 
   "provider-metadata": {
@@ -168,7 +170,9 @@
     "hardcover_series_id-title": "Hardcover series id",
     "hardcover_series_id-tooltip": "The numerical id, not the slug",
     "manga_baka_id-title": "Mangabaka id",
-    "manga_baka_id-tooltip": "Series id on mangabaka.org"
+    "manga_baka_id-tooltip": "Series id on mangabaka.org",
+    "ignore_non_matched_volumes-title": "Ignore non-matched content",
+    "ignore_non_matched_volumes-tooltips": "Don't download content if metadata is loaded and cannot be matched"
   },
 
   "refresh-frequency-pipe": {
@@ -738,7 +742,8 @@
           "SubscriptionExhausted": "Subscription Exhausted",
           "SeriesMonitored": "Series Monitored",
           "SeriesUnmonitored": "Series Unmonitored",
-          "TooManyForAutomatedDownload": "Too many for automated download"
+          "TooManyForAutomatedDownload": "Too many for automated download",
+          "DownloadClientEvents": "Download client events"
         }
       },
       "edit": {
@@ -765,7 +770,8 @@
           "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
           "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
           "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
-          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}"
+          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
+          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}"
         }
       },
       "Kavita": {
@@ -788,7 +794,8 @@
           "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
           "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
           "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
-          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}"
+          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
+          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}"
         }
       },
       "Native": {
@@ -803,7 +810,8 @@
           "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
           "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
           "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
-          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}"
+          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
+          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}"
         }
       }
     },
@@ -1068,7 +1076,9 @@
     "title_override-title": "{{provider-metadata.title_override-title}}",
     "title_override-tooltip": "{{provider-metadata.title_override-tooltip}}",
     "external_id-title": "External ID",
-    "external_id-tooltip": "Used to identify this series UpStream"
+    "external_id-tooltip": "Used to identify this series UpStream",
+    "ignore_non_matched_volumes-title": "{{provider-metadata.ignore_non_matched_volumes-title}}",
+    "ignore_non_matched_volumes-tooltip": "{{provider-metadata.ignore_non_matched_volumes-tooltip}}"
   },
 
   "input": {

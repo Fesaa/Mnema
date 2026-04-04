@@ -32,6 +32,9 @@ namespace Mnema.Server;
 
 public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
+
+    private bool AuthDisabled => configuration.GetSection(OpenIdConnectServiceExtensions.NoAuthentication).Get<bool>();
+
     public void ConfigureServices(IServiceCollection services)
     {
         var appConfig = configuration.GetSection("Application").Get<ApplicationConfiguration>();
@@ -40,7 +43,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddSingleton(appConfig);
 
         services.AddProviders();
-        services.AddMnemaServices();
+        services.AddMnemaServices(AuthDisabled);
         services.AddMetadataProviders(configuration, appConfig);
 
         services.AddScoped<IFileSystem, FileSystem>();
@@ -130,6 +133,11 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
     public void Configure(IApplicationBuilder app, IServiceProvider serviceProvider)
     {
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
+        if (AuthDisabled)
+        {
+            logger.LogCritical("Authentication has been disabled, Mnema is not secured. You must setup 3rd party authentication if or use OIDC");
+        }
 
         app.UseResponseCompression();
         app.UseForwardedHeaders();

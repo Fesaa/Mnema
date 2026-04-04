@@ -136,6 +136,13 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
                 Type = FormType.Switch,
                 DefaultOption = "false",
                 Advanced = true,
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.IgnoreNonMatchedVolumes.Key,
+                Type = FormType.Switch,
+                DefaultOption = "true",
+                Advanced = true,
             }
         ]);
     }

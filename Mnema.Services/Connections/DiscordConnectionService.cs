@@ -99,6 +99,7 @@ internal class DiscordConnectionService(
         ConnectionEvent.SeriesMonitored,
         ConnectionEvent.SeriesUnmonitored,
         ConnectionEvent.TooManyForAutomatedDownload,
+        ConnectionEvent.DownloadClientEvents
     ];
 
     public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
@@ -236,6 +237,24 @@ internal class DiscordConnectionService(
 
         if (!string.IsNullOrEmpty(series.CoverUrl) && series.CoverUrl.StartsWith("http"))
             embed.Image = new DiscordEmbedImage(series.CoverUrl);
+
+        return SendMessage(connection, [embed]);
+    }
+
+    public Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
+    {
+        var embed = new DiscordEmbed
+        {
+            Title = client.IsFailed ? "Download client locked" : "Download client unlocked",
+            Description = client.IsFailed ? $"Client {client.Name} is unreachable and is locked until {client.FailedAt?.AddHours(1)}"
+                : $"Client {client.Name} is reachable again and has been unlocked",
+            Color = client.IsFailed ? 0xe74c3c : 0x2ecc71,
+            Timestamp = DateTime.UtcNow,
+            Footer = new DiscordEmbedFooter
+            {
+                Text = $"ID: {client.Id}"
+            }
+        };
 
         return SendMessage(connection, [embed]);
     }

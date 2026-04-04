@@ -29,7 +29,8 @@ internal class NativeConnectionService(
         ConnectionEvent.DownloadFinished,
         ConnectionEvent.DownloadFailure,
         ConnectionEvent.SubscriptionExhausted,
-        ConnectionEvent.TooManyForAutomatedDownload
+        ConnectionEvent.TooManyForAutomatedDownload,
+        ConnectionEvent.DownloadClientEvents
     ];
 
     public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
@@ -100,6 +101,25 @@ internal class NativeConnectionService(
             Colour = NotificationColour.Warning,
             UserId = info.UserId
         });
+    }
+
+    public async Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
+    {
+        var users = await unitOfWork.UserRepository.GetUsers();
+
+        foreach (var user in users)
+        {
+            await SendNotification(new Notification
+            {
+                Title = client.IsFailed ? "Download client locked" : "Download client unlocked",
+                Summary = client.IsFailed
+                    ? $"Client {client.Name} is unreachable and is locked until {client.FailedAt?.AddHours(1)}"
+                    : $"Client {client.Name} is reachable again and has been unlocked",
+                Body = string.Empty,
+                Colour = client.IsFailed ? NotificationColour.Warning : NotificationColour.Primary,
+                UserId = user.Id,
+            });
+        }
     }
 
     public Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)

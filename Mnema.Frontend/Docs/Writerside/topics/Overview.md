@@ -12,7 +12,7 @@ up to date with notifications.
 As Mnema is opinionated as first as formost made for my setup; there's a few requirements to be met for running in
 
 - Mnema is only provided as a container
-- Mnema require authentication via OIDC
+- Mnema only has authentication via OIDC. You can disable authentication if wanted
 - Mnema requires a postgres database
 - Mnema optionally wants a redis instance. If none is provided, some features may break during restarts
 
