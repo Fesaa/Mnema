@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
@@ -190,6 +191,7 @@ public class ScannerService(
         {
             Id = string.Empty,
             Title = path,
+            FileName = file,
             VolumeMarker = volume,
             ChapterMarker = chapter,
             Tags = [],

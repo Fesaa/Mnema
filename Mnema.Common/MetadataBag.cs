@@ -96,6 +96,12 @@ public class MetadataBag : GenericBag<string>
     {
         key.Set(this, value);
     }
+
+    public void SetIfNotPresent<T>(IMetadataKey<T> key, T value)
+    {
+        if (!ContainsKey(key.Key))
+            SetKey(key, value);
+    }
 }
 
 public class GenericBag<T> : Dictionary<string, IList<T>>

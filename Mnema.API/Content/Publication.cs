@@ -48,4 +48,5 @@ public static class RequestConstants
     public static readonly IMetadataKey<Guid?> MonitoredSeriesId = MetadataKeys.OptionalGuid("monitored_series_id");
     public static readonly IMetadataKey<bool> AllowPartialChapterData = MetadataKeys.Bool("allow_partial_chapter_data");
     public static readonly IMetadataKey<bool> FirstDownload = MetadataKeys.Bool("first_download");
+    public static readonly IMetadataKey<bool> IgnoreNonMatchedVolumes = MetadataKeys.Bool("ignore_non_matched_volumes");
 }

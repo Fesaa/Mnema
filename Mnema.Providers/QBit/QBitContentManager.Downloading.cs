@@ -36,6 +36,8 @@ internal partial class QBitContentManager
         var unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
 
         var monitoredSeriesId = request.Metadata.GetKey(RequestConstants.MonitoredSeriesId);
+        var ignoreNonMatched = request.GetKey(RequestConstants.IgnoreNonMatchedVolumes);
+
         var series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata, ct);
         var title = request.Metadata.GetKey(RequestConstants.TitleOverride)
             .OrNonEmpty(series?.Title, parserService.ParseSeries(request.TempTitle, cFormat));
@@ -61,11 +63,33 @@ internal partial class QBitContentManager
             if (mSeries != null)
             {
                 var mChapter = scannerService.FindMatch(mSeries.Chapters, c);
-                if (mChapter?.Status == MonitoredChapterStatus.NotMonitored) return false;
+                if (mChapter?.Status == MonitoredChapterStatus.NotMonitored)
+                {
+                    logger.LogTrace("[{Title}/{Id}] not downloading {FileName} as it is not monitored",
+                        title, request.Id, c.FileName);
+                    return false;
+                }
+
+                if (mChapter == null && ignoreNonMatched)
+                {
+                    logger.LogTrace("[{Title}/{Id}] not downloading {FileName} as it is not matched",
+                        title, request.Id, c.FileName);
+                    return false;
+                }
             }
 
             var match = scannerService.FindMatch(existingContent, c);
-            return match == null;
+            if (match == null)
+            {
+                logger.LogTrace("[{Title}/{Id}] Found new chapter to download {FileName} - Volume {Volume} - Chapter {Chapter}",
+                    title, request.Id, c.FileName, c.VolumeMarker.I(), c.ChapterMarker.I());
+                return true;
+            }
+
+            logger.LogTrace("[{Title}/{Id}] not downloading {FileName} as it matched an existing file {FileOnDisk}",
+                title, request.Id, c.FileName, match.FileName);
+
+            return false;
         }).ToList();
 
         if (toDownloadChapters.Count == 0)

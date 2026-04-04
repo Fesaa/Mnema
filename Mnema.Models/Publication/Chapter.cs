@@ -8,6 +8,7 @@ public sealed record Chapter
 {
     public required string Id { get; set; }
     public required string Title { get; set; }
+    public string FileName { get; set; } = string.Empty;
     public string Summary { get; set; } = string.Empty;
 
     public required string VolumeMarker { get; set; }
