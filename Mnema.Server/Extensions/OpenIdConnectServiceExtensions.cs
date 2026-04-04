@@ -14,23 +14,42 @@ using Mnema.Common.Exceptions;
 using Mnema.Database;
 using Mnema.Models.Internal;
 using Mnema.Server.Helpers;
+using Mnema.Server.Middleware;
 
 namespace Mnema.Server.Extensions;
 
 public static class OpenIdConnectServiceExtensions
 {
     public const string OpenIdConnect = nameof(OpenIdConnect);
+    public const string NoAuthentication = nameof(NoAuthentication);
 
     public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        var openIdConnectConfig = configuration.GetSection(OpenIdConnect).Get<OpenIdConnectConfig>();
-        if (openIdConnectConfig is not { Valid: true })
-            throw new MnemaException("No valid OpenIDConnect configuration found");
-
         services.AddDataProtection()
             .PersistKeysToDbContext<MnemaDataContext>()
             .SetApplicationName("Mnema");
+
+        services.AddAuthorizationBuilder()
+            .AddPolicy(Roles.Subscriptions)
+            .AddPolicy(Roles.ManageSettings)
+            .AddPolicy(Roles.ManagePages)
+            .AddPolicy(Roles.HangFire)
+            .AddPolicy(Roles.CreateDirectory)
+            .AddPolicy(Roles.ManageExternalConnections);
+
+        var openIdConnectConfig = configuration.GetSection(OpenIdConnect).Get<OpenIdConnectConfig>();
+        if (openIdConnectConfig is not { Valid: true })
+        {
+            var noAuthEnabled = configuration.GetSection(NoAuthentication).Get<bool>();
+            if (!noAuthEnabled)
+                throw new MnemaException("No valid OpenIDConnect configuration found");
+
+            services.AddAuthentication(NoAuthAuthenticationSchemeOptions.SchemeName)
+                .AddScheme<NoAuthAuthenticationSchemeOptions, NoAuthAuthenticationHandler>(NoAuthAuthenticationSchemeOptions.SchemeName, null);
+
+            return services;
+        }
 
         services.AddSingleton<ConfigurationManager<OpenIdConnectConfiguration>>(_ =>
         {
@@ -89,14 +108,6 @@ public static class OpenIdConnectServiceExtensions
 
                 options.Events = new OpenIdConnectEventHelper(environment.IsDevelopment());
             });
-
-        services.AddAuthorizationBuilder()
-            .AddPolicy(Roles.Subscriptions)
-            .AddPolicy(Roles.ManageSettings)
-            .AddPolicy(Roles.ManagePages)
-            .AddPolicy(Roles.HangFire)
-            .AddPolicy(Roles.CreateDirectory)
-            .AddPolicy(Roles.ManageExternalConnections);
 
         return services;
     }
