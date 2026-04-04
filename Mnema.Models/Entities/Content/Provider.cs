@@ -1,3 +1,5 @@
+using System;
+
 namespace Mnema.Models.Entities.Content;
 
 public enum Provider
@@ -6,7 +8,9 @@ public enum Provider
     Mangadex = 1,
     Webtoons = 2,
     Dynasty = 3,
+    [Obsolete("Bato died")]
     Bato = 4,
+    [Obsolete("Weebdex is shutting down 07/04/2026")]
     Weebdex = 5,
     Comix = 6,
 }
@@ -18,5 +22,6 @@ public enum MetadataProvider
     /// <summary>
     /// Metadata from <see cref="Provider"/>
     /// </summary>
+    /// <remarks>The typo is intentional at this point, or I need to write a migration....</remarks>
     Upsteam = 2,
 }
