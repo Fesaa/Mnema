@@ -23,6 +23,8 @@ export class ProviderNamePipe implements PipeTransform {
         return "Weebdex"
       case Provider.COMIX:
         return "Comix"
+      case Provider.KAGANE:
+        return "Kagane"
       default:
         return "Unknown";
     }
