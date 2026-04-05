@@ -464,6 +464,10 @@
         "title": "Search completed",
         "summary": "Found {{amount}} items"
       },
+      "search-failed": {
+        "title": "Search failed",
+        "summary": "{{msg}}"
+      },
       "metadata-failed": {
         "title": "Failed to download metadata: {{provider}}",
         "summary": "{{msg}}"

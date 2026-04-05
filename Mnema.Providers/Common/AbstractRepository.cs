@@ -24,7 +24,7 @@ public abstract class AbstractRepository(IDistributedCache cache): IRepository
     {
         var response = await Client.GetCachedStringAsync(url, cache, cancellationToken: cancellationToken);
         if (response.IsErr)
-            throw new MnemaException("Failed to retrieve data", response.Error);
+            throw new MnemaException($"Failed to retrieve data: {response.Error?.Message}", response.Error);
 
         return new JsonAccessor(response.Unwrap());
     }
@@ -40,7 +40,7 @@ public abstract class AbstractRepository(IDistributedCache cache): IRepository
 
         var response = await Client.PostResultASync(url, content, cancellationToken: cancellationToken);
         if (response.IsErr)
-            throw new MnemaException("Failed to retrieve data", response.Error);
+            throw new MnemaException($"Failed to retrieve data: {response.Error?.Message}", response.Error);
 
         return new JsonAccessor(response.Unwrap());
     }
