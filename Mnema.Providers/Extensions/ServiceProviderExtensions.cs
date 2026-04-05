@@ -8,6 +8,7 @@ using Mnema.Providers.Bato;
 using Mnema.Providers.Cleanup;
 using Mnema.Providers.Comix;
 using Mnema.Providers.Dynasty;
+using Mnema.Providers.Kagane;
 using Mnema.Providers.Mangadex;
 using Mnema.Providers.Nyaa;
 using Mnema.Providers.QBit;
@@ -172,6 +173,25 @@ public static class ServiceProviderExtensions
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
             client.DefaultRequestHeaders.Add(HeaderNames.Referer, "https://comix.to/");
+        });
+
+        #endregion
+
+        #region Kagane
+
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Kagane);
+
+        services.AddScoped<KaganeRepository>();
+        services.AddKeyedScoped<IContentRepository>(Provider.Kagane,
+            (s, _) => s.GetRequiredService<KaganeRepository>());
+        services.AddKeyedScoped<IRepository>(Provider.Kagane,
+            (s, _) => s.GetRequiredService<KaganeRepository>());
+
+        services.AddHttpClient(nameof(Provider.Kagane), client =>
+        {
+            client.BaseAddress = new Uri("https://yuzuki.kagane.org");
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
         });
 
         #endregion

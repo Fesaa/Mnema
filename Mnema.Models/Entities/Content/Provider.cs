@@ -9,6 +9,7 @@ public enum Provider
     Bato = 4,
     Weebdex = 5,
     Comix = 6,
+    Kagane = 7,
 }
 
 public enum MetadataProvider

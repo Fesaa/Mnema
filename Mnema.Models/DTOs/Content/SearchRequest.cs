@@ -8,4 +8,6 @@ public sealed record SearchRequest
     public required Provider Provider { get; set; }
     public required string Query { get; set; }
     public required MetadataBag Modifiers { get; set; }
+
+    public T GetKey<T>(IMetadataKey<T> key) => Modifiers.GetKey(key);
 }

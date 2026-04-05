@@ -88,4 +88,26 @@ public class ProxyController(ILogger<ProxyController> logger, IHttpClientFactory
             throw new MnemaException("Failed to get image from webtoon", ex);
         }
     }
+
+    [HttpGet("kagane/covers/{id}")]
+    [OutputCache(PolicyName = CacheProfiles.OneWeek, VaryByRouteValueNames = ["id"])]
+    public async Task<IActionResult> GetKaganeCover(string id)
+    {
+        var url = $"{SharedConstants.KaganeImageBase}{id}/compressed";
+        var client = httpClientFactory.CreateClient(nameof(Provider.Kagane));
+
+        try
+        {
+            var response = await client.GetStreamAsync(url);
+
+            return File(response, "image/webp");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to get Kagane cover @ {Url}", url.CleanForLogging());
+
+            // TODO: Use fallback image
+            throw new MnemaException("Failed to get image from Kagane", ex);
+        }
+    }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -32,6 +33,9 @@ public class JsonAccessor
     /// </summary>
     public IEnumerable<JsonAccessor> SelectMany(string path)
     {
+        if (!path.EndsWith("[*]"))
+            path += "[*]";
+
         return NavigateMany(path).Select(node => new JsonAccessor(node));
     }
 
@@ -64,7 +68,7 @@ public class JsonAccessor
     public T? SelectAs<T>(string path = "")
     {
         var element = string.IsNullOrEmpty(path) ? _root : Navigate(path);
-        if (element.ValueKind == JsonValueKind.Undefined || element.ValueKind == JsonValueKind.Null)
+        if (element.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
             return default;
 
         return JsonSerializer.Deserialize<T>(element.GetRawText());
@@ -72,97 +76,112 @@ public class JsonAccessor
 
     private JsonElement Navigate(string path)
     {
-        if (string.IsNullOrEmpty(path)) return _root;
-
-        var parts = path.Split('.');
-        var current = _root;
-
-        foreach (var part in parts)
+        try
         {
-            if (current.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
-                return default;
+            if (string.IsNullOrEmpty(path)) return _root;
 
-            if (part.Contains("[") && part.Contains("]"))
-            {
-                var propName = part.Substring(0, part.IndexOf('['));
-                var indexStr = part.Substring(part.IndexOf('[') + 1, part.IndexOf(']') - part.IndexOf('[') - 1);
+            var parts = path.Split('.');
+            var current = _root;
 
-                if (!string.IsNullOrEmpty(propName))
-                {
-                    if (!current.TryGetProperty(propName, out current)) return default;
-                }
-
-                if (int.TryParse(indexStr, out int index) && current.ValueKind == JsonValueKind.Array)
-                {
-                    if (index >= 0 && index < current.GetArrayLength())
-                        current = current[index];
-                    else
-                        return default;
-                }
-                else return default;
-            }
-            else
-            {
-                if (!current.TryGetProperty(part, out current)) return default;
-            }
-        }
-
-        return current;
-    }
-
-    private IEnumerable<JsonElement> NavigateMany(string path)
-    {
-        if (string.IsNullOrEmpty(path)) return [_root];
-
-        var parts = path.Split('.');
-        var currentSet = new List<JsonElement> { _root };
-
-        foreach (var part in parts)
-        {
-            var nextSet = new List<JsonElement>();
-
-            foreach (var current in currentSet)
+            foreach (var part in parts)
             {
                 if (current.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
-                    continue;
+                    return default;
 
-                if (part == "*")
-                {
-                    if (current.ValueKind == JsonValueKind.Array)
-                        nextSet.AddRange(current.EnumerateArray());
-                }
-                else if (part.Contains("[*]"))
-                {
-                    var propName = part.Replace("[*]", "");
-                    if (current.TryGetProperty(propName, out var array) && array.ValueKind == JsonValueKind.Array)
-                        nextSet.AddRange(array.EnumerateArray());
-                }
-                else if (part.Contains('[') && part.Contains(']'))
+                if (part.Contains('[') && part.Contains(']'))
                 {
                     var propName = part[..part.IndexOf('[')];
                     var indexStr = part.Substring(part.IndexOf('[') + 1, part.IndexOf(']') - part.IndexOf('[') - 1);
 
-                    var target = current;
                     if (!string.IsNullOrEmpty(propName))
                     {
-                        if (!current.TryGetProperty(propName, out target)) continue;
+                        if (!current.TryGetProperty(propName, out current)) return default;
                     }
 
-                    if (int.TryParse(indexStr, out int index) && target.ValueKind == JsonValueKind.Array)
+                    if (int.TryParse(indexStr, out int index) && current.ValueKind == JsonValueKind.Array)
                     {
-                        if (index >= 0 && index < target.GetArrayLength())
-                            nextSet.Add(target[index]);
+                        if (index >= 0 && index < current.GetArrayLength())
+                            current = current[index];
+                        else
+                            return default;
                     }
+                    else return default;
                 }
                 else
                 {
-                    if (current.TryGetProperty(part, out var next))
-                        nextSet.Add(next);
+                    if (!current.TryGetProperty(part, out current)) return default;
                 }
             }
-            currentSet = nextSet;
-        }
 
-        return currentSet;
+            return current;
+        }
+        catch (Exception ex)
+        {
+            throw new JsonException($"Failed to navigate to '{path}': {ex.Message}", ex);
+        }
+    }
+
+    private IEnumerable<JsonElement> NavigateMany(string path)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(path)) return [_root];
+
+            var parts = path.Split('.');
+            var currentSet = new List<JsonElement> { _root };
+
+            foreach (var part in parts)
+            {
+                var nextSet = new List<JsonElement>();
+
+                foreach (var current in currentSet)
+                {
+                    if (current.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+                        continue;
+
+                    if (part == "*")
+                    {
+                        if (current.ValueKind == JsonValueKind.Array)
+                            nextSet.AddRange(current.EnumerateArray());
+                    }
+                    else if (part.Contains("[*]"))
+                    {
+                        var propName = part.Replace("[*]", "");
+                        if (current.TryGetProperty(propName, out var array) && array.ValueKind == JsonValueKind.Array)
+                            nextSet.AddRange(array.EnumerateArray());
+                    }
+                    else if (part.Contains('[') && part.Contains(']'))
+                    {
+                        var propName = part[..part.IndexOf('[')];
+                        var indexStr = part.Substring(part.IndexOf('[') + 1, part.IndexOf(']') - part.IndexOf('[') - 1);
+
+                        var target = current;
+                        if (!string.IsNullOrEmpty(propName))
+                        {
+                            if (!current.TryGetProperty(propName, out target)) continue;
+                        }
+
+                        if (int.TryParse(indexStr, out int index) && target.ValueKind == JsonValueKind.Array)
+                        {
+                            if (index >= 0 && index < target.GetArrayLength())
+                                nextSet.Add(target[index]);
+                        }
+                    }
+                    else
+                    {
+                        if (current.TryGetProperty(part, out var next))
+                            nextSet.Add(next);
+                    }
+                }
+
+                currentSet = nextSet;
+            }
+
+            return currentSet;
+        }
+        catch (Exception ex)
+        {
+            throw new JsonException($"Failed to navigate to '{path}': {ex.Message}", ex);
+        }
     }
 }
