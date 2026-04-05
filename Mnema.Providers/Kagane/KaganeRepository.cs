@@ -143,7 +143,7 @@ public class KaganeRepository(
                     Provider = Provider.Kagane,
                     ContentId = s.ExternalId,
                     ContentName = seriesInfo.Title,
-                    ReleaseDate = lastChapter.ReleaseDate ?? DateTime.UtcNow,
+                    ReleaseDate = DateTime.UtcNow,
                 });
             }
 
