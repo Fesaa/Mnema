@@ -21,6 +21,8 @@
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.3.0"/>
         <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.5" />
+        <PackageReference Include="NeoSmart.Caching.Sqlite" Version="9.0.1" />
+        <PackageReference Include="NeoSmart.Caching.Sqlite.AspNetCore" Version="9.0.1" />
         <PackageReference Include="Serilog" Version="4.3.1" />
         <PackageReference Include="Serilog.AspNetCore" Version="10.0.0"/>
         <PackageReference Include="Serilog.Expressions" Version="5.0.0"/>
