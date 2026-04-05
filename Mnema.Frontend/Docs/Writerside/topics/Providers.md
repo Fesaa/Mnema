@@ -42,6 +42,8 @@ Everything works, they something add cloudflare protection on their API. During 
 
 ### Kagane
 
+Sometimes seems to work, sometimes doesn't. DRM and cloudflare are a massive pain. It works on my MacBook; not in the cluster. I can't be bothered.
+
 Everything works. One small remark, Kagane does not expose which chapter caused their updated_at or even a timestamp for updated at. Recently updated is thus fake
 and simply loads latest uploads for each monitored series
 
