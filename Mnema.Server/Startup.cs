@@ -101,7 +101,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.Configure<BrotliCompressionProviderOptions>(opts => { opts.Level = CompressionLevel.Fastest; });
 
-        var redisConnectionString = configuration.GetConnectionString("Redis");
+        var redisConnectionString = configuration.GetConnectionString(ConfigurationKeys.RedisConnectionKey);
         if (!string.IsNullOrEmpty(redisConnectionString))
         {
             services.AddStackExchangeRedisCache(options =>
@@ -124,7 +124,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddAutoMapper(cfg => cfg.LicenseKey = autoMapperLicense,
             typeof(AutoMapperProfiles).Assembly);
 
-        services.AddMnemaPostgresDatabase(configuration);
+        services.AddMnemaDatabase(configuration);
         services.AddDatabaseServices();
         services.AddAndConfigureHangFire(configuration);
         services.AddIdentityServices(configuration, env);

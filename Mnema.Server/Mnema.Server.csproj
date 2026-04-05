@@ -12,6 +12,7 @@
         <PackageReference Include="Hangfire" Version="1.8.23"/>
         <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23"/>
         <PackageReference Include="Hangfire.PostgreSql" Version="1.21.1" />
+        <PackageReference Include="Hangfire.SQLite" Version="1.4.2" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" Version="10.0.5" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.5">
