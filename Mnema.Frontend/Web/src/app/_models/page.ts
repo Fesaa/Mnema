@@ -19,6 +19,7 @@ export enum Provider {
   BATO = 4,
   WEEBDEX = 5,
   COMIX = 6,
+  KAGANE = 7,
 }
 
 export const AllProviders = Object.values(Provider).filter(value => typeof value === 'number') as number[];

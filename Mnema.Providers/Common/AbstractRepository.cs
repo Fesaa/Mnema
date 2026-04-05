@@ -29,6 +29,11 @@ public abstract class AbstractRepository(IDistributedCache cache): IRepository
         return new JsonAccessor(response.Unwrap());
     }
 
+    public Task<JsonAccessor> PostAsync(string url, object json, CancellationToken cancellationToken, JsonSerializerOptions? options = null)
+    {
+        return PostAsync(url, JsonSerializer.Serialize(json, options), cancellationToken);
+    }
+
     public async Task<JsonAccessor> PostAsync(string url, string json, CancellationToken cancellationToken)
     {
         var content = new StringContent(json, Encoding.UTF8, "application/json");

@@ -509,7 +509,13 @@
       "label": "Excluded Tags Mode",
       "And": "And",
       "Or": "Or"
-    }
+    },
+    "publication_status": "Publication Status",
+    "content_rating": "Content Rating",
+    "included_genres": "Included Genres",
+    "excluded_genres": "Excluded Genres",
+    "included_tags": "Included Tags",
+    "excluded_tags": "Excluded Tags"
   },
 
   "series-info-modal": {
