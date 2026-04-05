@@ -1,4 +1,5 @@
 using System;
+using System.Threading.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Mnema.API;
@@ -187,12 +188,21 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.Kagane,
             (s, _) => s.GetRequiredService<KaganeRepository>());
 
+        var kaganeLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromSeconds(1),
+            QueueLimit = 100,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        });
+
+        services.AddTransient(_ => new RateLimitingHandler(kaganeLimiter));
         services.AddHttpClient(nameof(Provider.Kagane), client =>
         {
             client.BaseAddress = new Uri("https://yuzuki.kagane.org");
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
-        });
+        }).AddHttpMessageHandler<RateLimitingHandler>();
 
         #endregion
 

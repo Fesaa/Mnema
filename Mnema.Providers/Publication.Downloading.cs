@@ -146,7 +146,7 @@ internal partial class Publication
                     if (_tokenSource.IsCancellationRequested || !Path.Exists(ioWork.FilePath)) continue;
 
                     var realFileType = ioWork.Url.GetFileType();
-                    var fileType = ioWork.Preferences.ImageFormat.GetFileExtension(ioWork.Url);
+                    var fileType = ioWork.Preferences.ImageFormat.GetFileExtension(ioWork.Url) ?? ".jpeg";
 
                     var fileCounter = $"{ioWork.Idx}".PadLeft(4, '0');
                     var filePath = Path.Join(ioWork.FilePath, $"page {fileCounter}{fileType}");
