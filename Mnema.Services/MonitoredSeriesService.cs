@@ -99,8 +99,19 @@ public class MonitoredSeriesService(
 
         if (string.IsNullOrEmpty(series.ExternalId)) return;
 
+        BackgroundJob.Enqueue(() => StartDownload(userId, series.Id, true, CancellationToken.None));
+    }
+
+    [AutomaticRetry(Attempts = 1)]
+    public async Task StartDownload(Guid userId, Guid seriesId, bool firstDownload, CancellationToken ct = default)
+    {
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(seriesId, ct: ct);
+        if (series == null) throw new NotFoundException();
+
+        if (string.IsNullOrEmpty(series.ExternalId)) throw new MnemaException("Series has no external id");
+
         var metadata = series.MetadataForDownloadRequest();
-        metadata.SetKey(RequestConstants.FirstDownload, true);
+        metadata.SetKey(RequestConstants.FirstDownload, firstDownload);
 
         await downloadService.StartDownload(new DownloadRequestDto
         {

@@ -40,6 +40,7 @@ public interface IMonitoredSeriesService
     Task<FormDefinition> GetMetadataForm(Guid userId, Provider provider, CancellationToken cancellationToken = default);
 
     Task EnrichWithMetadata(Guid guid, CancellationToken cancellationToken = default);
+    Task StartDownload(Guid userId, Guid seriesId, bool firstDownload, CancellationToken ct = default);
 }
 
 public static class MonitoredSeriesExtensions
