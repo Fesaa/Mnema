@@ -57,7 +57,7 @@ internal class WebtoonRepository(
                 Id = node.GetAttributeValue("href", string.Empty).RemovePrefix(baseUrl),
                 Name = node.QuerySelector(".title").InnerText,
                 Provider = Provider.Webtoons,
-                ImageUrl = $"/api/proxy/webtoon/covers/{node.QuerySelector("img")
+                ImageUrl = $"/proxy/webtoon/covers/{node.QuerySelector("img")
                     .GetAttributeValue("src", string.Empty)
                     .RemovePrefix(SharedConstants.WebtoonImageBase)
                     .RemoveSuffix("?type=q90")}",
