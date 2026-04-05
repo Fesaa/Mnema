@@ -18,9 +18,7 @@ using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
-using Mnema.Models.Internal;
 using Mnema.Models.Publication;
-using Mnema.Providers.Bato;
 using Mnema.Providers.Extensions;
 
 namespace Mnema.Providers.Dynasty;
@@ -28,7 +26,7 @@ namespace Mnema.Providers.Dynasty;
 internal sealed record DynastyImage(string image);
 
 internal class DynastyRepository(
-    ILogger<BatoRepository> logger,
+    ILogger<DynastyRepository> logger,
     IDistributedCache cache,
     IHttpClientFactory httpClientFactory)
     : IRepository

@@ -4,7 +4,6 @@ using Microsoft.Net.Http.Headers;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Models.Entities.Content;
-using Mnema.Providers.Bato;
 using Mnema.Providers.Cleanup;
 using Mnema.Providers.Comix;
 using Mnema.Providers.Dynasty;
@@ -13,7 +12,6 @@ using Mnema.Providers.Nyaa;
 using Mnema.Providers.QBit;
 using Mnema.Providers.Services;
 using Mnema.Providers.Webtoon;
-using Mnema.Providers.Weebdex;
 
 namespace Mnema.Providers.Extensions;
 
@@ -80,11 +78,10 @@ public static class ServiceProviderExtensions
 
         #region Weebdex
 
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Weebdex);
+        services.AddKeyedSingleton<IContentManager, NoOpContentManager>(Provider.Weebdex);
 
         services.AddKeyedScoped<IContentRepository, NoOpRepository>(Provider.Weebdex);
         services.AddKeyedScoped<IRepository, NoOpRepository>(Provider.Weebdex);
-        services.AddKeyedScoped<IPreDownloadHook, WeebdexLoadVolumesHook>(Provider.Weebdex);
         services.AddHttpClient(nameof(Provider.Weebdex), client =>
         {
             client.BaseAddress = new Uri("https://api.weebdex.org");
@@ -135,13 +132,10 @@ public static class ServiceProviderExtensions
 
         #region Bato
 
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Bato);
+        services.AddKeyedSingleton<IContentManager, NoOpContentManager>(Provider.Bato);
 
-        services.AddScoped<BatoRepository>();
-        services.AddKeyedScoped<IContentRepository>(Provider.Bato,
-            (s, _) => s.GetRequiredService<NoOpRepository>());
-        services.AddKeyedScoped<IRepository>(Provider.Bato,
-            (s, _) => s.GetRequiredService<NoOpRepository>());
+        services.AddKeyedScoped<IContentRepository, NoOpRepository>(Provider.Bato);
+        services.AddKeyedScoped<IRepository, NoOpRepository>(Provider.Bato);
 
         services.AddHttpClient(nameof(Provider.Bato), client =>
         {
