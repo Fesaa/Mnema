@@ -12,23 +12,24 @@ You may use both methods simultaneously; a common best practice is to define gen
 
 > **Logging:** You can fully configure application logging using **Serilog** via the `Serilog` configuration section or corresponding environment variables.
 
-| Variable (JSON Path)         | Description                                                                         |
-|------------------------------|-------------------------------------------------------------------------------------|
-| **Connections**              |                                                                                     |
-| `ConnectionStrings:Redis`    | Connection string for the Redis cache.                                              |
-| `ConnectionStrings:Postgres` | **Required.** Connection string for the PostgreSQL database.                        |
-| **Authentication**           |                                                                                     |
-| `OpenIdConnect:Authority`    | The OIDC Identity Provider URL.                                                     |
-| `OpenIdConnect:ClientId`     | The registered Client ID for the application.                                       |
-| `OpenIdConnect:Secret`       | The secret key for OIDC handshake.                                                  |
-| `NoAuthentication`           | Set the `true` if you wish to disable Authentication                                |
-| `Authentication:Hardcover`   | Your hardcover ApiKey, required if you wish to use hardcover as a metadata provider |
-| **Storage**                  |                                                                                     |
-| `Application:BaseDir`        | **Required.** The root directory for media storage.                                 |
-| `Application:DownloadDir`    | **Required.** The directory used for processing downloads.                          |
-| **System & Libs**            |                                                                                     |
-| `TZ`                         | Sets the system timezone for the runtime (e.g., `Europe/Brussels`).                 |
-| `AutoMapperLicense`          | Optional license key. Displays a warning on start if missing and not suppressed.    |
+| Variable (JSON Path)         |   | Description                                                                                                                                                                   |
+|------------------------------|:--|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Connections**              |   |                                                                                                                                                                               |
+| `ConnectionStrings:Redis`    |   | Connection string for the Redis cache.                                                                                                                                        |
+| `ConnectionStrings:Postgres` |   | Connection string for the PostgreSQL database.                                                                                                                                |
+| `ConnectionStrings:Sqlite`   |   | Connection string for the Sqlite database, ensure this maps to a persistent location. Postgres takes priority. Example: `Data Source=/persistent/Mnema.db;` The ; is required | 
+| **Authentication**           |   |                                                                                                                                                                               |
+| `OpenIdConnect:Authority`    |   | The OIDC Identity Provider URL.                                                                                                                                               |
+| `OpenIdConnect:ClientId`     |   | The registered Client ID for the application.                                                                                                                                 |
+| `OpenIdConnect:Secret`       |   | The secret key for OIDC handshake.                                                                                                                                            |
+| `NoAuthentication`           |   | Set the `true` if you wish to disable Authentication                                                                                                                          |
+| `Authentication:Hardcover`   |   | Your hardcover ApiKey, required if you wish to use hardcover as a metadata provider                                                                                           |
+| **Storage**                  |   |                                                                                                                                                                               |
+| `Application:BaseDir`        |   | **Required.** The root directory for media storage.                                                                                                                           |
+| `Application:DownloadDir`    |   | **Required.** The directory used for processing downloads.                                                                                                                    |
+| **System & Libs**            |   |                                                                                                                                                                               |
+| `TZ`                         |   | Sets the system timezone for the runtime (e.g., `Europe/Brussels`).                                                                                                           |
+| `AutoMapperLicense`          |   | Optional license key. Displays a warning on start if missing and not suppressed.                                                                                              |
 
 
 <warning>
