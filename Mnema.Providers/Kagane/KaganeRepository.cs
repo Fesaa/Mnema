@@ -358,7 +358,7 @@ public class KaganeRepository(
         {
             var pageUrl = $"{cacheUrl}/api/v2/books/file/{chapter.Id}/{entry.SelectString("page_uuid")}"
                 .SetQueryParam("token", accessToken)
-                .SetQueryParam("is_datasaver", false)
+                .SetQueryParam("is_datasaver", "false")
                 .ToString();
 
             return new DownloadUrl(pageUrl, pageUrl);
