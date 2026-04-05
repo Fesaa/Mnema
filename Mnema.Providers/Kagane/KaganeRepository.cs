@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
+using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
@@ -119,7 +120,18 @@ public class KaganeRepository(
                 Metadata = s.MetadataForDownloadRequest(),
             };
 
-            var seriesInfo = await SeriesInfo(req, cancellationToken);
+            Series seriesInfo;
+            try
+            {
+                seriesInfo = await SeriesInfo(req, cancellationToken);
+            }
+            catch (MnemaException ex)
+            {
+                logger.LogWarning(ex, "Failed to get series info for {SeriesId}", s.ExternalId);
+                continue;
+            }
+
+            logger.LogTrace("Got series info for {SeriesId}", s.ExternalId);
             var lastChapter = seriesInfo.Chapters.LastOrDefault();
 
             if (lastChapter != null)
