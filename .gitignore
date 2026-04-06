@@ -14,3 +14,5 @@ Mnema.sln.DotSettings.user
 Mnema.Metadata.Langabaka.Lucene
 **/bin/
 **/obj/
+*.db-wal
+*.db-shm

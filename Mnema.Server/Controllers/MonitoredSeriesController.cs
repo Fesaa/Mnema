@@ -144,18 +144,7 @@ public class MonitoredSeriesController(
 
         if (string.IsNullOrWhiteSpace(mSeries.ExternalId)) return BadRequest();
 
-        var req = new DownloadRequestDto
-        {
-            Provider = mSeries.Provider,
-            Id = mSeries.ExternalId,
-            BaseDir = mSeries.BaseDir,
-            TempTitle = mSeries.Title,
-            Metadata = mSeries.MetadataForDownloadRequest(),
-            UserId = UserId,
-            StartImmediately = true
-        };
-
-        await downloadService.StartDownload(req);
+        await monitoredSeriesService.StartDownload(UserId, id, false, HttpContext.RequestAborted);
 
         return Ok();
     }

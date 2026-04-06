@@ -651,6 +651,10 @@
           "title": "Invalid modifier {{title}}",
           "summary": "Ensure all modifier values have their key and value set"
         }
+      },
+      "empty": {
+        "title": "No pages configured",
+        "description": "Configure pages by provider to setup search points"
       }
     },
     "preferences": {

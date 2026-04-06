@@ -28,7 +28,8 @@ internal sealed record DynastyImage(string image);
 internal class DynastyRepository(
     ILogger<DynastyRepository> logger,
     IDistributedCache cache,
-    IHttpClientFactory httpClientFactory)
+    IHttpClientFactory httpClientFactory,
+    IParserService parserService)
     : IRepository
 {
     private const string ChapterReleaseDateFormat = "MMM d, yyyy";
@@ -136,15 +137,15 @@ internal class DynastyRepository(
                 var id = ExtractId(node.QuerySelector(".name"));
                 if (string.IsNullOrEmpty(id)) return null;
 
-                //var title = node.QuerySelector(".title").InnerText;
+                var title = node.QuerySelector(".title").InnerText;
                 var dateNode = node.QuerySelectorAll("small").LastOrDefault();
 
                 return new ContentRelease
                 {
                     ReleaseId = node.QuerySelector(".name").GetAttributeValue("href", string.Empty),
                     ContentId = id,
-                    ContentName = string.Empty, // TODO: Need parser
-                    ReleaseName = string.Empty, // TODO: Need parser
+                    ContentName = parserService.ParseSeries(title, ContentFormat.Manga),
+                    ReleaseName = string.Empty,
                     ReleaseDate = dateNode?
                         .InnerText?
                         .RemovePrefix("released ")

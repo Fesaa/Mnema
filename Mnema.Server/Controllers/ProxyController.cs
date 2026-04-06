@@ -82,10 +82,10 @@ public class ProxyController(ILogger<ProxyController> logger, IHttpClientFactory
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to get webtoon cover @ {Url}", url.CleanForLogging());
+            logger.LogError(ex, "Failed to get dynasty cover @ {Url}", url.CleanForLogging());
 
             // TODO: Use fallback image
-            throw new MnemaException("Failed to get image from webtoon", ex);
+            throw new MnemaException("Failed to get image from dynasty", ex);
         }
     }
 

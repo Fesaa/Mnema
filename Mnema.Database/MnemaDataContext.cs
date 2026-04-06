@@ -13,7 +13,7 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Database;
 
-public sealed class MnemaDataContext : DbContext, IDataProtectionKeyContext
+public class MnemaDataContext : DbContext, IDataProtectionKeyContext
 {
 
     public MnemaDataContext(DbContextOptions options) : base(options)
