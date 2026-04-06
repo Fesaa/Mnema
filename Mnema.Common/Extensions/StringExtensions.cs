@@ -76,7 +76,8 @@ public static class StringExtensions
             if (string.IsNullOrWhiteSpace(s)) return string.Empty;
 
             var path = s.Split(['?', '#'], StringSplitOptions.RemoveEmptyEntries)[0];
-            return Path.GetExtension(path);
+            var ext = Path.GetExtension(path);
+            return string.IsNullOrEmpty(ext) ? ".jpeg" : ext;
         }
     }
 

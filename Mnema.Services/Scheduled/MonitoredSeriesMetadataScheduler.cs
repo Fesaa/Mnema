@@ -47,17 +47,29 @@ internal class MonitoredSeriesMetadataScheduler(
         logger.LogDebug("{Amount} series eligible for refresh", series.Count);
 
         var sw = Stopwatch.StartNew();
+        var failures = 0;
 
         foreach (var mSeries in series)
         {
             logger.LogDebug("Refreshing metadata for {Title} - {Provider}", mSeries.Title, mSeries.Provider);
 
-            await monitoredSeriesService.EnrichWithMetadata(mSeries.Id, ct);
+            try
+            {
+                await monitoredSeriesService.EnrichWithMetadata(mSeries.Id, ct);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to refresh metadata for {Title} - {Provider}", mSeries.Title, mSeries.Provider);
+                failures++;
+            }
 
             await Task.Delay(TimeSpan.FromMilliseconds(10), ct);
         }
 
         logger.LogInformation("Refreshed metadata for {Amount} series in {Elapsed}ms",
             series.Count, sw.Elapsed.TotalMilliseconds - 10 * series.Count);
+
+        if (failures > 0)
+            logger.LogWarning("Failed to refresh metadata for {Amount} series", failures);
     }
 }

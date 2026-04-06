@@ -36,6 +36,8 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
             throw new MnemaException("Failed to search for comics", res.Error);
 
         var data = res.Unwrap();
+        if (data.Status != 200)
+            throw new MnemaException($"Failed to search for comics, status code {data.Status}");
 
         var items = data.Result.Items.Select(m => new SearchResult
         {
@@ -61,7 +63,11 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
         if (res.IsErr)
             throw new MnemaException("Failed to recently updated", res.Error);
 
-        return res.Unwrap()
+        var resp = res.Unwrap();
+        if (resp.Status != 200)
+            throw new MnemaException($"Failed to recently updated, status code {resp.Status}");
+
+        return resp
             .Result
             .Items
             .Where(m => m.LatestChapter.HasValue)
@@ -143,9 +149,13 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
         if (res.IsErr)
             throw new MnemaException($"Failed to retrieve information for manga {request.Id}", res.Error);
 
+        var resp = res.Unwrap();
+        if (resp.Status != 200)
+            throw new MnemaException($"Failed to retrieve information for manga {request.Id}, status code {resp.Status}");
+
         var language = request.GetKey(RequestConstants.LanguageKey);
 
-        var manga = res.Unwrap().Result;
+        var manga = resp.Result;
         var chapters = await GetSeriesChapters(manga.HashId, cancellationToken: cancellationToken);
 
         var filteredChapters = FilterChapters(chapters, language, request).Select((chapter, idx) => new Chapter
@@ -189,23 +199,35 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
 
     private async Task<List<ComixChapter>> GetSeriesChapters(string id, int page = 1, CancellationToken cancellationToken = default)
     {
-        var url = $"api/v2/manga/{id}/chapters?limit=100&page={page}&order[number]=desc";
+        var path = $"/manga/{id}/chapters";
+        var hashToken = ComixUtils.GenerateHash(path);
+
+        var url = "api/v2/" + path
+            .SetQueryParam("order[number]", "desc")
+            .SetQueryParam("limit", 100)
+            .SetQueryParam("page", page)
+            .SetQueryParam("time", 1)
+            .SetQueryParam("_", hashToken);
 
         var res = await Client.GetCachedAsync<ComixRespose<ComixPaginatedResult<ComixChapter>>>(url, cache, cancellationToken: cancellationToken);
         if (res.IsErr)
             throw new MnemaException($"Failed to retrieve chapters for manga {id}", res.Error);
 
-        var resp = res.Unwrap().Result;
+        var resp = res.Unwrap();
+        if (resp.Status != 200)
+            throw new MnemaException($"Failed to retrieve chapters for manga {id}, status code {resp.Status}");
 
-        if (resp.Pagination.TotalPages <= page) return resp.Items;
+        var result = resp.Result;
+
+        if (result.Pagination.TotalPages <= page) return result.Items;
 
         await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
 
         var extra = await GetSeriesChapters(id, page + 1, cancellationToken);
 
-        resp.Items.AddRange(extra);
+        result.Items.AddRange(extra);
 
-        return resp.Items;
+        return result.Items;
     }
 
     private static List<ComixChapter> FilterChapters(IList<ComixChapter> chapters, string language,
@@ -254,7 +276,11 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
         if (res.IsErr)
             throw new MnemaException("Failed to load chapter images", res.Error);
 
-        return res.Unwrap()
+        var resp = res.Unwrap();
+        if (resp.Status != 200)
+            throw new MnemaException($"Failed to load chapter images, status code {resp.Status}");
+
+        return resp
             .Result
             .Images
             .Select(i => i.Url)

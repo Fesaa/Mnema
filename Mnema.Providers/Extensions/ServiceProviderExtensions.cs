@@ -1,10 +1,10 @@
 using System;
+using System.Threading.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Models.Entities.Content;
-using Mnema.Providers.Bato;
 using Mnema.Providers.Cleanup;
 using Mnema.Providers.Comix;
 using Mnema.Providers.Dynasty;
@@ -14,7 +14,6 @@ using Mnema.Providers.Nyaa;
 using Mnema.Providers.QBit;
 using Mnema.Providers.Services;
 using Mnema.Providers.Webtoon;
-using Mnema.Providers.Weebdex;
 
 namespace Mnema.Providers.Extensions;
 
@@ -81,15 +80,10 @@ public static class ServiceProviderExtensions
 
         #region Weebdex
 
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Weebdex);
+        services.AddKeyedSingleton<IContentManager, NoOpContentManager>(Provider.Weebdex);
 
-        services.AddScoped<WeebdexRepository>();
-        services.AddKeyedScoped<IContentRepository>(Provider.Weebdex,
-            (s, _) => s.GetRequiredService<WeebdexRepository>());
-        services.AddKeyedScoped<IRepository>(Provider.Weebdex,
-            (s, _) => s.GetRequiredService<WeebdexRepository>());
-
-        services.AddKeyedScoped<IPreDownloadHook, WeebdexLoadVolumesHook>(Provider.Weebdex);
+        services.AddKeyedScoped<IContentRepository, NoOpRepository>(Provider.Weebdex);
+        services.AddKeyedScoped<IRepository, NoOpRepository>(Provider.Weebdex);
         services.AddHttpClient(nameof(Provider.Weebdex), client =>
         {
             client.BaseAddress = new Uri("https://api.weebdex.org");
@@ -140,13 +134,10 @@ public static class ServiceProviderExtensions
 
         #region Bato
 
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Bato);
+        services.AddKeyedSingleton<IContentManager, NoOpContentManager>(Provider.Bato);
 
-        services.AddScoped<BatoRepository>();
-        services.AddKeyedScoped<IContentRepository>(Provider.Bato,
-            (s, _) => s.GetRequiredService<NoOpRepository>());
-        services.AddKeyedScoped<IRepository>(Provider.Bato,
-            (s, _) => s.GetRequiredService<NoOpRepository>());
+        services.AddKeyedScoped<IContentRepository, NoOpRepository>(Provider.Bato);
+        services.AddKeyedScoped<IRepository, NoOpRepository>(Provider.Bato);
 
         services.AddHttpClient(nameof(Provider.Bato), client =>
         {
@@ -187,12 +178,21 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.Kagane,
             (s, _) => s.GetRequiredService<KaganeRepository>());
 
+        var kaganeLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromSeconds(1),
+            QueueLimit = 100,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        });
+
+        services.AddTransient(_ => new RateLimitingHandler(kaganeLimiter));
         services.AddHttpClient(nameof(Provider.Kagane), client =>
         {
             client.BaseAddress = new Uri("https://yuzuki.kagane.org");
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
-        });
+        }).AddHttpMessageHandler<RateLimitingHandler>();
 
         #endregion
 
