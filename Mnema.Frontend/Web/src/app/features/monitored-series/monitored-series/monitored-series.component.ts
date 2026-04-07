@@ -55,7 +55,21 @@ export class MonitoredSeriesComponent {
 
   protected series = linkedSignal(() => this.data()!['series'] as MonitoredSeries);
   protected provider = computed(() => this.series().provider);
-  protected metadata = signal<FormControlDefinition[]>([]);
+  protected metadataFormDefinition = signal<FormControlDefinition[]>([]);
+  protected metadata = computed(() => {
+    const m = this.series().metadata;
+
+    if (this.series().hardcoverId) {
+      m["hardcover_series_id"] = [this.series().hardcoverId];
+    }
+
+    if (this.series().mangaBakaId) {
+      m["manga_baka_id"] = [this.series().mangaBakaId]
+    }
+
+    return m;
+  })
+
 
   constructor() {
     this.signalR.events$.pipe(
@@ -69,7 +83,7 @@ export class MonitoredSeriesComponent {
 
     effect(() => {
       this.pageService.metadata(this.provider()).pipe(
-        tap(m => this.metadata.set(m))
+        tap(m => this.metadataFormDefinition.set(m))
       ).subscribe();
     });
   }
@@ -120,8 +134,8 @@ export class MonitoredSeriesComponent {
         component.info.set(selection);
         component.defaultDir.set(this.series().baseDir);
         component.rootDir.set('');
-        component.metadataFormDefinition.set(this.metadata());
-        component.metadata.set(this.series().metadata);
+        component.metadataFormDefinition.set(this.metadataFormDefinition());
+        component.metadata.set(this.metadata());
 
         return this.modalService.onClose$(modal);
       }),
@@ -147,8 +161,8 @@ export class MonitoredSeriesComponent {
     });
     component.defaultDir.set(this.series().baseDir);
     component.rootDir.set('');
-    component.metadataFormDefinition.set(this.metadata());
-    component.metadata.set(this.series().metadata);
+    component.metadataFormDefinition.set(this.metadataFormDefinition());
+    component.metadata.set(this.metadata());
   }
 
   showResolvedSeries() {
