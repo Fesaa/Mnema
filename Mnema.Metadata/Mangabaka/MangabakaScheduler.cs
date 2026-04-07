@@ -52,7 +52,7 @@ public class MangabakaScheduler(
         if (File.Exists(dbPath))
             return;
 
-        await DownloadDatabase(CancellationToken.None);
+        BackgroundJob.Enqueue(() => DownloadDatabase(CancellationToken.None));
     }
 
     public async Task DownloadDatabase(CancellationToken ct)
