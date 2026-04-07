@@ -82,7 +82,7 @@ export class SearchResultComponent implements OnInit{
     const defaultDir = page.customRootDir;
 
     const [_, component] = this.modalService.open(DownloadModalComponent, DefaultModalOptions);
-    component.metadata.set(metadata);
+    component.metadataFormDefinition.set(metadata);
     component.defaultDir.set(defaultDir);
     component.rootDir.set(page.customRootDir);
     component.info.set(this.searchResult());

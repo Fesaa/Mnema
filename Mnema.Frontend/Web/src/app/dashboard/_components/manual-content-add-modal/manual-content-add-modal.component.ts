@@ -59,7 +59,7 @@ export class ManualContentAddModalComponent {
         this.close();
 
         const [_, component] = this.modalService.open(DownloadModalComponent, DefaultModalOptions);
-        component.metadata.set(metadata);
+        component.metadataFormDefinition.set(metadata);
         component.defaultDir.set('');
         component.rootDir.set('');
         component.info.set({

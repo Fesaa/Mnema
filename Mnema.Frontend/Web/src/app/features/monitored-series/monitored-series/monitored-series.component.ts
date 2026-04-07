@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, linkedSignal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, signal} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {
@@ -27,6 +27,9 @@ import {ListSelectModalComponent} from "@mnema/shared/_component/list-select-mod
 import {EventType, SignalRService} from "@mnema/_services/signal-r.service";
 import {SearchInfo} from "@mnema/_models/Info";
 import {ToastService} from "@mnema/_services/toast.service";
+import {DownloadModalComponent} from "@mnema/page/_components/download-modal/download-modal.component";
+import {PageService} from "@mnema/_services/page.service";
+import {FormControlDefinition} from "@mnema/generic-form/form";
 
 @Component({
   selector: 'app-monitored-series',
@@ -46,10 +49,13 @@ export class MonitoredSeriesComponent {
   private readonly signalR = inject(SignalRService);
   private readonly route = inject(ActivatedRoute);
   private readonly toastR = inject(ToastService);
+  private readonly pageService = inject(PageService);
   private readonly router = inject(Router);
   private readonly data = toSignal(this.route.data);
 
   protected series = linkedSignal(() => this.data()!['series'] as MonitoredSeries);
+  protected provider = computed(() => this.series().provider);
+  protected metadata = signal<FormControlDefinition[]>([]);
 
   constructor() {
     this.signalR.events$.pipe(
@@ -59,6 +65,13 @@ export class MonitoredSeriesComponent {
       switchMap(() => this.monitoredSeriesService.get(this.series().id)),
       tap(series => this.series.set(series))
     ).subscribe();
+
+
+    effect(() => {
+      this.pageService.metadata(this.provider()).pipe(
+        tap(m => this.metadata.set(m))
+      ).subscribe();
+    });
   }
 
   setChapterStatus(chapterId: string) {
@@ -99,17 +112,43 @@ export class MonitoredSeriesComponent {
 
         return this.modalService.onClose$<SearchInfo>(modal)
       }),
-      switchMap(selection => this.monitoredSeriesService.download(this.series().id, selection)),
+      switchMap(selection => {
+        const [modal, component] = this.modalService.open(DownloadModalComponent, {
+          size: "xl", centered: true
+        });
+
+        component.info.set(selection);
+        component.defaultDir.set(this.series().baseDir);
+        component.rootDir.set('');
+        component.metadataFormDefinition.set(this.metadata());
+        component.metadata.set(this.series().metadata);
+
+        return this.modalService.onClose$(modal);
+      }),
       tap(() => this.toastR.infoLoco('monitored-series-detail.download-started', {name: this.series().title}))
     ).subscribe();
   }
 
   download() {
-    this.modalService.confirm$({
-      question: this.transLoco.translate('monitored-series-detail.confirm-download', {name: this.series().title})
-    }, true).pipe(
-      switchMap(() => this.monitoredSeriesService.downloadExternalId(this.series().id)),
-    ).subscribe();
+    const [_, component] = this.modalService.open(DownloadModalComponent, {
+      size: "xl", centered: true
+    });
+
+    component.info.set({
+      id: this.series().externalId,
+      downloadUrl: "",
+      name: this.series().title,
+      description: "",
+      size: "",
+      tags: [],
+      imageUrl: this.series().coverUrl ?? '',
+      url: this.series().refUrl ?? '',
+      provider: this.series().provider
+    });
+    component.defaultDir.set(this.series().baseDir);
+    component.rootDir.set('');
+    component.metadataFormDefinition.set(this.metadata());
+    component.metadata.set(this.series().metadata);
   }
 
   showResolvedSeries() {
@@ -122,8 +161,14 @@ export class MonitoredSeriesComponent {
   }
 
   edit() {
-    const [_, component] = this.modalService.open(EditMonitoredSeriesModalComponent, DefaultModalOptions);
+    const [modal, component] = this.modalService.open(EditMonitoredSeriesModalComponent, DefaultModalOptions);
     component.series.set(this.series());
+
+    this.modalService.onClose$(modal)
+      .pipe(
+        switchMap(() => this.monitoredSeriesService.get(this.series().id)),
+        tap(series => this.series.set(series)),
+      ).subscribe();
   }
 
   delete() {
