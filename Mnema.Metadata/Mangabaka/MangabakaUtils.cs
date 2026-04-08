@@ -19,7 +19,11 @@ public static class MangabakaUtils
         {
             if (titles == null) return string.Empty;
 
-            var nativeTitle = titles.FirstOrDefault(t => t.Traits.Contains("native"));
+            var nativeTitles = titles.Where(t => t.Traits.Contains("native")).ToList();
+            if (nativeTitles.Count == 1) return nativeTitles[0].Title;
+
+            // Romanized titles will have a longer language code (-latn appended)
+            var nativeTitle = nativeTitles.OrderBy(t => t.Language.Length).FirstOrDefault();
             if (nativeTitle != null) return nativeTitle.Title;
 
             var officialTitle = titles.FirstOrDefault(t => t.Traits.Contains("official") && !t.Traits.Contains("native"));
