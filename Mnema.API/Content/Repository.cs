@@ -9,7 +9,7 @@ using Mnema.Models.Publication;
 
 namespace Mnema.API.Content;
 
-public sealed record DownloadUrl(string Url, string FallbackUrl);
+public sealed record DownloadUrl(string Url, string FallbackUrl, string Format = "");
 
 public interface IContentRepository
 {

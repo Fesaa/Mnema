@@ -17,6 +17,7 @@ public class PagesRepository(MnemaDataContext ctx, IMapper mapper) : IPagesRepos
     {
         return ctx.Pages
             //.Where(p => p.Users.Select(u => u.Id).Contains(userId))
+            .OrderBy(p => p.SortValue)
             .ProjectTo<PageDto>(mapper.ConfigurationProvider)
             .ToListAsync();
     }

@@ -21,7 +21,7 @@ using Mnema.Models.Publication;
 
 namespace Mnema.Providers;
 
-internal sealed record IoWork(UserPreferences Preferences, Stream Stream, string FilePath, string Url, int Idx);
+internal sealed record IoWork(UserPreferences Preferences, Stream Stream, string FilePath, string Url, int Idx, string Format);
 
 internal sealed record DownloadWork(int Idx, DownloadUrl Url);
 
@@ -146,7 +146,10 @@ internal partial class Publication
                     if (_tokenSource.IsCancellationRequested || !Path.Exists(ioWork.FilePath)) continue;
 
                     var realFileType = ioWork.Url.GetFileType();
-                    var fileType = ioWork.Preferences.ImageFormat.GetFileExtension(ioWork.Url) ?? ".jpeg";
+                    var fileType = ioWork.Preferences.ImageFormat.GetFileExtension(ioWork.Url);
+
+                    if (string.IsNullOrEmpty(fileType))
+                        fileType = ioWork.Format;
 
                     var fileCounter = $"{ioWork.Idx}".PadLeft(4, '0');
                     var filePath = Path.Join(ioWork.FilePath, $"page {fileCounter}{fileType}");
@@ -300,7 +303,7 @@ internal partial class Publication
 
                 _speedTracker!.IncrementIntermediate();
 
-                await ctx.Writer.WriteAsync(new IoWork(Preferences, stream, ChapterPath(ctx.Chapter), url, task.Idx));
+                await ctx.Writer.WriteAsync(new IoWork(Preferences, stream, ChapterPath(ctx.Chapter), url, task.Idx, task.Url.Format));
             }
             catch (Exception ex)
             {
