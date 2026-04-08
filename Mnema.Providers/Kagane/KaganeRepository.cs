@@ -373,7 +373,7 @@ public class KaganeRepository(
                 .SetQueryParam("is_datasaver", "false")
                 .ToString();
 
-            return new DownloadUrl(pageUrl, pageUrl);
+            return new DownloadUrl(pageUrl, pageUrl, ".webp");
         }).ToList();
     }
 
