@@ -38,6 +38,7 @@ internal class MonitoredSeriesMetadataScheduler(
         using var scope = scopeFactory.CreateScope();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         var monitoredSeriesService = scope.ServiceProvider.GetRequiredService<IMonitoredSeriesService>();
+        var connectionService = scope.ServiceProvider.GetRequiredService<IConnectionService>();
 
         var series = await unitOfWork.MonitoredSeriesRepository.GetSeriesEligibleForRefresh(ct);
 
@@ -61,13 +62,15 @@ internal class MonitoredSeriesMetadataScheduler(
             {
                 logger.LogError(ex, "Failed to refresh metadata for {Title} - {Provider}", mSeries.Title, mSeries.Provider);
                 failures++;
+
+                connectionService.CommunicateException($"Failed to refresh metadata for {mSeries.Title} - {mSeries.Provider}", ex);
             }
 
-            await Task.Delay(TimeSpan.FromMilliseconds(10), ct);
+            await Task.Delay(TimeSpan.FromMilliseconds(50), ct);
         }
 
         logger.LogInformation("Refreshed metadata for {Amount} series in {Elapsed}ms",
-            series.Count, sw.Elapsed.TotalMilliseconds - 10 * series.Count);
+            series.Count, sw.Elapsed.TotalMilliseconds - 50 * series.Count);
 
         if (failures > 0)
             logger.LogWarning("Failed to refresh metadata for {Amount} series", failures);

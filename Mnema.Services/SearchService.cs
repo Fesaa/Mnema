@@ -14,7 +14,8 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services;
 
-internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory serviceScopeFactory) : ISearchService
+internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory serviceScopeFactory,
+    IConnectionService connectionService) : ISearchService
 {
     public Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, PaginationParams paginationParams,
         CancellationToken cancellationToken)
@@ -55,6 +56,8 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to search for recently updated {Provider}", provider.ToString());
+
+                connectionService.CommunicateException("Failed to search for recently updated", ex);
             }
 
         }
