@@ -54,7 +54,7 @@ public static class Seed
             if (settings.ContainsKey(metadataProvider))
                 continue;
 
-            settings[metadataProvider] = new MetadataProviderSettingsDto(highestPriority++, metadataProvider == MetadataProvider.Upsteam,
+            settings[metadataProvider] = new MetadataProviderSettingsDto(highestPriority++, true,
                 new SeriesMetadataSettingsDto(
                     true, true, true, true, true, true, true, true, true,
                     true, true, new ChapterMetadataSettingsDto(true, true, true, true, true, true)

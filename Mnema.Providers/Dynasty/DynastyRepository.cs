@@ -137,7 +137,7 @@ internal class DynastyRepository(
                 var id = ExtractId(node.QuerySelector(".name"));
                 if (string.IsNullOrEmpty(id)) return null;
 
-                var title = node.QuerySelector(".title").InnerText;
+                var title = node.QuerySelector(".name")?.InnerText ?? string.Empty;
                 var dateNode = node.QuerySelectorAll("small").LastOrDefault();
 
                 return new ContentRelease
