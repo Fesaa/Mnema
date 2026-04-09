@@ -48,7 +48,8 @@ public class Program
                     logger.LogInformation("Database has been migrated, starting Mnema");
                 }
 
-                await new MigrateSubscriptionsToMonitoredSeries().RunAsync(context, logger);
+                await new MigrateSubscriptionsToMonitoredSeries().RunAsync(services, context, logger);
+                await new PinMonitoredSeriesTitles().RunAsync(services, context, logger);
 
                 await context.SeedDatabase();
             }
