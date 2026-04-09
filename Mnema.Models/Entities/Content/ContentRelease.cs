@@ -17,17 +17,23 @@ public class ContentRelease: IEntityDate, IDatabaseEntity
 
     public ReleaseType Type { get; set; } = ReleaseType.Processed;
 
+    public required Provider Provider { get; set; }
+
     /// <summary>
     /// The id that uniquely defines this content release (I.e. chapter id). Used to match duplicates
     /// </summary>
     public required string ReleaseId { get; set; }
 
     /// <summary>
-    /// Required for torrents
+    /// Name of the release (I.e. chapter name)
     /// </summary>
-    public string DownloadUrl { get; set; } = string.Empty;
+    public string ReleaseName { get; set; } = string.Empty;
 
-    public required Provider Provider { get; set; }
+    /// <summary>
+    /// Time this release was published
+    /// </summary>
+    /// <remarks>This must be UTC</remarks>
+    public DateTime ReleaseDate { get; set; }
 
     /// <summary>
     /// The id that uniquely defines the content this release is part of (I.e. series id)
@@ -36,20 +42,14 @@ public class ContentRelease: IEntityDate, IDatabaseEntity
     public string? ContentId { get; set; }
 
     /// <summary>
-    /// Name of the release (I.e. chapter name)
-    /// </summary>
-    public string ReleaseName { get; set; } = string.Empty;
-
-    /// <summary>
     /// Name of the content (I.e. series name)
     /// </summary>
     public string ContentName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Time this release was published
+    /// Required for torrents
     /// </summary>
-    /// <remarks>This must be UTC</remarks>
-    public DateTime ReleaseDate { get; set; }
+    public string DownloadUrl { get; set; } = string.Empty;
 
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModifiedUtc { get; set; }
