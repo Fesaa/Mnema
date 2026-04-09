@@ -757,7 +757,8 @@
           "SeriesMonitored": "Series Monitored",
           "SeriesUnmonitored": "Series Unmonitored",
           "TooManyForAutomatedDownload": "Too many for automated download",
-          "DownloadClientEvents": "Download client events"
+          "DownloadClientEvents": "Download client events",
+          "Exception": "Exception"
         }
       },
       "edit": {
@@ -785,7 +786,8 @@
           "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
           "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
           "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
-          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}"
+          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}",
+          "Exception": "{{settings.connections.shared.event.Exception}}"
         }
       },
       "Kavita": {
@@ -809,7 +811,8 @@
           "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
           "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
           "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
-          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}"
+          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}",
+          "Exception": "{{settings.connections.shared.event.Exception}}"
         }
       },
       "Native": {
@@ -825,7 +828,8 @@
           "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
           "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
           "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
-          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}"
+          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}",
+          "Exception": "{{settings.connections.shared.event.Exception}}"
         }
       }
     },

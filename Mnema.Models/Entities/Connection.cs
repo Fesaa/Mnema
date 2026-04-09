@@ -59,4 +59,9 @@ public enum ConnectionEvent
     ///     Fired when a download client is locked or unlocked
     /// </summary>
     DownloadClientEvents = 7,
+
+    /// <summary>
+    ///     Fired when an exception occurs through the application. This does not catch all of them
+    /// </summary>
+    Exception = 8,
 }

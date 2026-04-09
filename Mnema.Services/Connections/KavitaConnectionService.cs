@@ -28,21 +28,16 @@ internal class KavitaConnectionService(
     ILogger<KavitaConnectionService> logger,
     HttpClient httpClient,
     ApplicationConfiguration applicationConfiguration
-) : IConnectionHandlerService
+) : AbstractConnectionHandlerService
 {
     private static readonly IMetadataKey<string> ApiKey = MetadataKeys.String("api-key");
     private static readonly IMetadataKey<string> UrlKey = MetadataKeys.String("url");
     private static readonly IMetadataKey<string?> BaseDirSrcKey = MetadataKeys.OptionalString("basedir-src");
     private static readonly IMetadataKey<string?> BaseDirDestKey = MetadataKeys.OptionalString("basedir-dest");
 
-    public List<ConnectionEvent> SupportedEvents { get; } = [ConnectionEvent.DownloadFinished];
+    public override List<ConnectionEvent> SupportedEvents { get; } = [ConnectionEvent.DownloadFinished];
 
-    public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
+    public new async Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
     {
         var url = connection.Metadata.GetKey(UrlKey);
         var authKey = connection.Metadata.GetKey(ApiKey);
@@ -77,37 +72,7 @@ internal class KavitaConnectionService(
         response.EnsureSuccessStatusCode();
     }
 
-    public Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries info, int amount)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
+    public override Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
     {
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition

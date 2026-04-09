@@ -21,6 +21,7 @@ public interface IConnectionService
     Task CommunicateSeriesUnmonitored(Guid id, CancellationToken cancellationToken = default);
     void CommunicateTooManyForAutomatedDownload(MonitoredSeries info, int amount);
     void CommunicateDownloadClientEvent(DownloadClient client);
+    void CommunicateException(string message, Exception ex);
 
     Task UpdateConnection(ConnectionDto connection, CancellationToken cancellationToken);
     Task<FormDefinition> GetForm(ConnectionType type, CancellationToken cancellationToken);
@@ -38,6 +39,7 @@ public interface IConnectionHandlerService
     Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series);
     Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries info, int amount);
     Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client);
+    Task CommunicateException(Connection connection, string message, Exception ex);
 
     /// <summary>
     ///     Returns the form for configuration this specific external service

@@ -77,6 +77,12 @@ internal class ConnectionService(
             => service.CommunicateDownloadClientEvent(connection, client));
     }
 
+    public void CommunicateException(string message, Exception ex)
+    {
+        DoForAll(ConnectionEvent.Exception, (service, connection)
+            => service.CommunicateException(connection, message, ex));
+    }
+
     public async Task UpdateConnection(ConnectionDto dto, CancellationToken cancellationToken)
     {
         var connection = await unitOfWork.ConnectionRepository.GetById(dto.Id, cancellationToken) ??
