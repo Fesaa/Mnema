@@ -105,4 +105,9 @@
   @if (selectedItems && selectedItems.includes(item)) {
     <span class="pill p-1 ms-1">{{ selectedText() }}</span>
   }
+  @if (item.url) {
+    <a [href]="item.url" rel="noreferrer nofollow noopener" target="_blank">
+      <i class="fa fa-external-link-alt"></i>
+    </a>
+  }
 </ng-template>
