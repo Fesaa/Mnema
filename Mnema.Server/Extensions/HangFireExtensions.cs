@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.External;
 using Mnema.Models.Internal;
+using Mnema.Server.Helpers;
 
 namespace Mnema.Server.Extensions;
 
@@ -21,6 +22,8 @@ public static class HangFireExtensions
 
             services.AddHangfire(config =>
             {
+                config.UseFilter(new ExceptionJobFilter());
+
                 if (!string.IsNullOrEmpty(psql))
                 {
                     config.UsePostgreSqlStorage(

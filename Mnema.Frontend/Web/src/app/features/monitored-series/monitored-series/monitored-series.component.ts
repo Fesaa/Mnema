@@ -120,7 +120,7 @@ export class MonitoredSeriesComponent {
           size: "lg", centered: true
         });
         component.title.set(this.transLoco.translate('monitored-series-detail.select-search-result'));
-        component.inputItems.set(results.items.map(si => ({label: si.name, value: si})));
+        component.inputItems.set(results.items.map(si => ({label: si.name, value: si, url: si.url})));
         component.itemsBeforeVirtual.set(8);
         component.requireConfirmation.set(true);
 

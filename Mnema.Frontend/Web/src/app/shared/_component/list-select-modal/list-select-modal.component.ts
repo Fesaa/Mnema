@@ -23,6 +23,7 @@ import {LoadingSpinnerComponent} from "@mnema/shared/_component/loading-spinner/
 export type ListSelectionItem<T> = {
   label: string,
   value: T,
+  url?: string,
 }
 
 

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -9,7 +10,7 @@ namespace Mnema.Database.ManualMigrations;
 public class MigrateSubscriptionsToMonitoredSeries: ManualMigration
 {
     protected override string MigrationName { get; } = nameof(MigrateSubscriptionsToMonitoredSeries);
-    protected override async Task ExecuteAsync(MnemaDataContext ctx, ILogger logger)
+    protected override async Task ExecuteAsync(IServiceProvider serviceProvider, MnemaDataContext ctx, ILogger logger)
     {
         var subs = await ctx.Subscriptions.ToListAsync();
 

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,10 +13,10 @@ public abstract class ManualMigration
     /// <summary>
     /// Execute the migration logic. Handle your own exceptions.
     /// </summary>
-    protected abstract Task ExecuteAsync(MnemaDataContext ctx, ILogger logger);
+    protected abstract Task ExecuteAsync(IServiceProvider serviceProvider, MnemaDataContext ctx, ILogger logger);
 
 
-    public async Task RunAsync(MnemaDataContext ctx, ILogger logger)
+    public async Task RunAsync(IServiceProvider serviceProvider, MnemaDataContext ctx, ILogger logger)
     {
         ctx.ChangeTracker.Clear();
 
@@ -23,9 +24,10 @@ public abstract class ManualMigration
         {
             return;
         }
+
         logger.LogCritical("Running {MigrationName} migration - Please be patient, this may take some time. This is not an error", MigrationName);
 
-        await ExecuteAsync(ctx, logger);
+        await ExecuteAsync(serviceProvider, ctx, logger);
 
         await ctx.ManualMigrationHistory.AddAsync(new ManualMigrationHistory
         {

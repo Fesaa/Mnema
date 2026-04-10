@@ -77,7 +77,7 @@ internal sealed record DiscordEmbedField
 internal class DiscordConnectionService(
     ILogger<DiscordConnectionService> logger,
     HttpClient httpClient
-) : IConnectionHandlerService
+) : AbstractConnectionHandlerService
 {
     private static readonly IMetadataKey<string?> WebhookKey = MetadataKeys.OptionalString("webhook");
     private static readonly IMetadataKey<string?> UsernameKey = MetadataKeys.OptionalString("username");
@@ -90,7 +90,7 @@ internal class DiscordConnectionService(
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    public List<ConnectionEvent> SupportedEvents { get; } =
+    public override List<ConnectionEvent> SupportedEvents { get; } =
     [
         ConnectionEvent.DownloadStarted,
         ConnectionEvent.DownloadFinished,
@@ -99,10 +99,11 @@ internal class DiscordConnectionService(
         ConnectionEvent.SeriesMonitored,
         ConnectionEvent.SeriesUnmonitored,
         ConnectionEvent.TooManyForAutomatedDownload,
-        ConnectionEvent.DownloadClientEvents
+        ConnectionEvent.DownloadClientEvents,
+        ConnectionEvent.Exception,
     ];
 
-    public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
+    public new Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
     {
         var embed = new DiscordEmbed
         {
@@ -125,7 +126,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
+    public new Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
     {
         var embed = new DiscordEmbed
         {
@@ -148,7 +149,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
+    public new Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
     {
         var embed = new DiscordEmbed
         {
@@ -171,7 +172,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
+    public new Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
     {
         var embed = new DiscordEmbed
         {
@@ -194,7 +195,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
+    public new Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
     {
         var embed = new DiscordEmbed
         {
@@ -217,7 +218,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries series, int amount)
+    public new Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries series, int amount)
     {
         var embed = new DiscordEmbed
         {
@@ -241,7 +242,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
+    public new Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
     {
         var embed = new DiscordEmbed
         {
@@ -302,7 +303,7 @@ internal class DiscordConnectionService(
         return embeds;
     }
 
-    public Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
+    public new Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
     {
         var progressText = info.Progress > 0
             ? $"{info.Progress:F1}% complete before failure"
@@ -343,8 +344,41 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
+    public new Task CommunicateException(Connection connection, string message, Exception ex)
+    {
+        var embed = new DiscordEmbed
+        {
+            Title = "An exceptions occured!",
+            Description = $"**{message}**\n\n{ex.StackTrace}".Limit(MaxDescriptionLength),
+            Color = 0xe74c3c, // Red
+            Timestamp = DateTime.UtcNow,
+            Fields = [
+                new DiscordEmbedField()
+                {
+                    Name = "Exception",
+                    Value = ex.Message,
+                    Inline = true
+                },
+                new DiscordEmbedField
+                {
+                    Name = "Source",
+                    Value = ex.Source ?? "N/A",
+                    Inline = true
+                },
+                new DiscordEmbedField
+                {
+                    Name = "Type",
+                    Value = ex.GetType().FullName ?? "N/A",
+                    Inline = false
+                },
+            ]
+        };
 
-    public Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
+        return SendMessage(connection, [embed]);
+    }
+
+
+    public override Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
     {
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition

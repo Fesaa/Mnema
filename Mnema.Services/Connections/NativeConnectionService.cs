@@ -18,12 +18,12 @@ internal class NativeConnectionService(
     IUnitOfWork unitOfWork,
     IMessageService messageService,
     IMapper mapper
-) : IConnectionHandlerService
+) : AbstractConnectionHandlerService
 {
     private const int MaxSummaryLength = 512;
     private const int MaxBodyLength = 4096;
 
-    public List<ConnectionEvent> SupportedEvents { get; } =
+    public override List<ConnectionEvent> SupportedEvents { get; } =
     [
         ConnectionEvent.DownloadStarted,
         ConnectionEvent.DownloadFinished,
@@ -33,7 +33,7 @@ internal class NativeConnectionService(
         ConnectionEvent.DownloadClientEvents
     ];
 
-    public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
+    public new Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
     {
         return SendNotification(new Notification
         {
@@ -45,7 +45,7 @@ internal class NativeConnectionService(
         });
     }
 
-    public Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
+    public new Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
     {
         return SendNotification(new Notification
         {
@@ -57,7 +57,7 @@ internal class NativeConnectionService(
         });
     }
 
-    public Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
+    public new Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
     {
         return SendNotification(new Notification
         {
@@ -69,7 +69,7 @@ internal class NativeConnectionService(
         });
     }
 
-    public Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
+    public new Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
     {
         return SendNotification(new Notification
         {
@@ -81,17 +81,7 @@ internal class NativeConnectionService(
         });
     }
 
-    public Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries info, int amount)
+    public new Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries info, int amount)
     {
         return SendNotification(new Notification()
         {
@@ -103,7 +93,7 @@ internal class NativeConnectionService(
         });
     }
 
-    public async Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
+    public new async Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
     {
         var users = await unitOfWork.UserRepository.GetUsers();
 
@@ -122,7 +112,7 @@ internal class NativeConnectionService(
         }
     }
 
-    public Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
+    public override Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
     {
         return Task.FromResult(new List<FormControlDefinition>());
     }

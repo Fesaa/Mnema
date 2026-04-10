@@ -93,13 +93,20 @@ public class MonitoredSeriesService(
 
         await unitOfWork.CommitAsync(cancellationToken);
 
-        var jobId = BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
+        var jobId = BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None, true));
         if (!string.IsNullOrEmpty(jobId))
-            BackgroundJob.ContinueJobWith(jobId, () => connectionService.CommunicateSeriesMonitored(series.Id, CancellationToken.None));
+            jobId = BackgroundJob.ContinueJobWith(jobId, () => connectionService.CommunicateSeriesMonitored(series.Id, CancellationToken.None));
 
         if (string.IsNullOrEmpty(series.ExternalId)) return;
 
-        BackgroundJob.Enqueue(() => StartDownload(userId, series.Id, true, CancellationToken.None));
+        if (string.IsNullOrEmpty(jobId))
+        {
+            BackgroundJob.Enqueue(() => StartDownload(userId, series.Id, true, CancellationToken.None));
+        }
+        else
+        {
+            BackgroundJob.ContinueJobWith(jobId, () => StartDownload(userId, series.Id, true, CancellationToken.None));
+        }
     }
 
     [AutomaticRetry(Attempts = 1)]
@@ -245,7 +252,7 @@ public class MonitoredSeriesService(
     }
 
     [AutomaticRetry(Attempts = 1)]
-    public async Task EnrichWithMetadata(Guid guid, CancellationToken ct = default)
+    public async Task EnrichWithMetadata(Guid guid, CancellationToken ct = default, bool firstRun = false)
     {
         var mSeries = await unitOfWork.MonitoredSeriesRepository.GetById(guid, MonitoredSeriesIncludes.Chapters, ct);
         if (mSeries == null) return;
@@ -257,6 +264,20 @@ public class MonitoredSeriesService(
         {
             logger.LogWarning("Monitored series {Title} has no metadata linked. Nothing will be downloaded", mSeries.Title);
             return;
+        }
+
+        if (firstRun)
+        {
+            var pref = await unitOfWork.UserRepository.GetPreferences(mSeries.UserId);
+
+            if (pref.PinSubscriptionTitles && string.IsNullOrEmpty(mSeries.TitleOverride) && !string.IsNullOrEmpty(series.Title))
+            {
+                mSeries.TitleOverride = series.Title;
+                unitOfWork.MonitoredSeriesRepository.Update(mSeries);
+                await unitOfWork.CommitAsync(ct);
+
+                metadata = mSeries.MetadataForDownloadRequest();
+            }
         }
 
         var title = metadata.GetKey(RequestConstants.TitleOverride) ?? series.Title;
