@@ -33,7 +33,7 @@ internal class NativeConnectionService(
         ConnectionEvent.DownloadClientEvents
     ];
 
-    public new Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
+    public override Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
     {
         return SendNotification(new Notification
         {
@@ -45,7 +45,7 @@ internal class NativeConnectionService(
         });
     }
 
-    public new Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
+    public override Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
     {
         return SendNotification(new Notification
         {
@@ -57,7 +57,7 @@ internal class NativeConnectionService(
         });
     }
 
-    public new Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
+    public override Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
     {
         return SendNotification(new Notification
         {
@@ -69,7 +69,7 @@ internal class NativeConnectionService(
         });
     }
 
-    public new Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
+    public override Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
     {
         return SendNotification(new Notification
         {
@@ -81,7 +81,7 @@ internal class NativeConnectionService(
         });
     }
 
-    public new Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries info, int amount)
+    public override Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries info, int amount)
     {
         return SendNotification(new Notification()
         {

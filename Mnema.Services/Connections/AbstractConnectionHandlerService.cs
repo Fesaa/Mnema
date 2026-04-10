@@ -13,47 +13,47 @@ namespace Mnema.Services.Connections;
 public abstract class AbstractConnectionHandlerService: IConnectionHandlerService
 {
     public abstract List<ConnectionEvent> SupportedEvents { get; }
-    public Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
+    public virtual Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
     {
         throw new NotImplementedException();
     }
 
-    public Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
+    public virtual Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
     {
         throw new NotImplementedException();
     }
 
-    public Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
+    public virtual Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
     {
         throw new NotImplementedException();
     }
 
-    public Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
+    public virtual Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
     {
         throw new NotImplementedException();
     }
 
-    public Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
+    public virtual Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
     {
         throw new NotImplementedException();
     }
 
-    public Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
+    public virtual Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
     {
         throw new NotImplementedException();
     }
 
-    public Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries info, int amount)
+    public virtual Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries info, int amount)
     {
         throw new NotImplementedException();
     }
 
-    public Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
+    public virtual Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
     {
         throw new NotImplementedException();
     }
 
-    public Task CommunicateException(Connection connection, string message, Exception ex)
+    public virtual Task CommunicateException(Connection connection, string message, Exception ex)
     {
         throw new NotImplementedException();
     }
