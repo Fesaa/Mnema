@@ -103,7 +103,7 @@ internal class DiscordConnectionService(
         ConnectionEvent.Exception,
     ];
 
-    public new Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
+    public override Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
     {
         var embed = new DiscordEmbed
         {
@@ -126,7 +126,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public new Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
+    public override Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
     {
         var embed = new DiscordEmbed
         {
@@ -149,7 +149,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public new Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
+    public override Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
     {
         var embed = new DiscordEmbed
         {
@@ -172,7 +172,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public new Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
+    public override Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
     {
         var embed = new DiscordEmbed
         {
@@ -195,7 +195,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public new Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
+    public override Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
     {
         var embed = new DiscordEmbed
         {
@@ -218,7 +218,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public new Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries series, int amount)
+    public override Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries series, int amount)
     {
         var embed = new DiscordEmbed
         {
@@ -242,7 +242,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public new Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
+    public override Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
     {
         var embed = new DiscordEmbed
         {
@@ -303,7 +303,7 @@ internal class DiscordConnectionService(
         return embeds;
     }
 
-    public new Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
+    public override Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
     {
         var progressText = info.Progress > 0
             ? $"{info.Progress:F1}% complete before failure"
@@ -344,7 +344,7 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public new Task CommunicateException(Connection connection, string message, Exception ex)
+    public override Task CommunicateException(Connection connection, string message, Exception ex)
     {
         var embed = new DiscordEmbed
         {
