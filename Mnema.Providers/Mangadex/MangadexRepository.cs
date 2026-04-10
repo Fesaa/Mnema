@@ -115,6 +115,8 @@ internal class MangadexRepository : IRepository
         var language = request.GetKey(RequestConstants.LanguageKey);
 
         var manga = result.Unwrap().Data;
+        var originalLanguage = manga.Attributes.OriginalLanguage;
+
         var chapters = await GetChaptersForSeries(id, language, cancellationToken);
 
         var tags = manga.Attributes.Tags
@@ -150,6 +152,7 @@ internal class MangadexRepository : IRepository
             CoverUrl = manga.CoverUrl(),
             NonProxiedCoverUrl = manga.CoverUrl(false),
             Title = manga.Attributes.LangTitle(language),
+            LocalizedSeries = string.IsNullOrEmpty(originalLanguage) ? null : manga.Attributes.LangTitle(originalLanguage),
             Summary = manga.Attributes.Description.GetValueOrDefault(language, string.Empty),
             Status = manga.Attributes.Status.AsPublicationStatus(),
             AgeRating = manga.Attributes.ContentRating.AsAgeRating(),
