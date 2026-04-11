@@ -37,7 +37,7 @@ internal class KavitaConnectionService(
 
     public override List<ConnectionEvent> SupportedEvents { get; } = [ConnectionEvent.DownloadFinished];
 
-    public virtual async Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
+    public override async Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
     {
         var url = connection.Metadata.GetKey(UrlKey);
         var authKey = connection.Metadata.GetKey(ApiKey);
