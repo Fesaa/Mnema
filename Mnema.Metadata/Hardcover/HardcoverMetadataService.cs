@@ -97,6 +97,59 @@ public class HardcoverMetadataService(
             })
             .ToList();
 
+        var chapters = realBooks.Select(b =>
+        {
+            var book = b.Book;
+
+            var chapterTitle = book.Title
+                .Replace("(Manga)", string.Empty)
+                .Replace("(Light Novel)", string.Empty);
+            var subtitle = string.Empty;
+
+            var volumePositionMarker = $"Vol. {b.Position}:";
+            var volumePositionMarkerIndex =
+                chapterTitle.IndexOf(volumePositionMarker, StringComparison.InvariantCultureIgnoreCase);
+
+            if (volumePositionMarkerIndex > -1)
+            {
+                var subtitleStartIndex = volumePositionMarkerIndex + volumePositionMarker.Length;
+                subtitle = chapterTitle[subtitleStartIndex..].Trim();
+            }
+
+            var edition = book.Editions.FirstOrDefault(e => e.Language.Code == "en");
+
+            return new Chapter
+            {
+                Id = book.Id.ToString(),
+                Title = string.IsNullOrEmpty(subtitle) ? chapterTitle : subtitle,
+                Summary = book.Description ?? string.Empty,
+                CoverUrl = book.Image?.Url,
+                RefUrl = $"{HardcoverBaseUrl}/books/{book.Slug}",
+                VolumeMarker = b.Position?.ToString() ?? string.Empty,
+                ChapterMarker = string.Empty,
+                SortOrder = b.Position,
+                ReleaseDate = edition?.ReleaseDate ?? b.Book.ReleaseDate?.ToUniversalTime(),
+                Tags = book.Taggings
+                    .Select(t => t.Tag)
+                    .Where(t => t.TagCategory.Category == HardcoverTagCategory.Genre)
+                    .Select(t => new Tag
+                    {
+                        Id = t.Id.ToString(),
+                        Value = t.Tag,
+                        IsMarkedAsGenre = t.TagCategory.Category == HardcoverTagCategory.Genre,
+                        MetadataProvider = MetadataProvider.Hardcover,
+                    }).ToList(),
+                People = (edition?.Contributions ?? book.Contributions)
+                    .Where(c => c.Role != null)
+                    .Select(c => new Person
+                    {
+                        Name = c.Author.Name,
+                        Roles = [c.Role!.Value]
+                    }).ToList(),
+                TranslationGroups = []
+            };
+        }).ToList();
+
         return new MetadataSearchResult
         {
             Id = series.Id.ToString(),
@@ -105,62 +158,12 @@ public class HardcoverMetadataService(
             Summary = series.Description ?? string.Empty,
             Status = series.IsCompleted ?? false ? PublicationStatus.Completed : PublicationStatus.Unknown,
             Tags = [],
-            People = series.People(),
+            People = chapters.SelectMany(c => c.People).DistinctBy(p => p.Name).ToList(),
             HighestVolumeNumber = series.IsCompleted ?? false ? series.BooksCount : null,
             CoverUrl = series.BookSeries.FirstOrDefault(b => b.Book.Image != null)?.Book.Image?.Url,
             RefUrl = $"{HardcoverBaseUrl}/series/{series.Slug}",
             Links = [$"{HardcoverBaseUrl}/series/{series.Slug}"],
-            Chapters = realBooks.Select(b =>
-            {
-                var book = b.Book;
-
-                var chapterTitle = book.Title
-                    .Replace("(Manga)", string.Empty)
-                    .Replace("(Light Novel)", string.Empty);
-                var subtitle = string.Empty;
-
-                var volumePositionMarker = $"Vol. {b.Position}:";
-                var volumePositionMarkerIndex = chapterTitle.IndexOf(volumePositionMarker, StringComparison.InvariantCultureIgnoreCase);
-
-                if (volumePositionMarkerIndex > -1)
-                {
-                    var subtitleStartIndex = volumePositionMarkerIndex + volumePositionMarker.Length;
-                    subtitle = chapterTitle[subtitleStartIndex..].Trim();
-                }
-
-                return new Chapter
-                {
-                    Id = book.Id.ToString(),
-                    Title = string.IsNullOrEmpty(subtitle) ? chapterTitle : subtitle,
-                    Summary = book.Description ?? string.Empty,
-                    CoverUrl = book.Image?.Url,
-                    RefUrl = $"{HardcoverBaseUrl}/books/{book.Slug}",
-                    VolumeMarker = b.Position?.ToString() ?? string.Empty,
-                    ChapterMarker = string.Empty,
-                    SortOrder = b.Position,
-                    ReleaseDate = book.Editions
-                        .FirstOrDefault(e => e.Language.Code == "en")?
-                        .ReleaseDate ?? b.Book.ReleaseDate?.ToUniversalTime(),
-                    Tags = book.Taggings
-                        .Select(t => t.Tag)
-                        .Where(t => t.TagCategory.Category == HardcoverTagCategory.Genre)
-                        .Select(t => new Tag
-                        {
-                            Id = t.Id.ToString(),
-                            Value = t.Tag,
-                            IsMarkedAsGenre = t.TagCategory.Category == HardcoverTagCategory.Genre,
-                            MetadataProvider = MetadataProvider.Hardcover,
-                        }).ToList(),
-                    People = book.Contributions
-                        .Where(c => c.Role != null)
-                        .Select(c => new Person
-                        {
-                            Name = c.Author.Name,
-                            Roles = [c.Role!.Value]
-                        }).ToList(),
-                    TranslationGroups = []
-                };
-            }).ToList(),
+            Chapters = chapters,
         };
     }
 

@@ -45,8 +45,15 @@ query GetSeriesByIds($ids: [Int!]) {
                 editions {
                     language {
                         language
+                        code2
                     }
                     release_date
+                    contributions {
+                        contribution
+                        author {
+                            ...AuthorInfo
+                        }
+                    }
                 }
                 image {
                     url

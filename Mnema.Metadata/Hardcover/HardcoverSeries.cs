@@ -81,6 +81,7 @@ public sealed record HardcoverBook : HardcoverEntity
 
 public sealed record HardcoverBookEdition
 {
+    public List<HardoverContribution> Contributions { get; init; } = [];
     [JsonPropertyName("language")]
     public HardcoverLanguage Language { get; init; }
     public DateTime? ReleaseDate { get; init; }

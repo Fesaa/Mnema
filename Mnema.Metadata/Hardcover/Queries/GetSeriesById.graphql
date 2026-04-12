@@ -46,6 +46,12 @@ query GetSeriesById($id: Int!) {
                         code2
                     }
                     release_date
+                    contributions {
+                        contribution
+                        author {
+                            ...AuthorInfo
+                        }
+                    }
                 }
                 image {
                     url
