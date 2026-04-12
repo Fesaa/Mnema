@@ -23,9 +23,10 @@ public class CalendarService(IUnitOfWork unitOfWork): ICalendarService
         var events = upcomingChapters.Select(c =>
         {
             if (c.ReleaseDate == null) return null;
-            var releaseDate = c.ReleaseDate.Value;
 
-            var date = new CalDateTime(releaseDate.Year, releaseDate.Month, releaseDate.Day);
+            var localRelease = c.ReleaseDate.Value.ToLocalTime();
+            var date = new CalDateTime(localRelease.Year, localRelease.Month, localRelease.Day);
+
             return new CalendarEvent
             {
                 Summary = CalendarEventName(c),
