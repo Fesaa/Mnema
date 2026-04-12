@@ -25,3 +25,8 @@ Apart from adding monitored series from providers, you can also search a metadat
 These will use <code>Nyaa</code> to download from. You can search on [Hardcover](https://hardcover.app/) and [MangaBaka](https://mangabaka.org/)
 
 ![search-series.png](search-series.png)
+
+## Calendar
+
+Mnema provides a way to add upcoming releases to your favourite calendar app. If you have the required roles you can copy the url from the monitored series page.
+This requires the `Host` to be set in application settings.
