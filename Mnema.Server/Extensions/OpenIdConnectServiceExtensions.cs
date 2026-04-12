@@ -20,6 +20,7 @@ namespace Mnema.Server.Extensions;
 
 public static class OpenIdConnectServiceExtensions
 {
+    private const string DynamicHybrid = nameof(DynamicHybrid);
     public const string OpenIdConnect = nameof(OpenIdConnect);
     public const string NoAuthentication = nameof(NoAuthentication);
 
@@ -38,18 +39,37 @@ public static class OpenIdConnectServiceExtensions
             .AddPolicy(Roles.CreateDirectory)
             .AddPolicy(Roles.ManageExternalConnections);
 
-        var openIdConnectConfig = configuration.GetSection(OpenIdConnect).Get<OpenIdConnectConfig>();
-        if (openIdConnectConfig is not { Valid: true })
+        var noAuthEnabled = configuration.GetSection(NoAuthentication).Get<bool>();
+        if (noAuthEnabled)
         {
-            var noAuthEnabled = configuration.GetSection(NoAuthentication).Get<bool>();
-            if (!noAuthEnabled)
-                throw new MnemaException("No valid OpenIDConnect configuration found");
-
             services.AddAuthentication(NoAuthAuthenticationSchemeOptions.SchemeName)
                 .AddScheme<NoAuthAuthenticationSchemeOptions, NoAuthAuthenticationHandler>(NoAuthAuthenticationSchemeOptions.SchemeName, null);
 
             return services;
         }
+
+        var openIdConnectConfig = configuration.GetSection(OpenIdConnect).Get<OpenIdConnectConfig>();
+        if (openIdConnectConfig is not { Valid: true })
+        {
+            throw new MnemaException("No valid OpenIDConnect configuration found");
+        }
+
+        var auth = services.AddAuthentication(DynamicHybrid);
+
+        auth.AddPolicyScheme(DynamicHybrid, DynamicHybrid, options =>
+        {
+            options.ForwardDefaultSelector = ctx =>
+            {
+                if (ctx.Request.Query.ContainsKey(AuthKeyAuthenticationSchemeOptions.AuthKeyQueryKey))
+                {
+                    return AuthKeyAuthenticationSchemeOptions.SchemeName;
+                }
+
+                return OpenIdConnect;
+            };
+        });
+
+        auth.AddScheme<AuthKeyAuthenticationSchemeOptions, AuthKeyAuthenticationHandler>(AuthKeyAuthenticationSchemeOptions.SchemeName, null);
 
         services.AddSingleton<ConfigurationManager<OpenIdConnectConfiguration>>(_ =>
         {
@@ -83,8 +103,7 @@ public static class OpenIdConnectServiceExtensions
                 options.Events = new CookieAuthenticationEventsHelper();
             });
 
-        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+        auth.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddOpenIdConnect(OpenIdConnect, options =>
             {
                 options.Authority = openIdConnectConfig.Authority;

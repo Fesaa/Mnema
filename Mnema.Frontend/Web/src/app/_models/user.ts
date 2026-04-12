@@ -4,6 +4,7 @@ export enum Role {
   ManageServerConfigs         = "ManageSettings",
   Subscriptions               = "Subscriptions",
   ManageExternalConnections   = "ManageExternalConnections",
+  Calendar                    = "Calendar",
 }
 
 export interface UserDto {

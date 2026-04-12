@@ -19,6 +19,7 @@ export enum SettingsID {
   DownloadClients = "download_clients",
   Connections = "connections",
   Releases = "releases",
+  AuthKeys = "auth-keys",
 }
 
 export interface Button {
@@ -180,6 +181,13 @@ export class ButtonGroupService {
           navUrl: '/settings',
           navExtras: { fragment: SettingsID.Releases },
           id: SettingsID.Releases
+        },
+        {
+          title: translate('button-groups.settings.auth-keys'),
+          icon: 'fa fa-key',
+          navUrl: '/settings',
+          navExtras: { fragment: SettingsID.AuthKeys },
+          id: SettingsID.AuthKeys
         }
       ],
     };

@@ -29,6 +29,14 @@ public static class Roles
     /// </summary>
     public const string CreateDirectory = nameof(CreateDirectory);
 
+    /// <summary>
+    ///     If the user is allowed to use the calendar feature
+    /// </summary>
+    public const string Calendar = nameof(Calendar);
+
+    /// <summary>
+    ///     If the user can manage external connections
+    /// </summary>
     public const string ManageExternalConnections = nameof(ManageExternalConnections);
 
     public static ImmutableArray<string> AllRoles =
@@ -38,6 +46,7 @@ public static class Roles
         Subscriptions,
         HangFire,
         CreateDirectory,
-        ManageExternalConnections
+        ManageExternalConnections,
+        Calendar
     ];
 }

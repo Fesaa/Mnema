@@ -29,5 +29,6 @@ public class AutoMapperProfiles : Profile
                     => src.Chapters.OrderBy(c => c.SortOrder)
             ));
         CreateMap<MonitoredChapter, MonitoredChapterDto>();
+        CreateMap<AuthKey, AuthKeyDto>();
     }
 }

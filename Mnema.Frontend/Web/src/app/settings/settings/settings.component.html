@@ -36,4 +36,10 @@
     }
   }
 
+  @defer (when selected() === SettingsID.AuthKeys; prefetch on idle) {
+    @if (selected() === SettingsID.AuthKeys && canSee(SettingsID.AuthKeys)) {
+      <app-auth-keys />
+    }
+  }
+
 </div>

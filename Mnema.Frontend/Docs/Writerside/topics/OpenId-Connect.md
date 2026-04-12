@@ -12,12 +12,13 @@ Access control is governed by granular roles. Mnema expects these roles to be pr
 
 The following roles must be assigned to users in your IdP to grant specific permissions within the application:
 
-| Role                         | Description                                                       |
-|------------------------------|-------------------------------------------------------------------|
-| `ManagePages`                | Permission to manage, edit, and organize content pages.           |
-| `ManageSettings`             | Permission to modify global server and application settings.      |
-| `Subscriptions`              | Permission to create and manage monitored series. (Legacy naming) |
-| `HangFire`                   | Grants access to the HangFire dashboard (@ /hangfire).            |
-| `CreateDirectory`            | Permission to create new directories within the storage system.   |
-| `ManageExternalConnections`  | Permission to configure and manage external service integrations. |
+| Role                        | Description                                                       |
+|-----------------------------|-------------------------------------------------------------------|
+| `ManagePages`               | Permission to manage, edit, and organize content pages.           |
+| `ManageSettings`            | Permission to modify global server and application settings.      |
+| `Subscriptions`             | Permission to create and manage monitored series. (Legacy naming) |
+| `HangFire`                  | Grants access to the HangFire dashboard (@ /hangfire).            |
+| `CreateDirectory`           | Permission to create new directories within the storage system.   |
+| `ManageExternalConnections` | Permission to configure and manage external service integrations. |
+| `Calendar`                  | Permission to subscribe to the calendar                           | 
 

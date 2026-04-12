@@ -74,6 +74,14 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
             .ToListAsync(cancellationToken);
     }
 
+    public Task<List<MonitoredChapter>> GetUpcomingChapters(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return ctx.MonitoredChapters
+            .Where(c => c.Series.UserId == userId && c.Status == MonitoredChapterStatus.Upcoming)
+            .Include(c => c.Series)
+            .ToListAsync(cancellationToken);
+    }
+
     public Task<bool> CheckDuplicateSeries(Guid userId, Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
     {
         return ctx.MonitoredSeries

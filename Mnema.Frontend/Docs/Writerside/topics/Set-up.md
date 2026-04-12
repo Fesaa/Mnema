@@ -61,6 +61,7 @@ services:
       - ./data/persistent:/persistent
       - /path/to/your/media:/media
       - /path/to/your/downloads:/downloads
+     - ./appsettings.json:/Mnema/config/appsettings.json #Check in the kubernetes section for what should be in here
     depends_on:
       postgres:
         condition: service_healthy
@@ -117,7 +118,9 @@ data:
       },
       "Application": {
         "BaseDir": "/media",
-        "DownloadDir": "/downloads"
+        "DownloadDir": "/downloads",
+        "PersistentStorage": "/persistent",
+        "Host": "https://example.com"
       }
     }
         </code-block>
