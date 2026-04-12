@@ -57,7 +57,7 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
             {
                 logger.LogError(ex, "Failed to search for recently updated {Provider}", provider.ToString());
 
-                connectionService.CommunicateException("Failed to search for recently updated", ex);
+                connectionService.CommunicateException($"Failed to search for recently updated for {provider.ToString()}", ex);
             }
 
         }
