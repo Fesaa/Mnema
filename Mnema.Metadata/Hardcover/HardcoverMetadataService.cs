@@ -116,7 +116,7 @@ public class HardcoverMetadataService(
                 subtitle = chapterTitle[subtitleStartIndex..].Trim();
             }
 
-            var edition = book.Editions.FirstOrDefault(e => e.Language.Code == "en");
+            var edition = book.Editions.FirstOrDefault(e => e.Language?.Code == "en");
 
             return new Chapter
             {
