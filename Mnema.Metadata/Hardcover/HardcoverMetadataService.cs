@@ -138,7 +138,9 @@ public class HardcoverMetadataService(
                     VolumeMarker = b.Position?.ToString() ?? string.Empty,
                     ChapterMarker = string.Empty,
                     SortOrder = b.Position,
-                    ReleaseDate = b.Book.ReleaseDate?.ToUniversalTime(),
+                    ReleaseDate = book.Editions
+                        .FirstOrDefault(e => e.Language.Code == "en")?
+                        .ReleaseDate ?? b.Book.ReleaseDate?.ToUniversalTime(),
                     Tags = book.Taggings
                         .Select(t => t.Tag)
                         .Where(t => t.TagCategory.Category == HardcoverTagCategory.Genre)

@@ -42,6 +42,12 @@ query GetSeriesByIds($ids: [Int!]) {
                 release_date
                 release_year
                 slug
+                editions {
+                    language {
+                        language
+                    }
+                    release_date
+                }
                 image {
                     url
                 }

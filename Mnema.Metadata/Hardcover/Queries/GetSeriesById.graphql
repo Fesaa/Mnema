@@ -40,6 +40,13 @@ query GetSeriesById($id: Int!) {
                 release_date
                 release_year
                 slug
+                editions {
+                    language {
+                        language
+                        code2
+                    }
+                    release_date
+                }
                 image {
                     url
                 }
