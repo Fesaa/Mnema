@@ -1,0 +1,27 @@
+name: Build UI
+
+on:
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  build:
+    name: Build and Test PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: NodeJS to Compile WebUI
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: |
+          cd Mnema.Frontend/Web || exit
+          echo 'Installing web dependencies'
+          npm ci
+
+          echo 'Building UI'
+          npm run build
