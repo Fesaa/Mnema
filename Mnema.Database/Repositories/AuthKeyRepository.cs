@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +29,14 @@ public class AuthKeyRepository(MnemaDataContext ctx, IMapper mapper) : AbstractE
     {
         return ctx.AuthKeys
             .Where(k => k.Key == key)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public Task<AuthKey?> GetAuthKeyForUser(Guid userId, List<string> roles, CancellationToken cancellationToken)
+    {
+        return ctx.AuthKeys
+            .Where(k => k.UserId == userId && roles.All(r => k.Roles.Contains(r)))
+            .OrderByDescending(k => k.CreatedUtc)
             .FirstOrDefaultAsync(cancellationToken);
     }
 }

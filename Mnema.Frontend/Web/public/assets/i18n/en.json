@@ -1014,6 +1014,17 @@
     "search": "Search",
     "providers": "Providers",
     "base-dir": "Base dir",
+    "calendar": {
+      "tooltip": "Click to copy calender url",
+      "link-copied": {
+        "title": "Copied url to clipboard",
+        "summary": ""
+      },
+      "link-failure": {
+        "title": "Failed to retrieve url",
+        "summary": "{{msg}}"
+      }
+    },
     "actions": {
       "label": "Actions",
       "edit": "Edit",

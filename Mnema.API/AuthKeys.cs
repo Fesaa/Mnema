@@ -14,6 +14,7 @@ public interface IAuthKeyRepository : IEntityRepository<AuthKey, AuthKeyDto>
 {
     public Task<PagedList<AuthKeyDto>> GetAuthKeysByUser(Guid userId, PaginationParams paginationParams, CancellationToken cancellationToken);
     public Task<AuthKey?> GetAuthKey(string key, CancellationToken cancellationToken);
+    public Task<AuthKey?> GetAuthKeyForUser(Guid userId, List<string> roles, CancellationToken cancellationToken);
 }
 
 public interface IAuthKeyService

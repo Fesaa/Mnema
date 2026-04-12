@@ -9,7 +9,14 @@
           <option [ngValue]="provider">{{ provider | providerName }}</option>
         }
       </select>
+
+      @if (hasCalendarRole()) {
+        <button type="button" class="btn btn-icon btn-secondary" [ngbTooltip]="t('calendar.tooltip')" (click)="copyCalendarLink()">
+          <i class="fa fa-calendar"></i>
+        </button>
+      }
     </form>
+
   </div>
 
   <app-paginator

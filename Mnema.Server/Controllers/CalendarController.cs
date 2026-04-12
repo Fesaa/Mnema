@@ -1,13 +1,21 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Mnema.API;
+using Mnema.Common.Exceptions;
+using Mnema.Models.DTOs.User;
+using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
 
-public class CalendarController(ICalendarService calendarService, IDistributedCache cache) : BaseApiController
+[Authorize(Roles = Roles.Calendar)]
+public class CalendarController(ILogger<CalendarController> logger, IUnitOfWork unitOfWork,
+    IAuthKeyService authKeyService, ICalendarService calendarService, IDistributedCache cache,
+    ApplicationConfiguration applicationConfiguration) : BaseApiController
 {
     [HttpGet]
     public async Task<IActionResult> GetCalendar()
@@ -35,5 +43,35 @@ public class CalendarController(ICalendarService calendarService, IDistributedCa
         }
 
         return File(calendarBytes, "text/calendar", "calendar.ics");
+    }
+
+    [HttpGet("url")]
+    public async Task<ActionResult<string>> GetCalendarString()
+    {
+        var authKey = await unitOfWork.AuthKeyRepository.GetAuthKeyForUser(UserId, [Roles.Calendar], HttpContext.RequestAborted);
+        if (authKey == null)
+        {
+            logger.LogWarning("No auth key found for user {UserId} with the Calendar permission creating one", UserId);
+            await authKeyService.CreateAuthKey(UserId, new AuthKeyDto
+            {
+                Name = "Calendar Key",
+                Roles = [Roles.Calendar],
+                Key = Guid.NewGuid().ToString()
+            }, User, HttpContext.RequestAborted);
+
+            authKey = await unitOfWork.AuthKeyRepository.GetAuthKeyForUser(UserId, [Roles.Calendar], HttpContext.RequestAborted);
+        }
+
+        if (authKey == null)
+        {
+            throw new MnemaException("Failed to retrieve any authkey for user");
+        }
+
+        if (string.IsNullOrEmpty(applicationConfiguration.Host))
+        {
+            throw new MnemaException("No host configured, cannot auto generate calender url");
+        }
+
+        return Ok($"{applicationConfiguration.Host.Trim('/')}/api/calendar?authkey={authKey.Key}");
     }
 }
