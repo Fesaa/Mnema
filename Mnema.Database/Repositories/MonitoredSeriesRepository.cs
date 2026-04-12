@@ -78,6 +78,7 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
     {
         return ctx.MonitoredChapters
             .Where(c => c.Series.UserId == userId && c.Status == MonitoredChapterStatus.Upcoming)
+            .Include(c => c.Series)
             .ToListAsync(cancellationToken);
     }
 

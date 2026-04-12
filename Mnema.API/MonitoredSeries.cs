@@ -25,6 +25,13 @@ public interface IMonitoredSeriesRepository: INavigationalEntityRepository<Monit
     Task<List<MonitoredSeries>> GetByMangaBakaIds(List<string> ids, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByExternalIds(List<string> ids, Provider provider, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByProvider(Provider provider, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Returns all chapters that have <see cref="MonitoredChapter.Status"/> equal to <see cref="MonitoredChapterStatus.Upcoming"/>
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <remarks>Has the series included</remarks>
+    /// <returns></returns>
     Task<List<MonitoredChapter>> GetUpcomingChapters(Guid userId, CancellationToken cancellationToken = default);
     Task<bool> CheckDuplicateSeries(Guid userId, Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
 

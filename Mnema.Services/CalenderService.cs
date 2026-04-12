@@ -29,6 +29,8 @@ public class CalendarService(IUnitOfWork unitOfWork): ICalendarService
             return new CalendarEvent
             {
                 Summary = CalendarEventName(c),
+                Description = !string.IsNullOrEmpty(c.Summary) ? c.Summary : c.Series.Summary,
+                Url = SafeUri(c.RefUrl),
                 Start = date,
                 End = date.AddDays(1)
             };
@@ -52,5 +54,19 @@ public class CalendarService(IUnitOfWork unitOfWork): ICalendarService
             title += $" Ch. {chapter.Chapter}";
 
         return title;
+    }
+
+    private static Uri? SafeUri(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return null;
+
+        try
+        {
+            return new Uri(url);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
