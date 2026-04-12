@@ -1,4 +1,4 @@
-import {Component, computed, EventEmitter, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, effect, EventEmitter, inject, OnInit, signal} from '@angular/core';
 import {ModalService} from "@mnema/_services/modal.service";
 import {NavService} from "@mnema/_services/nav.service";
 import {MonitoredChapterStatus, MonitoredSeries, MonitoredSeriesService} from "../monitored-series.service";
@@ -10,11 +10,17 @@ import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {takeUntilDestroyed, toSignal} from "@angular/core/rxjs-interop";
 import {debounceTime, distinctUntilChanged, tap} from "rxjs";
 import {Provider} from "@mnema/_models/page";
-import {RouterLink} from "@angular/router";
+import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 import {PaginatorComponent} from "@mnema/shared/_component/paginator/paginator.component";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
 import {ProviderNamePipe} from "@mnema/_pipes/provider-name.pipe";
+import {querySignal} from "@mnema/shared/signals";
+
+type Filter = {
+  filterText: string;
+  provider: Provider | null;
+}
 
 @Component({
   selector: 'app-monitored-series-manager',
@@ -31,39 +37,57 @@ import {ProviderNamePipe} from "@mnema/_pipes/provider-name.pipe";
   animations: [dropAnimation]
 })
 export class MonitoredSeriesManagerComponent implements OnInit {
+
   private readonly navService = inject(NavService);
   protected readonly monitoredSeriesService = inject(MonitoredSeriesService);
   private readonly pageService = inject(PageService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   hasAny = signal(false);
   providers = signal<Provider[]>([]);
 
-  pageLoader = computed(() => {
-    const filter = this.filter();
-
-    return (pn: number, ps: number) => {
-      return this.monitoredSeriesService.all(filter.filterText ?? '', filter.provider ?? null , pn, ps);
-    }
-  });
+  filterQuery = querySignal<Filter>({
+    filterText: '',
+    provider: null,
+  }, this.route, this.router);
 
   filterForm = new FormGroup({
     filterText: new FormControl(''),
     provider: new FormControl<Provider | null>(null),
   });
-  filter = toSignal(this.filterForm.valueChanges.pipe(
-    debounceTime(400),
-    takeUntilDestroyed(),
-    distinctUntilChanged(),
-  ), { initialValue: { filterText: '', provider: null } });
 
+  pageLoader = computed(() => {
+    const query = this.filterQuery();
+    return (pn: number, ps: number) =>
+      this.monitoredSeriesService.all(query.filterText, query.provider, pn, ps);
+  });
   pageReloader = new EventEmitter<void>();
+
+  constructor() {
+    this.filterForm.valueChanges.pipe(
+      debounceTime(400),
+      distinctUntilChanged(),
+      takeUntilDestroyed()
+    ).subscribe(val => {
+      this.filterQuery.set({
+        filterText: val.filterText ?? '',
+        provider: val.provider ?? null
+      });
+    });
+
+    effect(() => {
+      const query = this.filterQuery();
+      this.filterForm.patchValue({
+        filterText: query.filterText,
+        provider: query.provider ? parseInt(query.provider + '') : null,
+      }, { emitEvent: false });
+    });
+  }
 
   ngOnInit(): void {
     this.navService.setNavVisibility(true);
-
-    this.pageService.allowedProviders().pipe(
-      tap(providers => this.providers.set(providers)),
-    ).subscribe();
+    this.pageService.allowedProviders().subscribe(p => this.providers.set(p));
   }
 
   nextReleaseDate(series: MonitoredSeries) {
