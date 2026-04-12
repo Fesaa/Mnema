@@ -29,6 +29,7 @@ public static class ServiceCollectionExtensions
                         .EnableDetailedErrors()
                         .EnableSensitiveDataLogging()
                         .AddInterceptors(new NormalizationInterceptor())
+                        .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
                     , poolSize: 128);
             }
 

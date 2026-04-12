@@ -37,6 +37,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<INamingService, NamingService>();
         services.AddScoped<IMetadataResolver, MetadataResolver>();
         services.AddScoped<IMonitoredSeriesService, MonitoredSeriesService>();
+        services.AddScoped<IAuthKeyService, AuthKeyService>();
 
         #region External Connection
 

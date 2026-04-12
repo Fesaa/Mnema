@@ -38,18 +38,23 @@ public static class OpenIdConnectServiceExtensions
             .AddPolicy(Roles.CreateDirectory)
             .AddPolicy(Roles.ManageExternalConnections);
 
-        var openIdConnectConfig = configuration.GetSection(OpenIdConnect).Get<OpenIdConnectConfig>();
-        if (openIdConnectConfig is not { Valid: true })
+        var noAuthEnabled = configuration.GetSection(NoAuthentication).Get<bool>();
+        if (noAuthEnabled)
         {
-            var noAuthEnabled = configuration.GetSection(NoAuthentication).Get<bool>();
-            if (!noAuthEnabled)
-                throw new MnemaException("No valid OpenIDConnect configuration found");
-
             services.AddAuthentication(NoAuthAuthenticationSchemeOptions.SchemeName)
                 .AddScheme<NoAuthAuthenticationSchemeOptions, NoAuthAuthenticationHandler>(NoAuthAuthenticationSchemeOptions.SchemeName, null);
 
             return services;
         }
+
+        var openIdConnectConfig = configuration.GetSection(OpenIdConnect).Get<OpenIdConnectConfig>();
+        if (openIdConnectConfig is not { Valid: true })
+        {
+            throw new MnemaException("No valid OpenIDConnect configuration found");
+        }
+
+        services.AddAuthentication(AuthKeyAuthenticationSchemeOptions.SchemeName)
+            .AddScheme<AuthKeyAuthenticationSchemeOptions, AuthKeyAuthenticationHandler>(AuthKeyAuthenticationSchemeOptions.SchemeName, null);
 
         services.AddSingleton<ConfigurationManager<OpenIdConnectConfiguration>>(_ =>
         {

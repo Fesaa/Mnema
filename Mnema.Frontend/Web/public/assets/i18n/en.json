@@ -38,7 +38,8 @@
       "connections": "Connections",
       "download-clients": "Download Clients",
       "logout": "Logout",
-      "releases": "Releases"
+      "releases": "Releases",
+      "auth-keys": "Auth Keys"
     }
   },
 
@@ -877,6 +878,34 @@
       "content": "RSS grabbed",
       "imported": "Imported (QBIT)",
       "search-placeholder": "Search..."
+    },
+    "auth-keys": {
+      "title": "Auth Keys",
+      "header": {
+        "name": "Name",
+        "key": "Key",
+        "roles": "Roles",
+        "actions": "Actions"
+      },
+      "empty": {
+        "title": "No Auth Keys configured",
+        "description": "Add some?"
+      },
+      "edit": {
+        "title": "Edit Auth Key",
+        "close": "{{common.close}}",
+        "save": "{{common.save}}",
+        "name-title": "Name",
+        "name-tooltip": "User friendly name",
+        "key-title": "Key",
+        "key-tooltip": "This is your secret key, keep it safe",
+        "roles-title": "Roles",
+        "roles-tooltip": "Roles this key is granted"
+      },
+      "copy": {
+        "title": "Copied to clipboard",
+        "summary": "Key: {{key}}"
+      }
     }
   },
 
@@ -1109,7 +1138,8 @@
       "max": "Maximum value is {{ max }}.",
       "sameAs": "Value must be the same as {{ other }}",
       "startsWith": "Must start with {{ prefix }}",
-      "isUrl": "This field must be a valid url."
+      "isUrl": "This field must be a valid url.",
+      "pattern": "This field does not match the required pattern."
     }
   },
 
