@@ -71,10 +71,28 @@ public sealed record HardcoverBook : HardcoverEntity
     public int? ReleaseYear { get; init; }
     public string Slug { get; init; }
     public HardcoverImage? Image { get; init; }
+    public List<HardcoverBookEdition> Editions { get; init; } = [];
     public List<HardcoverTagging> Taggings { get; init; } = [];
     public List<HardoverContribution> Contributions { get; init; } = [];
     [JsonPropertyName("users_read_count")]
     public long UserReadCount { get; init; }
+
+}
+
+public sealed record HardcoverBookEdition
+{
+    public List<HardoverContribution> Contributions { get; init; } = [];
+    [JsonPropertyName("language")]
+    public HardcoverLanguage Language { get; init; }
+    public DateTime? ReleaseDate { get; init; }
+
+}
+
+public sealed record HardcoverLanguage
+{
+    public string Language { get; init; }
+    [JsonPropertyName("code2")]
+    public string Code { get; init; }
 }
 
 public sealed record HardoverContribution

@@ -38,7 +38,7 @@ public class CalendarService(IUnitOfWork unitOfWork): ICalendarService
 
         var calendar = new Ical.Net.Calendar();
         calendar.Events.AddRange(events);
-        calendar.AddTimeZone(TimeZoneInfo.Utc);
+        calendar.AddTimeZone(TimeZoneInfo.Local);
 
         return CalendarSerializer.SerializeToString(calendar) ?? string.Empty;
     }
