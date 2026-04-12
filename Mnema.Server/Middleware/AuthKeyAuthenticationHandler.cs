@@ -14,6 +14,7 @@ namespace Mnema.Server.Middleware;
 public class AuthKeyAuthenticationSchemeOptions : AuthenticationSchemeOptions
 {
     public const string SchemeName = nameof(AuthKeyAuthenticationSchemeOptions);
+    public const string AuthKeyQueryKey = "authKey";
 }
 
 public class AuthKeyAuthenticationHandler(
@@ -25,7 +26,7 @@ public class AuthKeyAuthenticationHandler(
 {
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if (!Request.Query.TryGetValue("authKey", out var value))
+        if (!Request.Query.TryGetValue(AuthKeyAuthenticationSchemeOptions.AuthKeyQueryKey, out var value))
         {
             return AuthenticateResult.NoResult();
         }

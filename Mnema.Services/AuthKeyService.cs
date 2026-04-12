@@ -87,7 +87,7 @@ public partial class AuthKeyService(IUnitOfWork unitOfWork): IAuthKeyService
                     .WithRequired()
                     .WithMinLength(8)
                     .WithMaxLength(256)
-                    .WithPattern("^[!-~]+$")
+                    .WithPattern(@"^[a-zA-Z0-9!\$%()*+,\-./:;<=>@\[\\\]^_`{|}~]+$")
                     .Build(),
             },
             new FormControlDefinition
@@ -106,6 +106,6 @@ public partial class AuthKeyService(IUnitOfWork unitOfWork): IAuthKeyService
         ];
     }
 
-    [GeneratedRegex("^[!-~]+$")]
+    [GeneratedRegex(@"^[a-zA-Z0-9!\$%()*+,\-./:;<=>@\[\\\]^_`{|}~]+$")]
     private static partial Regex MyRegex();
 }

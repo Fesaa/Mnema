@@ -20,6 +20,7 @@ namespace Mnema.Server.Extensions;
 
 public static class OpenIdConnectServiceExtensions
 {
+    private const string DynamicHybrid = nameof(DynamicHybrid);
     public const string OpenIdConnect = nameof(OpenIdConnect);
     public const string NoAuthentication = nameof(NoAuthentication);
 
@@ -53,8 +54,22 @@ public static class OpenIdConnectServiceExtensions
             throw new MnemaException("No valid OpenIDConnect configuration found");
         }
 
-        services.AddAuthentication(AuthKeyAuthenticationSchemeOptions.SchemeName)
-            .AddScheme<AuthKeyAuthenticationSchemeOptions, AuthKeyAuthenticationHandler>(AuthKeyAuthenticationSchemeOptions.SchemeName, null);
+        var auth = services.AddAuthentication(DynamicHybrid);
+
+        auth.AddPolicyScheme(DynamicHybrid, DynamicHybrid, options =>
+        {
+            options.ForwardDefaultSelector = ctx =>
+            {
+                if (ctx.Request.Query.ContainsKey(AuthKeyAuthenticationSchemeOptions.AuthKeyQueryKey))
+                {
+                    return AuthKeyAuthenticationSchemeOptions.SchemeName;
+                }
+
+                return OpenIdConnect;
+            };
+        });
+
+        auth.AddScheme<AuthKeyAuthenticationSchemeOptions, AuthKeyAuthenticationHandler>(AuthKeyAuthenticationSchemeOptions.SchemeName, null);
 
         services.AddSingleton<ConfigurationManager<OpenIdConnectConfiguration>>(_ =>
         {
@@ -88,8 +103,7 @@ public static class OpenIdConnectServiceExtensions
                 options.Events = new CookieAuthenticationEventsHelper();
             });
 
-        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+        auth.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddOpenIdConnect(OpenIdConnect, options =>
             {
                 options.Authority = openIdConnectConfig.Authority;
