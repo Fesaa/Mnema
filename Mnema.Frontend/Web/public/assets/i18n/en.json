@@ -28,7 +28,8 @@
       "subscriptions": "Subscriptions",
       "monitored-series": "Monitored Series",
       "notifications": "Notifications",
-      "search-series": "Search Series"
+      "search-series": "Search Series",
+      "missing-chapters": "Missing Chapters"
     },
     "settings": {
       "title": "Settings",
@@ -1068,6 +1069,21 @@
     "empty": {
       "title": "Nothing here yet",
       "description": "You don’t have any monitored series yet. Click the 'Add Series' button above to get started."
+    }
+  },
+
+  "missing-chapters": {
+    "title": "Missing Chapters",
+    "volume": "Vol.",
+    "chapter": "Ch.",
+    "header": {
+      "chapter_info": "Chapter Information",
+      "release_date": "Release Date",
+      "actions": "Actions"
+    },
+    "empty": {
+      "title": "No missing chapters!",
+      "description": "Your collection is fully up to date. All monitored series have their respective files present."
     }
   },
 

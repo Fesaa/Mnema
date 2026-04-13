@@ -82,6 +82,23 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
             .ToListAsync(cancellationToken);
     }
 
+    public Task<PagedList<MonitoredChapterDto>> GetMissingChapters(Guid userId, PaginationParams pagination,
+        CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+
+        return ctx.MonitoredChapters
+            .Where(c => c.Series.UserId == userId)
+            .Where(c => c.Status == MonitoredChapterStatus.Missing ||
+                        // We do the extra check for upcoming chapters, as the status isn't real time
+                        // But rather only updated when the metadata is (I.e. with the hangfire task)
+                        (c.Status == MonitoredChapterStatus.Upcoming && c.ReleaseDate < now))
+            .ProjectTo<MonitoredChapterDto>(mapper.ConfigurationProvider)
+            .OrderBy(c => c.ReleaseDate)
+            .ThenBy(c => c.Title)
+            .AsPagedList(pagination, cancellationToken);
+    }
+
     public Task<bool> CheckDuplicateSeries(Guid userId, Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
     {
         return ctx.MonitoredSeries

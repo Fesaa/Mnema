@@ -9,6 +9,7 @@ import {MonitoredSeriesComponent} from "@mnema/features/monitored-series/monitor
 import {
   monitoredSeriesResolver
 } from "@mnema/features/monitored-series/monitored-series/monitored-series.resolver";
+import {MissingChaptersComponent} from "@mnema/features/monitored-series/missing-chapters/missing-chapters.component";
 
 export const routes: Routes = [
   {
@@ -33,5 +34,9 @@ export const routes: Routes = [
   {
     path: 'active-downloads',
     component: ActiveDownloadsComponent
+  },
+  {
+    path: 'missing-chapters',
+    component: MissingChaptersComponent,
   }
 ]

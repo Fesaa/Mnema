@@ -184,6 +184,13 @@ public class MonitoredSeriesController(
         return Ok();
     }
 
+    [HttpGet("missing-chapters")]
+    public async Task<ActionResult<PagedList<MonitoredChapterDto>>> GetMissingChapters(
+        [FromQuery] PaginationParams pagination)
+    {
+        return Ok(await unitOfWork.MonitoredSeriesRepository.GetMissingChapters(UserId, pagination, HttpContext.RequestAborted));
+    }
+
     [HttpGet("form")]
     public ActionResult<FormDefinition> GetForm()
     {

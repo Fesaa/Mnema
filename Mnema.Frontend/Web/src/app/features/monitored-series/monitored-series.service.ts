@@ -142,6 +142,10 @@ export class MonitoredSeriesService {
     return this.httpClient.get<FormDefinition>(`${this.baseUrl}/metadata-form?provider=${provider}`);
   }
 
+  missingChapters(pageNumber: number, pageSize: number) {
+    return this.httpClient.get<PagedList<MonitoredChapter>>(`${this.baseUrl}/missing-chapters?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+  }
+
   getForm() {
     if (this._cachedForm) {
       return of(this._cachedForm);

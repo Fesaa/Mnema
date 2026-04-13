@@ -46,7 +46,8 @@ internal class WebtoonRepository(
 
         var result = await Client.GetCachedStringAsync(url, cache, cancellationToken: cancellationToken);
 
-        if (result.IsErr) throw new MnemaException("Failed to search for webtoons", result.Error);
+        if (result.IsErr)
+            throw new MnemaException($"Failed to search for webtoons: {result.Error?.Message}", result.Error);
 
         var baseUrl = Client.BaseAddress!.ToString();
         var document = result.Unwrap().ToHtmlDocument();
@@ -108,7 +109,7 @@ internal class WebtoonRepository(
 
             var result = await Client.GetCachedStringAsync(pageUrl, cache, cancellationToken: cancellationToken);
             if (result.IsErr)
-                throw new MnemaException($"Failed to get series info for {request.Id} on page {pageUrl}", result.Error);
+                throw new MnemaException($"Failed to get series info for {request.Id} on page {pageUrl}: {result.Error?.Message}", result.Error);
 
             var document = result.Unwrap().ToHtmlDocument();
 
@@ -129,7 +130,7 @@ internal class WebtoonRepository(
                 }
             }
 
-            await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
         }
 
         if (infoHeaderNode == null || detailNode == null)
@@ -284,7 +285,7 @@ internal class WebtoonRepository(
         });
     }
 
-    private List<Chapter> ParseChapters(HtmlDocument document)
+    private static List<Chapter> ParseChapters(HtmlDocument document)
     {
         return document.DocumentNode.QuerySelectorAll("._episodeItem > a").Select(node => new Chapter
         {

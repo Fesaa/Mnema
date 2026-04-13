@@ -30,9 +30,17 @@ public interface IMonitoredSeriesRepository: INavigationalEntityRepository<Monit
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="cancellationToken"></param>
-    /// <remarks>Has the series included</remarks>
     /// <returns></returns>
     Task<List<MonitoredChapter>> GetUpcomingChapters(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns all chapters that (should) have <see cref="MonitoredChapter.Status"/> equal to <see cref="MonitoredChapterStatus.Missing"/>
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="pagination"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<PagedList<MonitoredChapterDto>> GetMissingChapters(Guid userId, PaginationParams pagination, CancellationToken cancellationToken = default);
     Task<bool> CheckDuplicateSeries(Guid userId, Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
 
     void RemoveRange(IEnumerable<MonitoredChapter> chapters);
