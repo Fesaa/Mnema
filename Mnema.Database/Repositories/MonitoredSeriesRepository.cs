@@ -90,7 +90,9 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
         return ctx.MonitoredChapters
             .Where(c => c.Series.UserId == userId)
             .Where(c => c.Status == MonitoredChapterStatus.Missing ||
-                        (c.Status != MonitoredChapterStatus.NotMonitored && c.ReleaseDate < now))
+                        // We do the extra check for upcoming chapters, as the status isn't real time
+                        // But rather only updated when the metadata is (I.e. with the hangfire task)
+                        (c.Status == MonitoredChapterStatus.Upcoming && c.ReleaseDate < now))
             .ProjectTo<MonitoredChapterDto>(mapper.ConfigurationProvider)
             .OrderBy(c => c.ReleaseDate)
             .ThenBy(c => c.Title)
