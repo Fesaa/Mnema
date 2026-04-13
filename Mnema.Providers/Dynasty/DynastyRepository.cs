@@ -54,7 +54,7 @@ internal class DynastyRepository(
             .SetQueryParam("page", pagination.PageNumber + 1); // Dynasty is 1 indexed
 
         var result = await Client.GetCachedStringAsync(url.ToString(), cache, cancellationToken: cancellationToken);
-        if (result.IsErr) throw new MnemaException("Failed to search for series", result.Error);
+        if (result.IsErr) throw new MnemaException($"Failed to search for series: {result.Error?.Message}", result.Error);
 
         var document = result.Unwrap().ToHtmlDocument();
 
@@ -89,7 +89,8 @@ internal class DynastyRepository(
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
     {
         var result = await Client.GetCachedStringAsync(request.Id, cache, cancellationToken: cancellationToken);
-        if (result.IsErr) throw new MnemaException("Failed to retrieve series info", result.Error);
+        if (result.IsErr)
+            throw new MnemaException($"Failed to retrieve series info: {result.Error?.Message}", result.Error);
 
         var document = result.Unwrap().ToHtmlDocument();
 
@@ -102,7 +103,8 @@ internal class DynastyRepository(
     {
         var result =
             await Client.GetCachedStringAsync($"chapters/{chapter.Id}", cache, cancellationToken: cancellationToken);
-        if (result.IsErr) throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}", result.Error);
+        if (result.IsErr)
+            throw new MnemaException($"Failed to retrieve chapter urls for {chapter.Id}: {result.Error?.Message}", result.Error);
 
         var document = result.Unwrap().ToHtmlDocument();
 
@@ -127,7 +129,7 @@ internal class DynastyRepository(
     {
         var result = await Client.GetCachedStringAsync("chapters/added", cache, cancellationToken: cancellationToken);
         if (result.IsErr)
-            throw new MnemaException("Failed to retrieve recently updated chapters", result.Error);
+            throw new MnemaException($"Failed to retrieve recently updated chapters: {result.Error?.Message}", result.Error);
 
         var document = result.Unwrap().ToHtmlDocument();
 

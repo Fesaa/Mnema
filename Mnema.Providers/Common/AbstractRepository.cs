@@ -20,7 +20,7 @@ public abstract class AbstractRepository(IDistributedCache cache): IRepository
 {
     protected abstract HttpClient Client { get; }
 
-    public async Task<JsonAccessor> GetAsync(string url, CancellationToken cancellationToken)
+    protected async Task<JsonAccessor> GetAsync(string url, CancellationToken cancellationToken)
     {
         var response = await Client.GetCachedStringAsync(url, cache, cancellationToken: cancellationToken);
         if (response.IsErr)
@@ -29,12 +29,12 @@ public abstract class AbstractRepository(IDistributedCache cache): IRepository
         return new JsonAccessor(response.Unwrap());
     }
 
-    public Task<JsonAccessor> PostAsync(string url, object json, CancellationToken cancellationToken, JsonSerializerOptions? options = null)
+    protected Task<JsonAccessor> PostAsync(string url, object json, CancellationToken cancellationToken, JsonSerializerOptions? options = null)
     {
         return PostAsync(url, JsonSerializer.Serialize(json, options), cancellationToken);
     }
 
-    public async Task<JsonAccessor> PostAsync(string url, string json, CancellationToken cancellationToken)
+    private async Task<JsonAccessor> PostAsync(string url, string json, CancellationToken cancellationToken)
     {
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
