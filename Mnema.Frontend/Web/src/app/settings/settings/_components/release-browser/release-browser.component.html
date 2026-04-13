@@ -36,10 +36,12 @@
       <td class="table-cell"><code>{{ item.releaseId }}</code></td>
       <td class="table-cell">{{ item.releaseDate | date:'shortDate' }}</td>
 
-      <td class="table-cell d-flex align-items-center gap-2">
-        <button type="button" class="btn btn-small text-danger" (click)="delete(item)">
-          <i class="fa fa-trash"></i>
-        </button>
+      <td class="table-cell">
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-small text-danger" (click)="delete(item)">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
       </td>
     </ng-template>
 

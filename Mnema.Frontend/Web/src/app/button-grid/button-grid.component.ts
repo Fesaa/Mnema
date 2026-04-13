@@ -4,12 +4,12 @@ import {Breakpoint, UtilityService} from "../_services/utility.service";
 import {Button, ButtonGroup, ButtonGroupService} from "./button-group.service";
 import {ListSelectionItem} from "../shared/_component/list-select-modal/list-select-modal.component";
 import {BadgeComponent} from "../shared/_component/badge/badge.component";
-import {RouterLink, RouterLinkActive} from "@angular/router";
+import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-button-grid',
   standalone: true,
-  imports: [CommonModule, BadgeComponent, RouterLink, RouterLinkActive],
+  imports: [CommonModule, BadgeComponent, RouterLink],
   templateUrl: './button-grid.component.html',
   styleUrls: ['./button-grid.component.scss']
 })

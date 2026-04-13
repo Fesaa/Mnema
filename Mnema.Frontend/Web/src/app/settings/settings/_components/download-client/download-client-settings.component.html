@@ -31,31 +31,33 @@
         {{ item.type | downloadClientType }}
       </td>
 
-      <td class="table-cell d-flex align-items-center gap-2 justify-end">
-        <button
-          type="button"
-          class="btn btn-small"
-          (click)="edit(item)"
-        >
-          <i class="fa fa-edit"></i>
-        </button>
+      <td class="table-cell">
+        <div class="d-flex align-items-center gap-2 justify-end">
+          <button
+            type="button"
+            class="btn btn-small"
+            (click)="edit(item)"
+          >
+            <i class="fa fa-edit"></i>
+          </button>
 
-        <button
-          type="button"
-          class="btn btn-small"
-          (click)="releaseLock(item)"
-          [disabled]="!item.isFailed"
-        >
-          <i class="fa {{item.isFailed ? 'fa-lock' : 'fa-lock-open'}}"></i>
-        </button>
+          <button
+            type="button"
+            class="btn btn-small"
+            (click)="releaseLock(item)"
+            [disabled]="!item.isFailed"
+          >
+            <i class="fa {{item.isFailed ? 'fa-lock' : 'fa-lock-open'}}"></i>
+          </button>
 
-        <button
-          type="button"
-          class="btn btn-small text-danger"
-          (click)="remove(item)"
-        >
-          <i class="fa fa-trash"></i>
-        </button>
+          <button
+            type="button"
+            class="btn btn-small text-danger"
+            (click)="remove(item)"
+          >
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
       </td>
     </ng-template>
 
