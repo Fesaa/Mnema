@@ -20,7 +20,7 @@
         <toc-element topic="Customise-a-download.md"/>
         <toc-element topic="Automatic-Downloads.md">
         </toc-element>
+        <toc-element topic="Monitored-Series.md"/>
         <toc-element topic="Providers.md"/>
     </toc-element>
-    <toc-element topic="Monitored-Series.md" />
 </instance-profile>

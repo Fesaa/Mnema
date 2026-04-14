@@ -9,16 +9,12 @@ up to date with notifications.
 
 ## Requirements
 
-As Mnema is opinionated as first as formost made for my setup; there's a few requirements to be met for running in
+As Mnema is opinionated as first as foremost made for my setup, as such will only be provided as a container.
+First, and primary support (from me) goes to the full setup with postgres, oidc, and redis. However, it is possible to run Mnema
+fully standalone without authentication and sqlite instead.
 
-- Mnema is only provided as a container
-- Mnema only has authentication via OIDC. You can disable authentication if wanted
-- Mnema requires a postgres database
-- Mnema optionally wants a redis instance. If none is provided, some features may break during restarts
 
 ## Glossary
-
-A definition list or a glossary:
 
 Provider
 : The website/service where Mnema gets the information to download the content from (Mangadex, ...)

@@ -1,9 +1,5 @@
 # Monitored Series
 
-Monitored series are the heart of your automated experience. Every 15m (not configurable) Mnema will load all recently
-updated release (chapters/...) from the providers that have at least one monitored series. If there's any new content, 
-it will start an automatic download with the options you've configured before.
-
 ![overview_monitored_series_screen.png](overview_monitored_series_screen.png)
 
 ## Series page
@@ -16,7 +12,7 @@ is linked to its Hardcover entry it'll also display upcoming volumes.
 From this page you can decide to trigger a download, edit its options and other data, or preview its metadata.
 
 <tip>
-    Metadata is refreshed every 7 days, you may trigger the job early via the hangfire dashboard
+    Metadata is refreshed every 7 days, you may trigger the job early via the hangfire dashboard. Or click on the last refresh date to refresh a specific series
 </tip>
 
 ## Search series
