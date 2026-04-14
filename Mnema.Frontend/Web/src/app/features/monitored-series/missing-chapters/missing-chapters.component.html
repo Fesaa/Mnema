@@ -18,7 +18,7 @@
     <ng-template #cell let-item>
       <td class="table-cell">
         <div class="d-flex flex-column">
-          <span class="fw-bold">{{ item.title }}</span>
+          <span class="fw-bold">{{item.seriesTitle}} - {{ item.title }}</span>
           @if (!!item.volume || !!item.chapter) {
             <small class="text-muted">
 

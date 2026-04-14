@@ -45,6 +45,7 @@ export type MonitoredChapter = {
   id: string;
   externalId: string;
   seriesId: string;
+  seriesTitle: string;
   status: MonitoredChapterStatus;
   title: string;
   summary: string;

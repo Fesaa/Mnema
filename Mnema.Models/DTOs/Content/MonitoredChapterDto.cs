@@ -10,6 +10,7 @@ public class MonitoredChapterDto: IDatabaseEntity
     public string ExternalId { get; set; }
 
     public Guid SeriesId { get; set; }
+    public string SeriesTitle { get; set; }
 
     public MonitoredChapterStatus Status { get; set; }
 
