@@ -1239,6 +1239,10 @@
     "download-started": {
       "title": "Started download for {{name}}",
       "summary": ""
+    },
+    "no-results": {
+      "title": "No results found",
+      "description": ""
     }
   },
 
