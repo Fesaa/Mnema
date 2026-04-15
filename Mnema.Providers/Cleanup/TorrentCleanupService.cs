@@ -127,6 +127,13 @@ internal class TorrentCleanupService(
 
         var fileName = fileSystem.Path.GetFileName(sourceFile);
         var resolution = metadataResolver.ResolveChapter(fileName, context.Series, context.ContentFormat);
+        if (resolution.ChapterEntity == null &&
+            context.Request.Metadata.GetKey(RequestConstants.IgnoreNonMatchedVolumes))
+        {
+            logger.LogDebug("[{Title}/{Id}] Skipping file {FileName} as it could not be matched",
+                context.Title, context.Series?.Id, fileName);
+            return;
+        }
 
         var chapterFileName = BuildChapterFileName(context.Title, resolution);
         var destPath = fileSystem.Path.Join(context.DestinationDirectory, chapterFileName + context.Format.FileExt());
