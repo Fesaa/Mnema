@@ -24,7 +24,7 @@ internal class MonitoredSeriesMetadataScheduler(
 
     public Task EnsureScheduledAsync()
     {
-        logger.LogDebug("Registering Monitored Series metadata refresher");
+        logger.LogDebug("Registering Monitored Series metadata refresher @ {CronJob}", CronJob);
 
         recurringJobManager.AddOrUpdate<MonitoredSeriesMetadataScheduler>(JobId,
             s => s.ReloadMetadataAsync(CancellationToken.None),
