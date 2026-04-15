@@ -40,7 +40,7 @@ internal partial class QBitContentManager
 
         var series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata, ct);
         var title = request.Metadata.GetKey(RequestConstants.TitleOverride)
-            .OrNonEmpty(series?.Title, parserService.ParseSeries(request.TempTitle, cFormat));
+            .OrNonEmpty(series?.Title, parserService.ParseSeries(request.TempTitle, cFormat), request.TempTitle);
 
         if (string.IsNullOrEmpty(title))
         {
@@ -105,7 +105,7 @@ internal partial class QBitContentManager
         {
             Category = MnemaCategory,
             Tags = [request.Provider.ToString()],
-            DownloadFolder = Path.Join(configuration.DownloadDir, request.BaseDir, request.TempTitle),
+            DownloadFolder = Path.Join(configuration.DownloadDir, request.BaseDir, title),
             Paused = true,
         };
 
