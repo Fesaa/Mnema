@@ -36,7 +36,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
 
         var res = await Client.GetCachedAsync<ComixRespose<ComixPaginatedResult<ComixManga>>>(url, cache, cancellationToken: cancellationToken);
         if (res.IsErr)
-            throw new MnemaException("Failed to search for comics", res.Error);
+            throw new MnemaException($"Failed to search: {res.Error?.Message}", res.Error);
 
         var data = res.Unwrap();
         if (data.Status != 200)
@@ -64,11 +64,11 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
 
         var res = await Client.GetCachedAsync<ComixRespose<ComixPaginatedResult<ComixManga>>>(url, cache, cancellationToken: cancellationToken);
         if (res.IsErr)
-            throw new MnemaException("Failed to recently updated", res.Error);
+            throw new MnemaException($"Failed to search for recently updated: {res.Error?.Message}", res.Error);
 
         var resp = res.Unwrap();
         if (resp.Status != 200)
-            throw new MnemaException($"Failed to recently updated, status code {resp.Status}");
+            throw new MnemaException($"Failed to search for recently updated, status code {resp.Status}");
 
         return resp
             .Result
@@ -150,7 +150,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
 
         var res = await Client.GetCachedAsync<ComixRespose<ComixManga>>(url, cache, cancellationToken: cancellationToken);
         if (res.IsErr)
-            throw new MnemaException($"Failed to retrieve information for manga {request.Id}", res.Error);
+            throw new MnemaException($"Failed to retrieve information for manga {request.Id}: {res.Error?.Message}", res.Error);
 
         var resp = res.Unwrap();
         if (resp.Status != 200)
@@ -214,7 +214,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
 
         var res = await Client.GetCachedAsync<ComixRespose<ComixPaginatedResult<ComixChapter>>>(url, cache, cancellationToken: cancellationToken);
         if (res.IsErr)
-            throw new MnemaException($"Failed to retrieve chapters for manga {id}", res.Error);
+            throw new MnemaException($"Failed to retrieve chapters for manga {id}: {res.Error?.Message}", res.Error);
 
         var resp = res.Unwrap();
         if (resp.Status != 200)
@@ -277,7 +277,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
         var res = await Client.GetCachedAsync<ComixRespose<ComixChapter>>(url, cache,
             cancellationToken: cancellationToken);
         if (res.IsErr)
-            throw new MnemaException("Failed to load chapter images", res.Error);
+            throw new MnemaException($"Failed to load chapter images: {res.Error?.Message}", res.Error);
 
         var resp = res.Unwrap();
         if (resp.Status != 200)

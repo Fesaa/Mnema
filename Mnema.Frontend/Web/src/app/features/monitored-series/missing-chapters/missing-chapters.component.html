@@ -1,0 +1,71 @@
+<div class="mt-4" *transloco="let t; prefix: 'missing-chapters'">
+
+  <h2 class="h2 fw-bold mt-4 mb-3">{{ t('title') }}</h2>
+
+  <app-table
+    [pageLoader]="pageLoader"
+    [trackByIdFunc]="trackBy"
+    [noMobileCards]="true"
+  >
+    <ng-template #header>
+      <tr>
+        <th class="table-header-cell">{{ t('header.chapter_info') }}</th>
+        <th class="table-header-cell" style="width: 15%">{{ t('header.release_date') }}</th>
+        <th class="table-header-cell" style="width: 15%">{{ t('header.actions') }}</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #cell let-item>
+      <td class="table-cell">
+        <div class="d-flex flex-column">
+          <span class="fw-bold">{{item.seriesTitle}} - {{ item.title }}</span>
+          @if (!!item.volume || !!item.chapter) {
+            <small class="text-muted">
+
+              @if (!!item.volume) {
+                {{ t('volume') }} {{ item.volume }}
+              }
+
+              @if (!!item.volume && !!item.chapter) {
+                -
+              }
+
+              @if (!!item.chapter) {
+                {{ t('chapter') }} {{ item.chapter }}
+              }
+            </small>
+          }
+        </div>
+      </td>
+
+      <td class="table-cell">
+        {{ item.releaseDate | date:'mediumDate' }}
+      </td>
+
+      <td class="table-cell">
+        <div class="d-flex align-items-center gap-2 justify-content-center">
+          @if (item.refUrl) {
+            <a [href]="item.refUrl" target="_blank" class="btn btn-small">
+              <i class="fa fa-external-link-alt"></i>
+            </a>
+          }
+
+          <a [routerLink]="'/monitored-series-detail/' + item.seriesId">
+            <i class="fa fa-link"></i>
+          </a>
+        </div>
+      </td>
+    </ng-template>
+
+    <ng-template #empty>
+      <tr>
+        <td colspan="3" class="py-5">
+          <div class="d-flex flex-column align-items-center text-center gap-3 text-muted">
+            <h5 class="mb-1">{{ t('empty.title') }}</h5>
+            <p class="mb-0">{{ t('empty.description') }}</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </app-table>
+</div>

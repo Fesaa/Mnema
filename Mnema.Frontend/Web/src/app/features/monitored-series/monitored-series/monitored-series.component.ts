@@ -17,7 +17,7 @@ import {TranslocoDirective, TranslocoService} from "@jsverse/transloco";
 import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
 import {BadgeComponent} from "@mnema/shared/_component/badge/badge.component";
 import {ModalService} from "@mnema/_services/modal.service";
-import {filter, map, switchMap, tap} from "rxjs";
+import {EMPTY, filter, map, switchMap, tap} from "rxjs";
 import {SeriesInfoComponent} from "@mnema/page/_components/series-info/series-info.component";
 import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
 import {
@@ -67,8 +67,11 @@ export class MonitoredSeriesComponent {
       m["manga_baka_id"] = [this.series().mangaBakaId]
     }
 
+    m["format"] = [this.series().format + ''];
+    m["content_format"] = [this.series().contentFormat + ''];
+
     return m;
-  })
+  });
 
 
   constructor() {
@@ -79,7 +82,6 @@ export class MonitoredSeriesComponent {
       switchMap(() => this.monitoredSeriesService.get(this.series().id)),
       tap(series => this.series.set(series))
     ).subscribe();
-
 
     effect(() => {
       this.pageService.metadata(this.provider()).pipe(
@@ -116,6 +118,11 @@ export class MonitoredSeriesComponent {
   search() {
     this.monitoredSeriesService.search(this.series().id).pipe(
       switchMap(results => {
+        if (results.totalCount == 0) {
+          this.toastR.warningLoco('monitored-series-detail.no-results');
+          return EMPTY;
+        }
+
         const [modal, component] = this.modalService.open(ListSelectModalComponent, {
           size: "lg", centered: true
         });

@@ -86,7 +86,7 @@ public class ScannerService(
             FileName = file,
         };
 
-        var ci = ParseComicInfoFromFile(file);
+        var ci = ParseComicInfoFromFile(path);
         if (ci != null)
         {
             content.SeriesName = ci.Series;
@@ -129,8 +129,9 @@ public class ScannerService(
                     throw new ArgumentOutOfRangeException();
             }
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogDebug(ex, "Failed to parse ComicInfo.xml from {FileName}", file);
             return null;
         }
 

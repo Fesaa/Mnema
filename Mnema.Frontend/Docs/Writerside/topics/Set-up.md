@@ -1,39 +1,42 @@
 # Set up
 
-Mnema is a containerized service that exposes a web interface on **port 8080**. To ensure proper data persistence and functionality, the container requires a volume mount at `/persistent` to house the Mangabaka database and its search index.
+Mnema is a containerized service that exposes a web interface on **port 8080**. 
 
-Configuration follows the standard .NET pattern, offering two flexible methods for initialization:
+Configuration follows the standard .NET pattern and can be done as follows
 * **Configuration File:** Mount a custom `appsettings.json` to `/Mnema/config/appsettings.json`.
 * **Environment Variables:** Provide settings directly via the container environment.
 
-You may use both methods simultaneously; a common best practice is to define general settings in the JSON file while injecting sensitive credentials (like secrets and connection strings) via environment variables.
+You can use both at the same time
 
 ## Configuration Reference
 
 > **Logging:** You can fully configure application logging using **Serilog** via the `Serilog` configuration section or corresponding environment variables.
 
-| Variable (JSON Path)         |   | Description                                                                                                                                                                   |
-|------------------------------|:--|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Connections**              |   |                                                                                                                                                                               |
-| `ConnectionStrings:Redis`    |   | Connection string for the Redis cache.                                                                                                                                        |
-| `ConnectionStrings:Postgres` |   | Connection string for the PostgreSQL database.                                                                                                                                |
-| `ConnectionStrings:Sqlite`   |   | Connection string for the Sqlite database, ensure this maps to a persistent location. Postgres takes priority. Example: `Data Source=/persistent/Mnema.db;` The ; is required | 
-| **Authentication**           |   |                                                                                                                                                                               |
-| `OpenIdConnect:Authority`    |   | The OIDC Identity Provider URL.                                                                                                                                               |
-| `OpenIdConnect:ClientId`     |   | The registered Client ID for the application.                                                                                                                                 |
-| `OpenIdConnect:Secret`       |   | The secret key for OIDC handshake.                                                                                                                                            |
-| `NoAuthentication`           |   | Set the `true` if you wish to disable Authentication                                                                                                                          |
-| `Authentication:Hardcover`   |   | Your hardcover ApiKey, required if you wish to use hardcover as a metadata provider                                                                                           |
-| **Storage**                  |   |                                                                                                                                                                               |
-| `Application:BaseDir`        |   | **Required.** The root directory for media storage.                                                                                                                           |
-| `Application:DownloadDir`    |   | **Required.** The directory used for processing downloads.                                                                                                                    |
-| **System & Libs**            |   |                                                                                                                                                                               |
-| `TZ`                         |   | Sets the system timezone for the runtime (e.g., `Europe/Brussels`).                                                                                                           |
-| `AutoMapperLicense`          |   | Optional license key. Displays a warning on start if missing and not suppressed.                                                                                              |
+| Variable (JSON Path)            |   | Description                                                                                                                                                                   |
+|---------------------------------|:--|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Connections**                 |   |                                                                                                                                                                               |
+| `ConnectionStrings:Redis`       |   | Connection string for the Redis cache.                                                                                                                                        |
+| `ConnectionStrings:Postgres`    |   | Connection string for the PostgreSQL database.                                                                                                                                |
+| `ConnectionStrings:Sqlite`      |   | Connection string for the Sqlite database, ensure this maps to a persistent location. Postgres takes priority. Example: `Data Source=/persistent/Mnema.db;` The ; is required | 
+| **Authentication**              |   |                                                                                                                                                                               |
+| `OpenIdConnect:Authority`       |   | The OIDC Identity Provider URL.                                                                                                                                               |
+| `OpenIdConnect:ClientId`        |   | The registered Client ID for the application.                                                                                                                                 |
+| `OpenIdConnect:Secret`          |   | The secret key for OIDC handshake.                                                                                                                                            |
+| `NoAuthentication`              |   | Set the `true` if you wish to disable Authentication                                                                                                                          |
+| `Authentication:Hardcover`      |   | Your hardcover ApiKey, required if you wish to use hardcover as a metadata provider                                                                                           |
+| `Authentication:Kagane`         |   | Base64 of a WVD file. Only required if you wish to download from them                                                                                                         |
+| **Storage**                     |   |                                                                                                                                                                               |
+| `Application:BaseDir`           |   | **Required.** The root directory for media storage.                                                                                                                           |
+| `Application:DownloadDir`       |   | **Required.** The directory used for processing downloads.                                                                                                                    |
+| `Application:PersistentStorage` |   | **Required.** The directory where Mnema will store data that must be persistet (Mangabaka index)                                                                              |
+| `Application:Host`              |   | Host used to construct the calendar url. Not required unless you want the copy button to work                                                                                 |
+| **System & Libs**               |   |                                                                                                                                                                               |
+| `TZ`                            |   | Sets the system timezone for the runtime (e.g., `Europe/Brussels`).                                                                                                           |
+| `AutoMapperLicense`             |   | Optional license key. Displays a warning on start if missing and not suppressed.                                                                                              |
 
 
 <warning>
-    It is advised to use OIDC to secure your application, when disabling authentication make sure Mnema is not publicly accesible
+    It is advised to use OIDC to secure your application, when disabling authentication make sure Mnema is not publicly accessible
 </warning>
 
 ---

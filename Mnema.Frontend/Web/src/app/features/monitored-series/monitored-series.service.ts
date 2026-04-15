@@ -45,6 +45,7 @@ export type MonitoredChapter = {
   id: string;
   externalId: string;
   seriesId: string;
+  seriesTitle: string;
   status: MonitoredChapterStatus;
   title: string;
   summary: string;
@@ -140,6 +141,10 @@ export class MonitoredSeriesService {
 
   getMetadataForm(provider: Provider) {
     return this.httpClient.get<FormDefinition>(`${this.baseUrl}/metadata-form?provider=${provider}`);
+  }
+
+  missingChapters(pageNumber: number, pageSize: number) {
+    return this.httpClient.get<PagedList<MonitoredChapter>>(`${this.baseUrl}/missing-chapters?pageNumber=${pageNumber}&pageSize=${pageSize}`);
   }
 
   getForm() {

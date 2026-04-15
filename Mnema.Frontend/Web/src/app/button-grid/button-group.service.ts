@@ -117,6 +117,12 @@ export class ButtonGroupService {
           navUrl: '/series-search',
         },
         {
+          title: translate('button-groups.actions.missing-chapters'),
+          icon: 'fa fa-puzzle-piece',
+          requiredRoles: [Role.Subscriptions],
+          navUrl: '/missing-chapters',
+        },
+        {
           title: translate('button-groups.actions.notifications'),
           icon: 'fa fa-inbox',
           navUrl: '/notifications',

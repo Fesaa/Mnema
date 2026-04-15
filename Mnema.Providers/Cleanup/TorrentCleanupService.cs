@@ -39,10 +39,10 @@ internal class TorrentCleanupService(
         if (content is not QBitTorrent torrent)
             throw new MnemaException($"{nameof(PublicationCleanupService)} cannot cleanup {content.GetType()}");
 
-        logger.LogDebug("[{Title}/{Id}] Cleaning up torrent", content.Title, content.Id);
-
         var request = content.Request;
         var context = await BuildCleanupContextAsync(request, torrent);
+
+        logger.LogDebug("[{Title}/{Id}] Cleaning up torrent - {Dir}", content.Title, content.Id, context.DownloadDirectory);
 
         await ProcessFilesAsync(context);
     }

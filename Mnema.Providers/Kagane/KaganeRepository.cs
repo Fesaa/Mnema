@@ -30,7 +30,8 @@ public class KaganeRepository(
     IHttpClientFactory httpClientFactory,
     IDistributedCache cache,
     ILogger<KaganeRepository> logger,
-    IUnitOfWork unitOfWork): AbstractRepository(cache)
+    IUnitOfWork unitOfWork,
+    IConnectionService connectionService): AbstractRepository(cache)
 {
 
     private static readonly IMetadataKey<IEnumerable<string>> ContentRating = MetadataKeys.Strings("content_rating");
@@ -108,6 +109,7 @@ public class KaganeRepository(
         if (series.Count == 0) return [];
 
         List<ContentRelease> releases = [];
+        List<string> failedSeries = [];
 
         foreach (var s in series)
         {
@@ -128,6 +130,7 @@ public class KaganeRepository(
             catch (MnemaException ex)
             {
                 logger.LogWarning(ex, "Failed to get series info for {SeriesId}", s.ExternalId);
+                failedSeries.Add(s.Title);
                 continue;
             }
 
@@ -150,6 +153,10 @@ public class KaganeRepository(
             await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
         }
 
+        if (failedSeries.Count > 0)
+        {
+            connectionService.CommunicateException($"Failed to load series info for {string.Join(", ", failedSeries)}", new MnemaException("Check logs"));
+        }
 
         return releases;
     }

@@ -28,7 +28,9 @@ public class AutoMapperProfiles : Profile
                 => opt.MapFrom(src
                     => src.Chapters.OrderBy(c => c.SortOrder)
             ));
-        CreateMap<MonitoredChapter, MonitoredChapterDto>();
+        CreateMap<MonitoredChapter, MonitoredChapterDto>()
+            .ForMember(dest => dest.SeriesTitle, opt
+                => opt.MapFrom(src => src.Series.Title));
         CreateMap<AuthKey, AuthKeyDto>();
     }
 }
