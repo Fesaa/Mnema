@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using Hangfire;
 using Hangfire.PostgreSql;
-using Hangfire.SQLite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.External;
@@ -18,7 +17,6 @@ public static class HangFireExtensions
         public void AddAndConfigureHangFire(IConfiguration configuration)
         {
             var psql = configuration.GetConnectionString(ConfigurationKeys.PostgresConnectionKey);
-            var sqlite = configuration.GetConnectionString(ConfigurationKeys.SqliteConnectionKey);
 
             services.AddHangfire(config =>
             {
@@ -38,13 +36,8 @@ public static class HangFireExtensions
                     return;
                 }
 
-                config.UseSQLiteStorage(sqlite, new SQLiteStorageOptions
-                {
-                    SchemaName = "HangFire",
-                    PrepareSchemaIfNecessary = true,
-                    QueuePollInterval = TimeSpan.FromSeconds(15)
-                })
-                .UseSerilogLogProvider();
+                config.UseInMemoryStorage()
+                    .UseSerilogLogProvider();
             });
             services.AddHangfireServer(options =>
             {
