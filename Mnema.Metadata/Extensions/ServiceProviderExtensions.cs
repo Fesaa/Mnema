@@ -36,10 +36,12 @@ public static class ServiceProviderExtensions
 
         private IServiceCollection AddHardcoverServices(IConfiguration cfg, ApplicationConfiguration configuration)
         {
-            var hardCoverToken = cfg.GetRequiredSection("Authentication").GetValue<string>("Hardcover");
+            var hardCoverToken = cfg.GetSection("Authentication").GetValue<string>("Hardcover");
             if (string.IsNullOrEmpty(hardCoverToken))
             {
                 Log.Logger.Warning($"No authentication token configured for {nameof(MetadataProvider.Hardcover)}, hardcover services will not be available");
+
+                services.AddKeyedScoped<IMetadataProviderService, NoOPMetadataService>(MetadataProvider.Hardcover);
                 return services;
             }
 
