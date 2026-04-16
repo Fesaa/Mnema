@@ -41,7 +41,7 @@ public static class ServiceProviderExtensions
             {
                 Log.Logger.Warning($"No authentication token configured for {nameof(MetadataProvider.Hardcover)}, hardcover services will not be available");
 
-                services.AddKeyedScoped<IMetadataProviderService, NoOPMetadataService>(MetadataProvider.Hardcover);
+                services.AddKeyedScoped<IMetadataProviderService, NoOpMetadataService>(MetadataProvider.Hardcover);
                 return services;
             }
 

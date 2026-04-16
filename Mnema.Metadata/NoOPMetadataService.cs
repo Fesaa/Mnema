@@ -6,7 +6,7 @@ using Mnema.Models.Publication;
 
 namespace Mnema.Metadata;
 
-public class NoOPMetadataService: IMetadataProviderService
+public class NoOpMetadataService: IMetadataProviderService
 {
     public Task<PagedList<MetadataSearchResult>> Search(MetadataSearchDto search, PaginationParams paginationParams, CancellationToken cancellationToken)
     {
