@@ -93,7 +93,7 @@ internal class NativeConnectionService(
         });
     }
 
-    public new async Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
+    public override async Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
     {
         var users = await unitOfWork.UserRepository.GetUsers();
 

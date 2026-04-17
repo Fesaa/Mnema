@@ -70,25 +70,26 @@ internal class EpubFormatHandler(ILogger<EpubFormatHandler> logger, IFileSystem 
     }
 
     private static void SyncWithComicInfo(XDocument doc, ComicInfo info)
-{
-    var metadata = doc.Root?.Element(Opf + "metadata") ?? doc.Root?.Element("metadata");
-    if (metadata == null) return;
-
-    metadata.SetElementValue(Dc + "title", info.Title);
-    metadata.SetElementValue(Dc + "description", info.Summary);
-    metadata.SetElementValue(Dc + "publisher", info.Publisher);
-
-    var titleId = metadata.Element(Dc + "title")?.Attribute("id")?.Value;
-    if (!string.IsNullOrEmpty(titleId))
     {
-        metadata.SetRefinedMetadata(Opf, "file-as", titleId, info.Title);
+        var metadata = doc.Root?.Element(Opf + "metadata") ?? doc.Root?.Element("metadata");
+        if (metadata == null) return;
+
+        metadata.SetElementValue(Dc + "title", info.Title);
+        metadata.SetElementValue(Dc + "description", info.Summary);
+        metadata.SetElementValue(Dc + "publisher", info.Publisher);
+
+        var titleId = metadata.Element(Dc + "title")?.Attribute("id")?.Value;
+        if (!string.IsNullOrEmpty(titleId))
+        {
+            metadata.SetRefinedMetadata(Opf, "file-as", titleId, info.Title);
+        }
+
+        UpdateCreators(metadata, info);
+        UpdateSeries(metadata, info);
+        UpdateTags(metadata, info);
+
+        metadata.GetOrCreateMeta(Opf, "dcterms:modified").Value = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
     }
-
-    UpdateCreators(metadata, info);
-    UpdateSeries(metadata, info);
-
-    metadata.GetOrCreateMeta(Opf, "dcterms:modified").Value = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
-}
 
     private static void UpdateSeries(XElement metadata, ComicInfo info)
     {
@@ -136,6 +137,20 @@ internal class EpubFormatHandler(ILogger<EpubFormatHandler> logger, IFileSystem 
                 metadata.Add(creator);
                 metadata.SetRefinedMetadata(Opf, "role", id, role);
             }
+        }
+    }
+
+    private static void UpdateTags(XElement metadata, ComicInfo info)
+    {
+        metadata.Elements(Dc + "subject").Remove();
+
+        if (string.IsNullOrWhiteSpace(info.Genre)) return;
+
+        var genres = info.Genre.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        foreach (var genre in genres)
+        {
+            metadata.Add(new XElement(Dc + "subject", genre));
         }
     }
 }

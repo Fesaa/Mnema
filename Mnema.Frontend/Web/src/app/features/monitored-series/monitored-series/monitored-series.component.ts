@@ -67,8 +67,21 @@ export class MonitoredSeriesComponent {
       m["manga_baka_id"] = [this.series().mangaBakaId]
     }
 
+    if (this.series().externalId) {
+      m["external_id"] = [this.series().externalId];
+    }
+
+    if (this.series().titleOverride) {
+      m["title_override"] = [this.series().titleOverride];
+    }
+
     m["format"] = [this.series().format + ''];
     m["content_format"] = [this.series().contentFormat + ''];
+    m["monitored_series_id"] = [this.series().id];
+
+    if (!!m["ignore_non_matched_volumes"]) {
+      m["ignore_non_matched_volumes"] = ["true"];
+    }
 
     return m;
   });

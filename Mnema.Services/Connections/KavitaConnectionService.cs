@@ -54,6 +54,12 @@ internal class KavitaConnectionService(
         if (!string.IsNullOrEmpty(baseDirSrc) && !string.IsNullOrEmpty(baseDirDest))
             baseDir = baseDir.Replace(baseDirSrc, baseDirDest);
 
+        if (baseDir.Contains(".."))
+        {
+            logger.LogWarning("Skipping scan request for {BaseDir} as Kavita will reject the request", baseDir);
+            return;
+        }
+
         var dto = new ScanFolderDto
         {
             ApiKey = authKey,

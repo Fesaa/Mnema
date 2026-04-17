@@ -146,9 +146,6 @@ internal partial class QBitContentManager(
             {
                 Key = PasswordKey,
                 Type = FormType.Text,
-                Validators = new FormValidatorsBuilder()
-                    .WithRequired()
-                    .Build()
             },
         ]);
     }
