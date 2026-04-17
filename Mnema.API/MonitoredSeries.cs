@@ -63,6 +63,9 @@ public static class MonitoredSeriesExtensions
 {
     public static MetadataBag MetadataForDownloadRequest(this MonitoredSeries monitoredSeries)
     {
+        // When adding/removing/updating any keys here also update in monitored series component in the UI
+        // As this calls the default download flow with a constructed metadata bag there
+
         var bag = monitoredSeries.Metadata;
         bag.SetKey(RequestConstants.HardcoverSeriesIdKey, monitoredSeries.HardcoverId);
         bag.SetKey(RequestConstants.MangaBakaKey, monitoredSeries.MangaBakaId);
