@@ -101,6 +101,14 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
 
     public Task<bool> CheckDuplicateSeries(Guid userId, Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
     {
+        if (!string.IsNullOrEmpty(dto.ExternalId))
+        {
+            return ctx.MonitoredSeries
+                .Where(s => current == null || s.Id != current)
+                .Where(s => s.UserId == userId && s.ExternalId == dto.ExternalId)
+                .AnyAsync(cancellationToken);
+        }
+
         return ctx.MonitoredSeries
             .Where(s => current == null || s.Id != current)
             .WhereIf(!string.IsNullOrEmpty(dto.HardcoverId), s => s.HardcoverId == dto.HardcoverId)
