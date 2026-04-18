@@ -51,6 +51,7 @@ internal class MonitoredSeriesScheduler(
 
         HashSet<Guid> matchedMonitoredSeries = [];
         HashSet<string> actedOnIds = [];
+        HashSet<string> startedContent = [];
 
         var processedDownloads = 0;
         var failedDownloads = 0;
@@ -67,20 +68,28 @@ internal class MonitoredSeriesScheduler(
 
             try
             {
-                var metadata = match.MetadataForDownloadRequest();
-                metadata.SetKey(RequestConstants.AllowPartialChapterData, true);
-
-                await downloadService.StartDownload(new DownloadRequestDto
+                if (string.IsNullOrEmpty(release.ContentId) || !startedContent.Contains(release.ContentId))
                 {
-                    Provider = release.Provider,
-                    Id = release.ContentId ?? release.ReleaseId,
-                    BaseDir = match.BaseDir,
-                    TempTitle = release.ContentName,
-                    Metadata = metadata,
-                    DownloadUrl = release.DownloadUrl,
-                    StartImmediately = true,
-                    UserId = match.UserId,
-                });
+                    var metadata = match.MetadataForDownloadRequest();
+                    metadata.SetKey(RequestConstants.AllowPartialChapterData, true);
+
+                    await downloadService.StartDownload(new DownloadRequestDto
+                    {
+                        Provider = release.Provider,
+                        Id = release.ContentId ?? release.ReleaseId,
+                        BaseDir = match.BaseDir,
+                        TempTitle = release.ContentName,
+                        Metadata = metadata,
+                        DownloadUrl = release.DownloadUrl,
+                        StartImmediately = true,
+                        UserId = match.UserId,
+                    });
+                }
+
+                if (!string.IsNullOrEmpty(release.ContentId))
+                {
+                    startedContent.Add(release.ContentId);
+                }
 
                 matchedMonitoredSeries.Add(match.Id);
                 actedOnIds.Add(release.ReleaseId);
