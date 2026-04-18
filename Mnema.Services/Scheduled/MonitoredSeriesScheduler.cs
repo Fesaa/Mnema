@@ -48,6 +48,7 @@ internal class MonitoredSeriesScheduler(
     )
     {
         var downloadService = scope.ServiceProvider.GetRequiredService<IDownloadService>();
+        var connectionService = scope.ServiceProvider.GetRequiredService<IConnectionService>();
 
         HashSet<Guid> matchedMonitoredSeries = [];
         HashSet<string> actedOnIds = [];
@@ -99,6 +100,8 @@ internal class MonitoredSeriesScheduler(
             {
                 logger.LogError(e, "Error downloading content {Title} - {MonitoredSeriesId}", match.Title, match.Id);
                 failedDownloads++;
+
+                connectionService.CommunicateException($"Error starting automatic download {match.Title} - {match.Id} - {match.Provider}", e);
             }
 
         }
