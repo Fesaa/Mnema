@@ -101,9 +101,7 @@ public class HardcoverMetadataService(
         {
             var book = b.Book;
 
-            var chapterTitle = book.Title
-                .Replace("(Manga)", string.Empty)
-                .Replace("(Light Novel)", string.Empty);
+            var chapterTitle = CleanTitle(book.Title);
             var subtitle = string.Empty;
 
             var volumePositionMarker = $"Vol. {b.Position}:";
@@ -157,7 +155,7 @@ public class HardcoverMetadataService(
         {
             Id = series.Id.ToString(),
             MonitoredSeriesId = monitoredSeriesIds.GetValueOrDefault(series.Id.ToString()),
-            Title = series.Name,
+            Title = CleanTitle(series.Name),
             Summary = series.Description ?? string.Empty,
             Status = series.IsCompleted ?? false ? PublicationStatus.Completed : PublicationStatus.Unknown,
             Tags = [],
@@ -168,6 +166,13 @@ public class HardcoverMetadataService(
             Links = [$"{HardcoverBaseUrl}/series/{series.Slug}"],
             Chapters = chapters,
         };
+    }
+
+    private static string CleanTitle(string title)
+    {
+        return title
+            .Replace("(Manga)", string.Empty)
+            .Replace("(Light Novel)", string.Empty);
     }
 
     private static readonly GraphQlQueryLoader QueryLoader =
