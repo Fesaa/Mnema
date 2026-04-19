@@ -41,6 +41,7 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
         return ctx.MonitoredSeries
             .Includes(MonitoredSeriesIncludes.Chapters)
             .Where(s => s.LastDataRefreshUtc < cutoffDate)
+            .Where(s => !string.IsNullOrEmpty(s.HardcoverId) || !string.IsNullOrEmpty(s.MangaBakaId))
             .ToListAsync(cancellationToken);
     }
 
