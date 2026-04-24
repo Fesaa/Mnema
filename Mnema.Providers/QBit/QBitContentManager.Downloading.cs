@@ -70,7 +70,7 @@ internal partial class QBitContentManager
                     return false;
                 }
 
-                if (mChapter == null && ignoreNonMatched)
+                if (mChapter == null && ignoreNonMatched && mSeries.Chapters.Count > 0)
                 {
                     logger.LogTrace("[{Title}/{Id}] not downloading {FileName} as it is not matched",
                         title, request.Id, c.FileName);
