@@ -123,12 +123,13 @@ internal class TorrentCleanupService(
 
     private async Task ProcessSingleFileAsync(CleanupContext context, string sourceFile)
     {
+        var ignoreNonMatched = context.Request.Metadata.GetKey(RequestConstants.IgnoreNonMatchedVolumes);
+
         logger.LogDebug("Processing file {FileName} for cleanup", sourceFile);
 
         var fileName = fileSystem.Path.GetFileName(sourceFile);
         var resolution = metadataResolver.ResolveChapter(fileName, context.Series, context.ContentFormat);
-        if (resolution.ChapterEntity == null &&
-            context.Request.Metadata.GetKey(RequestConstants.IgnoreNonMatchedVolumes))
+        if (resolution.ChapterEntity == null && ignoreNonMatched && context.Series?.Chapters.Count > 0)
         {
             logger.LogDebug("[{Title}/{Id}] Skipping file {FileName} as it could not be matched",
                 context.Title, context.Series?.Id, fileName);

@@ -55,11 +55,10 @@
                   <i class="fa fa-file"></i> {{ s.contentFormat | contentFormat }}
                 </app-badge>
                 @if (s.lastDataRefreshUtc) {
-                  <span class="small clickable"
-                          (click)="refreshMetadata()">
-                    <i class="fa fa-calendar-alt"></i>
+                  <span class="small clickable" (click)="refreshMetadata()">
+                <i class="fa fa-calendar-alt"></i>
                     {{t('last-updated', { time: s.lastDataRefreshUtc | utcToLocalTime:'short' })}}
-                  </span>
+              </span>
                 }
               </div>
 
@@ -67,6 +66,21 @@
 
               @if (s.summary) {
                 <p class="series-summary">{{ s.summary }}</p>
+              }
+
+              @if (missingHardcoverId() || missingMangabakaId()) {
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                  @if (missingHardcoverId()) {
+                    <button class="btn btn-sm btn-primary" (click)="searchHardcover()">
+                      <i class="fa fa-link"></i> Link Hardcover
+                    </button>
+                  }
+                  @if (missingMangabakaId()) {
+                    <button class="btn btn-sm btn-primary" (click)="searchMangabaka()">
+                      <i class="fa fa-link"></i> Link MangaBaka
+                    </button>
+                  }
+                </div>
               }
 
             </div>
@@ -88,8 +102,9 @@
           <div class="chapters-list">
             @for (chapter of s.chapters; track chapter.id) {
               <div class="chapter-row">
-                <div class="row align-items-center">
-                  <div class="col-auto d-none d-md-block">
+                <div class="d-flex gap-2 align-items-start">
+
+                  <div class="chapter-thumb-wrap flex-shrink-0">
                     @if (chapter.coverUrl) {
                       <img [src]="chapter.coverUrl" [alt]="chapter.title" class="chapter-thumb">
                     } @else {
@@ -99,49 +114,56 @@
                     }
                   </div>
 
-                  <div class="col">
-                    <div class="chapter-info">
-                      <h5 class="chapter-title mb-1">
+                  <div class="flex-grow-1 min-w-0">
+
+                    @if (chapter.volume || chapter.chapter) {
+                      <div class="chapter-labels mb-1">
                         @if (chapter.volume) {
-                          <span class="text-muted me-2">Vol. {{ chapter.volume }}</span>
+                          <span class="text-muted small">Vol. {{ chapter.volume }}</span>
                         }
                         @if (chapter.chapter) {
-                          <span class="text-muted me-2">Ch. {{ chapter.chapter }}</span>
-                        }
-                        {{ chapter.title }}
-                      </h5>
-                      @if (chapter.summary) {
-                        <p class="chapter-summary mb-1">{{ chapter.summary }}</p>
-                      }
-                      <div class="chapter-meta">
-                        @if (chapter.releaseDate) {
-                          <small class="text-muted me-3">
-                            <i class="fa fa-calendar"></i> {{ chapter.releaseDate | utcToLocalTime:'shortDate' }}
-                          </small>
-                        }
-                        @if (chapter.filePath) {
-                          <small class="text-muted">
-                            <i class="fa fa-folder"></i> {{ chapter.filePath }}
-                          </small>
+                          <span class="text-muted small">Ch. {{ chapter.chapter }}</span>
                         }
                       </div>
-                    </div>
-                  </div>
+                    }
 
-                  <div class="col-auto">
+                    <p class="chapter-title mb-1">{{ chapter.title }}</p>
+
+                    @if (chapter.summary) {
+                      <p class="chapter-summary small mb-1">{{ chapter.summary }}</p>
+                    }
+
+                    <div class="chapter-meta d-flex flex-wrap gap-2">
+                      @if (chapter.releaseDate) {
+                        <small class="text-muted">
+                          <i class="fa fa-calendar"></i>
+                          {{ chapter.releaseDate | utcToLocalTime:'shortDate' }}
+                        </small>
+                      }
+                      @if (chapter.filePath) {
+                        <small class="text-muted text-truncate chapter-filepath">
+                          <i class="fa fa-folder"></i> {{ chapter.filePath }}
+                        </small>
+                      }
+                    </div>
+
+                  </div>
+                </div>
+
+                <div class="chapter-row-footer d-flex align-items-center justify-content-between mt-2 pt-2">
+                  <div>
                     @if (chapter.refUrl) {
-                      <a [href]="chapter.refUrl" target="_blank" class="btn btn-sm" title="View Source">
-                        <i class="fa fa-external-link-alt"></i>
+                      <a [href]="chapter.refUrl" target="_blank" class="chapter-source-link small">
+                        <i class="fa fa-external-link-alt"></i> Source
                       </a>
                     }
                   </div>
-
-                  <div class="col-auto">
-                    <span class="badge clickable" (click)="setChapterStatus(chapter.id)" [ngClass]="getStatusClass(chapter.status)">
-                      {{ chapter.status | monitoredChapterStatus }}
-                    </span>
-                  </div>
-
+                  <span
+                    class="badge clickable"
+                    (click)="setChapterStatus(chapter.id)"
+                    [ngClass]="getStatusClass(chapter.status)">
+                    {{ chapter.status | monitoredChapterStatus }}
+                  </span>
                 </div>
               </div>
             }

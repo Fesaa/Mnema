@@ -82,7 +82,7 @@
   }
 
   .chapter-row {
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--surface-border);
     transition: background-color 0.2s ease;
 
@@ -94,9 +94,19 @@
       background-color: var(--surface-hover);
     }
 
+    .chapter-thumb-wrap {
+      width: 40px;
+      flex-shrink: 0;
+
+      @media (min-width: 768px) {
+        width: 56px;
+      }
+    }
+
     .chapter-thumb,
     .chapter-thumb-placeholder {
-      max-width: 128px;
+      width: 100%;
+      aspect-ratio: 2/3;
       object-fit: cover;
       border-radius: 4px;
       border: 1px solid var(--surface-border);
@@ -109,31 +119,83 @@
       justify-content: center;
 
       i {
-        font-size: 1.5rem;
+        font-size: 1rem;
         color: var(--text-secondary);
+
+        @media (min-width: 768px) {
+          font-size: 1.5rem;
+        }
       }
     }
 
-    .chapter-info {
-      .chapter-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 0.25rem;
+    .chapter-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chapter-labels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .chapter-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+      line-height: 1.3;
+    }
+
+    .chapter-summary {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .chapter-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+
+      i {
+        margin-right: 0.25rem;
+      }
+    }
+
+    .chapter-filepath {
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      @media (min-width: 768px) {
+        max-width: 300px;
+      }
+    }
+
+    .chapter-row-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.6rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid var(--surface-border);
+    }
+
+    .chapter-source-link {
+      font-size: 0.8rem;
+      color: var(--primary-color);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
       }
 
-      .chapter-summary {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        margin-bottom: 0.25rem;
-      }
-
-      .chapter-meta {
-        font-size: 0.85rem;
-
-        i {
-          margin-right: 0.25rem;
-        }
+      i {
+        margin-right: 0.2rem;
       }
     }
 
@@ -142,6 +204,7 @@
       padding: 0.4rem 0.8rem;
       font-weight: 500;
       min-width: 90px;
+      min-height: 32px;
       text-align: center;
 
       &.status-not-monitored {

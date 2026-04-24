@@ -9,7 +9,9 @@ public static class MangabakaUtils
         {
             if (titles == null) return string.Empty;
 
-            var enTitle = titles.FirstOrDefault(t => t.Language == "en");
+            var enTitle = titles
+                .OrderByDescending(t => t.IsPrimary)
+                .FirstOrDefault(t => t.Language == "en");
             if (enTitle != null) return enTitle.Title;
 
             return titles.FindBestNativeTitle();
@@ -19,17 +21,26 @@ public static class MangabakaUtils
         {
             if (titles == null) return string.Empty;
 
-            var nativeTitles = titles.Where(t => t.Traits.Contains("native")).ToList();
+            var nativeTitles = titles
+                .Where(t => t.Traits.Contains("native"))
+                .ToList();
             if (nativeTitles.Count == 1) return nativeTitles[0].Title;
 
             // Romanized titles will have a longer language code (-latn appended)
-            var nativeTitle = nativeTitles.OrderBy(t => t.Language.Length).FirstOrDefault();
+            var nativeTitle = nativeTitles
+                .OrderByDescending(t => t.IsPrimary)
+                .ThenBy(t => t.Language.Length)
+                .FirstOrDefault();
             if (nativeTitle != null) return nativeTitle.Title;
 
-            var officialTitle = titles.FirstOrDefault(t => t.Traits.Contains("official") && !t.Traits.Contains("native"));
+            var officialTitle = titles
+                .OrderByDescending(t => t.IsPrimary)
+                .FirstOrDefault(t => t.Traits.Contains("official") && !t.Traits.Contains("native"));
             if (officialTitle != null) return officialTitle.Title;
 
-            return titles.OrderBy(t => t.IsPrimary).FirstOrDefault()?.Title ?? string.Empty;
+            return titles
+                .OrderByDescending(t => t.IsPrimary)
+                .FirstOrDefault()?.Title ?? string.Empty;
         }
     }
 }
