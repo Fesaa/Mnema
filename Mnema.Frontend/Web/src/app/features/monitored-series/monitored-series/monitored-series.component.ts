@@ -30,6 +30,12 @@ import {ToastService} from "@mnema/_services/toast.service";
 import {DownloadModalComponent} from "@mnema/page/_components/download-modal/download-modal.component";
 import {PageService} from "@mnema/_services/page.service";
 import {FormControlDefinition} from "@mnema/generic-form/form";
+import {
+  MetadataProvider,
+  MetadataSearchResult,
+  MetadataService
+} from "@mnema/features/monitored-series/metadata.service";
+import {PagedList} from "@mnema/_models/paged-list";
 
 @Component({
   selector: 'app-monitored-series',
@@ -44,6 +50,7 @@ export class MonitoredSeriesComponent {
   private readonly chapterStatusPipe = new MonitoredChapterStatusPipe();
 
   private readonly monitoredSeriesService = inject(MonitoredSeriesService);
+  private readonly metadataService = inject(MetadataService);
   private readonly transLoco = inject(TranslocoService);
   private readonly modalService = inject(ModalService);
   private readonly signalR = inject(SignalRService);
@@ -85,6 +92,9 @@ export class MonitoredSeriesComponent {
 
     return m;
   });
+
+  protected missingHardcoverId = computed(() => !this.series().hardcoverId);
+  protected missingMangabakaId = computed(() => !this.series().mangaBakaId);
 
 
   constructor() {
@@ -230,4 +240,55 @@ export class MonitoredSeriesComponent {
         return '';
     }
   }
+
+  protected searchHardcover() {
+    const title = this.series().titleOverride ?? this.series().titleOverride;
+    this.metadataService.search(MetadataProvider.Hardcover, title, 0, 20).pipe(
+      switchMap(results => this.promptForChoice(results)),
+      map(sr => sr.id),
+      switchMap(id => {
+        const series = {...this.series()};
+        series.hardcoverId = id;
+        return this.monitoredSeriesService.update(series).pipe(
+          switchMap(() => this.monitoredSeriesService.get(series.id)),
+        );
+      }),
+      tap(mSeries => this.series.set(mSeries)),
+    ).subscribe();
+  }
+
+  protected searchMangabaka() {
+    const title = this.series().titleOverride ?? this.series().titleOverride;
+    this.metadataService.search(MetadataProvider.Mangabaka, title, 0, 20).pipe(
+      switchMap(results => this.promptForChoice(results)),
+      map(sr => sr.id),
+      switchMap(id => {
+        const series = {...this.series()};
+        series.mangaBakaId = id;
+        return this.monitoredSeriesService.update(series).pipe(
+          switchMap(() => this.monitoredSeriesService.get(series.id)),
+        );
+      }),
+      tap(mSeries => this.series.set(mSeries)),
+    ).subscribe();
+  }
+
+  private promptForChoice(results: PagedList<MetadataSearchResult>) {
+    if (results.totalCount == 0) {
+      this.toastR.warningLoco('monitored-series-detail.no-results');
+      return EMPTY;
+    }
+
+    const [modal, component] = this.modalService.open(ListSelectModalComponent<MetadataSearchResult>, {
+      size: "lg", centered: true
+    });
+
+    component.title.set(this.transLoco.translate('monitored-series-detail.select-search-result'));
+    component.inputItems.set(results.items.map(sr => ({label: sr.title, value: sr, url: sr.refUrl ?? undefined})));
+    component.itemsBeforeVirtual.set(8);
+    component.requireConfirmation.set(true);
+
+    return this.modalService.onClose$<MetadataSearchResult>(modal, true);
+  }
+
 }
