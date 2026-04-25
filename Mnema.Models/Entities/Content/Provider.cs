@@ -17,6 +17,15 @@ public enum Provider
     MadoKami = 8,
 }
 
+public static class ProviderExtensions
+{
+    public static bool IsDirectDownload(this Provider provider) => provider switch
+    {
+        Provider.MadoKami => true,
+        _ => false
+    };
+}
+
 public enum MetadataProvider
 {
     Hardcover = 0,

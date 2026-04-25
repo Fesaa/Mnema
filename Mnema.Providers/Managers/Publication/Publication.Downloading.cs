@@ -243,7 +243,7 @@ internal partial class Publication
                 ChapterBarrier = pendingIo
             })));
 
-        if (provider == Provider.MadoKami)
+        if (provider.IsDirectDownload())
         {
             for (var i = 0; i < expectedCount; i++)
                 await pendingIo.WaitAsync(_tokenSource.Token);

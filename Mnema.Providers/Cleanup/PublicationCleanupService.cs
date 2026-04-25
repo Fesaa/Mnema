@@ -14,8 +14,7 @@ internal class PublicationCleanupService(RawFileCleanupService fileCleanupServic
         if (content is not Publication publication)
             throw new MnemaException($"{nameof(PublicationCleanupService)} cannot cleanup {content.GetType()}");
 
-        // TODO: Scope these cleanups by provider rather than hacking it here
-        if (publication.Request.Provider == Provider.MadoKami)
+        if (publication.Request.Provider.IsDirectDownload())
         {
             return fileCleanupService.CleanupAsync(publication, cancellationToken);
         }
