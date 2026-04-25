@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Mnema.Common.Exceptions;
@@ -10,7 +9,7 @@ using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using QBittorrent.Client;
 
-namespace Mnema.Providers.QBit;
+namespace Mnema.Providers.Managers.QBit;
 
 internal partial class QBitContentManager
 {

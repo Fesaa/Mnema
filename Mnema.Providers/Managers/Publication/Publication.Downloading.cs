@@ -19,7 +19,7 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.User;
 using Mnema.Models.Publication;
 
-namespace Mnema.Providers;
+namespace Mnema.Providers.Managers.Publication;
 
 internal sealed record IoWork(UserPreferences Preferences, Stream Stream, string FilePath, string Url, int Idx, string Format);
 
@@ -224,7 +224,7 @@ internal partial class Publication
         _fileSystem.Directory.CreateDirectory(chapterPath);
 
         // Mark as downloaded as soon as the directory is created as we need to remove it in case of an error
-        DownloadedPaths.Add(chapterPath.RemovePrefix(_configuration.DownloadDir));
+        DownloadedPaths.Add(StringExtensions.RemovePrefix(chapterPath, _configuration.DownloadDir));
 
         try
         {

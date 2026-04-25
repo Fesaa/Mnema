@@ -1,13 +1,9 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
-using Mnema.Common.Extensions;
 using Mnema.Models.Publication;
 
-namespace Mnema.Providers;
+namespace Mnema.Providers.Managers.Publication;
 
 internal partial class Publication
 {

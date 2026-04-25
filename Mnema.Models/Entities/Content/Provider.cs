@@ -14,6 +14,7 @@ public enum Provider
     Weebdex = 5,
     Comix = 6,
     Kagane = 7,
+    MadoKami = 8,
 }
 
 public enum MetadataProvider

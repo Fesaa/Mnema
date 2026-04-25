@@ -9,11 +9,13 @@ using Mnema.Providers.Cleanup;
 using Mnema.Providers.Comix;
 using Mnema.Providers.Dynasty;
 using Mnema.Providers.Kagane;
+using Mnema.Providers.Managers.Publication;
+using Mnema.Providers.Managers.QBit;
 using Mnema.Providers.Mangadex;
 using Mnema.Providers.Nyaa;
-using Mnema.Providers.QBit;
 using Mnema.Providers.Services;
 using Mnema.Providers.Webtoon;
+using QBitContentManager = Mnema.Providers.Managers.QBit.QBitContentManager;
 
 namespace Mnema.Providers.Extensions;
 
@@ -60,7 +62,7 @@ public static class ServiceProviderExtensions
 
         #region Mangadex
 
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Mangadex);
+        services.AddKeyedSingleton<IContentManager, Managers.Publication.PublicationManager>(Provider.Mangadex);
 
         services.AddScoped<MangadexRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Mangadex,
@@ -95,7 +97,7 @@ public static class ServiceProviderExtensions
 
         #region Webtoons
 
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Webtoons);
+        services.AddKeyedSingleton<IContentManager, Managers.Publication.PublicationManager>(Provider.Webtoons);
 
         services.AddScoped<WebtoonRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Webtoons,
@@ -115,7 +117,7 @@ public static class ServiceProviderExtensions
 
         #region Dynasty
 
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Dynasty);
+        services.AddKeyedSingleton<IContentManager, Managers.Publication.PublicationManager>(Provider.Dynasty);
 
         services.AddScoped<DynastyRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Dynasty,
@@ -150,7 +152,7 @@ public static class ServiceProviderExtensions
 
         #region Comix
 
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Comix);
+        services.AddKeyedSingleton<IContentManager, Managers.Publication.PublicationManager>(Provider.Comix);
 
         services.AddScoped<ComixRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Comix,
@@ -170,7 +172,7 @@ public static class ServiceProviderExtensions
 
         #region Kagane
 
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Kagane);
+        services.AddKeyedSingleton<IContentManager, Managers.Publication.PublicationManager>(Provider.Kagane);
 
         services.AddScoped<KaganeRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Kagane,
@@ -193,6 +195,12 @@ public static class ServiceProviderExtensions
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
         }).AddHttpMessageHandler<RateLimitingHandler>();
+
+        #endregion
+
+        #region Madokami
+
+
 
         #endregion
 

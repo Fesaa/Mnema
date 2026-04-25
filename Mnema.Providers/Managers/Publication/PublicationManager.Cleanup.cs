@@ -10,7 +10,7 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Models.DTOs.Content;
 
-namespace Mnema.Providers;
+namespace Mnema.Providers.Managers.Publication;
 
 internal partial class PublicationManager
 {

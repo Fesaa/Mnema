@@ -9,7 +9,7 @@ internal class PublicationCleanupService: ICleanupService
 {
     public Task CleanupAsync(IContent content, CancellationToken cancellationToken = default)
     {
-        if (content is not Publication publication)
+        if (content is not Managers.Publication.Publication publication)
             throw new MnemaException($"{nameof(PublicationCleanupService)} cannot cleanup {content.GetType()}");
 
         return publication.Cleanup();

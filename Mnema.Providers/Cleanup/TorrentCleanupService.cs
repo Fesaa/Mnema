@@ -15,7 +15,7 @@ using Mnema.Models.Entities.User;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
-using Mnema.Providers.QBit;
+using Mnema.Providers.Managers.QBit;
 
 namespace Mnema.Providers.Cleanup;
 

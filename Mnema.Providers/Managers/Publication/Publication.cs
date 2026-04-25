@@ -16,13 +16,12 @@ using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
-using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
 
-namespace Mnema.Providers;
+namespace Mnema.Providers.Managers.Publication;
 
 internal partial class Publication(
     IServiceScope scope,

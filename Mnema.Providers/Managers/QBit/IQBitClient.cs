@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using QBittorrent.Client;
 
-namespace Mnema.Providers.QBit;
+namespace Mnema.Providers.Managers.QBit;
 
 internal interface IQBitClient : IDisposable
 {

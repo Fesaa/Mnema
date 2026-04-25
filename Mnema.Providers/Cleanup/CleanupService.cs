@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Mnema.API.Content;
-using Mnema.Providers.QBit;
+using Mnema.Providers.Managers.QBit;
 
 namespace Mnema.Providers.Cleanup;
 
@@ -18,7 +18,7 @@ internal class CleanupService(
     {
         switch (content)
         {
-            case Publication publication:
+            case Managers.Publication.Publication publication:
                 await publicationCleanupService.CleanupAsync(publication, cancellationToken);
                 return;
             case QBitTorrent torrent:

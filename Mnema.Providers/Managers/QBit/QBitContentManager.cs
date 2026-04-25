@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
@@ -18,7 +18,7 @@ using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
 using QBittorrent.Client;
 
-namespace Mnema.Providers.QBit;
+namespace Mnema.Providers.Managers.QBit;
 
 internal partial class QBitContentManager(
     ILogger<QBitContentManager> logger,
@@ -58,7 +58,7 @@ internal partial class QBitContentManager(
             throw new MnemaException($"Torrent with hash {request.Id} has already been added");
         }
 
-        BackgroundJob.Enqueue(() => DownloadTorrent(request, CancellationToken.None));
+        BackgroundJob.Enqueue((Expression<Func<Task>>)(() => DownloadTorrent(request, CancellationToken.None)));
     }
 
     public async Task StopDownload(StopRequestDto request)
@@ -111,7 +111,7 @@ internal partial class QBitContentManager(
 
         foreach (var tInfo in torrents)
         {
-            if (UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
+            if (QBitContentManager.UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
 
             var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
             if (request == null) continue;
