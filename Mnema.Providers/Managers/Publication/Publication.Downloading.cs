@@ -36,7 +36,7 @@ internal partial class Publication
 {
     private readonly IHttpClientFactory _httpClientFactory =
         scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
-    private readonly IImageService _imageService = scope.ServiceProvider.GetRequiredService<IImageService>();
+    private readonly IIoHandler _ioHandler = scope.ServiceProvider.GetRequiredKeyedService<IIoHandler>(provider);
 
     private Task? _ioTask;
 
@@ -141,29 +141,7 @@ internal partial class Publication
         await foreach (var ioWork in channel.Reader.ReadAllAsync(_tokenSource.Token))
             try
             {
-                await using (ioWork.Stream)
-                {
-                    if (_tokenSource.IsCancellationRequested || !Path.Exists(ioWork.FilePath)) continue;
-
-                    var realFileType = ioWork.Url.GetFileType();
-                    var fileType = ioWork.Preferences.ImageFormat.GetFileExtension(ioWork.Url);
-
-                    if (string.IsNullOrEmpty(fileType))
-                        fileType = ioWork.Format;
-
-                    var fileCounter = $"{ioWork.Idx}".PadLeft(4, '0');
-                    var filePath = Path.Join(ioWork.FilePath, $"page {fileCounter}{fileType}");
-
-                    var format = ioWork.Preferences.ImageFormat;
-                    if (ioWork.Preferences.ImageFormat == ImageFormat.Webp && realFileType != ".webp")
-                    {
-                        format = ImageFormat.Upstream;
-                    }
-
-                    await _imageService.ConvertAndSave(ioWork.Stream, format, filePath, _tokenSource.Token);
-
-                    _logger.LogTrace("[{Title}/{Id}] Wrote {FilePath} / {Idx} to disk", Title, Id, filePath, ioWork.Idx);
-                }
+                await _ioHandler.HandleIoWork(Title, Id, ioWork, _tokenSource);
             }
             catch (TaskCanceledException)
             {
@@ -224,7 +202,7 @@ internal partial class Publication
         _fileSystem.Directory.CreateDirectory(chapterPath);
 
         // Mark as downloaded as soon as the directory is created as we need to remove it in case of an error
-        DownloadedPaths.Add(StringExtensions.RemovePrefix(chapterPath, _configuration.DownloadDir));
+        DownloadedPaths.Add(chapterPath.RemovePrefix(_configuration.DownloadDir));
 
         try
         {

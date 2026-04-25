@@ -10,7 +10,7 @@ namespace Mnema.Providers.Cleanup;
 /// The general cleanup service, that decides which specific implementation to use. Registered without a key
 /// </summary>
 internal class CleanupService(
-    TorrentCleanupService torrentCleanupService,
+    RawFileCleanupService rawFileCleanupService,
     PublicationCleanupService publicationCleanupService
     ): ICleanupService
 {
@@ -22,7 +22,7 @@ internal class CleanupService(
                 await publicationCleanupService.CleanupAsync(publication, cancellationToken);
                 return;
             case QBitTorrent torrent:
-                await torrentCleanupService.CleanupAsync(torrent, cancellationToken);
+                await rawFileCleanupService.CleanupAsync(torrent, cancellationToken);
                 return;
         }
 

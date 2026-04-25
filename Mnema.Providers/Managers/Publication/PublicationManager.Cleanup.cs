@@ -19,12 +19,16 @@ internal partial class PublicationManager
         using var scope = _scopeFactory.CreateScope();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var monitoredSeriesService = scope.ServiceProvider.GetRequiredService<IMonitoredSeriesService>();
+        var cleanupService = scope.ServiceProvider.GetRequiredService<ICleanupService>();
 
         try
         {
             if (publication.State != ContentState.Cancel)
             {
-                if (!skipSaving) await publication.Cleanup();
+                if (!skipSaving)
+                {
+                    await cleanupService.CleanupAsync(publication, CancellationToken.None);
+                }
 
                 await DeleteFiles(publication);
             }

@@ -8,3 +8,8 @@ internal interface IPreDownloadHook
 {
     Task PreDownloadHook(Publication publication, IServiceScope scope, CancellationToken cancellationToken);
 }
+
+internal interface IIoHandler
+{
+    Task HandleIoWork(string title, string id, IoWork ioWork, CancellationTokenSource tokenSource);
+}

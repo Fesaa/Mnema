@@ -9,7 +9,6 @@ using Mnema.Providers.Cleanup;
 using Mnema.Providers.Comix;
 using Mnema.Providers.Dynasty;
 using Mnema.Providers.Kagane;
-using Mnema.Providers.Managers.DDL;
 using Mnema.Providers.Managers.Publication;
 using Mnema.Providers.Managers.QBit;
 using Mnema.Providers.Mangadex;
@@ -29,7 +28,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<IScannerService, ScannerService>();
         services.AddScoped<ICleanupService, CleanupService>();
         services.AddScoped<PublicationCleanupService>();
-        services.AddScoped<TorrentCleanupService>();
+        services.AddScoped<RawFileCleanupService>();
         services.AddScoped<IFormatHandler, ArchiveFormatHandler>();
         services.AddScoped<IFormatHandler, EpubFormatHandler>();
         services.AddScoped<NoOpRepository>();
@@ -64,7 +63,7 @@ public static class ServiceProviderExtensions
 
         #region Mangadex
 
-        services.AddKeyedSingleton<IContentManager, Managers.Publication.PublicationManager>(Provider.Mangadex);
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Mangadex);
 
         services.AddScoped<MangadexRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Mangadex,
@@ -73,6 +72,7 @@ public static class ServiceProviderExtensions
             (s, _) => s.GetRequiredService<MangadexRepository>());
 
         services.AddKeyedScoped<IPreDownloadHook, LoadVolumesHook>(Provider.Mangadex);
+        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Mangadex);
         services.AddHttpClient(nameof(Provider.Mangadex), client =>
         {
             client.BaseAddress = new Uri("https://api.mangadex.org");
@@ -88,6 +88,7 @@ public static class ServiceProviderExtensions
 
         services.AddKeyedScoped<IContentRepository, NoOpRepository>(Provider.Weebdex);
         services.AddKeyedScoped<IRepository, NoOpRepository>(Provider.Weebdex);
+        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Weebdex);
         services.AddHttpClient(nameof(Provider.Weebdex), client =>
         {
             client.BaseAddress = new Uri("https://api.weebdex.org");
@@ -99,7 +100,7 @@ public static class ServiceProviderExtensions
 
         #region Webtoons
 
-        services.AddKeyedSingleton<IContentManager, Managers.Publication.PublicationManager>(Provider.Webtoons);
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Webtoons);
 
         services.AddScoped<WebtoonRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Webtoons,
@@ -107,6 +108,7 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.Webtoons,
             (s, _) => s.GetRequiredService<WebtoonRepository>());
 
+        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Webtoons);
         services.AddHttpClient(nameof(Provider.Webtoons), client =>
         {
             client.BaseAddress = new Uri("https://www.webtoons.com");
@@ -119,7 +121,7 @@ public static class ServiceProviderExtensions
 
         #region Dynasty
 
-        services.AddKeyedSingleton<IContentManager, Managers.Publication.PublicationManager>(Provider.Dynasty);
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Dynasty);
 
         services.AddScoped<DynastyRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Dynasty,
@@ -127,6 +129,7 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.Dynasty,
             (s, _) => s.GetRequiredService<DynastyRepository>());
 
+        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Dynasty);
         services.AddHttpClient(nameof(Provider.Dynasty), client =>
         {
             client.BaseAddress = new Uri("https://dynasty-scans.com/");
@@ -143,6 +146,7 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IContentRepository, NoOpRepository>(Provider.Bato);
         services.AddKeyedScoped<IRepository, NoOpRepository>(Provider.Bato);
 
+        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Bato);
         services.AddHttpClient(nameof(Provider.Bato), client =>
         {
             client.BaseAddress = new Uri("https://xbat.app");
@@ -154,7 +158,7 @@ public static class ServiceProviderExtensions
 
         #region Comix
 
-        services.AddKeyedSingleton<IContentManager, Managers.Publication.PublicationManager>(Provider.Comix);
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Comix);
 
         services.AddScoped<ComixRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.Comix,
@@ -162,6 +166,7 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.Comix,
             (s, _) => s.GetRequiredService<ComixRepository>());
 
+        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Comix);
         services.AddHttpClient(nameof(Provider.Comix), client =>
         {
             client.BaseAddress = new Uri("https://comix.to");
@@ -182,6 +187,7 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.Kagane,
             (s, _) => s.GetRequiredService<KaganeRepository>());
 
+        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Kagane);
         var kaganeLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
         {
             PermitLimit = 5,
@@ -202,7 +208,7 @@ public static class ServiceProviderExtensions
 
         #region Madokami
 
-        services.AddKeyedSingleton<IContentManager, DirectDownloadManager>(Provider.MadoKami);
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.MadoKami);
 
         services.AddScoped<MadokamiRepository>();
         services.AddKeyedScoped<IContentRepository>(Provider.MadoKami,
@@ -210,6 +216,7 @@ public static class ServiceProviderExtensions
         services.AddKeyedScoped<IRepository>(Provider.MadoKami,
             (s, _) => s.GetRequiredService<MadokamiRepository>());
 
+        services.AddKeyedScoped<IIoHandler, FileIoWorker>(Provider.MadoKami);
         services.AddTransient<MadokamiBasicAuthHandler>();
         services.AddHttpClient(nameof(Provider.MadoKami), client =>
         {

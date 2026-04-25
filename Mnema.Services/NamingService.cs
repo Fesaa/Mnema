@@ -35,10 +35,10 @@ public class NamingService(ILogger<NamingService> logger, ApplicationConfigurati
     {
         var fileName = title;
 
-        if (!string.IsNullOrEmpty(volumeMarker))
+        if (!string.IsNullOrEmpty(volumeMarker) && volumeMarker != ParserService.DefaultChapter)
             fileName += $" Vol. {volumeMarker}";
 
-        if (string.IsNullOrEmpty(chapterMarker))
+        if (string.IsNullOrEmpty(chapterMarker) || chapterMarker == ParserService.DefaultChapter)
             return fileName;
 
         if (chapterNumber == null)

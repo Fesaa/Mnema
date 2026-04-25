@@ -93,6 +93,22 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
         return Task.FromResult<List<FormControlDefinition>>([
             new FormControlDefinition
             {
+              Key  = RequestConstants.HardcoverSeriesIdKey.Key,
+              Type = FormType.Text,
+            },
+            new FormControlDefinition
+            {
+                Key  = RequestConstants.MangaBakaKey.Key,
+                Type = FormType.Text,
+            },
+            new FormControlDefinition
+            {
+                Key  = RequestConstants.IgnoreNonMatchedVolumes.Key,
+                Type = FormType.Switch,
+                Advanced = true,
+            },
+            new FormControlDefinition
+            {
                 Key = RequestConstants.ContentFormatKey.Key,
                 Type = FormType.DropDown,
                 Options = Enum.GetValues<ContentFormat>()
