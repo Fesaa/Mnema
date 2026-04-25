@@ -127,7 +127,10 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
                 Options = Enum.GetValues<ContentFormat>()
                     .Select(f => new FormControlOption(f.ToString().ToLower(), f))
                     .ToList(),
-                DefaultOption = nameof(ContentFormat.Manga).ToLower(),
+                DefaultOption = ContentFormat.Manga,
+                Validators = new FormValidatorsBuilder()
+                    .WithRequired()
+                    .Build()
             },
             new FormControlDefinition
             {
@@ -136,7 +139,10 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
                 Options = Enum.GetValues<Format>()
                     .Select(f => new FormControlOption(f.ToString().ToLower(), f))
                     .ToList(),
-                DefaultOption = nameof(Format.Archive).ToLower()
+                DefaultOption = Format.Archive,
+                Validators = new FormValidatorsBuilder()
+                    .WithRequired()
+                    .Build()
             }
         ]);
     }
@@ -203,12 +209,18 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
             new FormControlDefinition
             {
                 Key = BasicAuthUsername.Key ,
-                Type = FormType.Text
+                Type = FormType.Text,
+                Validators = new FormValidatorsBuilder()
+                    .WithRequired()
+                    .Build()
             },
             new FormControlDefinition
             {
                 Key = BasicAuthPassword.Key ,
-                Type = FormType.Text
+                Type = FormType.Text,
+                Validators = new FormValidatorsBuilder()
+                    .WithRequired()
+                    .Build()
             }
         ]);
     }

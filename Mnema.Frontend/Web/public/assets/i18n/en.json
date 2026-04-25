@@ -864,7 +864,22 @@
         "password-title": "Password",
         "password-tooltip": "Password, leave empty if not required",
         "type": {
-          "qbittorrent": "{{download-client-pipe.qbit-torrent}}"
+          "qbittorrent": "{{download-client-pipe.qbit-torrent}}",
+          "madokami": "Madokami"
+        }
+      },
+      "Madokami": {
+        "name-title": "Name",
+        "name-tooltip": "Optional custom name",
+        "type-title": "Type",
+        "type-tooltip": "The type of the download client you're configuring. Generally does not change",
+        "basicAuthUsername-title": "Username",
+        "basicAuthUsername-tooltip": "Required",
+        "basicAuthPassword-title": "Password",
+        "basicAuthPassword-tooltip": "Required",
+        "type": {
+          "qbittorrent": "{{download-client-pipe.qbit-torrent}}",
+          "madokami": "Madokami"
         }
       }
     },
