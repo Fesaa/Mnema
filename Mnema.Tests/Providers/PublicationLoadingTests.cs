@@ -52,6 +52,7 @@ public class PublicationLoadingTests
         col.AddScoped<IImageService>(_ => Substitute.For<IImageService>());
         col.AddScoped<IMetadataService>(_ => Substitute.For<IMetadataService>());
         col.AddScoped<INamingService>(_ => new NamingService(Substitute.For<ILogger<NamingService>>(), new ApplicationConfiguration(), new ParserService()));
+        col.AddKeyedScoped<IIoHandler>(provider, (_,_) => Substitute.For<IIoHandler>());
 
         var scope = col.BuildServiceProvider().CreateScope();
 
