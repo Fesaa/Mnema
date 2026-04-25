@@ -6,16 +6,21 @@ using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.Internal;
+using Mnema.Models.Publication;
 
 namespace Mnema.Services;
 
-public class NamingService(ILogger<NamingService> logger, ApplicationConfiguration configuration) : INamingService
+public class NamingService(ILogger<NamingService> logger, ApplicationConfiguration configuration, IParserService parserService) : INamingService
 {
     public string GetVolumeDirectoryName(string title, string volumeMarker)
         => $"{title} Vol. {volumeMarker}";
 
     public string GetChapterFilePath(string baseDir, string title, string fileName)
         => Path.Join(configuration.DownloadDir, baseDir, title, fileName);
+
+    public string GetChapterFileName(string title, Chapter chapter)
+        => GetChapterFileName(title, chapter.VolumeMarker, chapter.ChapterMarker, chapter.ChapterNumber(),
+            chapter.IsOneShot, chapter.Title, []);
 
     public string GetChapterFileName(
         string title,
@@ -35,10 +40,10 @@ public class NamingService(ILogger<NamingService> logger, ApplicationConfigurati
     {
         var fileName = title;
 
-        if (!string.IsNullOrEmpty(volumeMarker) && volumeMarker != ParserService.DefaultChapter)
+        if (!string.IsNullOrEmpty(volumeMarker) && !parserService.IsLooseLeafVolume(volumeMarker))
             fileName += $" Vol. {volumeMarker}";
 
-        if (string.IsNullOrEmpty(chapterMarker) || chapterMarker == ParserService.DefaultChapter)
+        if (string.IsNullOrEmpty(chapterMarker) || parserService.IsDefaultChapter(chapterMarker))
             return fileName;
 
         if (chapterNumber == null)

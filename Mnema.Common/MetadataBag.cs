@@ -180,10 +180,10 @@ public static class MetadataKeys
             });
     }
 
-    public static IMetadataKey<TEnum> Enum<TEnum>(string key) where TEnum : struct, Enum
+    public static IMetadataKey<TEnum> Enum<TEnum>(string key, TEnum? defaultValue = null) where TEnum : struct, Enum
     {
         return new MetadataKey<TEnum>(key,
-            m => m.GetRequiredEnum<TEnum>(key),
+            m => m.GetEnum<TEnum>(key) ?? defaultValue ?? throw new ArgumentException($"Required enum value '{key}' not found."),
             (m, value) => m.SetEnum(key, value));
     }
 

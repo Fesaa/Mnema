@@ -109,11 +109,25 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
             },
             new FormControlDefinition
             {
+                Key  = RequestConstants.TitleOverride.Key,
+                Type = FormType.Text,
+                Advanced = true,
+            },
+            new FormControlDefinition
+            {
+                Key  = RequestConstants.DownloadOneShotKey.Key,
+                Type = FormType.Switch,
+                DefaultOption = "true",
+                Advanced = true,
+            },
+            new FormControlDefinition
+            {
                 Key = RequestConstants.ContentFormatKey.Key,
                 Type = FormType.DropDown,
                 Options = Enum.GetValues<ContentFormat>()
                     .Select(f => new FormControlOption(f.ToString().ToLower(), f))
                     .ToList(),
+                DefaultOption = nameof(ContentFormat.Manga).ToLower(),
             },
             new FormControlDefinition
             {
@@ -122,6 +136,7 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
                 Options = Enum.GetValues<Format>()
                     .Select(f => new FormControlOption(f.ToString().ToLower(), f))
                     .ToList(),
+                DefaultOption = nameof(Format.Archive).ToLower()
             }
         ]);
     }
@@ -163,7 +178,7 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
                     Id = id,
                     Title = node.InnerText.ReplaceLineEndings(string.Empty).Trim().Trim('"'),
                     RefUrl = id,
-                    VolumeMarker = parseResult.Volume.Value,
+                    VolumeMarker = parserService.IsLooseLeafVolume(parseResult.Volume.Value) ? string.Empty : parseResult.Volume.Value,
                     ChapterMarker = parseResult.Chapter.Value,
                     Tags = [],
                     People = [],
