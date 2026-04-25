@@ -87,16 +87,19 @@ export class DownloadModalComponent implements OnInit {
   }
 
   download() {
+    const form = this.genericFormFactoryService.adjustForGenericMetadata(this.downloadForm.value);
+
+
     const req = {
       ...this.baseRequest(),
+      ...form
     };
 
     // Ensure metadata is merged, with values in the form taking priority
     req.metadata = {
-      ...req.metadata,
-      ...this.genericFormFactoryService.adjustForGenericMetadata(this.downloadForm.value).metadata,
+      ...this.metadata(),
+      ...form.metadata,
     }
-
 
     this.contentService.download(req).pipe(
       tap(() => this.saving.set(false)),

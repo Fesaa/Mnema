@@ -10,7 +10,7 @@ using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using QBittorrent.Client;
 
-namespace Mnema.Providers.QBit;
+namespace Mnema.Providers.Managers.QBit;
 
 internal partial class QBitContentManager
 {

@@ -19,4 +19,5 @@ public class DownloadClient: IDatabaseEntity
 public enum DownloadClientType
 {
     QBittorrent,
+    Madokami
 }

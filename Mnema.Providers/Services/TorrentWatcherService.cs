@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Mnema.Providers.QBit;
+using Mnema.Providers.Managers.QBit;
 
 namespace Mnema.Providers.Services;
 

@@ -13,10 +13,9 @@ using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
-using Mnema.Models.Entities.User;
 using Mnema.Models.Internal;
 
-namespace Mnema.Providers;
+namespace Mnema.Providers.Managers.Publication;
 
 internal partial class PublicationManager : IPublicationManager, IAsyncDisposable
 {
@@ -114,7 +113,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
 
         await publication.Cancel();
 
-        _ = Task.Run(() => CleanupAfterDownload(publication, request.DeleteFiles));
+        _ = Task.Run((Func<Task?>)(() => CleanupAfterDownload(publication, request.DeleteFiles)));
     }
 
     public async Task MoveToDownloadQueue(string id)
@@ -296,11 +295,11 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         }
     }
 
-    private Publication CreatePublication(DownloadRequestDto request)
+    private Managers.Publication.Publication CreatePublication(DownloadRequestDto request)
     {
         var scope = _scopeFactory.CreateScope();
 
-        var publication = new Publication(scope, request.Provider, request);
+        var publication = new Managers.Publication.Publication(scope, request.Provider, request);
 
         return publication;
     }

@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Mnema.API.Content;
-using Mnema.Providers.QBit;
+using Mnema.Providers.Managers.QBit;
 
 namespace Mnema.Providers.Cleanup;
 
@@ -10,7 +10,7 @@ namespace Mnema.Providers.Cleanup;
 /// The general cleanup service, that decides which specific implementation to use. Registered without a key
 /// </summary>
 internal class CleanupService(
-    TorrentCleanupService torrentCleanupService,
+    RawFileCleanupService rawFileCleanupService,
     PublicationCleanupService publicationCleanupService
     ): ICleanupService
 {
@@ -18,11 +18,11 @@ internal class CleanupService(
     {
         switch (content)
         {
-            case Publication publication:
+            case Managers.Publication.Publication publication:
                 await publicationCleanupService.CleanupAsync(publication, cancellationToken);
                 return;
             case QBitTorrent torrent:
-                await torrentCleanupService.CleanupAsync(torrent, cancellationToken);
+                await rawFileCleanupService.CleanupAsync(torrent, cancellationToken);
                 return;
         }
 

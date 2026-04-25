@@ -9,10 +9,9 @@ using Mnema.API;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Models.Entities.Content;
-using Mnema.Models.Internal;
 using QBittorrent.Client;
 
-namespace Mnema.Providers.QBit;
+namespace Mnema.Providers.Managers.QBit;
 
 internal class QBitClient(
     ILogger<QBitClient> logger,

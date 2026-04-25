@@ -59,11 +59,20 @@ public class ContentController(
     }
 
     [HttpGet("series-info")]
-    public async Task<ActionResult<Series>> GetSeriesInfo([FromQuery] Provider provider, [FromQuery] string id)
+    public async Task<ActionResult<Series>> GetSeriesInfo(
+        [FromQuery] Provider provider,
+        [FromQuery] string id,
+        [FromQuery] ContentFormat contentFormat = ContentFormat.Manga,
+        [FromQuery] Format format = Format.Archive
+        )
     {
         var repository = serviceProvider.GetKeyedService<IRepository>(provider);
         if (repository == null)
             return NotFound();
+
+        var metadata = new MetadataBag();
+        metadata.SetKey(RequestConstants.FormatKey, format);
+        metadata.SetKey(RequestConstants.ContentFormatKey, contentFormat);
 
         var request = new DownloadRequestDto
         {
@@ -71,7 +80,7 @@ public class ContentController(
             Id = id,
             BaseDir = string.Empty,
             TempTitle = string.Empty,
-            Metadata = new MetadataBag(),
+            Metadata = metadata,
         };
 
         return Ok(await repository.SeriesInfo(request, HttpContext.RequestAborted));

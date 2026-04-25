@@ -13,7 +13,7 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
-using Mnema.Providers;
+using Mnema.Providers.Managers.Publication;
 using Mnema.Services;
 using NSubstitute;
 
@@ -51,7 +51,8 @@ public class PublicationLoadingTests
         col.AddScoped<IScannerService>(_ => Substitute.For<IScannerService>());
         col.AddScoped<IImageService>(_ => Substitute.For<IImageService>());
         col.AddScoped<IMetadataService>(_ => Substitute.For<IMetadataService>());
-        col.AddScoped<INamingService>(_ => new NamingService(Substitute.For<ILogger<NamingService>>(), new ApplicationConfiguration()));
+        col.AddScoped<INamingService>(_ => new NamingService(Substitute.For<ILogger<NamingService>>(), new ApplicationConfiguration(), new ParserService()));
+        col.AddKeyedScoped<IIoHandler>(provider, (_,_) => Substitute.For<IIoHandler>());
 
         var scope = col.BuildServiceProvider().CreateScope();
 

@@ -6,12 +6,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
+using Mnema.Providers.Managers.Publication;
 
 namespace Mnema.Providers.Mangadex;
 
 internal class LoadVolumesHook : IPreDownloadHook
 {
-    public async Task PreDownloadHook(Publication publication, IServiceScope scope, CancellationToken cancellationToken)
+    public async Task PreDownloadHook(Managers.Publication.Publication publication, IServiceScope scope, CancellationToken cancellationToken)
     {
         if (publication.Series == null) return;
 

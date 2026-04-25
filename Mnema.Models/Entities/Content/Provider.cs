@@ -14,6 +14,16 @@ public enum Provider
     Weebdex = 5,
     Comix = 6,
     Kagane = 7,
+    MadoKami = 8,
+}
+
+public static class ProviderExtensions
+{
+    public static bool IsDirectDownload(this Provider provider) => provider switch
+    {
+        Provider.MadoKami => true,
+        _ => false
+    };
 }
 
 public enum MetadataProvider

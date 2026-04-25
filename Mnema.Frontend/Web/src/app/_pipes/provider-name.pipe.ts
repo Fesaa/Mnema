@@ -25,6 +25,8 @@ export class ProviderNamePipe implements PipeTransform {
         return "Comix"
       case Provider.KAGANE:
         return "Kagane"
+      case Provider.Madokami:
+        return "Madokami"
       default:
         return "Unknown";
     }

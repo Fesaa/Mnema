@@ -2,11 +2,10 @@ using System;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 using QBittorrent.Client;
 
-namespace Mnema.Providers.QBit;
+namespace Mnema.Providers.Managers.QBit;
 
 public class QBitTorrent(DownloadRequestDto request, TorrentInfo torrentInfo) : IContent
 {

@@ -51,6 +51,19 @@ and simply loads latest uploads for each monitored series
     You are required to include a WVD file in base64 format at `Authentication.Kagane` to download
 </warning>
 
+## Madokami
+
+Supported, with enriched metadata from Mangabaka & Hardcover. No metadata is taken from Madokami apart from the titles. 
+
+Each directory is a separate series, Mnema will <strong>NOT</strong> recursive traverse directories at any point. Files in the directory are downloaded
+one by one. And then processed once they're all downloaded.
+
+It is important you select the correct (content) format for all features to work. It is recommended to assign a metadata id.
+
+<warning>
+    You must provide your credentials as a download client
+</warning>
+
 ### How to add to support for a new provider
 
 1) Update the Provider enums, and the provider-pipe

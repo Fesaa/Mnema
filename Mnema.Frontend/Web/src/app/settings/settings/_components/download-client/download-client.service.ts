@@ -16,6 +16,7 @@ export interface DownloadClient {
 
 export enum DownloadClientType {
   QBitTorrent = 0,
+  Madokami = 1,
 }
 
 @Injectable({

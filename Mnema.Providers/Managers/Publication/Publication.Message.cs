@@ -6,7 +6,7 @@ using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Publication;
 
-namespace Mnema.Providers;
+namespace Mnema.Providers.Managers.Publication;
 
 internal partial class Publication
 {
@@ -83,7 +83,7 @@ internal partial class Publication
             {
                 SubContentId = chapter.Id,
                 Selected = WillBeDownloaded(chapter),
-                Label = chapter.Label().Trim()
+                Label = _namingService.GetChapterFileName(Title, chapter)
             }).ToList();
         }
 

@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +10,7 @@ using Mnema.Common.Helpers;
 using Mnema.Models.External;
 using Mnema.Models.Publication;
 
-namespace Mnema.Providers;
+namespace Mnema.Providers.Managers.Publication;
 
 internal partial class Publication
 {
@@ -33,7 +32,7 @@ internal partial class Publication
             {
                 try
                 {
-                    var filePath = Path.Join(ChapterPath(chapter),
+                    var filePath = Path.Join((string?)ChapterPath(chapter),
                         $"!0000 cover{coverUrl.GetUrlExtension()}");
                     var client = _httpClientFactory.CreateClient(provider.ToString());
 
@@ -56,7 +55,7 @@ internal partial class Publication
                 _connectionService.CommunicateSeriesExhausted(DownloadInfo);
             }
 
-            var ciPath = Path.Join(ChapterPath(chapter), "ComicInfo.xml");
+            var ciPath = Path.Join((string?)ChapterPath(chapter), "ComicInfo.xml");
             XmlHelper.SerializeToFile(XmlSerializer, ci, ciPath);
         }
     }

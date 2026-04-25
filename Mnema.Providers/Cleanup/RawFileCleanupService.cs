@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -15,12 +16,11 @@ using Mnema.Models.Entities.User;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
-using Mnema.Providers.QBit;
 
 namespace Mnema.Providers.Cleanup;
 
-internal class TorrentCleanupService(
-    ILogger<TorrentCleanupService> logger,
+internal class RawFileCleanupService(
+    ILogger<RawFileCleanupService> logger,
     INamingService namingService,
     IParserService parserService,
     IFileSystem fileSystem,
@@ -36,47 +36,53 @@ internal class TorrentCleanupService(
 
     public async Task CleanupAsync(IContent content, CancellationToken cancellationToken = default)
     {
-        if (content is not QBitTorrent torrent)
-            throw new MnemaException($"{nameof(PublicationCleanupService)} cannot cleanup {content.GetType()}");
 
         var request = content.Request;
-        var context = await BuildCleanupContextAsync(request, torrent);
+        var context = await BuildCleanupContextAsync(request, content);
 
         logger.LogDebug("[{Title}/{Id}] Cleaning up torrent - {Dir}", content.Title, content.Id, context.DownloadDirectory);
 
         await ProcessFilesAsync(context);
     }
 
-    private async Task<CleanupContext> BuildCleanupContextAsync(DownloadRequestDto request, QBitTorrent torrent)
+    private async Task<CleanupContext> BuildCleanupContextAsync(DownloadRequestDto request, IContent content)
     {
+        if (content == null) throw new ArgumentNullException(nameof(content));
+
         var preferences = await unitOfWork.UserRepository.GetPreferences(request.UserId);
 
-        torrent.Series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata);
+        var series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata);
 
         var format = request.Metadata.GetKey(RequestConstants.FormatKey);
         var contentFormat = request.Metadata.GetKey(RequestConstants.ContentFormatKey);
 
-        var title = ResolveTitle(request, torrent.Series, torrent, contentFormat);
+        var title = ResolveTitle(request, series, content, contentFormat);
         var destDir = PrepareDestinationDirectory(request, title);
+
+        var downloadDir = content.DownloadDir;
+        if (!downloadDir.StartsWith(configuration.DownloadDir))
+        {
+            downloadDir = Path.Join(configuration.DownloadDir, downloadDir);
+        }
 
         return new CleanupContext(
             Request: request,
-            Series: torrent.Series,
+            Series: series,
             Preferences: preferences,
             Format: format,
             ContentFormat: contentFormat,
             Title: title,
             DestinationDirectory: destDir,
-            DownloadDirectory: torrent.DownloadDir
+            DownloadDirectory: downloadDir
         );
     }
 
-    private string ResolveTitle(DownloadRequestDto request, Series? series, QBitTorrent torrent, ContentFormat contentFormat)
+    private string ResolveTitle(DownloadRequestDto request, Series? series, IContent content, ContentFormat contentFormat)
     {
         return request.Metadata.GetKey(RequestConstants.TitleOverride)
             .OrNonEmpty(
                 series?.Title,
-                parserService.ParseSeries(torrent.Title, contentFormat),
+                parserService.ParseSeries(content.Title, contentFormat),
                 request.TempTitle
             );
     }

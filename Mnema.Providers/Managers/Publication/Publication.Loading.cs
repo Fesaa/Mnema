@@ -11,7 +11,7 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 
-namespace Mnema.Providers;
+namespace Mnema.Providers.Managers.Publication;
 
 internal partial class Publication
 {
@@ -90,11 +90,15 @@ internal partial class Publication
 
         var sw = Stopwatch.StartNew();
 
+        // These default to Manga & Archive
+        var contentFormat = Request.GetKey(RequestConstants.ContentFormatKey);
+        var format = Request.GetKey(RequestConstants.FormatKey);
+
         ExistingContent =
-            _scannerService.ScanDirectory(DownloadDir, ContentFormat.Manga, Format.Archive, cancellationToken);
+            _scannerService.ScanDirectory(DownloadDir, contentFormat, format, cancellationToken);
 
         QueuedChapters = Series!.Chapters
-            .Where(ShouldDownloadChapter)
+            .Where(c => ShouldDownloadChapter(c, format))
             .Select(c => c.Id)
             .ToHashSet();
 
@@ -102,19 +106,31 @@ internal partial class Publication
             _logger.LogWarning("[{Title}/{Id}] Checking for existing content took a long time: {Elapsed}s", Title, Id, sw.Elapsed.Seconds);
     }
 
-    private bool ShouldDownloadChapter(Chapter chapter)
+    private bool ShouldDownloadChapter(Chapter chapter, Format format)
     {
         if (_monitoredSeries != null)
         {
             var monitoredChapter = _scannerService.FindMatch(_monitoredSeries.Chapters, chapter);
-            if (monitoredChapter?.Status == MonitoredChapterStatus.NotMonitored) return false;
+            if (monitoredChapter?.Status == MonitoredChapterStatus.NotMonitored)
+            {
+                _logger.LogTrace("Ignoring chapter {ChapterId} as it is not monitored", chapter.Id);
+                return false;
+            }
         }
 
         var downloadOneShots = Request.GetKey(RequestConstants.DownloadOneShotKey);
-        if (!downloadOneShots && string.IsNullOrEmpty(chapter.ChapterMarker)) return false;
+        if (!downloadOneShots && string.IsNullOrEmpty(chapter.ChapterMarker))
+        {
+            _logger.LogTrace("Ignoring chapter {ChapterId} as it's not an oneshot", chapter.Id);
+            return false;
+        }
 
         // Chapter is present as a download (backwards compat with Media-Provider's old behavior)
-        if (GetContentByFileName(VolumeDir(chapter) + ".cbz") != null) return false;
+        if (GetContentByFileName(VolumeDir(chapter) + format.FileExt()) != null)
+        {
+            _logger.LogTrace("Ignoring chapter {ChapterId} as it's already downloaded", chapter.Id);
+            return false;
+        }
 
         var content = GetContentByName(ChapterFileName(chapter));
         if (content == null)

@@ -26,16 +26,6 @@ public sealed record Chapter
 
     public bool IsOneShot => string.IsNullOrEmpty(ChapterMarker) && string.IsNullOrEmpty(VolumeMarker);
 
-    public string Label()
-    {
-        if (!string.IsNullOrEmpty(ChapterMarker) && !string.IsNullOrEmpty(VolumeMarker))
-            return $"Volume {VolumeMarker} Chapter {ChapterMarker}: {Title}";
-
-        if (!string.IsNullOrEmpty(ChapterMarker)) return $"Chapter {ChapterMarker}: {Title}";
-
-        return $"OneShot: {Title}";
-    }
-
     private const NumberStyles NumberStyle = NumberStyles.AllowDecimalPoint
                                              | NumberStyles.AllowLeadingSign
                                              | NumberStyles.Float;
