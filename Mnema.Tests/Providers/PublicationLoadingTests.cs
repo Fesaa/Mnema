@@ -13,7 +13,7 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
-using Mnema.Providers;
+using Mnema.Providers.Managers.Publication;
 using Mnema.Services;
 using NSubstitute;
 
