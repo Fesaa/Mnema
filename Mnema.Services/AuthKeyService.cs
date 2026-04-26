@@ -16,7 +16,7 @@ namespace Mnema.Services;
 public partial class AuthKeyService(IUnitOfWork unitOfWork): IAuthKeyService
 {
 
-    private static Regex AuthKeyRegex = MyRegex();
+    private static readonly Regex AuthKeyRegex = MyRegex();
 
     public async Task CreateAuthKey(Guid userId, AuthKeyDto dto, ClaimsPrincipal principal, CancellationToken cancellationToken)
     {
@@ -25,7 +25,7 @@ public partial class AuthKeyService(IUnitOfWork unitOfWork): IAuthKeyService
             .Select(c => c.Value)
             .ToList();
 
-        if (!MyRegex().IsMatch(dto.Key))
+        if (!AuthKeyRegex.IsMatch(dto.Key))
             throw new MnemaException("Invalid auth key");
 
         var authkey = new AuthKey

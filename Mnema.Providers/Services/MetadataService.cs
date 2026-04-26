@@ -59,7 +59,7 @@ internal class MetadataService : IMetadataService
         ci.Tags = string.Join(',', tags);
 
         var ar = GetAgeRating(preferences, allTags);
-        ar = series.AgeRating > ar ? series.AgeRating : ar;
+        ar = series.AgeRating > ar || ar == null ? series.AgeRating : ar;
         if (ar != null) ci.AgeRating = ar.Value;
 
         var (count, finished) = GetCount(series);
