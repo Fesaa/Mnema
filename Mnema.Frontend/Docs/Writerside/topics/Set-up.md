@@ -65,11 +65,6 @@ services:
       - /path/to/your/media:/media
       - /path/to/your/downloads:/downloads
      - ./appsettings.json:/Mnema/config/appsettings.json #Check in the kubernetes section for what should be in here
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
     restart: unless-stopped
 
   postgres:

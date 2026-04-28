@@ -101,19 +101,6 @@ public class HardcoverMetadataService(
         {
             var book = b.Book;
 
-            var chapterTitle = CleanTitle(book.Title);
-            var subtitle = string.Empty;
-
-            var volumePositionMarker = $"Vol. {b.Position}:";
-            var volumePositionMarkerIndex =
-                chapterTitle.IndexOf(volumePositionMarker, StringComparison.InvariantCultureIgnoreCase);
-
-            if (volumePositionMarkerIndex > -1)
-            {
-                var subtitleStartIndex = volumePositionMarkerIndex + volumePositionMarker.Length;
-                subtitle = chapterTitle[subtitleStartIndex..].Trim();
-            }
-
             var edition = book.Editions
                 .OrderByDescending(e => e.Language?.Code == "en")
                 .ThenByDescending(e => string.IsNullOrEmpty(e.Language?.Code))
@@ -122,7 +109,7 @@ public class HardcoverMetadataService(
             return new Chapter
             {
                 Id = book.Id.ToString(),
-                Title = string.IsNullOrEmpty(subtitle) ? chapterTitle : subtitle,
+                Title = ParseChapterTitle(book.Title, b.Position ?? 0),
                 Summary = book.Description ?? string.Empty,
                 CoverUrl = book.Image?.Url,
                 RefUrl = $"{HardcoverBaseUrl}/books/{book.Slug}",
@@ -171,8 +158,28 @@ public class HardcoverMetadataService(
     private static string CleanTitle(string title)
     {
         return title
-            .Replace("(Manga)", string.Empty)
-            .Replace("(Light Novel)", string.Empty);
+            .Replace("(Manga)", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("(Light Novel)", string.Empty, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static string ParseChapterTitle(string title, float? position)
+    {
+        var chapterTitle = CleanTitle(title);
+        if (position == null) return chapterTitle;
+
+        var subtitle = string.Empty;
+
+        var volumePositionMarker = $"Vol. {position}";
+        var volumePositionMarkerIndex =
+            chapterTitle.IndexOf(volumePositionMarker, StringComparison.InvariantCultureIgnoreCase);
+
+        if (volumePositionMarkerIndex > -1)
+        {
+            var subtitleStartIndex = volumePositionMarkerIndex + volumePositionMarker.Length;
+            subtitle = chapterTitle[subtitleStartIndex..].Trim(':', ' ');
+        }
+
+        return string.IsNullOrEmpty(subtitle) ? chapterTitle : subtitle;
     }
 
     private static readonly GraphQlQueryLoader QueryLoader =
