@@ -28,6 +28,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Mnema.Common\Mnema.Common.csproj"/>
+        <ProjectReference Include="..\Mnema.Metadata\Mnema.Metadata.csproj" />
         <ProjectReference Include="..\Mnema.Providers\Mnema.Providers.csproj"/>
         <ProjectReference Include="..\Mnema.Services\Mnema.Services.csproj" />
     </ItemGroup>
