@@ -15,7 +15,7 @@ import {
 import {NgTemplateOutlet} from "@angular/common";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {EMPTY_PAGE, PagedList} from "../../../_models/paged-list";
-import {catchError, Observable, of, tap} from "rxjs";
+import {catchError, EMPTY, Observable, of, tap} from "rxjs";
 import {ToastService} from "../../../_services/toast.service";
 import {LoadingSpinnerComponent} from "../loading-spinner/loading-spinner.component";
 
@@ -131,7 +131,7 @@ export class PaginatorComponent<T> implements OnInit {
 
         this.toastService.errorLoco('page.toasts.search-failed', {}, {msg: err.message ?? err.error.message})
 
-        return of(EMPTY_PAGE);
+        return EMPTY;
       })
     ).subscribe(pagedList => {
       const noResultKey = this.noResultsKey();
