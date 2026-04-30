@@ -17,6 +17,7 @@ internal class MonitoredSeriesMetadataScheduler(
 {
     private const string JobId = "monitored-series.metadata";
     private const string CronJob = "0 1 * * *";
+    private const int FetchDelay = 100;
     private static readonly RecurringJobOptions RecurringJobOptions = new()
     {
         TimeZone = TimeZoneInfo.Local
@@ -66,11 +67,11 @@ internal class MonitoredSeriesMetadataScheduler(
                 connectionService.CommunicateException($"Failed to refresh metadata for {mSeries.Title} - {mSeries.Provider}", ex);
             }
 
-            await Task.Delay(TimeSpan.FromMilliseconds(50), ct);
+            await Task.Delay(TimeSpan.FromMilliseconds(FetchDelay), ct);
         }
 
         logger.LogInformation("Refreshed metadata for {Amount} series in {Elapsed}ms",
-            series.Count, sw.Elapsed.TotalMilliseconds - 50 * series.Count);
+            series.Count, sw.Elapsed.TotalMilliseconds - FetchDelay * series.Count);
 
         if (failures > 0)
             logger.LogWarning("Failed to refresh metadata for {Amount} series", failures);

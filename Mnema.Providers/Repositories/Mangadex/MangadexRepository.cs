@@ -72,7 +72,6 @@ internal class MangadexRepository : IRepository
     {
         var url = "/manga".SetQueryParam("title", request.Query)
             .AddRange("status[]", request.Modifiers.GetKey(Status))
-            .AddRange("contentRating[]", request.Modifiers.GetKey(ContentRating))
             .AddRange("publicationDemographic[]", request.Modifiers.GetKey(PublicationDemographic))
             .AddRange("includedTags[]", request.Modifiers.GetKey(IncludedTags))
             .SetQueryParam("includedTagsMode", request.Modifiers.GetKey(IncludedTagsMode))
@@ -80,6 +79,16 @@ internal class MangadexRepository : IRepository
             .SetQueryParam("excludedTagsMode", request.Modifiers.GetKey(ExcludedTagsMode))
             .AddOffsetPagination(pagination)
             .AddIncludes();
+
+        var contentRatings = request.Modifiers.GetKey(ContentRating).ToList();
+        if (contentRatings.Count == 0)
+        {
+            url = url.AddAllContentRatings();
+        }
+        else
+        {
+            url = url.AddRange("contentRating[]", contentRatings);
+        }
 
         var result =
             await Client.GetCachedAsync<SearchResponse>(url.ToString(), _cache, cancellationToken: cancellationToken);
@@ -309,7 +318,7 @@ internal class MangadexRepository : IRepository
                     FormControlOption.Option("Safe", "safe"),
                     FormControlOption.Option("Suggestive", "suggestive"),
                     FormControlOption.Option("Erotica", "erotica"),
-                    FormControlOption.Option("Pornographic", "mature")
+                    FormControlOption.Option("Pornographic", "pornographic")
                 ]
             },
             new FormControlDefinition

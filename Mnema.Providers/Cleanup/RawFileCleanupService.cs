@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
-using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
@@ -16,6 +15,7 @@ using Mnema.Models.Entities.User;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
+using TorrentContent = Mnema.Providers.Managers.QBit.QBitTorrent;
 
 namespace Mnema.Providers.Cleanup;
 
@@ -52,6 +52,10 @@ internal class RawFileCleanupService(
         var preferences = await unitOfWork.UserRepository.GetPreferences(request.UserId);
 
         var series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata);
+        if (content is TorrentContent torrent)
+        {
+            torrent.Series = series;
+        }
 
         var format = request.Metadata.GetKey(RequestConstants.FormatKey);
         var contentFormat = request.Metadata.GetKey(RequestConstants.ContentFormatKey);
