@@ -34,7 +34,7 @@ internal sealed record DownloadWork(int Idx, DownloadUrl Url);
 
 internal sealed record DownloadContext
 {
-    public ChannelReader<DownloadWork> Reader { get; init; }
+    public ChannelReader<DownloadWork> Reader { get; set; }
     public ChannelWriter<IoWork> Writer { get; init; }
     public Chapter Chapter { get; init; }
     public SemaphoreSlim? ChapterBarrier { get; init; }
@@ -260,18 +260,28 @@ internal partial class Publication
 
     private async Task DownloadWorker(DownloadContext ctx)
     {
-        var failedTasks = await ProcessDownloadsAsync(ctx, false);
+        try
+        {
+            var failedTasks = await ProcessDownloadsAsync(ctx, false);
 
-        if (failedTasks.Count == 0 || _tokenSource.Token.IsCancellationRequested) return;
+            if (failedTasks.Count == 0 || _tokenSource.Token.IsCancellationRequested) return;
 
-        _logger.LogDebug("[{Title}/{Id}] Some tasks failed to complete, retrying. Count: {Count}", Title, Id, failedTasks.Count);
-        _failedDownloadsTracker += failedTasks.Count;
+            _logger.LogDebug("[{Title}/{Id}] Some tasks failed to complete, retrying. Count: {Count}", Title, Id,
+                failedTasks.Count);
+            _failedDownloadsTracker += failedTasks.Count;
 
-        var retryChannel = Channel.CreateUnbounded<DownloadWork>();
-        foreach (var task in failedTasks) retryChannel.Writer.TryWrite(task);
-        retryChannel.Writer.Complete();
+            var retryChannel = Channel.CreateUnbounded<DownloadWork>();
+            foreach (var task in failedTasks) retryChannel.Writer.TryWrite(task);
+            retryChannel.Writer.Complete();
 
-        await ProcessDownloadsAsync(ctx, true);
+            ctx.Reader = retryChannel.Reader;
+            await ProcessDownloadsAsync(ctx, true);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            if (!_tokenSource.IsCancellationRequested)
+                await Cancel(ex);
+        }
     }
 
     private async Task<List<DownloadWork>> ProcessDownloadsAsync(DownloadContext ctx, bool isRetry)

@@ -129,13 +129,19 @@ internal partial class Publication(
                 var src = _fileSystem.Path.Join(_configuration.DownloadDir, path);
                 var dest = _fileSystem.Path.Join(_configuration.BaseDir, path) + ".cbz";
 
-                if (File.Exists(dest))
-                    File.Delete(dest);
+                if (!_fileSystem.Directory.Exists(src))
+                {
+                    _logger.LogWarning("[{Title}/{Id}] Source directory {Dir} does not exist, skipping", Title, Id, src);
+                    continue;
+                }
+
+                if (_fileSystem.File.Exists(dest))
+                    _fileSystem.File.Delete(dest);
 
                 await ZipFile.CreateFromDirectoryAsync(src, dest,
                     CompressionLevel.SmallestSize, false);
 
-                Directory.Delete(src, true);
+                _fileSystem.Directory.Delete(src, true);
             }
             catch (Exception ex)
             {
@@ -182,8 +188,13 @@ internal partial class Publication(
 
     public Task Cancel() => Cancel(null);
 
-    private async Task Cancel(Exception? reason = null)
+    private int _cancelled = 0;
+
+    private async Task Cancel(Exception? reason)
     {
+        if (Interlocked.Exchange(ref _cancelled, 1) == 1)
+            return;
+
         _logger.LogTrace("[{Title}/{Id}] Stopping download", Title, Id);
 
         await _tokenSource.CancelAsync();
