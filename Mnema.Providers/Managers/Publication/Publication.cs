@@ -188,8 +188,13 @@ internal partial class Publication(
 
     public Task Cancel() => Cancel(null);
 
-    private async Task Cancel(Exception? reason = null)
+    private int _cancelled = 0;
+
+    private async Task Cancel(Exception? reason)
     {
+        if (Interlocked.Exchange(ref _cancelled, 1) == 1)
+            return;
+
         _logger.LogTrace("[{Title}/{Id}] Stopping download", Title, Id);
 
         await _tokenSource.CancelAsync();
