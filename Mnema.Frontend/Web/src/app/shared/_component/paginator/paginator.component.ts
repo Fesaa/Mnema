@@ -15,7 +15,7 @@ import {
 import {NgTemplateOutlet} from "@angular/common";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {EMPTY_PAGE, PagedList} from "../../../_models/paged-list";
-import {catchError, EMPTY, Observable, of, tap} from "rxjs";
+import {catchError, EMPTY, finalize, Observable, of, tap} from "rxjs";
 import {ToastService} from "../../../_services/toast.service";
 import {LoadingSpinnerComponent} from "../loading-spinner/loading-spinner.component";
 
@@ -126,13 +126,11 @@ export class PaginatorComponent<T> implements OnInit {
   private loadPage(pageNumber: number) {
     this.loading.set(true);
     this.pageLoader()(pageNumber, this.pageSize()).pipe(
-      catchError(err => {
-        console.error(err);
-
-        this.toastService.errorLoco('page.toasts.search-failed', {}, {msg: err.message ?? err.error.message})
-
+      catchError(() => {
+        this.noResults.emit();
         return EMPTY;
-      })
+      }),
+      finalize(() => this.loading.set(false)),
     ).subscribe(pagedList => {
       const noResultKey = this.noResultsKey();
       const successKey = this.successKey();
@@ -145,7 +143,6 @@ export class PaginatorComponent<T> implements OnInit {
       }
 
       this.pagedList.set(pagedList);
-      this.loading.set(false);
     });
   }
 
