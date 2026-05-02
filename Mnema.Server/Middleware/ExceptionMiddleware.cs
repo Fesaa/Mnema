@@ -28,7 +28,8 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
             var errorMessage = string.IsNullOrEmpty(ex.Message) ? "Internal Server Error" : ex.Message;
             var statusCode = ex switch
             {
-                MnemaException => HttpStatusCode.BadRequest,
+                BadRequestException => HttpStatusCode.BadRequest,
+                MnemaException => HttpStatusCode.InternalServerError,
                 NotImplementedException => HttpStatusCode.NotImplemented,
                 UnauthorizedAccessException => HttpStatusCode.Unauthorized,
                 ForbiddenException => HttpStatusCode.Forbidden,

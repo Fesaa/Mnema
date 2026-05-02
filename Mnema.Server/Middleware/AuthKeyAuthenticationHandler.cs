@@ -40,7 +40,7 @@ public class AuthKeyAuthenticationHandler(
         var key = await unitOfWork.AuthKeyRepository.GetAuthKey(authKey, Request.HttpContext.RequestAborted);
         if (key == null)
         {
-            return AuthenticateResult.Fail(new MnemaException("Invalid auth key"));
+            return AuthenticateResult.Fail(new BadRequestException("Invalid auth key"));
         }
 
         var identity = new ClaimsIdentity(Scheme.Name);

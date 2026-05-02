@@ -43,7 +43,7 @@ internal class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork) 
         foreach (var page in pages)
         {
             var index = ids.IndexOf(page.Id);
-            if (index < 0) throw new MnemaException("Missing id while ordering pages");
+            if (index < 0) throw new BadRequestException("Missing id while ordering pages");
 
             page.SortValue = index;
             unitOfWork.PagesRepository.Update(page);

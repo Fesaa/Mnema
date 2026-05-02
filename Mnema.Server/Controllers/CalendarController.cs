@@ -64,12 +64,12 @@ public class CalendarController(ILogger<CalendarController> logger, IUnitOfWork 
 
         if (authKey == null)
         {
-            throw new MnemaException("Failed to retrieve any authkey for user");
+            throw new BadRequestException("Failed to retrieve any authkey for user");
         }
 
         if (string.IsNullOrEmpty(applicationConfiguration.Host))
         {
-            throw new MnemaException("No host configured, cannot auto generate calender url");
+            throw new BadRequestException("No host configured, cannot auto generate calender url");
         }
 
         return Ok($"{applicationConfiguration.Host.Trim('/')}/api/calendar?authkey={authKey.Key}");

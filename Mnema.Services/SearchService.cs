@@ -26,7 +26,7 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
         if (repository == null)
         {
             logger.LogWarning("No repository found for {Provider}, cannot search", searchRequest.Provider.ToString());
-            throw new MnemaException($"Unsupported provider {searchRequest.Provider}");
+            throw new BadRequestException($"Unsupported provider {searchRequest.Provider}");
         }
 
         return repository.Search(searchRequest, paginationParams, cancellationToken);

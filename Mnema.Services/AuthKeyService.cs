@@ -26,7 +26,7 @@ public partial class AuthKeyService(IUnitOfWork unitOfWork): IAuthKeyService
             .ToList();
 
         if (!AuthKeyRegex.IsMatch(dto.Key))
-            throw new MnemaException("Invalid auth key");
+            throw new BadRequestException("Invalid auth key");
 
         var authkey = new AuthKey
         {
@@ -53,7 +53,7 @@ public partial class AuthKeyService(IUnitOfWork unitOfWork): IAuthKeyService
         if (authKey.UserId != dto.UserId) throw new UnauthorizedAccessException();
 
         if (!MyRegex().IsMatch(dto.Key))
-            throw new MnemaException("Invalid auth key");
+            throw new BadRequestException("Invalid auth key");
 
         authKey.Key = dto.Key;
         authKey.Name = dto.Name;

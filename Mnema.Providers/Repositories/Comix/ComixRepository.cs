@@ -32,7 +32,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
     public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken)
     {
         if (request.Query.Length < 3)
-            throw new MnemaException("Search query must be at least 3 characters long");
+            throw new BadRequestException("Search query must be at least 3 characters long");
 
         var url = "api/v2/manga"
             .SetQueryParam("keyword", request.Query)

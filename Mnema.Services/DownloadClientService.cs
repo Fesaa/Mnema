@@ -56,14 +56,14 @@ public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitO
     {
         var configurationProvider = serviceProvider.GetKeyedService<IConfigurationProvider>(dto.Type);
         if (configurationProvider == null)
-            throw new MnemaException($"Download client with type {dto.Type} cannot be configured");
+            throw new BadRequestException($"Download client with type {dto.Type} cannot be configured");
 
         var client = await unitOfWork.DownloadClientRepository.GetById(dto.Id, cancellationToken);
         if (client == null)
         {
             var allowedTypes = await GetFreeTypesAsync(cancellationToken);
             if (!allowedTypes.Contains(dto.Type))
-                throw new MnemaException($"Download client with type {dto.Type} has already been configured");
+                throw new BadRequestException($"Download client with type {dto.Type} has already been configured");
 
             client = new DownloadClient();
         }
