@@ -22,6 +22,11 @@ namespace Mnema.Providers.Comix;
 public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache cache): IRepository
 {
 
+    private static readonly IMetadataKey<IEnumerable<string>> Status = MetadataKeys.Strings("status");
+    private static readonly IMetadataKey<IEnumerable<string>> PublicationDemographic = MetadataKeys.Strings("publicationDemographic");
+    private static readonly IMetadataKey<IEnumerable<string>> IncludedTags = MetadataKeys.Strings("includeTags");
+    private static readonly IMetadataKey<IEnumerable<string>> ExcludedTags = MetadataKeys.Strings("excludeTags");
+
     private HttpClient Client => clientFactory.CreateClient(nameof(Provider.Comix));
 
     public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken)
@@ -32,6 +37,11 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
         var url = "api/v2/manga"
             .SetQueryParam("keyword", request.Query)
             .SetQueryParam("order[relevance]", "desc")
+            .AddRange("statuses[]", request.GetKey(Status))
+            .AddRange("demographics[]", request.GetKey(PublicationDemographic))
+            .AddRange("genres[]", request.GetKey(IncludedTags))
+            .SetQueryParam("genres_mode", "and")
+            .AddRange("genres[]", request.GetKey(ExcludedTags).Select(g => $"-{g}"))
             .AddPagination(pagination.PageSize, pagination.PageNumber + 1); // 1 based
 
         var res = await Client.GetCachedAsync<ComixRespose<ComixPaginatedResult<ComixManga>>>(url, cache, cancellationToken: cancellationToken);
@@ -137,9 +147,47 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
         ]);
     }
 
+
+
     public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([]);
+        return Task.FromResult<List<FormControlDefinition>>([
+            new FormControlDefinition
+            {
+                Type = FormType.MultiSelect,
+                Key = Status.Key,
+                Options = [
+                    FormControlOption.Option("Ongoing", "releasing"),
+                    FormControlOption.Option("Finished", "finished"),
+                    FormControlOption.Option("Hiatus", "on_hiatus"),
+                    FormControlOption.Option("Cancelled", "discontinued"),
+                    FormControlOption.Option("Upcoming", "not_yet_released"),
+                ]
+            },
+            new FormControlDefinition
+            {
+                Type = FormType.MultiSelect,
+                Key = PublicationDemographic.Key,
+                Options = [
+                    FormControlOption.Option("Josei", "3"),
+                    FormControlOption.Option("Seinen", "4"),
+                    FormControlOption.Option("Shoujo", "1"),
+                    FormControlOption.Option("Shounen", "2"),
+                ]
+            },
+            new FormControlDefinition
+            {
+                Type = FormType.MultiSelect,
+                Key = IncludedTags.Key,
+                Options = ComixUtils.Genres
+            },
+            new FormControlDefinition
+            {
+                Type = FormType.MultiSelect,
+                Key = ExcludedTags.Key,
+                Options = ComixUtils.ExcludedGenres
+            }
+        ]);
     }
 
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
@@ -166,7 +214,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
             Id = chapter.ChapterId.ToString(),
             Title = chapter.Name ?? string.Empty,
             VolumeMarker = chapter.Volume > 0 ? chapter.Volume.ToString() : string.Empty,
-            ChapterMarker = chapter.Number.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
+            ChapterMarker = chapter.Number.ToString(CultureInfo.InvariantCulture),
             SortOrder = idx,
             ReleaseDate = null,
             Tags = [],
@@ -188,7 +236,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
             Year = manga.Year,
             HighestVolumeNumber = manga.FinalVolume,
             HighestChapterNumber = manga.FinalChapter,
-            AgeRating = null,
+            AgeRating = manga.IsNsfw ? AgeRating.R18Plus : null,
             Tags = manga.Genres.Select(g => new Tag(g.Title, true)).ToList(),
             People = manga.Authors.Select(a => new Person { Name = a.Title, Roles = [PersonRole.Writer]})
                 .Concat(manga.Authors.Select(a => new Person { Name = a.Title, Roles = [PersonRole.CoverArtist]}))

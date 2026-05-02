@@ -2,11 +2,97 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Mnema.Models.DTOs.UI;
 
 namespace Mnema.Providers.Comix;
 
 public static class ComixUtils
 {
+
+    public static readonly List<FormControlOption> Genres = [
+        FormControlOption.Option("Action", "6"),
+        FormControlOption.Option("Adult", "87264"),
+        FormControlOption.Option("Adventure", "7"),
+        FormControlOption.Option("Aliens", "31"),
+        FormControlOption.Option("Animals", "32"),
+        FormControlOption.Option("Anthology", "93165"),
+        FormControlOption.Option("Adaptation", "93167"),
+        FormControlOption.Option("Award Winning", "93166"),
+        FormControlOption.Option("Boys Love", "8"),
+        FormControlOption.Option("Comedy", "9"),
+        FormControlOption.Option("Cooking", "33"),
+        FormControlOption.Option("Crime", "10"),
+        FormControlOption.Option("Crossdressing", "34"),
+        FormControlOption.Option("Delinquents", "35"),
+        FormControlOption.Option("Demons", "36"),
+        FormControlOption.Option("Doujinshi", "93168"),
+        FormControlOption.Option("Drama", "11"),
+        FormControlOption.Option("Ecchi", "87265"),
+        FormControlOption.Option("Fantasy", "12"),
+        FormControlOption.Option("Full Color", "93172"),
+        FormControlOption.Option("Genderswap", "37"),
+        FormControlOption.Option("Ghosts", "38"),
+        FormControlOption.Option("Girls Love", "13"),
+        FormControlOption.Option("Gyaru", "39"),
+        FormControlOption.Option("Harem", "40"),
+        FormControlOption.Option("Hentai", "87266"),
+        FormControlOption.Option("Historical", "14"),
+        FormControlOption.Option("Horror", "15"),
+        FormControlOption.Option("Incest", "41"),
+        FormControlOption.Option("Isekai", "16"),
+        FormControlOption.Option("Loli", "42"),
+        FormControlOption.Option("Long Strip", "93170"),
+        FormControlOption.Option("Mafia", "43"),
+        FormControlOption.Option("Magic", "44"),
+        FormControlOption.Option("Magical Girls", "17"),
+        FormControlOption.Option("Martial Arts", "45"),
+        FormControlOption.Option("Mature", "87267"),
+        FormControlOption.Option("Mecha", "18"),
+        FormControlOption.Option("Medical", "19"),
+        FormControlOption.Option("Military", "46"),
+        FormControlOption.Option("Monster Girls", "47"),
+        FormControlOption.Option("Monsters", "48"),
+        FormControlOption.Option("Music", "49"),
+        FormControlOption.Option("Mystery", "20"),
+        FormControlOption.Option("Ninja", "50"),
+        FormControlOption.Option("Office Workers", "51"),
+        FormControlOption.Option("Oneshot", "93169"),
+        FormControlOption.Option("Philosophical", "21"),
+        FormControlOption.Option("Police", "52"),
+        FormControlOption.Option("Post-Apocalyptic", "53"),
+        FormControlOption.Option("Psychological", "22"),
+        FormControlOption.Option("Reincarnation", "54"),
+        FormControlOption.Option("Reverse Harem", "55"),
+        FormControlOption.Option("Romance", "23"),
+        FormControlOption.Option("Samurai", "56"),
+        FormControlOption.Option("Sci-Fi", "24"),
+        FormControlOption.Option("School Life", "57"),
+        FormControlOption.Option("Shota", "58"),
+        FormControlOption.Option("Slice of Life", "25"),
+        FormControlOption.Option("Smut", "87268"),
+        FormControlOption.Option("Sports", "26"),
+        FormControlOption.Option("Superhero", "27"),
+        FormControlOption.Option("Supernatural", "59"),
+        FormControlOption.Option("Survival", "60"),
+        FormControlOption.Option("Thriller", "28"),
+        FormControlOption.Option("Time Travel", "61"),
+        FormControlOption.Option("Traditional Games", "62"),
+        FormControlOption.Option("Tragedy", "29"),
+        FormControlOption.Option("Vampires", "63"),
+        FormControlOption.Option("Video Games", "64"),
+        FormControlOption.Option("Villainess", "65"),
+        FormControlOption.Option("Virtual Reality", "66"),
+        FormControlOption.Option("Web Comic", "93171"),
+        FormControlOption.Option("Wuxia", "30"),
+        FormControlOption.Option("Zombies", "67"),
+        FormControlOption.Option("4-Koma", "93164"),
+    ];
+
+    public static readonly List<FormControlOption> ExcludedGenres = Genres
+        .Select(g => g.Key is "Smut" or "Adult" or "Mature"
+            ? FormControlOption.DefaultOption(g.Key, g.Value) : FormControlOption.Option(g.Key, g.Value))
+        .ToList();
+
     private static readonly string[] Keys =
     [
         "13YDu67uDgFczo3DnuTIURqas4lfMEPADY6Jaeqky+w=", // 0  RC4 key  round 1

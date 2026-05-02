@@ -521,7 +521,8 @@
     "included_genres": "Included Genres",
     "excluded_genres": "Excluded Genres",
     "included_tags": "Included Tags",
-    "excluded_tags": "Excluded Tags"
+    "excluded_tags": "Excluded Tags",
+    "publicationDemographic": "Publication Demographic"
   },
 
   "series-info-modal": {
