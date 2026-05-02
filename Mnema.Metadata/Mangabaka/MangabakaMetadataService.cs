@@ -94,6 +94,7 @@ internal class MangabakaMetadataService(
     private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, Guid> monitoredSeriesIds)
     {
         var publishers = series.Publishers?
+            .Where(p => p.Type == MangabakaPublisher.Original || p.Type == MangabakaPublisher.English)
             .Select(p => Person.Create(p.Name, PersonRole.Publisher)) ?? [];
         var writers = series.Authors?
             .Select(p => Person.Create(p, PersonRole.Writer)) ?? [];

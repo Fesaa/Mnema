@@ -25,6 +25,11 @@ public class MangabakaPublisher
 {
     [JsonPropertyName("name")]
     public string Name { get; set; }
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
+
+    public static string Original = nameof(Original);
+    public static string English = nameof(English);
 }
 
 public class MangabakaTitle
