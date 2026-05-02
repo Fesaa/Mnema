@@ -9,7 +9,8 @@ public static class FlurlExtensions
     {
         public Url AddRange(string param, IEnumerable<string> items)
         {
-            foreach (var item in items) url.AppendQueryParam($"{param}", item);
+            foreach (var item in items)
+                url.AppendQueryParam($"{param}", item);
 
             return url;
         }

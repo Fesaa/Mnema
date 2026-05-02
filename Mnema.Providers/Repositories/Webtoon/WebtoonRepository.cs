@@ -278,7 +278,7 @@ internal class WebtoonRepository(
                 Key = "search_type",
                 Options =
                 [
-                    FormControlOption.DefaultValue("originals", "Originals"),
+                    FormControlOption.DefaultOption("originals", "Originals"),
                     FormControlOption.Option("canvas", "Canvas")
                 ]
             }

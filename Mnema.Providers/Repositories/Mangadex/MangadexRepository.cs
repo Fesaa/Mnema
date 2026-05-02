@@ -70,25 +70,17 @@ internal class MangadexRepository : IRepository
     public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
-        var url = "/manga".SetQueryParam("title", request.Query)
+        var url = "/manga"
+            .SetQueryParam("title", request.Query)
             .AddRange("status[]", request.Modifiers.GetKey(Status))
             .AddRange("publicationDemographic[]", request.Modifiers.GetKey(PublicationDemographic))
             .AddRange("includedTags[]", request.Modifiers.GetKey(IncludedTags))
             .SetQueryParam("includedTagsMode", request.Modifiers.GetKey(IncludedTagsMode))
             .AddRange("excludedTags[]", request.Modifiers.GetKey(ExcludedTags))
             .SetQueryParam("excludedTagsMode", request.Modifiers.GetKey(ExcludedTagsMode))
+            .AddRange("contentRating[]", request.Modifiers.GetKey(ContentRating))
             .AddOffsetPagination(pagination)
             .AddIncludes();
-
-        var contentRatings = request.Modifiers.GetKey(ContentRating).ToList();
-        if (contentRatings.Count == 0)
-        {
-            url = url.AddAllContentRatings();
-        }
-        else
-        {
-            url = url.AddRange("contentRating[]", contentRatings);
-        }
 
         var result =
             await Client.GetCachedAsync<SearchResponse>(url.ToString(), _cache, cancellationToken: cancellationToken);
@@ -315,9 +307,9 @@ internal class MangadexRepository : IRepository
                 Key = ContentRating.Key,
                 Options =
                 [
-                    FormControlOption.Option("Safe", "safe"),
-                    FormControlOption.Option("Suggestive", "suggestive"),
-                    FormControlOption.Option("Erotica", "erotica"),
+                    FormControlOption.DefaultOption("Safe", "safe"),
+                    FormControlOption.DefaultOption("Suggestive", "suggestive"),
+                    FormControlOption.DefaultOption("Erotica", "erotica"),
                     FormControlOption.Option("Pornographic", "pornographic")
                 ]
             },
@@ -337,13 +329,13 @@ internal class MangadexRepository : IRepository
             {
                 Type = FormType.DropDown,
                 Key = IncludedTagsMode.Key,
-                Options = [FormControlOption.DefaultValue("And", "AND"), FormControlOption.Option("Or", "OR")]
+                Options = [FormControlOption.DefaultOption("And", "AND"), FormControlOption.Option("Or", "OR")]
             },
             new FormControlDefinition
             {
                 Type = FormType.DropDown,
                 Key = ExcludedTagsMode.Key,
-                Options = [FormControlOption.Option("And", "AND"), FormControlOption.DefaultValue("Or", "OR")]
+                Options = [FormControlOption.Option("And", "AND"), FormControlOption.DefaultOption("Or", "OR")]
             }
         ];
     }
