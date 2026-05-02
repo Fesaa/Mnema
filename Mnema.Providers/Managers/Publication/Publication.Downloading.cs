@@ -34,7 +34,7 @@ internal sealed record DownloadWork(int Idx, DownloadUrl Url);
 
 internal sealed record DownloadContext
 {
-    public ChannelReader<DownloadWork> Reader { get; init; }
+    public ChannelReader<DownloadWork> Reader { get; set; }
     public ChannelWriter<IoWork> Writer { get; init; }
     public Chapter Chapter { get; init; }
     public SemaphoreSlim? ChapterBarrier { get; init; }
@@ -274,6 +274,7 @@ internal partial class Publication
             foreach (var task in failedTasks) retryChannel.Writer.TryWrite(task);
             retryChannel.Writer.Complete();
 
+            ctx.Reader = retryChannel.Reader;
             await ProcessDownloadsAsync(ctx, true);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
