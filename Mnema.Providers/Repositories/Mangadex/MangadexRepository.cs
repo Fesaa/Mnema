@@ -42,7 +42,7 @@ internal class MangadexRepository : IRepository
         };
 
     private static readonly IMetadataKey<IEnumerable<string>> Status = MetadataKeys.Strings("status");
-    private static readonly IMetadataKey<IEnumerable<string>> ContentRating = MetadataKeys.Strings("contentRating");
+    private static readonly IMetadataKey<IEnumerable<string>> ContentRating = MetadataKeys.Strings("contentRating", ["safe", "suggestive", "erotica"]);
     private static readonly IMetadataKey<IEnumerable<string>> PublicationDemographic = MetadataKeys.Strings("publicationDemographic");
     private static readonly IMetadataKey<IEnumerable<string>> IncludedTags = MetadataKeys.Strings("includeTags");
     private static readonly IMetadataKey<string> IncludedTagsMode = MetadataKeys.String("includeTagsMode", "AND");
@@ -307,9 +307,9 @@ internal class MangadexRepository : IRepository
                 Key = ContentRating.Key,
                 Options =
                 [
-                    FormControlOption.DefaultOption("Safe", "safe"),
-                    FormControlOption.DefaultOption("Suggestive", "suggestive"),
-                    FormControlOption.DefaultOption("Erotica", "erotica"),
+                    FormControlOption.Option("Safe", "safe"),
+                    FormControlOption.Option("Suggestive", "suggestive"),
+                    FormControlOption.Option("Erotica", "erotica"),
                     FormControlOption.Option("Pornographic", "pornographic")
                 ]
             },

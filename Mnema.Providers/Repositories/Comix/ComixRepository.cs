@@ -25,7 +25,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
     private static readonly IMetadataKey<IEnumerable<string>> Status = MetadataKeys.Strings("status");
     private static readonly IMetadataKey<IEnumerable<string>> PublicationDemographic = MetadataKeys.Strings("publicationDemographic");
     private static readonly IMetadataKey<IEnumerable<string>> IncludedTags = MetadataKeys.Strings("includeTags");
-    private static readonly IMetadataKey<IEnumerable<string>> ExcludedTags = MetadataKeys.Strings("excludeTags");
+    private static readonly IMetadataKey<IEnumerable<string>> ExcludedTags = MetadataKeys.Strings("excludeTags", ["87264", "87268", "87267"]); // Adult, Smut, Mature
 
     private HttpClient Client => clientFactory.CreateClient(nameof(Provider.Comix));
 
@@ -185,7 +185,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
             {
                 Type = FormType.MultiSelect,
                 Key = ExcludedTags.Key,
-                Options = ComixUtils.ExcludedGenres
+                Options = ComixUtils.Genres
             }
         ]);
     }

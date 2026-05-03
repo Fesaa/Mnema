@@ -7,9 +7,9 @@ namespace Mnema.Common;
 
 public class MetadataBag : GenericBag<string>
 {
-    public IEnumerable<string> GetStrings(string key)
+    public IEnumerable<string> GetStrings(string key, IEnumerable<string>? fallback = null)
     {
-        return TryGetValue(key, out var list) ? list : [];
+        return TryGetValue(key, out var list) ? list : fallback ?? [];
     }
 
     internal string? GetString(string key, string? fallback = null)
@@ -213,9 +213,9 @@ public static class MetadataKeys
             });
     }
 
-    public static IMetadataKey<IEnumerable<string>> Strings(string key)
+    public static IMetadataKey<IEnumerable<string>> Strings(string key, IEnumerable<string>? defaultValue = null)
     {
-        return new MetadataKey<IEnumerable<string>>(key, m => m.GetStrings(key), (m, value) => m.SetValue(key, value.ToArray()));
+        return new MetadataKey<IEnumerable<string>>(key, m => m.GetStrings(key, defaultValue), (m, value) => m.SetValue(key, value.ToArray()));
     }
 }
 

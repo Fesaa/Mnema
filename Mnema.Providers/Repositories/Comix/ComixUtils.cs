@@ -88,11 +88,6 @@ public static class ComixUtils
         FormControlOption.Option("4-Koma", "93164"),
     ];
 
-    public static readonly List<FormControlOption> ExcludedGenres = Genres
-        .Select(g => g.Key is "Smut" or "Adult" or "Mature"
-            ? FormControlOption.DefaultOption(g.Key, g.Value) : FormControlOption.Option(g.Key, g.Value))
-        .ToList();
-
     private static readonly string[] Keys =
     [
         "13YDu67uDgFczo3DnuTIURqas4lfMEPADY6Jaeqky+w=", // 0  RC4 key  round 1
