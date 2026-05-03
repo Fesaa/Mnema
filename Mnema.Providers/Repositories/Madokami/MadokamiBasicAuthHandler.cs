@@ -43,7 +43,7 @@ internal class MadokamiBasicAuthHandler(IUnitOfWork unitOfWork, IDistributedCach
 
         if (settings == null)
         {
-            throw new MnemaException("Madokami isn't configured");
+            throw new BadRequestException("Madokami isn't configured");
         }
 
         var username = settings.Metadata.GetKey(MadokamiRepository.BasicAuthUsername);
@@ -51,7 +51,7 @@ internal class MadokamiBasicAuthHandler(IUnitOfWork unitOfWork, IDistributedCach
 
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
         {
-            throw new MnemaException("Madokami isn't configured (username or password missing)");
+            throw new BadRequestException("Madokami isn't configured (username or password missing)");
         }
 
         return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));

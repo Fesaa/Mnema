@@ -53,7 +53,7 @@ public sealed record FormControlOption(string Key, object Value)
 
     public FormControlOption(string v) : this(v, v) {}
 
-    public static FormControlOption DefaultValue(string key, object value)
+    public static FormControlOption DefaultOption(string key, object value)
     {
         return new FormControlOption(key, value)
         {

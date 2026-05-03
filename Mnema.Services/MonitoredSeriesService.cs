@@ -41,7 +41,7 @@ public class MonitoredSeriesService(
 
         if (await unitOfWork.MonitoredSeriesRepository.CheckDuplicateSeries(userId, series.Id, dto, cancellationToken))
         {
-            throw new MnemaException("You cannot monitor the same series twice (External Ids or Valid Titles)");
+            throw new BadRequestException("You cannot monitor the same series twice (External Ids or Valid Titles)");
         }
 
         series.Title = dto.Title;
@@ -68,7 +68,7 @@ public class MonitoredSeriesService(
     {
         if (await unitOfWork.MonitoredSeriesRepository.CheckDuplicateSeries(userId, null, dto, cancellationToken))
         {
-            throw new MnemaException("You cannot monitor the same series twice (External Ids or Valid Titles)");
+            throw new BadRequestException("You cannot monitor the same series twice (External Ids or Valid Titles)");
         }
 
         var series = new MonitoredSeries
@@ -115,7 +115,7 @@ public class MonitoredSeriesService(
         var series = await unitOfWork.MonitoredSeriesRepository.GetById(seriesId, ct: ct);
         if (series == null) throw new NotFoundException();
 
-        if (string.IsNullOrEmpty(series.ExternalId)) throw new MnemaException("Series has no external id");
+        if (string.IsNullOrEmpty(series.ExternalId)) throw new BadRequestException("Series has no external id");
 
         var metadata = series.MetadataForDownloadRequest();
         metadata.SetKey(RequestConstants.FirstDownload, firstDownload);

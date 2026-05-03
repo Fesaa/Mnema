@@ -16,8 +16,10 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (req, next) => {
         case 403:
           toastr.error("You're not allowed to do this!");
           break
+        case 400:
         case 500:
-          toastr.error("Something went wrong!");
+          console.error("Something went wrong: ", err.error.message, "\n", err.error.details)
+          toastr.error(err.error.message, "Something went wrong!");
           break;
         case 501:
           toastr.warning("Not implemented yet!", "The feature you're trying to use is not available yet");

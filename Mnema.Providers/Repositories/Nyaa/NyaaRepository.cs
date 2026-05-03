@@ -161,7 +161,7 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
                     new FormControlOption("Anime - English Translated", "1_2"),
                     new FormControlOption("Anime - Non English Translated", "1_3"),
                     new FormControlOption("Anime - Raw", "1_4"),
-                    FormControlOption.DefaultValue("Literature", "3_0"),
+                    FormControlOption.DefaultOption("Literature", "3_0"),
                     new FormControlOption("Literature - English Translated", "3_1"),
                     new FormControlOption("Literature - Non English Translated", "3_2"),
                     new FormControlOption("Literature - Raw", "3_3"),
@@ -172,7 +172,7 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
                 Key = "filter",
                 Type = FormType.DropDown,
                 Options = [
-                    FormControlOption.DefaultValue("No Filter", "0"),
+                    FormControlOption.DefaultOption("No Filter", "0"),
                     new FormControlOption("No Remakes", "1"),
                     new FormControlOption("Only Trusted", "2"),
                 ],
