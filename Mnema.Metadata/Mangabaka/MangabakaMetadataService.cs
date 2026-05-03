@@ -117,8 +117,8 @@ internal class MangabakaMetadataService(
             Links = series.Links ?? [],
             CoverUrl = series.CoverX350X3,
             Year = series.StartDate?.Year,
-            HighestVolumeNumber = series.FinalVolume.AsFloat(),
-            HighestChapterNumber = series.FinalChapter.AsFloat(),
+            HighestVolumeNumber = series.Status.HasFinalCount() ? series.FinalVolume.AsFloat() : null,
+            HighestChapterNumber = series.Status.HasFinalCount() ? series.FinalChapter.AsFloat() : null,
             Chapters = []
         };
     }

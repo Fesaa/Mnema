@@ -21,6 +21,14 @@ public enum MangabakaPublicationStatus
     Upcoming,
 }
 
+public static class MangabakaPublicationStatusExtensions
+{
+    public static bool HasFinalCount(this MangabakaPublicationStatus status)
+    {
+        return status == MangabakaPublicationStatus.Completed || status == MangabakaPublicationStatus.Cancelled;
+    }
+}
+
 public class MangabakaPublisher
 {
     [JsonPropertyName("name")]
