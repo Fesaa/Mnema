@@ -168,9 +168,10 @@ internal partial class Publication
         var metadata = Request.Metadata;
         metadata.SetKey(MetadataResolverOptions.MergeIntoUpstream, true);
         metadata.SetKey(MetadataResolverOptions.EnrichWithCovers, true);
+        metadata.SetKey(RequestConstants.ExternalIdKey, Id);
 
         Series = await _metadataResolver.ResolveSeriesAsync(provider, metadata, cancellationToken);
-        if (Series == null) throw new MnemaException("Failed to resolve series info");
+        if (Series == null) throw new MnemaException($"No series found for id {Id}");
 
         if (string.IsNullOrWhiteSpace(Series.Title)) throw new MnemaException("No series title is set");
 
