@@ -82,4 +82,9 @@ public interface IMetadataResolver
     ChapterResolutionResult ResolveChapter(string fileName, Series? series, ContentFormat contentFormat);
 }
 
+public static class MetadataResolverOptions
+{
+    public static readonly IMetadataKey<bool> MergeIntoUpstream = MetadataKeys.Bool("merge-into-upstream");
+}
+
 public record ChapterResolutionResult(string? Volume, string? Chapter, Chapter? ChapterEntity);

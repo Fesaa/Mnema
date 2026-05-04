@@ -60,10 +60,10 @@ public class MetadataResolver(
 
         var settings = await settingsService.GetSettingsAsync();
 
-        return MergeSeries(series, settings);
+        return MergeSeries(series, settings, metadata);
     }
 
-    private static Series? MergeSeries(Dictionary<MetadataProvider, Series?> series, ServerSettingsDto settings)
+    private static Series? MergeSeries(Dictionary<MetadataProvider, Series?> series, ServerSettingsDto settings, MetadataBag metadata)
     {
         if (series.All(kv => kv.Value == null))
             return null;
@@ -80,9 +80,12 @@ public class MetadataResolver(
             Chapters = []
         };
 
+        var mergedIntoUpstream = metadata.GetKey(MetadataResolverOptions.MergeIntoUpstream);
+
         var sorted = settings.MetadataProviderSettings
             .Where(kv => kv.Value.Enabled)
-            .OrderBy(kv => kv.Value.Priority);
+            .OrderByDescending(kv => mergedIntoUpstream && kv.Key == MetadataProvider.Upsteam)
+            .ThenBy(kv => kv.Value.Priority);
 
         foreach (var (metadataProvider, setting) in sorted)
         {

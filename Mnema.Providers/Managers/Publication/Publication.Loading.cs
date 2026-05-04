@@ -16,6 +16,7 @@ namespace Mnema.Providers.Managers.Publication;
 internal partial class Publication
 {
     private readonly IScannerService _scannerService = scope.ServiceProvider.GetRequiredService<IScannerService>();
+    private readonly IMetadataResolver _metadataResolver = scope.ServiceProvider.GetRequiredService<IMetadataResolver>();
     private MonitoredSeries? _monitoredSeries;
     private bool IsMonitored => _monitoredSeries != null;
 
@@ -164,7 +165,11 @@ internal partial class Publication
     {
         var sw = Stopwatch.StartNew();
 
-        Series = await _repository.SeriesInfo(Request, cancellationToken);
+        var metadata = Request.Metadata;
+        metadata.SetKey(MetadataResolverOptions.MergeIntoUpstream, true);
+
+        Series = await _metadataResolver.ResolveSeriesAsync(provider, metadata, cancellationToken);
+        if (Series == null) throw new MnemaException("Failed to resolve series info");
 
         if (string.IsNullOrWhiteSpace(Series.Title)) throw new MnemaException("No series title is set");
 

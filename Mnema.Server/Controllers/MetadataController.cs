@@ -26,6 +26,16 @@ public class MetadataController(IServiceProvider serviceProvider): BaseApiContro
         return Ok(await metadataService.GetSeries(externalId, HttpContext.RequestAborted));
     }
 
+    [HttpPost("resolve-series")]
+    public async Task<ActionResult<Series?>> ResolveSeries([FromQuery] Provider provider, [FromBody] MetadataBag metadata)
+    {
+        var metadataResolver = serviceProvider.GetService<IMetadataResolver>();
+        if (metadataResolver == null)
+            return NotFound();
+
+        return Ok(await metadataResolver.ResolveSeriesAsync(provider, metadata, HttpContext.RequestAborted));
+    }
+
     [HttpGet("search")]
     public async Task<ActionResult<List<MetadataSearchResult>>> SearchSeries([FromQuery] MetadataProvider provider,
         [FromQuery] string query, [FromQuery] PaginationParams pagingParams)
