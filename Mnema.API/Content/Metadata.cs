@@ -74,6 +74,14 @@ public interface IMetadataProviderService
     /// <returns></returns>
     /// <remarks>It is assumed this is cached</remarks>
     Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retruns all covers for a given entity from the external provider
+    /// </summary>
+    /// <param name="externalId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<Cover>> GetCovers(string externalId, CancellationToken cancellationToken);
 }
 
 public interface IMetadataResolver

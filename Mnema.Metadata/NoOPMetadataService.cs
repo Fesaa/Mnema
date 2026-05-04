@@ -17,4 +17,9 @@ public class NoOpMetadataService: IMetadataProviderService
     {
         return Task.FromResult<Series?>(null);
     }
+
+    public Task<List<Cover>> GetCovers(string externalId, CancellationToken cancellationToken)
+    {
+        return Task.FromResult<List<Cover>>([]);
+    }
 }

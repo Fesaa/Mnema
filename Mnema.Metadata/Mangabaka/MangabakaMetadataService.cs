@@ -2,11 +2,13 @@ using Lucene.Net.Analysis.Standard;
 using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
+using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.External;
@@ -19,12 +21,16 @@ internal class MangabakaMetadataService(
     ILogger<MangabakaMetadataService> logger,
     IUnitOfWork unitOfWork,
     MangabakaDbContext ctx,
-    [FromKeyedServices(key: MetadataProvider.Mangabaka)] SearcherManager searcherManager
+    [FromKeyedServices(key: MetadataProvider.Mangabaka)] SearcherManager searcherManager,
+    IHttpClientFactory httpClientFactory,
+    IDistributedCache cache
 ): IMetadataProviderService
 {
 
     internal const string TitleField = "Title";
     internal const string NativeTitleField = "NativeTitle";
+
+    private HttpClient HttpClient => httpClientFactory.CreateClient(nameof(MetadataProvider.Mangabaka));
 
     public async Task<PagedList<MetadataSearchResult>> Search(MetadataSearchDto search, PaginationParams paginationParams,
         CancellationToken cancellationToken)
@@ -89,6 +95,67 @@ internal class MangabakaMetadataService(
             .ToDictionary(s => s.MangaBakaId, s => s.Id) : [];
 
         return series == null ? null : ConvertToSeries(series, monitoredSeriesById);
+    }
+
+    public async Task<List<Cover>> GetCovers(string externalId, CancellationToken cancellationToken)
+    {
+        if (!int.TryParse(externalId, out var seriesId))
+            return [];
+
+        var series = await ctx.Series.FirstOrDefaultAsync(s => s.Id == seriesId, cancellationToken);
+        if (series == null) return [];
+
+        List<MangabakaCover> covers = [];
+
+        var pagination = new Pagination
+        {
+            Next = $"/v1/series/{externalId}/images?page=1&limit=50"
+        };
+
+        while (!string.IsNullOrEmpty(pagination?.Next))
+        {
+            var response = await HttpClient.GetCachedAsync<PaginatedResponse<MangabakaCover>>(pagination.Next,
+                cache, cancellationToken: cancellationToken);
+
+            if (response.IsErr)
+                throw new MnemaException($"Failed to load covers: {response.Error?.Message}", response.Error);
+
+            var paginatedResponse = response.Unwrap();
+
+            if (paginatedResponse.Status != 200)
+                throw new MnemaException($"Failed to load covers: {paginatedResponse.Status} - {paginatedResponse.Reason}");
+
+            pagination = paginatedResponse.Pagination;
+
+            if (paginatedResponse.Data != null)
+                covers.AddRange(paginatedResponse.Data.Where(cover => cover.Type == "volume"));
+
+            if (!string.IsNullOrEmpty(pagination?.Next))
+                await Task.Delay(100, cancellationToken);
+        }
+
+        var languages = series.Titles?
+            .Where(t => t.Traits.Contains("native"))
+            .Select(t => t.Language)
+            .Distinct().ToList() ?? [];
+
+        return covers.GroupBy(c => c.Type + c.Index).Select(g =>
+        {
+            var preferredCover = g
+                .OrderByDescending(cover => cover.Language == "en")
+                .ThenByDescending(cover => languages.Contains(cover.Language))
+                .FirstOrDefault();
+
+            if (preferredCover == null)
+                return null;
+
+            return new Cover
+            {
+                Extension = preferredCover.Image.RawImage.Format,
+                Url = preferredCover.Image.RawImage.Url,
+                Volume = preferredCover.Index,
+            };
+        }).WhereNotNull().ToList();
     }
 
     private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, Guid> monitoredSeriesIds)

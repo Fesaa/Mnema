@@ -111,6 +111,13 @@ public static class ServiceProviderExtensions
                 return new SearcherManager(fsDir, null);
             });
 
+            services.AddHttpClient(nameof(MetadataProvider.Mangabaka), client =>
+            {
+                client.BaseAddress = new Uri(" https://api.mangabaka.dev");
+                client.Timeout = TimeSpan.FromSeconds(30);
+                client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
+            });
+
             return services;
         }
     }

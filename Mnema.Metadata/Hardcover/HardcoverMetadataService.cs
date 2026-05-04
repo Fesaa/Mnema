@@ -78,6 +78,11 @@ public class HardcoverMetadataService(
         return ConvertFromHardcoverSeries(series, monitoredSeriesById);
     }
 
+    public Task<List<Cover>> GetCovers(string externalId, CancellationToken cancellationToken)
+    {
+        return Task.FromResult<List<Cover>>([]);
+    }
+
     private static MetadataSearchResult ConvertFromHardcoverSeries(HardcoverSeries series,
         Dictionary<string, Guid> monitoredSeriesIds)
     {

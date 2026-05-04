@@ -26,6 +26,17 @@ public class MetadataController(IServiceProvider serviceProvider): BaseApiContro
         return Ok(await metadataService.GetSeries(externalId, HttpContext.RequestAborted));
     }
 
+    [HttpGet("get-covers")]
+    public async Task<ActionResult<List<Cover>>> GetSeriesMetadataByMangaBakaId([FromQuery] MetadataProvider provider,
+        [FromQuery] string externalId)
+    {
+        var metadataService = serviceProvider.GetKeyedService<IMetadataProviderService>(provider);
+        if (metadataService == null)
+            return NotFound();
+
+        return Ok(await metadataService.GetCovers(externalId, HttpContext.RequestAborted));
+    }
+
     [HttpPost("resolve-series")]
     public async Task<ActionResult<Series?>> ResolveSeries([FromQuery] Provider provider, [FromBody] MetadataBag metadata)
     {
