@@ -71,13 +71,13 @@ public static class StringExtensions
             return string.IsNullOrEmpty(s) ? defaultValue : float.Parse(s, CultureInfo.InvariantCulture);
         }
 
-        public string GetUrlExtension()
+        public string GetUrlExtension(string? fallback = null)
         {
             if (string.IsNullOrWhiteSpace(s)) return string.Empty;
 
             var path = s.Split(['?', '#'], StringSplitOptions.RemoveEmptyEntries)[0];
             var ext = Path.GetExtension(path);
-            return string.IsNullOrEmpty(ext) ? ".jpeg" : ext;
+            return string.IsNullOrEmpty(ext) ? fallback ?? ".jpeg" : ext;
         }
     }
 

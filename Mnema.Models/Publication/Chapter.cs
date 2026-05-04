@@ -16,6 +16,7 @@ public sealed record Chapter
     public float? SortOrder { get; set; }
 
     public string? CoverUrl { get; set; }
+    public string? CoverFileFormat { get; set; }
     public string? RefUrl { get; set; }
 
     public DateTime? ReleaseDate { get; set; }

@@ -60,10 +60,28 @@ public class MetadataResolver(
 
         var settings = await settingsService.GetSettingsAsync();
 
-        return MergeSeries(series, settings);
+        var mergedSeries = MergeSeries(series, settings, metadata);
+        if (mergedSeries == null || !metadata.GetKey(MetadataResolverOptions.EnrichWithCovers))
+            return mergedSeries;
+
+        if (!string.IsNullOrEmpty(mangaBakaId))
+        {
+            var covers = await mangabakaMetadataProvider.GetCovers(mangaBakaId, cancellationToken);
+
+            InsertCovers(mergedSeries, covers);
+        }
+
+        if (!string.IsNullOrEmpty(hardCoverId))
+        {
+            var covers = await hardcoverMetadataProvider.GetCovers(hardCoverId, cancellationToken);
+
+            InsertCovers(mergedSeries, covers);
+        }
+
+        return mergedSeries;
     }
 
-    private static Series? MergeSeries(Dictionary<MetadataProvider, Series?> series, ServerSettingsDto settings)
+    private static Series? MergeSeries(Dictionary<MetadataProvider, Series?> series, ServerSettingsDto settings, MetadataBag metadata)
     {
         if (series.All(kv => kv.Value == null))
             return null;
@@ -80,8 +98,16 @@ public class MetadataResolver(
             Chapters = []
         };
 
+        var mergedIntoUpstream = metadata.GetKey(MetadataResolverOptions.MergeIntoUpstream);
+
+        if (mergedIntoUpstream && series.TryGetValue(MetadataProvider.Upsteam, out var upstreamSeries))
+        {
+            mergedSeries = upstreamSeries;
+        }
+
         var sorted = settings.MetadataProviderSettings
             .Where(kv => kv.Value.Enabled)
+            .Where(kv => !(mergedIntoUpstream && kv.Key == MetadataProvider.Upsteam))
             .OrderBy(kv => kv.Value.Priority);
 
         foreach (var (metadataProvider, setting) in sorted)
@@ -99,6 +125,11 @@ public class MetadataResolver(
 
     private static void Merge(MetadataProvider provider, Series into, Series from, SeriesMetadataSettingsDto settings)
     {
+        if (string.IsNullOrEmpty(into.Id) && !string.IsNullOrEmpty(from.Id))
+        {
+            into.Id = from.Id;
+        }
+
         if (settings.Title && string.IsNullOrEmpty(into.Title))
         {
             into.Title = from.Title;
@@ -133,6 +164,8 @@ public class MetadataResolver(
         if (settings.PublicationStatus && into.Status == PublicationStatus.Unknown)
         {
             into.Status = from.Status;
+            into.HighestVolumeNumber ??= from.HighestVolumeNumber;
+            into.HighestChapterNumber ??= from.HighestChapterNumber;
         }
 
         if (settings.Year && into.Year == null)
@@ -264,6 +297,27 @@ public class MetadataResolver(
 
     }
 
+    private static void InsertCovers(Series series, List<Cover> covers)
+    {
+        foreach (var cover in covers)
+        {
+            var chapters = series.Chapters.Where(c =>
+            {
+                if (string.IsNullOrEmpty(cover.Chapter) && MatchingIfNotNull(c.VolumeMarker, cover.Volume))
+                    return true;
+
+                return MatchingIfNotNull(c.VolumeMarker, cover.Volume) && MatchingIfNotNull(cover.Chapter, c.ChapterMarker);
+            });
+
+            foreach (var chapter in chapters)
+            {
+                chapter.CoverUrl = cover.Url;
+                chapter.CoverFileFormat = "." + cover.Extension;
+            }
+
+        }
+    }
+
     public ChapterResolutionResult ResolveChapter(string fileName, Series? series, ContentFormat contentFormat)
     {
         var volume = parserService.ParseVolume(fileName, contentFormat);
@@ -298,8 +352,8 @@ public class MetadataResolver(
             .ToList();
 
         return matchingVolumes.Count == 1 ? matchingVolumes[0] : null;
-
-        static bool MatchingIfNotNull(string? first, string? second)
-            => !string.IsNullOrEmpty(first) && !string.IsNullOrEmpty(second) && first == second;
     }
+
+    private static bool MatchingIfNotNull(string? first, string? second)
+        => !string.IsNullOrEmpty(first) && !string.IsNullOrEmpty(second) && first == second;
 }

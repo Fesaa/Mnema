@@ -74,12 +74,26 @@ public interface IMetadataProviderService
     /// <returns></returns>
     /// <remarks>It is assumed this is cached</remarks>
     Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retruns all covers for a given entity from the external provider
+    /// </summary>
+    /// <param name="externalId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<Cover>> GetCovers(string externalId, CancellationToken cancellationToken);
 }
 
 public interface IMetadataResolver
 {
     Task<Series?> ResolveSeriesAsync(Provider providers, MetadataBag metadata, CancellationToken cancellationToken = default);
     ChapterResolutionResult ResolveChapter(string fileName, Series? series, ContentFormat contentFormat);
+}
+
+public static class MetadataResolverOptions
+{
+    public static readonly IMetadataKey<bool> MergeIntoUpstream = MetadataKeys.Bool("merge-into-upstream");
+    public static readonly IMetadataKey<bool> EnrichWithCovers = MetadataKeys.Bool("enrich-with-covers");
 }
 
 public record ChapterResolutionResult(string? Volume, string? Chapter, Chapter? ChapterEntity);

@@ -33,7 +33,7 @@ internal partial class Publication
                 try
                 {
                     var filePath = Path.Join((string?)ChapterPath(chapter),
-                        $"!0000 cover{coverUrl.GetUrlExtension()}");
+                        $"!0000 cover{coverUrl.GetUrlExtension(chapter.CoverFileFormat)}");
                     var client = _httpClientFactory.CreateClient(provider.ToString());
 
                     await using var stream = await client.GetStreamAsync(coverUrl);
