@@ -100,10 +100,15 @@ public class MetadataResolver(
 
         var mergedIntoUpstream = metadata.GetKey(MetadataResolverOptions.MergeIntoUpstream);
 
+        if (mergedIntoUpstream && series.TryGetValue(MetadataProvider.Upsteam, out var upstreamSeries))
+        {
+            mergedSeries = upstreamSeries;
+        }
+
         var sorted = settings.MetadataProviderSettings
             .Where(kv => kv.Value.Enabled)
-            .OrderByDescending(kv => mergedIntoUpstream && kv.Key == MetadataProvider.Upsteam)
-            .ThenBy(kv => kv.Value.Priority);
+            .Where(kv => !(mergedIntoUpstream && kv.Key == MetadataProvider.Upsteam))
+            .OrderBy(kv => kv.Value.Priority);
 
         foreach (var (metadataProvider, setting) in sorted)
         {
