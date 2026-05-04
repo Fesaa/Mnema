@@ -167,6 +167,7 @@ internal partial class Publication
 
         var metadata = Request.Metadata;
         metadata.SetKey(MetadataResolverOptions.MergeIntoUpstream, true);
+        metadata.SetKey(MetadataResolverOptions.EnrichWithCovers, true);
 
         Series = await _metadataResolver.ResolveSeriesAsync(provider, metadata, cancellationToken);
         if (Series == null) throw new MnemaException("Failed to resolve series info");
