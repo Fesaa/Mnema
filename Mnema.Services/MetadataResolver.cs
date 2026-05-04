@@ -164,6 +164,8 @@ public class MetadataResolver(
         if (settings.PublicationStatus && into.Status == PublicationStatus.Unknown)
         {
             into.Status = from.Status;
+            into.HighestVolumeNumber ??= from.HighestVolumeNumber;
+            into.HighestChapterNumber ??= from.HighestChapterNumber;
         }
 
         if (settings.Year && into.Year == null)
