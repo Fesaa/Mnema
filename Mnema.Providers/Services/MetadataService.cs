@@ -50,7 +50,18 @@ internal class MetadataService : IMetadataService
             ci.SetForRole(value, role);
         }
 
-        ci.Web = string.Join(',', series.Links.Concat([series.RefUrl]).Distinct());
+        var allLinks = series.Links;
+        if (!string.IsNullOrEmpty(series.RefUrl))
+        {
+            allLinks.Add(series.RefUrl);
+        }
+
+        if (!string.IsNullOrEmpty(chapter?.RefUrl))
+        {
+            allLinks.Add(chapter.RefUrl);
+        }
+
+        ci.Web = string.Join(',', allLinks.Distinct());
 
         var allTags = series.Tags.Concat(chapter?.Tags ?? []).ToList();
 

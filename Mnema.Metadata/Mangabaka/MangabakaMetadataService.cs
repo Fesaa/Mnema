@@ -1,4 +1,6 @@
-using Lucene.Net.Analysis.Standard;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
+using Lucene.Net.Analysis.En;
 using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +19,7 @@ using Mnema.Models.Publication;
 
 namespace Mnema.Metadata.Mangabaka;
 
-internal class MangabakaMetadataService(
+internal partial class MangabakaMetadataService(
     ILogger<MangabakaMetadataService> logger,
     IUnitOfWork unitOfWork,
     MangabakaDbContext ctx,
@@ -27,30 +29,51 @@ internal class MangabakaMetadataService(
 ): IMetadataProviderService
 {
 
-    internal const string TitleField = "Title";
-    internal const string NativeTitleField = "NativeTitle";
+    private static readonly HashSet<string> StopWords = [..EnglishAnalyzer.DefaultStopSet];
 
     private HttpClient HttpClient => httpClientFactory.CreateClient(nameof(MetadataProvider.Mangabaka));
 
     public async Task<PagedList<MetadataSearchResult>> Search(MetadataSearchDto search, PaginationParams paginationParams,
         CancellationToken cancellationToken)
     {
+        var sw = Stopwatch.StartNew();
+
         var searcher = searcherManager.Acquire();
         try
         {
-            var analyzer = new StandardAnalyzer(MangabakaScheduler.Version);
-            var fields = new[] { TitleField, NativeTitleField };
-
-            var parser = new MultiFieldQueryParser(MangabakaScheduler.Version, fields, analyzer)
+            var parser = new MultiFieldQueryParser(MangabakaScheduler.Version, MangabakaFields.TitleFields, MangabakaFields.PerFieldAnalyzer())
             {
                 AllowLeadingWildcard = true,
-                DefaultOperator = Operator.AND,
+                DefaultOperator = Operator.OR,
             };
 
-            var query = parser.Parse($"{search.Query}*");
+            var isCjk = search.Query.Any(c => c >= 0x3000 && c <= 0xD7A3);
+            Query query;
+            if (isCjk)
+            {
+                query = parser.Parse(QueryParserBase.Escape(search.Query.Trim()));
+            }
+            else
+            {
+                var trimmed = search.Query.Trim().ToLowerInvariant();
+                var normalized = TermNormalisationRegex().Replace(trimmed, " ");
+
+                var terms = normalized
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                    .Where(t => t.Length > 1 && !StopWords.Contains(t))
+                    .Select(QueryParserBase.Escape)
+                    .ToList();
+
+                query = parser.Parse(string.Join(" ", terms.Select(t => $"+{t}*")));
+            }
+
+            logger.LogTrace("Parsed query: {Query}, Search Query: {SearchQuery}", query, search.Query);
 
             var hitsToFetch = (paginationParams.PageNumber + 1) * paginationParams.PageSize;
             var topDocs = searcher.Search(query, hitsToFetch);
+
+            logger.LogTrace("Search took {Elapsed}ms, found {Total} items out of {Requested} requested", sw.ElapsedMilliseconds,
+                topDocs.TotalHits, hitsToFetch);
 
             var scoreDocs = topDocs.ScoreDocs;
             var totalHits = topDocs.TotalHits;
@@ -58,7 +81,7 @@ internal class MangabakaMetadataService(
             var results = scoreDocs
                 .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
                 .Take(paginationParams.PageSize)
-                .ToDictionary(d => int.Parse(searcher.Doc(d.Doc).Get(nameof(MangabakaSeries.Id))), d => d.Score);
+                .ToDictionary(d => int.Parse(searcher.Doc(d.Doc).Get(MangabakaFields.Id)), d => d.Score);
 
             var seriesData = await ctx.Series
                 .Where(s => results.Keys.Contains(s.Id))
@@ -202,4 +225,7 @@ internal class MangabakaMetadataService(
             _ => throw new ArgumentOutOfRangeException(nameof(publicationStatus), publicationStatus, null)
         };
     }
+
+    [GeneratedRegex(@"[^a-z0-9\s]")]
+    private static partial Regex TermNormalisationRegex();
 }

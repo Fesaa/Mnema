@@ -36,11 +36,12 @@ import {
   MetadataService
 } from "@mnema/features/monitored-series/metadata.service";
 import {PagedList} from "@mnema/_models/paged-list";
+import {SubscriptionExternalUrlPipe} from "@mnema/_pipes/subscription-external-url.pipe";
 
 @Component({
   selector: 'app-monitored-series',
   standalone: true,
-  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent],
+  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe],
   templateUrl: './monitored-series.component.html',
   styleUrl: './monitored-series.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

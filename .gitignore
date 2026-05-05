@@ -11,7 +11,7 @@ appsettings.Development.json
 .DS_Store
 Mnema.sln.DotSettings.user
 *.db
-Mnema.Metadata.Langabaka.Lucene
+Mnema.Metadata.Mangabaka.Lucene
 **/bin/
 **/obj/
 *.db-wal

@@ -20,30 +20,45 @@
               <div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-3">
                 <h1 class="series-title mb-2 mb-md-0">{{ s.title }}</h1>
 
-                <div class="d-flex flex-wrap gap-2">
-                  @if (!series().externalId) {
-                    <button class="btn btn-sm btn-secondary" (click)="search()">
-                      <i class="fa fa-magnifying-glass"></i>
+                <div class="d-flex flex-column gap-2">
+                  <div class="d-flex flex-wrap gap-2">
+                    @if (!series().externalId) {
+                      <button class="btn btn-sm btn-secondary" (click)="search()">
+                        <i class="fa fa-magnifying-glass"></i>
+                      </button>
+                    } @else {
+                      <button class="btn btn-sm btn-secondary" (click)="download()">
+                        <i class="fa fa-download"></i>
+                      </button>
+                    }
+                    <button class="btn btn-sm btn-secondary" (click)="showResolvedSeries()">
+                      <i class="fa fa-eye"></i>
                     </button>
-                  } @else {
-                    <button class="btn btn-sm btn-secondary" (click)="download()">
-                      <i class="fa fa-download"></i>
+                    <button class="btn btn-sm btn-secondary" (click)="edit()">
+                      <i class="fa fa-pencil"></i>
                     </button>
-                  }
-                  <button class="btn btn-sm btn-secondary" (click)="showResolvedSeries()">
-                    <i class="fa fa-eye"></i>
-                  </button>
-                  <button class="btn btn-sm btn-secondary" (click)="edit()">
-                    <i class="fa fa-pencil"></i>
-                  </button>
-                  <button class="btn btn-sm btn-danger" (click)="delete()">
-                    <i class="fa fa-trash"></i>
-                  </button>
-                  @if (s.refUrl) {
-                    <a [href]="s.refUrl" rel="noreferrer nofollow noopener" target="_blank" class="btn btn-sm btn-secondary text-white">
-                      <i class="fa fa-external-link-alt"></i>
-                    </a>
-                  }
+                    <button class="btn btn-sm btn-danger" (click)="delete()">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                  <div class="d-flex flex-grow-1 flex-wrap justify-content-end gap-2">
+                    @if (s.hardcoverId) {
+                      <a [href]="'https://hardcover.app/series/' + s.hardcoverId" rel="noreferrer nofollow noopener" target="_blank" class="btn btn-sm btn-secondary text-white">
+                        <img src="/assets/icons/hardcover.ico" alt="Hardcover" class="logo">
+                      </a>
+                    }
+                    @if (s.mangaBakaId) {
+                      <a [href]="'https://mangabaka.org/' + s.mangaBakaId" rel="noreferrer nofollow noopener" target="_blank" class="btn btn-sm btn-secondary text-white">
+                        <img src="/assets/icons/mangabaka.ico" alt="MangaBaka" class="logo">
+                      </a>
+                    }
+                    @if (s.externalId) {
+                      <a [href]="s.externalId | subscriptionExternalUrl:s.provider" rel="noreferrer nofollow noopener" target="_blank" class="btn btn-sm btn-secondary text-white">
+                        <i class="fa fa-external-link-alt"></i>
+                      </a>
+                    }
+
+                  </div>
                 </div>
               </div>
 

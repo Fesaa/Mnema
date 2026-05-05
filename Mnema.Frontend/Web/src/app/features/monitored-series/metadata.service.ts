@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpParams} from "@angular/common/http";
 import {environment} from "@env/environment";
 import {PagedList} from "../../_models/paged-list";
 import {Series} from "../../page/_components/series-info/_types";
@@ -23,7 +23,16 @@ export class MetadataService {
   private readonly baseUrl = environment.apiUrl + "Metadata";
 
   search(provider: MetadataProvider, query: string, pageNumber: number, pageSize: number) {
-    return this.httpClient.get<PagedList<MetadataSearchResult>>(this.baseUrl + `/search?provider=${provider}&query=${query}&pageNumber=${pageNumber}&pageSize=${pageSize}`);
+    const httpParams = new HttpParams()
+      .set('pageNumber', pageNumber)
+      .set('pageSize', pageSize)
+      .set('query', query)
+      .set('provider', provider);
+
+
+    return this.httpClient.get<PagedList<MetadataSearchResult>>(this.baseUrl + `/search`, {
+      params: httpParams,
+    });
   }
 
   getSeriesById(provider: MetadataProvider, id: string) {

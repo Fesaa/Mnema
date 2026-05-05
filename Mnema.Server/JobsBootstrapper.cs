@@ -16,7 +16,7 @@ public class JobsBootstrapper(IServiceScopeFactory scopeFactory) : IHostedServic
 
         foreach (var scheduler in schedulers)
         {
-            await scheduler.EnsureScheduledAsync();
+            await scheduler.EnsureScheduledAsync(cancellationToken);
         }
     }
 
