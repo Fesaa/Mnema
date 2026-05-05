@@ -164,7 +164,8 @@ public class HardcoverMetadataService(
     {
         return title
             .Replace("(Manga)", string.Empty, StringComparison.OrdinalIgnoreCase)
-            .Replace("(Light Novel)", string.Empty, StringComparison.OrdinalIgnoreCase);
+            .Replace("(Light Novel)", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Trim();
     }
 
     public static string ParseChapterTitle(string title, float? position)
