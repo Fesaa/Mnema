@@ -81,7 +81,7 @@ public class MangabakaScheduler(
         {
             BackgroundJob.Enqueue(() => DownloadDatabase(CancellationToken.None));
         }
-        else if (!File.Exists(indexPath))
+        else if (!Directory.Exists(indexPath))
         {
             await ReIndexLucene(cancellationToken);
         }
