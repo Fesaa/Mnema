@@ -61,7 +61,7 @@ public class MangabakaScheduler(
     private const string CronExpression = "0 1 * * 0";
     private const string DatabaseUrl = "https://api.mangabaka.dev/v1/database/series.sqlite.tar.gz";
     public const string DatabaseName = "Mnema.Metadata.Mangabaka.db";
-    public const string LuceneIndexName = "Mnema.Metadata.Langabaka.Lucene";
+    public const string LuceneIndexName = "Mnema.Metadata.Mangabaka.Lucene";
 
     public const LuceneVersion Version = LuceneVersion.LUCENE_48;
 
