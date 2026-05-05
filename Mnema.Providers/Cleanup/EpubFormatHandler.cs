@@ -124,7 +124,8 @@ internal class EpubFormatHandler(ILogger<EpubFormatHandler> logger, IFileSystem 
         metadata.Elements().Where(e => e.Attribute("property")?.Value == "role").Remove();
 
         var roles = new[] {
-            (info.Writer, "aut"), (info.Penciller, "art"), (info.Colorist, "clr"), (info.Translator, "trl")
+            (info.Writer, "aut"), (info.Penciller, "art"), (info.Colorist, "clr"), (info.Translator, "trl"),
+            (info.Publisher, "pbl"), (info.Editor, "edt")
         };
 
         var i = 0;
