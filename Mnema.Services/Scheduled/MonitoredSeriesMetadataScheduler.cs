@@ -23,7 +23,7 @@ internal class MonitoredSeriesMetadataScheduler(
         TimeZone = TimeZoneInfo.Local
     };
 
-    public Task EnsureScheduledAsync()
+    public Task EnsureScheduledAsync(CancellationToken cancellationToken)
     {
         logger.LogDebug("Registering Monitored Series metadata refresher @ {CronJob}", CronJob);
 

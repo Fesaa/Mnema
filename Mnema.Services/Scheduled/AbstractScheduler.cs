@@ -31,7 +31,7 @@ internal abstract class AbstractScheduler<TScheduler, TEntity>(
         TimeZone = TimeZoneInfo.Local
     };
 
-    public Task EnsureScheduledAsync()
+    public Task EnsureScheduledAsync(CancellationToken cancellationToken)
     {
         if (environment.IsDevelopment())
         {

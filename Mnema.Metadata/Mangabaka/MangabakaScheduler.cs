@@ -6,6 +6,10 @@ using Mnema.Models.Internal;
 using System.Formats.Tar;
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
+using Lucene.Net.Analysis;
+using Lucene.Net.Analysis.Cjk;
+using Lucene.Net.Analysis.Ja;
+using Lucene.Net.Analysis.Miscellaneous;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Documents.Extensions;
@@ -19,7 +23,31 @@ using Mnema.Models.Entities.Content;
 
 namespace Mnema.Metadata.Mangabaka;
 
-internal sealed record MangabakaIndexerSeries(int Id, string Title, string? NativeTitle);
+public static class MangabakaFields
+{
+    public const string Id = "id";
+    public const string Title = "title";
+    public const string JaTitle = "ja_title";
+    public const string KoTitle = "ko_title";
+    public const string ZhTitle = "zh_title";
+
+    public static readonly string[] TitleFields = [Title, JaTitle, KoTitle, ZhTitle];
+
+    public static Analyzer PerFieldAnalyzer()
+    {
+        var analyzerMap = new Dictionary<string, Analyzer>
+        {
+            [Title] = new StandardAnalyzer(MangabakaScheduler.Version),
+            [JaTitle] = new JapaneseAnalyzer(MangabakaScheduler.Version),
+            [KoTitle] = new CJKAnalyzer(MangabakaScheduler.Version),
+            [ZhTitle] = new CJKAnalyzer(MangabakaScheduler.Version)
+        };
+
+        return new PerFieldAnalyzerWrapper(new StandardAnalyzer(MangabakaScheduler.Version), analyzerMap);
+    }
+}
+
+internal sealed record MangabakaIndexerSeries(int Id, List<MangabakaTitle> Titles);
 
 public class MangabakaScheduler(
     ILogger<MangabakaScheduler> logger,
@@ -35,14 +63,11 @@ public class MangabakaScheduler(
     public const string DatabaseName = "Mnema.Metadata.Mangabaka.db";
     public const string LuceneIndexName = "Mnema.Metadata.Langabaka.Lucene";
 
-    public static readonly LuceneVersion Version = LuceneVersion.LUCENE_48;
+    public const LuceneVersion Version = LuceneVersion.LUCENE_48;
 
-    private static readonly RecurringJobOptions RecurringJobOptions = new()
-    {
-        TimeZone = TimeZoneInfo.Local
-    };
+    private static readonly RecurringJobOptions RecurringJobOptions = new() { TimeZone = TimeZoneInfo.Local };
 
-    public async Task EnsureScheduledAsync()
+    public async Task EnsureScheduledAsync(CancellationToken cancellationToken)
     {
         recurringJobManager.AddOrUpdate<MangabakaScheduler>(JobId,
             s => s.DownloadDatabase(CancellationToken.None),
@@ -109,19 +134,32 @@ public class MangabakaScheduler(
         var indexPath = scope.ServiceProvider.GetRequiredKeyedService<FSDirectory>(MetadataProvider.Mangabaka);
         var ctx = scope.ServiceProvider.GetRequiredService<MangabakaDbContext>();
 
-        var writerConfig = new IndexWriterConfig(Version, new StandardAnalyzer(Version));
+        var writerConfig = new IndexWriterConfig(Version, MangabakaFields.PerFieldAnalyzer());
         using var writer = new IndexWriter(indexPath, writerConfig);
 
         writer.DeleteAll();
 
-        await foreach (var series in BatchedSeries(ctx, ct: ct))
+        await foreach (var series in BatchedSeries(ctx, ct: ct)
+                           .Where(s => s.Titles.Count > 0)
+                           .WithCancellation(ct))
         {
-            var document = new Document();
-            document.AddStringField(nameof(MangabakaSeries.Id), series.Id.ToString(), Field.Store.YES);
-            document.AddTextField(MangabakaMetadataService.TitleField, series.Title, Field.Store.NO);
+            var document = new Document
+            {
+                new StringField(MangabakaFields.Id, series.Id.ToString(), Field.Store.YES)
+            };
 
-            if (!string.IsNullOrWhiteSpace(series.NativeTitle))
-                document.AddTextField(MangabakaMetadataService.NativeTitleField, series.NativeTitle, Field.Store.NO);
+            foreach (var title in series.Titles)
+            {
+                var field = title.Language switch
+                {
+                    "ja" => MangabakaFields.JaTitle,
+                    "ko" => MangabakaFields.KoTitle,
+                    "zh" or "zh-hk" => MangabakaFields.ZhTitle,
+                    _ => MangabakaFields.Title
+                };
+
+                document.AddTextField(field, title.Title, Field.Store.YES);
+            }
 
             writer.AddDocument(document);
         }
@@ -160,8 +198,7 @@ public class MangabakaScheduler(
             foreach (var series in items)
                 yield return new MangabakaIndexerSeries(
                     series.Id,
-                    series.Titles.FindBestTitle(),
-                    series.Titles.FindBestNativeTitle()
+                    series.Titles ?? []
                     );
 
             currentCursor = items[^1].Id;
