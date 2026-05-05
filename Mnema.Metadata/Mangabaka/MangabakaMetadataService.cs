@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Lucene.Net.Analysis.En;
-using Lucene.Net.Analysis.Standard;
 using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
 using Microsoft.EntityFrameworkCore;
@@ -67,6 +66,8 @@ internal partial class MangabakaMetadataService(
 
                 query = parser.Parse(string.Join(" ", terms.Select(t => $"+{t}*")));
             }
+
+            logger.LogTrace("Parsed query: {Query}, Search Query: {SearchQuery}", query, search.Query);
 
             var hitsToFetch = (paginationParams.PageNumber + 1) * paginationParams.PageSize;
             var topDocs = searcher.Search(query, hitsToFetch);
