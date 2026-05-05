@@ -406,4 +406,26 @@ internal class MangabakaSeries
 
     [Column("secondary_titles_uk")]
     public string? SecondaryTitlesUk { get; set; }
+
+    public List<string> CollectLinks()
+    {
+        var links = Links ?? [];
+
+        if (SourceAnilistId != null)
+        {
+            links.Add($"https://anilist.co/manga/{SourceAnilistId}");
+        }
+
+        if (!string.IsNullOrEmpty(SourceMyAnimeListId))
+        {
+            links.Add($"https://myanimelist.net/manga/{SourceMyAnimeListId}");
+        }
+
+        if (!string.IsNullOrEmpty(SourceMangaUpdatesId))
+        {
+            links.Add($"https://www.mangaupdates.com/series/{SourceMangaUpdatesId}");
+        }
+
+        return links;
+    }
 }

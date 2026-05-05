@@ -181,7 +181,7 @@ internal class MangabakaMetadataService(
                 .Select(g => new Tag(g, true))
                 .ToList() ?? [], // Mangabaka tags are pure nonsense because they have MU
             People = publishers.Concat(writers).Concat(artists).ToList(),
-            Links = series.Links ?? [],
+            Links = series.CollectLinks(),
             CoverUrl = series.CoverX350X3,
             Year = series.StartDate?.Year,
             HighestVolumeNumber = series.Status.HasFinalCount() ? series.FinalVolume.AsFloat() : null,
