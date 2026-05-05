@@ -183,7 +183,7 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
                 {
                     Id = id,
                     Title = node.InnerText.ReplaceLineEndings(string.Empty).Trim().Trim('"'),
-                    RefUrl = id,
+                    RefUrl = null,
                     VolumeMarker = parserService.IsLooseLeafVolume(parseResult.Volume.Value) ? string.Empty : parseResult.Volume.Value,
                     ChapterMarker = parseResult.Chapter.Value,
                     Tags = [],

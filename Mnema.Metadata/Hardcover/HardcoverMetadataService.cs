@@ -117,7 +117,7 @@ public class HardcoverMetadataService(
                 Title = ParseChapterTitle(book.Title, b.Position ?? 0),
                 Summary = book.Description ?? string.Empty,
                 CoverUrl = book.Image?.Url,
-                RefUrl = $"{HardcoverBaseUrl}/books/{book.Slug}",
+                RefUrl = $"{HardcoverBaseUrl}/book/{book.Id}",
                 VolumeMarker = b.Position?.ToString() ?? string.Empty,
                 ChapterMarker = string.Empty,
                 SortOrder = b.Position,
