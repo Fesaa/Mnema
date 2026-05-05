@@ -20,6 +20,7 @@ using Lucene.Net.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.Models.Entities.Content;
+using Directory = System.IO.Directory;
 
 namespace Mnema.Metadata.Mangabaka;
 
@@ -74,10 +75,22 @@ public class MangabakaScheduler(
             CronExpression, RecurringJobOptions);
 
         var dbPath = Path.Join(configuration.PersistentStorage, DatabaseName);
-        if (File.Exists(dbPath))
-            return;
+        var indexPath = Path.Join(configuration.PersistentStorage, LuceneIndexName);
 
-        BackgroundJob.Enqueue(() => DownloadDatabase(CancellationToken.None));
+        if (!File.Exists(dbPath))
+        {
+            BackgroundJob.Enqueue(() => DownloadDatabase(CancellationToken.None));
+        }
+        else if (!File.Exists(indexPath))
+        {
+            await ReIndexLucene(cancellationToken);
+        }
+
+        // Correct typo from the past
+        if (Directory.Exists("Mnema.Metadata.Langabaka.Lucene"))
+        {
+            Directory.Delete("Mnema.Metadata.Langabaka.Lucene", true);
+        }
     }
 
     public async Task DownloadDatabase(CancellationToken ct)
