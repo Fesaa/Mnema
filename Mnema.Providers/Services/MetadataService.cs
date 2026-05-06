@@ -50,7 +50,7 @@ internal class MetadataService : IMetadataService
             ci.SetForRole(value, role);
         }
 
-        var allLinks = series.Links;
+        var allLinks = new List<string>(series.Links);
         if (!string.IsNullOrEmpty(series.RefUrl))
         {
             allLinks.Add(series.RefUrl);
