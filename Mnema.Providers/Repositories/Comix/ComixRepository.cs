@@ -43,7 +43,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
             .AddRange("demographics[]", request.GetKey(PublicationDemographic))
             .AddRange("genres[]", request.GetKey(IncludedTags))
             .SetQueryParam("genres_mode", "and")
-            .AddRange("genres[]", request.GetKey(ExcludedTags).Select(g => $"-{g}"))
+            .AddRange("genres_ex[]", request.GetKey(ExcludedTags))
             .SetQueryParam("content_rating", request.GetKey(ContentRating))
             .AddPagination(pagination.PageSize, pagination.PageNumber + 1); // 1 based
 
