@@ -23,6 +23,11 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
         {
             await next(context);
         }
+        catch (OperationCanceledException ex)
+        {
+            context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+            logger.LogTrace(ex, "An operation was cancelled");
+        }
         catch (Exception ex)
         {
             var errorMessage = string.IsNullOrEmpty(ex.Message) ? "Internal Server Error" : ex.Message;

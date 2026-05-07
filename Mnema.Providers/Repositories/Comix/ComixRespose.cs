@@ -1,14 +1,19 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 using Mnema.Common.Helpers;
+using Mnema.Models.Publication;
 
 namespace Mnema.Providers.Comix;
 
 internal class ComixRespose<T>
 {
     [JsonPropertyName("status")]
-    public int Status { get; set; }
+    public string Status { get; set; }
+    public bool Success => Status == "ok";
+    [JsonPropertyName("code")]
+    public int? Code { get; set; }
     [JsonPropertyName("result")]
     public T Result { get; set; }
 }
@@ -17,7 +22,7 @@ internal class ComixPaginatedResult<T>
 {
     [JsonPropertyName("items")]
     public List<T> Items { get; set; }
-    [JsonPropertyName("pagination")]
+    [JsonPropertyName("meta")]
     public ComixPagination Pagination { get; set; }
 }
 
@@ -27,24 +32,21 @@ internal class ComixPagination
     public int Count { get; set; }
     [JsonPropertyName("total")]
     public int Total { get; set; }
-    [JsonPropertyName("per_page")]
+    [JsonPropertyName("perPage")]
     public int PageSize { get; set; }
-    [JsonPropertyName("last_page")]
+    [JsonPropertyName("lastPage")]
     public int TotalPages { get; set; }
 }
 
 internal class ComixManga
 {
-    [JsonPropertyName("manga_id")]
-    public int MangaId { get; set; }
-
-    [JsonPropertyName("hash_id")]
+    [JsonPropertyName("hid")]
     public string HashId { get; set; }
 
     [JsonPropertyName("title")]
     public string Title { get; set; }
 
-    [JsonPropertyName("alt_titles")]
+    [JsonPropertyName("altTitles")]
     public List<string> AltTitles { get; set; }
 
     [JsonPropertyName("synopsis")]
@@ -60,45 +62,39 @@ internal class ComixManga
     public string Type { get; set; }
 
     [JsonPropertyName("poster")]
-    public ComixPoster Poster { get; set; }
+    public ComixPoster? Poster { get; set; }
 
-    [JsonPropertyName("original_language")]
+    [JsonPropertyName("originalLanguage")]
     public string OriginalLanguage { get; set; }
 
     [JsonPropertyName("status")]
     public string Status { get; set; }
 
-    [JsonPropertyName("final_volume")]
+    [JsonPropertyName("finalVolume")]
     public float? FinalVolume { get; set; }
 
-    [JsonPropertyName("final_chapter")]
+    [JsonPropertyName("finalChapter")]
     public float? FinalChapter { get; set; }
 
-    [JsonPropertyName("has_chapters")]
-    public bool HasChapters { get; set; }
-
-    [JsonPropertyName("latest_chapter")]
+    [JsonPropertyName("latestChapter")]
     public float? LatestChapter { get; set;}
 
     [JsonPropertyName("links")]
     public ComixLinks Links { get; set; }
 
-    [JsonPropertyName("is_nsfw")]
-    public bool IsNsfw { get; set; }
+    [JsonPropertyName("contentRating")]
+    public string ContentRating { get; set; }
 
     [JsonPropertyName("year")]
-    public int Year { get; set; }
+    public int? Year { get; set; }
 
-    [JsonPropertyName("term_ids")]
-    public List<int> TermIds { get; set; }
-
-    [JsonPropertyName("genre")]
+    [JsonPropertyName("genres")]
     public List<ComixInclude> Genres { get; set; }
 
-    [JsonPropertyName("author")]
+    [JsonPropertyName("authors")]
     public List<ComixInclude> Authors { get; set; }
 
-    [JsonPropertyName("artist")]
+    [JsonPropertyName("artists")]
     public List<ComixInclude> Artists { get; set; }
 
     public string Size()
@@ -110,7 +106,21 @@ internal class ComixManga
 
         return sb.ToString();
     }
+
+    public AgeRating AsAgeRating()
+    {
+        return ContentRating switch
+        {
+            "safe" => AgeRating.Everyone,
+            "suggestive" => AgeRating.Teen,
+            "erotica" => AgeRating.Mature17Plus,
+            "pornographic" => AgeRating.AdultsOnly,
+            "" or null => AgeRating.Unknown,
+            _ => throw new ArgumentOutOfRangeException(nameof(ContentRating), ContentRating, null)
+        };
+    }
 }
+
 
 
 internal class ComixPoster
@@ -162,16 +172,10 @@ internal class ComixInclude
 
 internal class ComixChapter
 {
-    [JsonPropertyName("chapter_id")]
+    [JsonPropertyName("id")]
     public int ChapterId { get; set; }
 
-    [JsonPropertyName("manga_id")]
-    public int MangaId { get; set; }
-
-    [JsonPropertyName("scanlation_group_id")]
-    public int ScanlationGroupId { get; set; }
-
-    [JsonPropertyName("is_official")]
+    [JsonPropertyName("isOfficial")]
     [JsonConverter(typeof(FlexibleBooleanConverter))]
     public bool IsOfficial { get; set; }
 
@@ -190,23 +194,21 @@ internal class ComixChapter
     [JsonPropertyName("votes")]
     public int Votes { get; set; }
 
-    [JsonPropertyName("created_at")]
+    [JsonPropertyName("createdAt")]
     public long CreatedAt { get; set; }
 
-    [JsonPropertyName("updated_at")]
+    [JsonPropertyName("updatedAt")]
     public long UpdatedAt { get; set; }
 
-    [JsonPropertyName("scanlation_group")]
+    [JsonPropertyName("scanlationGroup")]
     public ComixScanlationGroup? ScanlationGroup { get; set; }
 
-    [JsonPropertyName("images")]
+    [JsonPropertyName("pages")]
     public List<ComixImage> Images { get; set; }
 }
 
 internal class ComixScanlationGroup
 {
-    [JsonPropertyName("scanlation_group_id")]
-    public int ScanlationGroupId { get; set; }
 
     [JsonPropertyName("name")]
     public string Name { get; set; }

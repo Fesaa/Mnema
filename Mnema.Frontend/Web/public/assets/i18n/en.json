@@ -522,7 +522,10 @@
     "excluded_genres": "Excluded Genres",
     "included_tags": "Included Tags",
     "excluded_tags": "Excluded Tags",
-    "publicationDemographic": "Publication Demographic"
+    "publicationDemographic": "Publication Demographic",
+    "contentRating-comix": {
+      "label": "Content Rating"
+    }
   },
 
   "series-info-modal": {
