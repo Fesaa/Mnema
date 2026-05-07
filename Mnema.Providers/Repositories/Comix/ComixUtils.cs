@@ -2,12 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Mnema.Models.DTOs.UI;
 
 namespace Mnema.Providers.Comix;
 
 public static class ComixUtils
 {
+
+    public static readonly List<FormControlOption> ContentRating =
+    [
+        FormControlOption.Option("Safe", "safe"),
+        FormControlOption.Option("Suggestive", "suggestive"),
+        FormControlOption.Option("Erotica", "erotica"),
+        FormControlOption.Option("Pornographic", "pornographic"),
+    ];
 
     public static readonly List<FormControlOption> Genres = [
         FormControlOption.Option("Action", "6"),
@@ -299,13 +309,9 @@ public static class ComixUtils
     /// Generates a hash for an API request.
     /// </summary>
     /// <param name="path">API path, e.g. "/manga/some-hash/chapters"</param>
-    /// <param name="bodySize">encodeURIComponent(body).length for POST, or 0 for GET</param>
-    /// <param name="time">1 for GET manga requests, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() for POST</param>
-    public static string GenerateHash(string path, int bodySize = 0, long time = 1)
+    public static string GenerateHash(string path)
     {
-        var baseString = $"{path}:{bodySize}:{time}";
-
-        var encoded = Uri.EscapeDataString(baseString)
+        var encoded = Uri.EscapeDataString(path)
             .Replace("*", "%2A")   // EscapeDataString does not encode *
             .Replace("%7e", "~")   // EscapeDataString uppercases hex; normalise ~
             .Replace("%7E", "~");
