@@ -179,6 +179,8 @@ internal class ComixChapter
     [JsonConverter(typeof(FlexibleBooleanConverter))]
     public bool IsOfficial { get; set; }
 
+    public bool IsOfficialRelease => IsOfficial || ScanlationGroup?.Name == "Official?";
+
     [JsonPropertyName("number")]
     public decimal Number { get; set; }
 
