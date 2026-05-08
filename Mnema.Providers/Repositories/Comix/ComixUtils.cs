@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Mnema.Models.DTOs.UI;
 
 namespace Mnema.Providers.Comix;
@@ -100,21 +98,21 @@ public static class ComixUtils
 
     private static readonly string[] Keys =
     [
-        "13YDu67uDgFczo3DnuTIURqas4lfMEPADY6Jaeqky+w=", // 0  RC4 key  round 1
-        "yEy7wBfBc+gsYPiQL/4Dfd0pIBZFzMwrtlRQGwMXy3Q=", // 1  mutKey   round 1
-        "yrP+EVA1Dw==",                                 // 2  prefKey  round 1
-        "vZ23RT7pbSlxwiygkHd1dhToIku8SNHPC6V36L4cnwM=", // 3  RC4 key  round 2
-        "QX0sLahOByWLcWGnv6l98vQudWqdRI3DOXBdit9bxCE=", // 4  mutKey   round 2
-        "WJwgqCmf",                                     // 5  prefKey  round 2
-        "BkWI8feqSlDZKMq6awfzWlUypl88nz65KVRmpH0RWIc=", // 6  RC4 key  round 3
-        "v7EIpiQQjd2BGuJzMbBA0qPWDSS+wTJRQ7uGzZ6rJKs=", // 7  mutKey   round 3
-        "1SUReYlCRA==",                                 // 8  prefKey  round 3
-        "RougjiFHkSKs20DZ6BWXiWwQUGZXtseZIyQWKz5eG34=", // 9  RC4 key  round 4
-        "LL97cwoDoG5cw8QmhI+KSWzfW+8VehIh+inTxnVJ2ps=", // 10 mutKey   round 4
-        "52iDqjzlqe8=",                                 // 11 prefKey  round 4
-        "U9LRYFL2zXU4TtALIYDj+lCATRk/EJtH7/y7qYYNlh8=", // 12 RC4 key  round 5
-        "e/GtffFDTvnw7LBRixAD+iGixjqTq9kIZ1m0Hj+s6fY=", // 13 mutKey   round 5
-        "xb2XwHNB"                                      // 14 prefKey  round 5
+        "JxTcdyiA5GZxnbrmthXBQfU2IMTKcY1+3nNhbq98Sgo=", // 0  RC4 key  round 1
+        "3PordjODbhqla382Cxapmo/1JiABJQcjiJj1+48gTJ4=", // 1  mutKey   round 1
+        "OaKvnI5ARA==",                                 // 2  prefKey  round 1
+        "MHNBHYWA7lvy867fXgvGcJwWDk79KqUJUVFsh3RwnnI=", // 3  RC4 key  round 2
+        "8i0Cru/VJBSVB2Y1GcMDVpzx2WepOcfnWdd81yxICl4=", // 4  mutKey   round 2
+        "Fyskubz8VvA=",                                 // 5  prefKey  round 2
+        "B46L1x+UeWP+19cRpQ+OZvdLAK9EHID8g3mSgn57tew=", // 6  RC4 key  round 3
+        "DTSTmUt6LpDUw9r1lSQqyb3YlFTzruT8tk8wUGkwehQ=", // 7  mutKey   round 3
+        "vY/meeI=",                                     // 8  prefKey  round 3
+        "7xWfIF5THL5LAnRgAARg+4mjWHPU9n3PQwvzbaMNi+Q=", // 9  RC4 key  round 4
+        "bewtiTuV+HJk56xxkf2iCljLgruCpBmN9BgE8i6gc9M=", // 10 mutKey   round 4
+        "/Xcb2zAu8AU=",                                 // 11 prefKey  round 4
+        "WgeCQ3T8R51uTwVSiVa7Zy0dN6JOg6Z5JleMS+HV8Aw=", // 12 RC4 key  round 5
+        "yXayUVFrrcW56jQCEfZzuCidjpnWKjTDUNT7XeX9i7k=", // 13 mutKey   round 5
+        "tSLco2w=",                                     // 14 prefKey  round 5
     ];
 
     private static int[] GetKeyBytes(int index)
@@ -157,152 +155,122 @@ public static class ComixUtils
         return output;
     }
 
-    private static int MutS(int e) => (e + 143) % 256;
-    private static int MutL(int e) => ((e >> 1) | (e << 7)) & 255;
-    private static int MutC(int e) => (e + 115) % 256;
-    private static int MutM(int e) => e ^ 177;
-    private static int MutF(int e) => (e - 188 + 256) % 256;
-    private static int MutG(int e) => ((e << 2) | (e >> 6)) & 255;
-    private static int MutH(int e) => (e - 42 + 256) % 256;
-    private static int MutDollar(int e) => ((e << 4) | (e >> 4)) & 255;
-    private static int MutB(int e) => (e - 12 + 256) % 256;
-    private static int MutUnderscore(int e) => (e - 20 + 256) % 256;
-    private static int MutY(int e) => ((e >> 1) | (e << 7)) & 255;
-    private static int MutK(int e) => (e - 241 + 256) % 256;
     private static int GetMutKey(int[] mk, int idx) =>
         mk.Length > 0 && (idx % 32) < mk.Length ? mk[idx % 32] : 0;
 
-    private static int[] Round1(int[] data)
+    private static int ShiftRight7Left1(int e) => ((e >> 7) | (e << 1)) & 255;
+    private static int ShiftLeft1Right7(int e)  => ((e << 1) | (e >> 7)) & 255;
+    private static int ShiftRight2Left6(int e)  => ((e >> 2) | (e << 6)) & 255;
+    private static int ShiftLeft4Right4(int e)  => ((e << 4) | (e >> 4)) & 255;
+    private static int ShiftRight4Left4(int e)  => ((e >> 4) | (e << 4)) & 255;
+
+    private static int[] Mutate(int[] data, int[] mutKey, int[] prefKey, int prefKeyLimit, int round)
     {
-        var enc = Rc4(GetKeyBytes(0), data);
-        var mutKey = GetKeyBytes(1);
-        var prefKey = GetKeyBytes(2);
         var out_ = new List<int>();
-        for (int i = 0; i < enc.Length; i++)
+        for (int o = 0; o < data.Length; o++)
         {
-            if (i < 7 && i < prefKey.Length) out_.Add(prefKey[i]);
-            int v = enc[i] ^ GetMutKey(mutKey, i);
-            v = (i % 10) switch
+            // Insert prefKey byte BEFORE the data byte (matches Kotlin)
+            if (o < prefKeyLimit && o < prefKey.Length)
+                out_.Add(prefKey[o]);
+
+            int n = data[o] ^ GetMutKey(mutKey, o);
+            n = round switch
             {
-                0 or 9 => MutC(v),
-                1      => MutB(v),
-                2      => MutY(v),
-                3      => MutDollar(v),
-                4 or 6 => MutH(v),
-                5      => MutS(v),
-                7      => MutK(v),
-                8      => MutL(v),
-                _      => v,
+                1 => (o % 10) switch
+                {
+                    0      => ShiftRight7Left1(n),
+                    1      => n ^ 37,
+                    2      => n ^ 81,
+                    3      => n ^ 147,
+                    4      => ShiftRight2Left6(n),
+                    5 or 8 => ShiftRight4Left4(n),
+                    6      => n ^ 218,
+                    7      => (n + 159) & 255,
+                    9      => n ^ 180,
+                    _      => n,
+                },
+                2 => (o % 10) switch
+                {
+                    0 or 9 => n ^ 180,
+                    1      => ShiftLeft1Right7(n),
+                    2      => n ^ 147,
+                    3      => ShiftRight7Left1(n),
+                    4      => ShiftRight2Left6(n),
+                    5      => ShiftRight4Left4(n),
+                    6 or 8 => (n + 159) & 255,
+                    7      => (n + 34) & 255,
+                    _      => n,
+                },
+                3 => (o % 10) switch
+                {
+                    0      => n ^ 81,
+                    1      => ShiftRight4Left4(n),
+                    2 or 9 => ShiftLeft4Right4(n),
+                    3      => n ^ 37,
+                    4      => (n + 159) & 255,
+                    5      => ShiftLeft1Right7(n),
+                    6      => n ^ 180,
+                    7      => (n + 34) & 255,
+                    8      => ShiftRight2Left6(n),
+                    _      => n,
+                },
+                4 => (o % 10) switch
+                {
+                    0 or 7 => n ^ 218,
+                    1 or 4 => ShiftLeft1Right7(n),
+                    2      => ShiftRight7Left1(n),
+                    3      => (n + 159) & 255,
+                    5 or 8 => n ^ 180,
+                    6      => n ^ 147,
+                    9      => n ^ 37,
+                    _      => n,
+                },
+                5 => (o % 10) switch
+                {
+                    0      => ShiftLeft4Right4(n),
+                    1 or 3 => n ^ 147,
+                    2      => (n + 34) & 255,
+                    4 or 9 => n ^ 218,
+                    5 or 7 => ShiftLeft1Right7(n),
+                    6      => n ^ 180,
+                    8      => ShiftRight2Left6(n),
+                    _      => n,
+                },
+                _ => n,
             };
-            out_.Add(v & 255);
+            out_.Add(n & 255);
         }
         return out_.ToArray();
+    }
+
+    private static int[] Round1(int[] data)
+    {
+        var mut = Mutate(data, GetKeyBytes(1), GetKeyBytes(2), 7, 1);
+        return Rc4(GetKeyBytes(0), mut);
     }
 
     private static int[] Round2(int[] data)
     {
-        var enc = Rc4(GetKeyBytes(3), data);
-        var mutKey = GetKeyBytes(4);
-        var prefKey = GetKeyBytes(5);
-        var out_ = new List<int>();
-        for (int i = 0; i < enc.Length; i++)
-        {
-            if (i < 6 && i < prefKey.Length) out_.Add(prefKey[i]);
-            int v = enc[i] ^ GetMutKey(mutKey, i);
-            v = (i % 10) switch
-            {
-                0 or 8 => MutC(v),
-                1      => MutB(v),
-                2 or 6 => MutDollar(v),
-                3      => MutH(v),
-                4 or 9 => MutS(v),
-                5      => MutK(v),
-                7      => MutUnderscore(v),
-                _      => v,
-            };
-            out_.Add(v & 255);
-        }
-        return out_.ToArray();
+        var mut = Mutate(data, GetKeyBytes(4), GetKeyBytes(5), 8, 2);
+        return Rc4(GetKeyBytes(3), mut);
     }
 
     private static int[] Round3(int[] data)
     {
-        var enc = Rc4(GetKeyBytes(6), data);
-        var mutKey = GetKeyBytes(7);
-        var prefKey = GetKeyBytes(8);
-        var out_ = new List<int>();
-        for (int i = 0; i < enc.Length; i++)
-        {
-            if (i < 7 && i < prefKey.Length) out_.Add(prefKey[i]);
-            int v = enc[i] ^ GetMutKey(mutKey, i);
-            v = (i % 10) switch
-            {
-                0      => MutC(v),
-                1      => MutF(v),
-                2 or 8 => MutS(v),
-                3      => MutG(v),
-                4      => MutY(v),
-                5      => MutM(v),
-                6      => MutDollar(v),
-                7      => MutK(v),
-                9      => MutB(v),
-                _      => v,
-            };
-            out_.Add(v & 255);
-        }
-        return out_.ToArray();
+        var mut = Mutate(data, GetKeyBytes(7), GetKeyBytes(8), 5, 3);
+        return Rc4(GetKeyBytes(6), mut);
     }
 
     private static int[] Round4(int[] data)
     {
-        var enc = Rc4(GetKeyBytes(9), data);
-        var mutKey = GetKeyBytes(10);
-        var prefKey = GetKeyBytes(11);
-        var out_ = new List<int>();
-        for (int i = 0; i < enc.Length; i++)
-        {
-            if (i < 8 && i < prefKey.Length) out_.Add(prefKey[i]);
-            int v = enc[i] ^ GetMutKey(mutKey, i);
-            v = (i % 10) switch
-            {
-                0      => MutB(v),
-                1 or 9 => MutM(v),
-                2 or 7 => MutL(v),
-                3 or 5 => MutS(v),
-                4 or 6 => MutUnderscore(v),
-                8      => MutY(v),
-                _      => v,
-            };
-            out_.Add(v & 255);
-        }
-        return out_.ToArray();
+        var mut = Mutate(data, GetKeyBytes(10), GetKeyBytes(11), 8, 4);
+        return Rc4(GetKeyBytes(9), mut);
     }
 
     private static int[] Round5(int[] data)
     {
-        var enc = Rc4(GetKeyBytes(12), data);
-        var mutKey = GetKeyBytes(13);
-        var prefKey = GetKeyBytes(14);
-        var out_ = new List<int>();
-        for (int i = 0; i < enc.Length; i++)
-        {
-            if (i < 6 && i < prefKey.Length) out_.Add(prefKey[i]);
-            int v = enc[i] ^ GetMutKey(mutKey, i);
-            v = (i % 10) switch
-            {
-                0      => MutUnderscore(v),
-                1 or 7 => MutS(v),
-                2      => MutC(v),
-                3 or 5 => MutM(v),
-                4      => MutB(v),
-                6      => MutF(v),
-                8      => MutDollar(v),
-                9      => MutG(v),
-                _      => v,
-            };
-            out_.Add(v & 255);
-        }
-        return out_.ToArray();
+        var mut = Mutate(data, GetKeyBytes(13), GetKeyBytes(14), 5, 5);
+        return Rc4(GetKeyBytes(12), mut);
     }
 
     /// <summary>
