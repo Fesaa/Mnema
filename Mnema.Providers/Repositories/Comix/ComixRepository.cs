@@ -27,7 +27,6 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
     private static readonly IMetadataKey<IEnumerable<string>> IncludedTags = MetadataKeys.Strings("includeTags");
     private static readonly IMetadataKey<IEnumerable<string>> ExcludedTags = MetadataKeys.Strings("excludeTags");
     private static readonly IMetadataKey<string> ContentRating = MetadataKeys.String("contentRating-comix", "erotica");
-    private static readonly IMetadataKey<bool> OnlyOfficialReleases = MetadataKeys.Bool("onlyOfficialReleases");
 
     private HttpClient Client => clientFactory.CreateClient(nameof(Provider.Comix));
 
@@ -43,7 +42,7 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
             .AddRange("demographics[]", request.GetKey(PublicationDemographic))
             .AddRange("genres[]", request.GetKey(IncludedTags))
             .SetQueryParam("genres_mode", "and")
-            .AddRange("genres[]", request.GetKey(ExcludedTags).Select(g => $"-{g}"))
+            .AddRange("genres_ex[]", request.GetKey(ExcludedTags))
             .SetQueryParam("content_rating", request.GetKey(ContentRating))
             .AddPagination(pagination.PageSize, pagination.PageNumber + 1); // 1 based
 
@@ -147,13 +146,6 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
                 Type = FormType.Switch,
                 DefaultOption = "true"
             },
-            new FormControlDefinition
-            {
-                Key = OnlyOfficialReleases.Key,
-                Advanced = true,
-                Type = FormType.Switch,
-                DefaultOption = "false"
-            }
         ]);
     }
 
@@ -299,23 +291,23 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
     {
         var scanlationGroup = request.GetKey(RequestConstants.ScanlationGroupKey);
         var allowNonMatching = request.GetKey(RequestConstants.AllowNonMatchingScanlationGroupKey);
-        var onlyOfficialReleases = request.GetKey(OnlyOfficialReleases);
 
         return chapters
             .GroupBy(c => c.Number)
             .Select(g =>
             {
-                var official = g.FirstOrDefault(c => c.Language == language && c.IsOfficial);
-                if (official != null) return official;
+                if (!string.IsNullOrEmpty(scanlationGroup))
+                {
+                    var chapter = g.FirstOrDefault(ChapterFinder(language, scanlationGroup));
+                    if (chapter != null) return chapter;
+                }
 
-                if (onlyOfficialReleases) return null;
+                var officialChapter = g.FirstOrDefault(c => c.Language == language && c.IsOfficialRelease);
+                if (officialChapter != null) return officialChapter;
 
-                var chapter = g.FirstOrDefault(ChapterFinder(language, scanlationGroup));
-
-                if (chapter == null && allowNonMatching)
-                    chapter = g.FirstOrDefault(ChapterFinder(language, string.Empty));
-
-                return chapter;
+                return allowNonMatching
+                    ? g.FirstOrDefault(ChapterFinder(language, string.Empty))
+                    : null;
             })
             .WhereNotNull()
             .ToList();

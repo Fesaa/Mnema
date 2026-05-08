@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -82,36 +83,28 @@ internal partial class QBitContentManager(
 
     public Task MoveToDownloadQueue(string id) => StartDownload(id);
 
+    public async Task<bool> HasContent(Provider provider, string id)
+    {
+        if (!SupportedProviders.Contains(provider))
+            throw new MnemaException($"Provider {provider} is not supported");
+
+        var torrents = await GetTorrents(provider);
+        return torrents.Any(c => c.Hash == id);
+    }
+
     public async Task<IEnumerable<IContent>> GetAllContent(Provider provider)
     {
         if (!SupportedProviders.Contains(provider))
             throw new MnemaException($"Provider {provider} is not supported");
 
-        var listQuery = new TorrentListQuery
-        {
-            Category = MnemaCategory,
-            Tag = provider.ToString(),
-        };
-
-        IReadOnlyList<TorrentInfo> torrents;
-
-        try
-        {
-            torrents = await qBitClient.GetTorrentsAsync(listQuery);
-        }
-        catch (MnemaException ex)
-        {
-            logger.LogTrace(ex, "Failed to load torrent list");
-            return [];
-        }
-
+        var torrents = await GetTorrents(provider);
         if (torrents.Count == 0) return [];
 
         List<IContent> contents = [];
 
         foreach (var tInfo in torrents)
         {
-            if (QBitContentManager.UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
+            if (UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
 
             var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
             if (request == null) continue;
@@ -120,6 +113,36 @@ internal partial class QBitContentManager(
         }
 
         return contents;
+    }
+
+    private readonly ConcurrentDictionary<Provider, (IReadOnlyList<TorrentInfo> Torrents, DateTime CachedAt)> _torrents = new();
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(15);
+
+    private async Task<IReadOnlyList<TorrentInfo>> GetTorrents(Provider provider)
+    {
+        if (_torrents.TryGetValue(provider, out var cached) &&
+            DateTime.UtcNow - cached.CachedAt < CacheDuration)
+        {
+            return cached.Torrents;
+        }
+
+        IReadOnlyList<TorrentInfo> torrents;
+        try
+        {
+            torrents = await qBitClient.GetTorrentsAsync(new TorrentListQuery
+            {
+                Category = MnemaCategory,
+                Tag = provider.ToString(),
+            });
+        }
+        catch (MnemaException ex)
+        {
+            logger.LogTrace(ex, "Failed to load torrent list");
+            return [];
+        }
+
+        _torrents[provider] = (torrents, DateTime.UtcNow);
+        return torrents;
     }
 
     public Task<List<FormControlDefinition>> GetFormControls(CancellationToken cancellationToken)

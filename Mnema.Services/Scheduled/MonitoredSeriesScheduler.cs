@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 
@@ -71,20 +72,29 @@ internal class MonitoredSeriesScheduler(
             {
                 if (string.IsNullOrEmpty(release.ContentId) || !startedContent.Contains(release.ContentId))
                 {
-                    var metadata = match.MetadataForDownloadRequest();
-                    metadata.SetKey(RequestConstants.AllowPartialChapterData, true);
 
-                    await downloadService.StartDownload(new DownloadRequestDto
+                    if (!await downloadService.HasContent(release.Provider, release.ContentId ?? release.ReleaseId))
                     {
-                        Provider = release.Provider,
-                        Id = release.ContentId ?? release.ReleaseId,
-                        BaseDir = match.BaseDir,
-                        TempTitle = release.ContentName,
-                        Metadata = metadata,
-                        DownloadUrl = release.DownloadUrl,
-                        StartImmediately = true,
-                        UserId = match.UserId,
-                    });
+                        var metadata = match.MetadataForDownloadRequest();
+                        metadata.SetKey(RequestConstants.AllowPartialChapterData, true);
+
+                        await downloadService.StartDownload(new DownloadRequestDto
+                        {
+                            Provider = release.Provider,
+                            Id = release.ContentId ?? release.ReleaseId,
+                            BaseDir = match.BaseDir,
+                            TempTitle = release.ContentName,
+                            Metadata = metadata,
+                            DownloadUrl = release.DownloadUrl,
+                            StartImmediately = true,
+                            UserId = match.UserId,
+                        });
+                    }
+                    else
+                    {
+                        logger.LogDebug("Content {Title} - {Id} is already being downloaded, not starting new download",
+                            release.ContentName.OrNonEmpty(match.Title), release.ContentId ?? release.ReleaseId);
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(release.ContentId))

@@ -123,6 +123,11 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         await AddToDownloadQueueAsync(publication);
     }
 
+    public Task<bool> HasContent(Provider provider, string id)
+    {
+        return Task.FromResult(_content.ContainsKey(id));
+    }
+
     public Task<IEnumerable<IContent>> GetAllContent(Provider provider)
     {
         return Task.FromResult<IEnumerable<IContent>>(_content.Values.ToList());
