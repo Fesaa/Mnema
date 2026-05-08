@@ -58,4 +58,12 @@ internal class DownloadService(ILogger<DownloadService> logger, IServiceScopeFac
 
         return downloads;
     }
+
+    public Task<bool> HasContent(Provider provider, string id)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var contentManager = scope.ServiceProvider.GetRequiredKeyedService<IContentManager>(provider);
+
+        return contentManager.HasContent(provider, id);
+    }
 }

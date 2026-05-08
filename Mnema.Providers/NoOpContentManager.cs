@@ -23,6 +23,11 @@ public class NoOpContentManager : IContentManager
         return Task.CompletedTask;
     }
 
+    public Task<bool> HasContent(Provider provider, string id)
+    {
+        return Task.FromResult(false);
+    }
+
     public Task<IEnumerable<IContent>> GetAllContent(Provider provider)
     {
         return Task.FromResult<IEnumerable<IContent>>([]);
