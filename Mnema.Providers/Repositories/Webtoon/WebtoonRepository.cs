@@ -264,6 +264,16 @@ internal class WebtoonRepository(
                 Key = RequestConstants.TitleOverride.Key,
                 Type = FormType.Text,
                 Advanced = true
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.HardcoverSeriesIdKey.Key,
+                Type = FormType.Text
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.MangaBakaKey.Key,
+                Type = FormType.Text
             }
         ]);
     }

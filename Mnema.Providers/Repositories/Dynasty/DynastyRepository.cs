@@ -202,6 +202,16 @@ internal class DynastyRepository(
                 Key = RequestConstants.SkipVolumeWithoutChapter.Key,
                 Type = FormType.Switch,
                 Advanced = true
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.HardcoverSeriesIdKey.Key,
+                Type = FormType.Text
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.MangaBakaKey.Key,
+                Type = FormType.Text
             }
         ]);
     }

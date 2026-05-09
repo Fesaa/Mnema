@@ -143,6 +143,16 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
                 Type = FormType.Switch,
                 DefaultOption = "true",
                 Advanced = true,
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.HardcoverSeriesIdKey.Key,
+                Type = FormType.Text
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.MangaBakaKey.Key,
+                Type = FormType.Text
             }
         ]);
     }

@@ -146,6 +146,16 @@ public class ComixRepository(IHttpClientFactory clientFactory, IDistributedCache
                 Type = FormType.Switch,
                 DefaultOption = "true"
             },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.HardcoverSeriesIdKey.Key,
+                Type = FormType.Text
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.MangaBakaKey.Key,
+                Type = FormType.Text
+            }
         ]);
     }
 

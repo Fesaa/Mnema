@@ -143,6 +143,16 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
                 Validators = new FormValidatorsBuilder()
                     .WithRequired()
                     .Build()
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.HardcoverSeriesIdKey.Key,
+                Type = FormType.Text
+            },
+            new FormControlDefinition
+            {
+                Key = RequestConstants.MangaBakaKey.Key,
+                Type = FormType.Text
             }
         ]);
     }
