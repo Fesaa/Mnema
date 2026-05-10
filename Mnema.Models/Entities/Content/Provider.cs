@@ -12,9 +12,12 @@ public enum Provider
     Bato = 4,
     [Obsolete("Weebdex is shutting down 07/04/2026")]
     Weebdex = 5,
+    [Obsolete("Dumb anti scraper, not worth my time")]
     Comix = 6,
     Kagane = 7,
     MadoKami = 8,
+    /// <remarks>Forgive me for my transgression, MTL is bad.</remarks>
+    AthreaScans,
 }
 
 public static class ProviderExtensions

@@ -6,13 +6,13 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Providers.Cleanup;
-using Mnema.Providers.Comix;
 using Mnema.Providers.Dynasty;
 using Mnema.Providers.Kagane;
 using Mnema.Providers.Managers.Publication;
 using Mnema.Providers.Managers.QBit;
 using Mnema.Providers.Mangadex;
 using Mnema.Providers.Nyaa;
+using Mnema.Providers.Repositories.AthreaScans;
 using Mnema.Providers.Repositories.Madokami;
 using Mnema.Providers.Services;
 using Mnema.Providers.Webtoon;
@@ -160,15 +160,8 @@ public static class ServiceProviderExtensions
 
         services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Comix);
 
-        services.AddScoped<ComixRepository>();
         services.AddKeyedScoped<IContentRepository, NoOpRepository>(Provider.Comix);
         services.AddKeyedScoped<IRepository, NoOpRepository>(Provider.Comix);
-        /*
-         services.AddKeyedScoped<IContentRepository>(Provider.Comix,
-            (s, _) => s.GetRequiredService<ComixRepository>());
-        services.AddKeyedScoped<IRepository>(Provider.Comix,
-            (s, _) => s.GetRequiredService<ComixRepository>());
-            */
 
         services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Comix);
         services.AddHttpClient(nameof(Provider.Comix), client =>
@@ -230,6 +223,26 @@ public static class ServiceProviderExtensions
         }).AddHttpMessageHandler<MadokamiBasicAuthHandler>();
 
         services.AddKeyedScoped<IConfigurationProvider, MadokamiRepository>(DownloadClientType.Madokami);
+
+        #endregion
+
+        #region AthreaScans
+
+        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.AthreaScans);
+
+        services.AddScoped<AthreaScansRepository>();
+        services.AddKeyedScoped<IContentRepository>(Provider.AthreaScans,
+            (s, _) => s.GetRequiredService<AthreaScansRepository>());
+        services.AddKeyedScoped<IRepository>(Provider.AthreaScans,
+            (s, _) => s.GetRequiredService<AthreaScansRepository>());
+
+        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.AthreaScans);
+        services.AddHttpClient(nameof(Provider.AthreaScans), client =>
+        {
+            client.BaseAddress = new Uri("https://athreascans.com/");
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
+        });
 
         #endregion
 
