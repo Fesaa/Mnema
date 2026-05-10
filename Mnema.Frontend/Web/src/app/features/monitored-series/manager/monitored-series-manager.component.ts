@@ -99,7 +99,7 @@ export class MonitoredSeriesManagerComponent implements OnInit {
 
   ngOnInit(): void {
     this.navService.setNavVisibility(true);
-    this.pageService.allowedProviders().subscribe(p => this.providers.set(p));
+    this.monitoredSeriesService.getInUseProviders().subscribe(p => this.providers.set(p));
   }
 
   nextReleaseDate(series: MonitoredSeries) {

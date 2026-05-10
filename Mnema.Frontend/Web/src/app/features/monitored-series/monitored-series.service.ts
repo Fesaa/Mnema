@@ -103,6 +103,10 @@ export class MonitoredSeriesService {
     return this.httpClient.get<PagedList<MonitoredSeries>>(`${this.baseUrl}/all`, { params });
   }
 
+  getInUseProviders() {
+    return this.httpClient.get<Provider[]>(`${this.baseUrl}/providers`);
+  }
+
   new(s: MonitoredSeries): Observable<MonitoredSeries> {
     return this.httpClient.post<MonitoredSeries>(`${this.baseUrl}/new`, s);
   }
