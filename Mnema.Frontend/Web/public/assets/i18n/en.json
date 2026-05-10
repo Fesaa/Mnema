@@ -189,7 +189,10 @@
     "dynasty": "Dynasty",
     "webtoon": "Webtoon",
     "bato": "Bato",
-    "weebdex": "Weebdex"
+    "weebdex": "Weebdex",
+    "athreascans": "Athrea Scans",
+    "kagane": "Kagane",
+    "madokami": "Madokami"
   },
 
   "content-format-pipe": {
@@ -1135,7 +1138,10 @@
       "webtoons": "{{provider-name-pipe.webtoon}}",
       "bato": "{{provider-name-pipe.bato}}",
       "weebdex": "{{provider-name-pipe.weebdex}}",
-      "comix": "Comix"
+      "comix": "Comix",
+      "madokami": "{{provider-name-pipe.madokami}}",
+      "athreascans": "{{provider-name-pipe.athreascans}}",
+      "kagane": "{{provider-name-pipe.kagane}}"
     },
     "valid-titles-title": "Valid titles",
     "valid-titles-tooltip": "Titles that parsed content can match on to be considered this series",
