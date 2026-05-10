@@ -211,7 +211,7 @@ public class AthreaScansRepository(IHttpClientFactory httpClientFactory, IDistri
         return reader.QuerySelectorAll("img")
             .Select(node => node.GetAttributeValue("src", string.Empty))
             .Where(url => !string.IsNullOrEmpty(url))
-            .Select(s => new DownloadUrl(s, s))
+            .Select(s => new DownloadUrl(s, s, ".webp"))
             .ToList();
     }
 
