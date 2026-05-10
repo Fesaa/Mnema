@@ -161,10 +161,14 @@ public static class ServiceProviderExtensions
         services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Comix);
 
         services.AddScoped<ComixRepository>();
-        services.AddKeyedScoped<IContentRepository>(Provider.Comix,
+        services.AddKeyedScoped<IContentRepository, NoOpRepository>(Provider.Comix);
+        services.AddKeyedScoped<IRepository, NoOpRepository>(Provider.Comix);
+        /*
+         services.AddKeyedScoped<IContentRepository>(Provider.Comix,
             (s, _) => s.GetRequiredService<ComixRepository>());
         services.AddKeyedScoped<IRepository>(Provider.Comix,
             (s, _) => s.GetRequiredService<ComixRepository>());
+            */
 
         services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Comix);
         services.AddHttpClient(nameof(Provider.Comix), client =>
