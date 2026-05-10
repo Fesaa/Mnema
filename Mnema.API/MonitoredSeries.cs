@@ -20,6 +20,7 @@ public enum MonitoredSeriesIncludes
 public interface IMonitoredSeriesRepository: INavigationalEntityRepository<MonitoredSeries, MonitoredSeriesDto, MonitoredSeriesIncludes>
 {
     Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(Guid userId, string query, Provider? provider, PaginationParams pagination, CancellationToken cancellationToken);
+    Task<List<Provider>> GetProviders(Guid userId, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetSeriesEligibleForRefresh(CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByHardcoverIds(List<string> ids, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByMangaBakaIds(List<string> ids, CancellationToken cancellationToken = default);

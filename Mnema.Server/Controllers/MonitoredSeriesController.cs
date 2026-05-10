@@ -39,6 +39,12 @@ public class MonitoredSeriesController(
         return Ok(await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeriesDtosForUser(UserId, query, provider, paginationParams, HttpContext.RequestAborted));
     }
 
+    [HttpGet("providers")]
+    public async Task<ActionResult<List<Provider>>> InUseProviders()
+    {
+        return Ok(await unitOfWork.MonitoredSeriesRepository.GetProviders(UserId, HttpContext.RequestAborted));
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<MonitoredSeriesDto>> Get(Guid id)
     {

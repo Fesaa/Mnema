@@ -34,6 +34,15 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
             .AsPagedList(pagination, cancellationToken);
     }
 
+    public Task<List<Provider>> GetProviders(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return ctx.MonitoredSeries
+            .Where(s => s.UserId == userId)
+            .Select(s => s.Provider)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+    }
+
     public Task<List<MonitoredSeries>> GetSeriesEligibleForRefresh(CancellationToken cancellationToken = default)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-7);
