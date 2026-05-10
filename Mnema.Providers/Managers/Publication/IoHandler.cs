@@ -20,7 +20,7 @@ internal class ImageIoWorker(ILogger<ImageIoWorker> logger, IImageService imageS
             var realFileType = ioWork.Url.GetFileType();
             var fileType = ioWork.Preferences.ImageFormat.GetFileExtension(ioWork.Url);
 
-            if (string.IsNullOrEmpty(fileType))
+            if (!string.IsNullOrEmpty(ioWork.Format))
                 fileType = ioWork.Format;
 
             var fileCounter = $"{ioWork.Idx}".PadLeft(4, '0');
