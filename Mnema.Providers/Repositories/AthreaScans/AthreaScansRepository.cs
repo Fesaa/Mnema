@@ -188,7 +188,7 @@ public class AthreaScansRepository(IHttpClientFactory httpClientFactory, IDistri
             Title = document.DocumentNode.QuerySelector(".entry-title")?.InnerText ?? string.Empty,
             Summary = document.DocumentNode.QuerySelector(".entry-content.entry-content-single")?.InnerText ?? string.Empty,
             LocalizedSeries = infoTableRows.TryGetValue("alternative", out var seriesName) ? seriesName : string.Empty,
-            CoverUrl = document.DocumentNode.QuerySelector("seriestucontl > img")?.GetAttributeValue("src", string.Empty),
+            CoverUrl = document.DocumentNode.QuerySelector(".seriestucontl > div > img")?.GetAttributeValue("src", string.Empty),
             Status = PublicationStatus.Unknown,
             Tags = document.DocumentNode.QuerySelectorAll("div.seriestugenre > a")
                 .Select(node => new Tag(node.InnerText, true)).ToList(),
