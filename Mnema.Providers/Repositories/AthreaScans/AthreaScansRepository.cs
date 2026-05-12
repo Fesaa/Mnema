@@ -78,9 +78,13 @@ public class AthreaScansRepository(IHttpClientFactory httpClientFactory, IDistri
 
             var title = node.QuerySelector("div.tt > a")?.InnerText;
 
+            // We return the most recent chapter regardless of it being available, as this page shows
+            // the latest chapters even if it's older that got released for free.
+            // I don't know if paid ones ever get released while no free one is available, but if so,
+            // they'll be started and cancelled right after for having no chapters to download.
             var lastAvailableChapter = node
                 .QuerySelectorAll("li")
-                .FirstOrDefault(n => n.QuerySelector(".fas.fa-coins") == null);
+                .FirstOrDefault();
 
             if (lastAvailableChapter == null) return null;
 
