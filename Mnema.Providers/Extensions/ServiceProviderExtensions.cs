@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http;
 using System.Threading.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
@@ -22,230 +23,161 @@ namespace Mnema.Providers.Extensions;
 
 public static class ServiceProviderExtensions
 {
-    public static IServiceCollection AddProviders(this IServiceCollection services)
+    extension(IServiceCollection services)
     {
-        services.AddScoped<IMetadataService, MetadataService>();
-        services.AddScoped<IScannerService, ScannerService>();
-        services.AddScoped<ICleanupService, CleanupService>();
-        services.AddScoped<PublicationCleanupService>();
-        services.AddScoped<RawFileCleanupService>();
-        services.AddScoped<IFormatHandler, ArchiveFormatHandler>();
-        services.AddScoped<IFormatHandler, EpubFormatHandler>();
-        services.AddScoped<NoOpRepository>();
-
-        #region qBit Torrent
-
-        services.AddSingleton<IQBitClient, QBitClient>();
-        services.AddSingleton<QBitContentManager>();
-        services.AddKeyedSingleton<IConfigurationProvider>(DownloadClientType.QBittorrent,
-            (s, _) => s.GetRequiredService<QBitContentManager>());
-        services.AddHostedService<TorrentWatcherService>();
-
-        #endregion
-
-        #region Nyaa
-
-        services.AddKeyedSingleton<IContentManager>(Provider.Nyaa,
-            (s, _) => s.GetRequiredService<QBitContentManager>());
-        services.AddScoped<NyaaRepository>();
-
-        services.AddKeyedScoped<IContentRepository>(Provider.Nyaa,
-            (s, _) => s.GetRequiredService<NyaaRepository>());
-
-        services.AddHttpClient(nameof(Provider.Nyaa), client =>
+        public void AddProviders()
         {
-            client.BaseAddress = new Uri("https://nyaa.si");
+            services.AddScoped<IMetadataService, MetadataService>();
+            services.AddScoped<IScannerService, ScannerService>();
+            services.AddScoped<ICleanupService, CleanupService>();
+            services.AddScoped<PublicationCleanupService>();
+            services.AddScoped<RawFileCleanupService>();
+            services.AddScoped<IFormatHandler, ArchiveFormatHandler>();
+            services.AddScoped<IFormatHandler, EpubFormatHandler>();
+            services.AddScoped<NoOpRepository>();
+
+            #region qBit Torrent
+
+            services.AddSingleton<IQBitClient, QBitClient>();
+            services.AddSingleton<QBitContentManager>();
+            services.AddKeyedSingleton<IConfigurationProvider>(DownloadClientType.QBittorrent,
+                (s, _) => s.GetRequiredService<QBitContentManager>());
+            services.AddHostedService<TorrentWatcherService>();
+
+            #endregion
+
+            #region Nyaa
+
+            services.AddKeyedSingleton<IContentManager>(Provider.Nyaa,
+                (s, _) => s.GetRequiredService<QBitContentManager>());
+            services.AddScoped<NyaaRepository>();
+            services.AddKeyedScoped<IContentRepository>(Provider.Nyaa,
+                (s, _) => s.GetRequiredService<NyaaRepository>());
+
+            services.AddHttpClient(nameof(Provider.Nyaa), ConfigureDefaultClient("https://nyaa.si"));
+
+            #endregion
+
+            #region Mangadex
+
+            services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Mangadex);
+            services.AddRepository<MangadexRepository>(Provider.Mangadex);
+            services.AddKeyedScoped<IPreDownloadHook, LoadVolumesHook>(Provider.Mangadex);
+            services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Mangadex);
+
+            services.AddHttpClient(nameof(Provider.Mangadex), ConfigureDefaultClient("https://api.mangadex.org"));
+
+            #endregion
+
+            #region Weebdex
+
+            services.AddKeyedSingleton<IContentManager, NoOpContentManager>(Provider.Weebdex);
+            services.AddRepository<NoOpRepository>(Provider.Weebdex);
+
+            #endregion
+
+            #region Webtoons
+
+            services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Webtoons);
+            services.AddRepository<WebtoonRepository>(Provider.Webtoons);
+            services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Webtoons);
+
+            services.AddHttpClient(nameof(Provider.Webtoons), client =>
+            {
+                client.BaseAddress = new Uri("https://www.webtoons.com");
+                client.Timeout = TimeSpan.FromSeconds(30);
+                client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
+                client.DefaultRequestHeaders.Add(HeaderNames.Referer, "https://www.webtoons.com/");
+            });
+
+            #endregion
+
+            #region Dynasty
+
+            services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Dynasty);
+            services.AddRepository<DynastyRepository>(Provider.Dynasty);
+            services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Dynasty);
+
+            services.AddHttpClient(nameof(Provider.Dynasty), ConfigureDefaultClient("https://dynasty-scans.com/"));
+
+            #endregion
+
+            #region Bato
+
+            services.AddKeyedSingleton<IContentManager, NoOpContentManager>(Provider.Bato);
+            services.AddRepository<NoOpRepository>(Provider.Bato);
+
+            #endregion
+
+            #region Comix
+
+            services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Comix);
+            services.AddRepository<NoOpRepository>(Provider.Comix);
+
+            #endregion
+
+            #region Kagane
+
+            services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Kagane);
+            services.AddRepository<KaganeRepository>(Provider.Kagane);
+            services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Kagane);
+
+            var kaganeLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromSeconds(1),
+                QueueLimit = 100,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+            });
+
+            services.AddTransient(_ => new RateLimitingHandler(kaganeLimiter));
+            services.AddHttpClient(nameof(Provider.Kagane), ConfigureDefaultClient("https://yuzuki.kagane.org"))
+                .AddHttpMessageHandler<RateLimitingHandler>();
+
+            #endregion
+
+            #region Madokami
+
+            services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.MadoKami);
+            services.AddRepository<MadokamiRepository>(Provider.MadoKami);
+            services.AddKeyedScoped<IIoHandler, FileIoWorker>(Provider.MadoKami);
+
+            services.AddTransient<MadokamiBasicAuthHandler>();
+            services.AddHttpClient(nameof(Provider.MadoKami), ConfigureDefaultClient("https://manga.madokami.al/"))
+                .AddHttpMessageHandler<MadokamiBasicAuthHandler>();
+
+            services.AddKeyedScoped<IConfigurationProvider, MadokamiRepository>(DownloadClientType.Madokami);
+
+            #endregion
+
+            #region AthreaScans
+
+            services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.AthreaScans);
+            services.AddRepository<AthreaScansRepository>(Provider.AthreaScans);
+            services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.AthreaScans);
+            services.AddHttpClient(nameof(Provider.AthreaScans), ConfigureDefaultClient("https://www.athreascan.com"));
+
+            #endregion
+        }
+
+        private void AddRepository<T>(Provider provider)
+            where T : class, IRepository
+        {
+            services.AddScoped<T>();
+            services.AddKeyedScoped<IContentRepository>(provider,
+                (s, _) => s.GetRequiredService<T>());
+            services.AddKeyedScoped<IRepository>(provider,
+                (s, _) => s.GetRequiredService<T>());
+        }
+    }
+
+    private static Action<HttpClient> ConfigureDefaultClient(string uri)
+    {
+        return client =>
+        {
+            client.BaseAddress = new Uri(uri);
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
-        });
-
-        #endregion
-
-        #region Mangadex
-
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Mangadex);
-
-        services.AddScoped<MangadexRepository>();
-        services.AddKeyedScoped<IContentRepository>(Provider.Mangadex,
-            (s, _) => s.GetRequiredService<MangadexRepository>());
-        services.AddKeyedScoped<IRepository>(Provider.Mangadex,
-            (s, _) => s.GetRequiredService<MangadexRepository>());
-
-        services.AddKeyedScoped<IPreDownloadHook, LoadVolumesHook>(Provider.Mangadex);
-        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Mangadex);
-        services.AddHttpClient(nameof(Provider.Mangadex), client =>
-        {
-            client.BaseAddress = new Uri("https://api.mangadex.org");
-            client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
-        });
-
-        #endregion
-
-        #region Weebdex
-
-        services.AddKeyedSingleton<IContentManager, NoOpContentManager>(Provider.Weebdex);
-
-        services.AddKeyedScoped<IContentRepository, NoOpRepository>(Provider.Weebdex);
-        services.AddKeyedScoped<IRepository, NoOpRepository>(Provider.Weebdex);
-        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Weebdex);
-        services.AddHttpClient(nameof(Provider.Weebdex), client =>
-        {
-            client.BaseAddress = new Uri("https://api.weebdex.org");
-            client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
-        });
-
-        #endregion
-
-        #region Webtoons
-
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Webtoons);
-
-        services.AddScoped<WebtoonRepository>();
-        services.AddKeyedScoped<IContentRepository>(Provider.Webtoons,
-            (s, _) => s.GetRequiredService<WebtoonRepository>());
-        services.AddKeyedScoped<IRepository>(Provider.Webtoons,
-            (s, _) => s.GetRequiredService<WebtoonRepository>());
-
-        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Webtoons);
-        services.AddHttpClient(nameof(Provider.Webtoons), client =>
-        {
-            client.BaseAddress = new Uri("https://www.webtoons.com");
-            client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
-            client.DefaultRequestHeaders.Add(HeaderNames.Referer, "https://www.webtoons.com/");
-        });
-
-        #endregion
-
-        #region Dynasty
-
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Dynasty);
-
-        services.AddScoped<DynastyRepository>();
-        services.AddKeyedScoped<IContentRepository>(Provider.Dynasty,
-            (s, _) => s.GetRequiredService<DynastyRepository>());
-        services.AddKeyedScoped<IRepository>(Provider.Dynasty,
-            (s, _) => s.GetRequiredService<DynastyRepository>());
-
-        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Dynasty);
-        services.AddHttpClient(nameof(Provider.Dynasty), client =>
-        {
-            client.BaseAddress = new Uri("https://dynasty-scans.com/");
-            client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
-        });
-
-        #endregion
-
-        #region Bato
-
-        services.AddKeyedSingleton<IContentManager, NoOpContentManager>(Provider.Bato);
-
-        services.AddKeyedScoped<IContentRepository, NoOpRepository>(Provider.Bato);
-        services.AddKeyedScoped<IRepository, NoOpRepository>(Provider.Bato);
-
-        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Bato);
-        services.AddHttpClient(nameof(Provider.Bato), client =>
-        {
-            client.BaseAddress = new Uri("https://xbat.app");
-            client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
-        });
-
-        #endregion
-
-        #region Comix
-
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Comix);
-
-        services.AddKeyedScoped<IContentRepository, NoOpRepository>(Provider.Comix);
-        services.AddKeyedScoped<IRepository, NoOpRepository>(Provider.Comix);
-
-        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Comix);
-        services.AddHttpClient(nameof(Provider.Comix), client =>
-        {
-            client.BaseAddress = new Uri("https://comix.to");
-            client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
-            client.DefaultRequestHeaders.Add(HeaderNames.Referer, "https://comix.to/");
-        });
-
-        #endregion
-
-        #region Kagane
-
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Kagane);
-
-        services.AddScoped<KaganeRepository>();
-        services.AddKeyedScoped<IContentRepository>(Provider.Kagane,
-            (s, _) => s.GetRequiredService<KaganeRepository>());
-        services.AddKeyedScoped<IRepository>(Provider.Kagane,
-            (s, _) => s.GetRequiredService<KaganeRepository>());
-
-        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Kagane);
-        var kaganeLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = 5,
-            Window = TimeSpan.FromSeconds(1),
-            QueueLimit = 100,
-            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
-        });
-
-        services.AddTransient(_ => new RateLimitingHandler(kaganeLimiter));
-        services.AddHttpClient(nameof(Provider.Kagane), client =>
-        {
-            client.BaseAddress = new Uri("https://yuzuki.kagane.org");
-            client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
-        }).AddHttpMessageHandler<RateLimitingHandler>();
-
-        #endregion
-
-        #region Madokami
-
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.MadoKami);
-
-        services.AddScoped<MadokamiRepository>();
-        services.AddKeyedScoped<IContentRepository>(Provider.MadoKami,
-            (s, _) => s.GetRequiredService<MadokamiRepository>());
-        services.AddKeyedScoped<IRepository>(Provider.MadoKami,
-            (s, _) => s.GetRequiredService<MadokamiRepository>());
-
-        services.AddKeyedScoped<IIoHandler, FileIoWorker>(Provider.MadoKami);
-        services.AddTransient<MadokamiBasicAuthHandler>();
-        services.AddHttpClient(nameof(Provider.MadoKami), client =>
-        {
-            client.BaseAddress = new Uri("https://manga.madokami.al/ ");
-            client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
-        }).AddHttpMessageHandler<MadokamiBasicAuthHandler>();
-
-        services.AddKeyedScoped<IConfigurationProvider, MadokamiRepository>(DownloadClientType.Madokami);
-
-        #endregion
-
-        #region AthreaScans
-
-        services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.AthreaScans);
-
-        services.AddScoped<AthreaScansRepository>();
-        services.AddKeyedScoped<IContentRepository>(Provider.AthreaScans,
-            (s, _) => s.GetRequiredService<AthreaScansRepository>());
-        services.AddKeyedScoped<IRepository>(Provider.AthreaScans,
-            (s, _) => s.GetRequiredService<AthreaScansRepository>());
-
-        services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.AthreaScans);
-        services.AddHttpClient(nameof(Provider.AthreaScans), client =>
-        {
-            client.BaseAddress = new Uri("https://athreascans.com/");
-            client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
-        });
-
-        #endregion
-
-        return services;
+        };
     }
 }
