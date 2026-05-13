@@ -117,7 +117,7 @@ public class HardcoverMetadataService(
                 Title = ParseChapterTitle(book.Title, b.Position ?? 0),
                 Summary = book.Description ?? string.Empty,
                 CoverUrl = book.Image?.Url,
-                RefUrl = $"{HardcoverBaseUrl}/book/{book.Id}",
+                RefUrl = $"{HardcoverBaseUrl}/id/book/{book.Id}",
                 VolumeMarker = b.Position?.ToString() ?? string.Empty,
                 ChapterMarker = string.Empty,
                 SortOrder = b.Position,
@@ -154,8 +154,8 @@ public class HardcoverMetadataService(
             People = chapters.SelectMany(c => c.People).DistinctBy(p => p.Name).ToList(),
             HighestVolumeNumber = series.IsCompleted ?? false ? series.BooksCount : null,
             CoverUrl = series.BookSeries.FirstOrDefault(b => b.Book.Image != null)?.Book.Image?.Url,
-            RefUrl = $"{HardcoverBaseUrl}/series/{series.Slug}",
-            Links = [$"{HardcoverBaseUrl}/series/{series.Slug}"],
+            RefUrl = $"{HardcoverBaseUrl}/id/series/{series.Id}",
+            Links = [$"{HardcoverBaseUrl}/id/series/{series.Id}"],
             Chapters = chapters,
         };
     }
