@@ -1,6 +1,9 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.En;
+using Lucene.Net.Analysis.TokenAttributes;
+using Lucene.Net.Index;
 using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
 using Microsoft.EntityFrameworkCore;
@@ -47,33 +50,13 @@ internal partial class MangabakaMetadataService(
                 DefaultOperator = Operator.OR,
             };
 
-            var isCjk = search.Query.Any(c => c >= 0x3000 && c <= 0xD7A3);
-            Query query;
-            if (isCjk)
-            {
-                query = parser.Parse(QueryParserBase.Escape(search.Query.Trim()));
-            }
-            else
-            {
-                var trimmed = search.Query.Trim().ToLowerInvariant();
-                var normalized = TermNormalisationRegex().Replace(trimmed, " ");
-
-                var terms = normalized
-                    .Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                    .Where(t => t.Length > 1 && !StopWords.Contains(t))
-                    .Select(QueryParserBase.Escape)
-                    .ToList();
-
-                query = parser.Parse(string.Join(" ", terms.Select(t => $"+{t}*")));
-            }
-
-            logger.LogTrace("Parsed query: {Query}, Search Query: {SearchQuery}", query, search.Query);
+            var query = BuildSearchQuery(parser, search);
 
             var hitsToFetch = (paginationParams.PageNumber + 1) * paginationParams.PageSize;
             var topDocs = searcher.Search(query, hitsToFetch);
 
-            logger.LogTrace("Search took {Elapsed}ms, found {Total} items out of {Requested} requested", sw.ElapsedMilliseconds,
-                topDocs.TotalHits, hitsToFetch);
+            logger.LogDebug("Search for {@SearchOptions} - {Query} took {Elapsed}ms, found {Total} items - {@Pagination}",
+                search, query, sw.ElapsedMilliseconds, topDocs.TotalHits, paginationParams);
 
             var scoreDocs = topDocs.ScoreDocs;
             var totalHits = topDocs.TotalHits;
@@ -103,6 +86,70 @@ internal partial class MangabakaMetadataService(
         {
             searcherManager.Release(searcher);
         }
+    }
+
+    private static List<string> TokenizeWithAnalyzer(Analyzer analyzer, string field, string text)
+    {
+        var tokens = new List<string>();
+        using var tokenStream = analyzer.GetTokenStream(field, text);
+        var termAttr = tokenStream.GetAttribute<ICharTermAttribute>();
+
+        tokenStream.Reset();
+        while (tokenStream.IncrementToken())
+        {
+            tokens.Add(termAttr.ToString());
+        }
+        tokenStream.End();
+
+        return tokens;
+    }
+
+    private static BooleanQuery BuildSearchQuery(MultiFieldQueryParser parser, MetadataSearchDto search)
+    {
+        var query = new BooleanQuery();
+
+        var isCjk = search.Query.Any(c => c >= 0x3000 && c <= 0xD7A3);
+        if (isCjk)
+        {
+            var exactQuery = parser.Parse(QueryParserBase.Escape(search.Query.Trim()));
+            exactQuery.Boost = 10;
+
+            query.Add(exactQuery, Occur.SHOULD);
+            return query;
+        }
+
+        var trimmed = search.Query.Trim().ToLowerInvariant();
+
+        var analyzer = MangabakaFields.PerFieldAnalyzer();
+        var terms = TokenizeWithAnalyzer(analyzer, MangabakaFields.Title, trimmed)
+            .Select(QueryParserBase.Escape)
+            .ToList();
+
+        // Exact match, big boost
+        var phraseQuery = new PhraseQuery { Boost = 10 };
+        foreach (var term in terms.Where(t => !string.IsNullOrEmpty(t)))
+        {
+            phraseQuery.Add(new Term(MangabakaFields.Title, term));
+        }
+        query.Add(phraseQuery, Occur.SHOULD);
+
+        // Fuzzy match, some spelling mistakes, medium boost
+        var fuzzyBool = new BooleanQuery { Boost = 3 };
+        foreach (var term in terms)
+        {
+            var maxEdits = term.Length > 5 ? 2 : 1;
+            var fuzzy = new FuzzyQuery(new Term(MangabakaFields.Title, term), maxEdits);
+            fuzzyBool.Add(fuzzy, Occur.SHOULD);
+        }
+        query.Add(fuzzyBool, Occur.SHOULD);
+
+        // Wildcard terms match, no boost
+        var termsQuery = new BooleanQuery();
+        foreach (var term in terms)
+            termsQuery.Add(new WildcardQuery(new Term(MangabakaFields.Title, $"{term}*")), Occur.MUST);
+        query.Add(termsQuery, Occur.SHOULD);
+
+        return query;
     }
 
     public async Task<Series?> GetSeries(string externalId, CancellationToken ct)
