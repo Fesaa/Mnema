@@ -155,7 +155,7 @@ public static class ServiceProviderExtensions
             services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.AthreaScans);
             services.AddRepository<AthreaScansRepository>(Provider.AthreaScans);
             services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.AthreaScans);
-            services.AddHttpClient(nameof(Provider.AthreaScans), ConfigureDefaultClient("https://www.athreascan.com"));
+            services.AddHttpClient(nameof(Provider.AthreaScans), ConfigureDefaultClient("https://athreascans.com/"));
 
             #endregion
         }
