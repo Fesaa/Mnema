@@ -86,8 +86,14 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
 
     public Task<List<MonitoredChapter>> GetUpcomingChapters(Guid userId, CancellationToken cancellationToken = default)
     {
+        var now = DateTime.UtcNow.Date;
+        var daysSinceMonday = ((int)now.DayOfWeek + 6) % 7;
+        var startOfWeek = now.AddDays(-daysSinceMonday);
+
         return ctx.MonitoredChapters
-            .Where(c => c.Series.UserId == userId && c.Status == MonitoredChapterStatus.Upcoming)
+            .Where(c => c.Series.UserId == userId)
+            .Where(c => c.Status == MonitoredChapterStatus.Upcoming
+                        || (c.Status == MonitoredChapterStatus.Missing && c.ReleaseDate >= startOfWeek))
             .Include(c => c.Series)
             .ToListAsync(cancellationToken);
     }
@@ -103,6 +109,7 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
                         // We do the extra check for upcoming chapters, as the status isn't real time
                         // But rather only updated when the metadata is (I.e. with the hangfire task)
                         (c.Status == MonitoredChapterStatus.Upcoming && c.ReleaseDate < now))
+            .Where(c => string.IsNullOrEmpty(c.Series.ExternalId))
             .ProjectTo<MonitoredChapterDto>(mapper.ConfigurationProvider)
             .OrderBy(c => c.ReleaseDate)
             .ThenBy(c => c.Title)
