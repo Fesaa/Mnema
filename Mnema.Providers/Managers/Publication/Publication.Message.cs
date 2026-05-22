@@ -128,6 +128,9 @@ internal partial class Publication
 
         await _publicationManager.MoveToDownloadQueue(Id);
 
+        State = ContentState.Ready;
+        await _messageService.StateUpdate(Request.UserId, Id, ContentState.Queued);
+
         return new MessageDto
         {
             Provider = provider,
