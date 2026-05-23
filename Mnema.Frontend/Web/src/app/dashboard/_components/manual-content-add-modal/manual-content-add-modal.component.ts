@@ -72,6 +72,7 @@ export class ManualContentAddModalComponent {
           imageUrl: "",
           url: "",
           provider: data.provider,
+          monitoredSeriesId: [],
         });
       }),
       catchError(() => {

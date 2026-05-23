@@ -18,7 +18,7 @@ import {
   EditMonitoredSeriesModalComponent
 } from "@mnema/features/monitored-series/_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
 import {ContentFormat, Format, MonitoredSeries} from "@mnema/features/monitored-series/monitored-series.service";
-import {RouterLink} from "@angular/router";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-search-result',
@@ -26,7 +26,6 @@ import {RouterLink} from "@angular/router";
     TranslocoDirective,
     NgStyle,
     NgbTooltip,
-    RouterLink,
   ],
   templateUrl: './search-result.component.html',
   styleUrl: './search-result.component.scss',
@@ -37,13 +36,14 @@ export class SearchResultComponent implements OnInit{
   private readonly imageService = inject(ImageService);
   private readonly modalService = inject(ModalService);
   private readonly seriesService = inject(SeriesService);
+  private readonly router = inject(Router);
 
   page = input.required<Page>();
   searchResult = input.required<SearchInfo>();
   metadata = input.required<FormControlDefinition[]>();
 
   imageSource = signal<string | null>(null);
-  isAlreadyMonitored = computed(() => !!this.searchResult().monitoredSeriesId)
+  isAlreadyMonitored = computed(() => this.searchResult().monitoredSeriesId.length > 0)
 
 
   ngOnInit(): void {
@@ -95,6 +95,16 @@ export class SearchResultComponent implements OnInit{
         component.series.set(series);
       }),
     ).subscribe();
+  }
+
+  openMonitoredSeries() {
+    const ids = this.searchResult().monitoredSeriesId;
+    if (ids.length === 1) {
+      this.router.navigateByUrl('/monitored-series-detail/' + ids[0]).catch(console.error);
+      return;
+    }
+
+    // Figure out what to do here
   }
 
   loadImage() {

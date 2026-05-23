@@ -49,7 +49,8 @@ public class HardcoverMetadataService(
 
         var monitoredSeriesById = (await unitOfWork.MonitoredSeriesRepository
             .GetByHardcoverIds(seriesIds.Select(id => id.ToString()).ToList(), cancellationToken))
-            .ToDictionary(s => s.HardcoverId, s => s.Id);
+            .GroupBy(s => s.HardcoverId)
+            .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList());
 
         var series = seriesResponse.Data.Series
             .Select(s => ConvertFromHardcoverSeries(s, monitoredSeriesById));
@@ -73,7 +74,8 @@ public class HardcoverMetadataService(
 
         var monitoredSeriesById = (await unitOfWork.MonitoredSeriesRepository
                 .GetByHardcoverIds([series.Id.ToString()], cancellationToken))
-            .ToDictionary(s => s.HardcoverId, s => s.Id);
+            .GroupBy(s => s.HardcoverId)
+            .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList());
 
         return ConvertFromHardcoverSeries(series, monitoredSeriesById);
     }
@@ -84,7 +86,7 @@ public class HardcoverMetadataService(
     }
 
     private static MetadataSearchResult ConvertFromHardcoverSeries(HardcoverSeries series,
-        Dictionary<string, Guid> monitoredSeriesIds)
+        Dictionary<string, List<Guid>> monitoredSeriesIds)
     {
         var realBooks = series.BookSeries.GroupBy(b => b.Position)
             .SelectMany(g =>
@@ -146,7 +148,7 @@ public class HardcoverMetadataService(
         return new MetadataSearchResult
         {
             Id = series.Id.ToString(),
-            MonitoredSeriesId = monitoredSeriesIds.GetValueOrDefault(series.Id.ToString()),
+            MonitoredSeriesId = monitoredSeriesIds.GetValueOrDefault(series.Id.ToString()) ?? [],
             Title = CleanTitle(series.Name),
             Summary = series.Description ?? string.Empty,
             Status = series.IsCompleted ?? false ? PublicationStatus.Completed : PublicationStatus.Unknown,

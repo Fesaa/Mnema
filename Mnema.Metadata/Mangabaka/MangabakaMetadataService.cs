@@ -73,7 +73,8 @@ internal partial class MangabakaMetadataService(
 
             var monitoredSeriesById = (await unitOfWork.MonitoredSeriesRepository
                     .GetByMangaBakaIds(seriesData.Select(s => s.Id.ToString()).ToList(), cancellationToken))
-                .ToDictionary(s => s.MangaBakaId, s => s.Id);
+                .GroupBy(s => s.MangaBakaId)
+                .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList());
 
             var sortedResults = seriesData
                 .OrderByDescending(s => results[s.Id])
@@ -162,7 +163,8 @@ internal partial class MangabakaMetadataService(
 
         var monitoredSeriesById = series != null ? (await unitOfWork.MonitoredSeriesRepository
                 .GetByMangaBakaIds([series.Id.ToString()], ct))
-            .ToDictionary(s => s.MangaBakaId, s => s.Id) : [];
+            .GroupBy(s => s.MangaBakaId)
+            .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList()) : [];
 
         return series == null ? null : ConvertToSeries(series, monitoredSeriesById);
     }
@@ -228,7 +230,7 @@ internal partial class MangabakaMetadataService(
         }).WhereNotNull().ToList();
     }
 
-    private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, Guid> monitoredSeriesIds)
+    private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, List<Guid>> monitoredSeriesIds)
     {
         var publishers = series.Publishers?
             .Where(p => p.Type == MangabakaPublisher.Original || p.Type == MangabakaPublisher.English)
@@ -241,7 +243,7 @@ internal partial class MangabakaMetadataService(
         return new MetadataSearchResult
         {
             Id = series.Id.ToString(),
-            MonitoredSeriesId = monitoredSeriesIds.GetValueOrDefault(series.Id.ToString()),
+            MonitoredSeriesId = monitoredSeriesIds.GetValueOrDefault(series.Id.ToString()) ?? [],
             Title = series.Titles.FindBestTitle(),
             LocalizedSeries = series.Titles.FindBestNativeTitle(),
             Summary = series.Description ?? string.Empty,
