@@ -166,7 +166,12 @@ public class AthreaScansRepository(IHttpClientFactory httpClientFactory, IDistri
                     People = [],
                     TranslationGroups = []
                 };
-            }).WhereNotNull().ToList();
+            })
+            .WhereNotNull()
+            .Select(c => c with
+            {
+                SortOrder = c.ChapterNumber(),
+            }).ToList();
 
         var infoTableRows = document.DocumentNode.QuerySelectorAll("table.infotable tr")
             .Select(node =>

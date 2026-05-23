@@ -43,7 +43,7 @@ export class SearchResultComponent implements OnInit{
   metadata = input.required<FormControlDefinition[]>();
 
   imageSource = signal<string | null>(null);
-  isAlreadyMonitored = computed(() => this.searchResult().monitoredSeriesId.length > 0)
+  isAlreadyMonitored = computed(() => (this.searchResult().monitoredSeriesId?.length ?? 0) > 0)
 
 
   ngOnInit(): void {
@@ -98,7 +98,7 @@ export class SearchResultComponent implements OnInit{
   }
 
   openMonitoredSeries() {
-    const ids = this.searchResult().monitoredSeriesId;
+    const ids = this.searchResult().monitoredSeriesId ?? [];
     if (ids.length === 1) {
       this.router.navigateByUrl('/monitored-series-detail/' + ids[0]).catch(console.error);
       return;
