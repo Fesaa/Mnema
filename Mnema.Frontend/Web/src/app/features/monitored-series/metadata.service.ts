@@ -11,7 +11,7 @@ export enum MetadataProvider {
 }
 
 export interface MetadataSearchResult extends Series {
-  monitoredSeriesId: string;
+  monitoredSeriesId: string[];
 }
 
 @Injectable({

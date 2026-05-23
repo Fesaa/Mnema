@@ -1,17 +1,20 @@
-import {ChangeDetectionStrategy, Component, computed, input, output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input, output} from '@angular/core';
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {Series} from "@mnema/page/_components/series-info/_types";
 import {MetadataSearchResult} from "@mnema/features/monitored-series/metadata.service";
-import {RouterLink} from "@angular/router";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-compact-series-info',
-  imports: [TranslocoDirective, RouterLink],
+  imports: [TranslocoDirective],
   templateUrl: './compact-series-info.component.html',
   styleUrl: './compact-series-info.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CompactSeriesInfoComponent {
+
+  private readonly router = inject(Router);
+
   series = input.required<Series>();
   buttonLabel = input<string>();
   buttonIcon = input<string>();
@@ -26,8 +29,9 @@ export class CompactSeriesInfoComponent {
       return (series as MetadataSearchResult).monitoredSeriesId;
     }
 
-    return null;
+    return [];
   });
+  isMonitored = computed(() => this.monitoredSeriesId().length > 0);
 
   protected firstChapter = computed(() => {
     if (this.series().chapters.length > 0) {
@@ -61,6 +65,18 @@ export class CompactSeriesInfoComponent {
   });
 
   protected mainLink = computed(() => this.series().refUrl);
+
+  openMonitoredSeries() {
+    const ids = this.monitoredSeriesId();
+    if (ids.length === 0) return;
+
+    if (ids.length === 1) {
+      this.router.navigateByUrl('/monitored-series-detail/' +  ids[0]).catch(console.error);
+      return;
+    }
+
+    // TODO: Figure out how to handle multiple series
+  }
 
   onButtonClick() {
     this.buttonClick.emit(this.series());

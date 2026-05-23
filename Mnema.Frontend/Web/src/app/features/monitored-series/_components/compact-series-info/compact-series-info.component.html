@@ -29,9 +29,9 @@
               </a>
             }
 
-            @if (monitoredSeriesId(); as monitoredSeriesId) {
+            @if (isMonitored()) {
               <button
-                [routerLink]="['/monitored-series-detail', monitoredSeriesId]"
+                (click)="openMonitoredSeries()"
                 class="btn btn-sm btn-primary"
               >
                 {{t('already-monitored')}}
