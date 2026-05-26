@@ -82,7 +82,7 @@ public static class HttpClientExtensions
             var cachedResponse = await cache.GetAsJsonAsync<TResult>(cacheKey, cancellationToken);
             if (cachedResponse != null) return Result<TResult, HttpRequestException>.Ok(cachedResponse);
 
-            var result = await httpClient.GetAsync<TResult>(url, JsonSerializerOptions, cancellationToken);
+            var result = await httpClient.GetJsonAsync<TResult>(url, JsonSerializerOptions, cancellationToken);
             if (result.IsErr) return result;
 
             var resultValue = result.Unwrap();
@@ -93,7 +93,34 @@ public static class HttpClientExtensions
             return result;
         }
 
-        public async Task<Result<TResult, HttpRequestException>> GetAsync<TResult>(string url,
+        public async Task<Result<string, HttpRequestException>> GetAsStringAsync(string url,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await httpClient.GetAsync(url, cancellationToken);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+                    return Result<string, HttpRequestException>.Err(new HttpRequestException(
+                        $"Request failed with status {response.StatusCode}: {errorContent}",
+                        null,
+                        response.StatusCode));
+                }
+
+                var stringContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+                return Result<string, HttpRequestException>.Ok(stringContent);
+            }
+            catch (HttpRequestException ex)
+            {
+                return Result<string, HttpRequestException>.Err(ex);
+            }
+        }
+
+        public async Task<Result<TResult, HttpRequestException>> GetJsonAsync<TResult>(string url,
             JsonSerializerOptions jsonSerializerOptions, CancellationToken cancellationToken = default)
         {
             try

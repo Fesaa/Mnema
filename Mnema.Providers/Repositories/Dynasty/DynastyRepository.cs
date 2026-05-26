@@ -11,6 +11,7 @@ using Flurl;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
@@ -27,6 +28,7 @@ internal sealed record DynastyImage(string image);
 
 internal class DynastyRepository(
     ILogger<DynastyRepository> logger,
+    IUnitOfWork unitOfWork,
     IDistributedCache cache,
     IHttpClientFactory httpClientFactory,
     IParserService parserService)
@@ -364,6 +366,64 @@ internal class DynastyRepository(
                 }
             ]
         };
+    }
+
+    public async Task CorrectDynastyIds(CancellationToken cancellationToken)
+    {
+        var dynastySeries =
+            await unitOfWork.MonitoredSeriesRepository.GetByProvider(Provider.Dynasty, cancellationToken);
+        if (dynastySeries.Count == 0) return;
+
+        logger.LogDebug("Going to check {Count} Dynasty series for id correction", dynastySeries.Count);
+
+        var corrected = 0;
+
+        foreach (var series in dynastySeries)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+
+            var result = await Client.GetAsStringAsync(series.ExternalId, cancellationToken);
+            if (result.IsErr)
+            {
+                logger.LogWarning(result.Error, "Failed to retrieve series info for {SeriesExternalId}, cannot correct id", series.ExternalId);
+                continue;
+            }
+
+            var document = result.Unwrap().ToHtmlDocument();
+
+            var links = document.DocumentNode.QuerySelectorAll("head > link");
+            var idLink = links
+                .Select(node => node.GetAttributeValue("href", string.Empty))
+                .FirstOrDefault(href => href.StartsWith("/series/") || href.StartsWith("/chapters/"));
+
+            if (string.IsNullOrEmpty(idLink))
+            {
+                logger.LogWarning("Failed to retrieve series info for {SeriesExternalId}, cannot correct id", series.ExternalId);
+                continue;
+            }
+
+            if (idLink.EndsWith(".atom"))
+            {
+                idLink = idLink.RemoveSuffix(".atom");
+            }
+
+            if (series.ExternalId != idLink)
+            {
+                logger.LogInformation("Updating monitored series {MonitoredSeriesId} with new external id {NewExternalId} from {OldExternalId}",
+                    series.Id, idLink, series.ExternalId);
+
+                series.ExternalId = idLink;
+
+                corrected++;
+            }
+        }
+
+        await unitOfWork.CommitAsync(cancellationToken);
+
+        if (corrected > 0)
+        {
+            logger.LogInformation("Corrected {Count}/{Total} Dynasty series ids", corrected, dynastySeries.Count);
+        }
     }
 
     private static PublicationStatus ParseStatus(string? status)
