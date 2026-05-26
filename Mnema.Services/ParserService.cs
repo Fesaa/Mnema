@@ -70,7 +70,7 @@ public partial class ParserService: IParserService
 
     private static readonly char[] SpacesAndSeparators = ['\0', '\t', '\r', ' ', '-', ','];
 
-    private static readonly char[] SeriesSplitCharacters = ['|'];
+    private static readonly char[] SeriesSplitCharacters = ['|', '/'];
 
 
     private const string Number = @"\d+(\.\d)?";
@@ -894,9 +894,7 @@ public partial class ParserService: IParserService
             matchedSeries.AddRange(split);
         }
 
-        var res = matchedSeries.Distinct().ToList();
-
-        return res.Count > 0 ? res : [series];
+        return matchedSeries.Append(series).Distinct().ToList();
     }
 
     public string ParseVolume(string filename, ContentFormat type)
