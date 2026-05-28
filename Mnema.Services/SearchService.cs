@@ -49,7 +49,7 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
 
             try
             {
-                var recentlyUpdated = await repository.GetRecentlyUpdated(cancellationToken);
+                var recentlyUpdated = await GetRecentlyUpdated(provider, repository, cancellationToken);
 
                 releases.AddRange(recentlyUpdated);
             }
@@ -63,5 +63,22 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
         }
 
         return releases;
+    }
+
+    private async Task<IList<ContentRelease>> GetRecentlyUpdated(Provider provider, IContentRepository repository,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await repository.GetRecentlyUpdated(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to search for recently updated {Provider}. Retrying once after 5s", provider.ToString());
+        }
+
+        await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+
+        return await repository.GetRecentlyUpdated(cancellationToken);
     }
 }

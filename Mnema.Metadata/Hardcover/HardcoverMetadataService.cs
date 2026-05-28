@@ -89,10 +89,10 @@ public class HardcoverMetadataService(
         Dictionary<string, List<Guid>> monitoredSeriesIds)
     {
         var realBooks = series.BookSeries.GroupBy(b => b.Position)
-            .SelectMany(g =>
+            .SelectMany<IGrouping<float?, HardcoverBookSeries>, HardcoverBookSeries>(g =>
             {
                 if (g.Key == null)
-                    return g;
+                    return []; // Ignore books without a positions
 
                 var featuredBook = g.FirstOrDefault(b => b.Featured);
                 if (featuredBook != null)

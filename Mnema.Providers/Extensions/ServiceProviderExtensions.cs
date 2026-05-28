@@ -100,6 +100,8 @@ public static class ServiceProviderExtensions
 
             services.AddHttpClient(nameof(Provider.Dynasty), ConfigureDefaultClient("https://dynasty-scans.com/"));
 
+            services.AddScoped<IScheduled, ProviderJobScheduler>();
+
             #endregion
 
             #region Bato

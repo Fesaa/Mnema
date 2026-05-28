@@ -1267,7 +1267,7 @@
     },
     "no-results": {
       "title": "No results found",
-      "description": ""
+      "summary": ""
     }
   },
 
