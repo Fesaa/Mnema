@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Mnema.Common.Extensions;
 
 namespace Mnema.Metadata.Mangabaka;
 
@@ -54,5 +55,12 @@ internal class MangabakaDbContext(DbContextOptions<MangabakaDbContext> options):
             .HasConversion(
                 v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
                 v => string.IsNullOrEmpty(v) ? new List<MangabakaTitle>() : JsonSerializer.Deserialize<List<MangabakaTitle>>(v, JsonSerializerOptions.Default) ?? new List<MangabakaTitle>());
+
+        modelBuilder.Entity<MangabakaSeries>()
+            .Property(e => e.Status)
+            .HasConversion(
+                v => v.GetEnumMemberValue(),
+                v => v.ParseEnumMemberValue<MangabakaPublicationStatus>()
+            );
     }
 }
