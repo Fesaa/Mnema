@@ -133,7 +133,7 @@ public static class ServiceProviderExtensions
             });
 
             services.AddTransient(_ => new RateLimitingHandler(kaganeLimiter));
-            services.AddHttpClient(nameof(Provider.Kagane), ConfigureDefaultClient("https://yuzuki.kagane.org"))
+            services.AddHttpClient(nameof(Provider.Kagane), ConfigureDefaultClient("https://yuzuki.kagane.to"))
                 .AddHttpMessageHandler<RateLimitingHandler>();
 
             #endregion

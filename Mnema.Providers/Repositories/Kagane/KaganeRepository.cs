@@ -44,8 +44,8 @@ public class KaganeRepository(
     private static readonly IMetadataKey<IEnumerable<string>> IncludedTags = MetadataKeys.Strings("included_tags");
     private static readonly IMetadataKey<IEnumerable<string>> ExcludedTags = MetadataKeys.Strings("excluded_tags");
 
-    private AsyncLazy<List<Genre>> Genres => new(() => LoadList<Genre>("/api/v2/genres/list"));
-    private AsyncLazy<List<Genre>> Tags => new(() => LoadList<Genre>("/api/v2/tags/list"));
+    private AsyncLazy<List<Genre>> Genres => new(() => Task.FromResult(new List<Genre>()));
+    private AsyncLazy<List<Genre>> Tags => new(() => Task.FromResult(new List<Genre>()));
 
     protected override HttpClient Client => httpClientFactory.CreateClient(nameof(Provider.Kagane));
     private string? Base64Wvd => configuration.GetSection("Authentication").GetSection("Kagane").Get<string>();
@@ -91,8 +91,8 @@ public class KaganeRepository(
             Provider = Provider.Kagane,
             Size = null,
             Tags = [],
-            Url = "https://kagane.org/series/" + entry.SelectString("series_id"),
-            ImageUrl = $"proxy/kagane/covers/{entry.SelectString("cover_image_id")}",
+            Url = "https://kagane.to/series/" + entry.SelectString("series_id"),
+            //ImageUrl = $"proxy/kagane/covers/{entry.SelectString("cover_image_id")}",
         });
 
         return new PagedList<SearchResult>(items, total, pagination.PageNumber, pagination.PageSize);
@@ -276,8 +276,8 @@ public class KaganeRepository(
                 .SelectString("title"),
             Summary = response.SelectString("description"),
             CoverUrl = string.IsNullOrEmpty(coverId) ? null : $"proxy/kagane/covers/{coverId}",
-            NonProxiedCoverUrl = string.IsNullOrEmpty(coverId) ? null : $"https://yuzuki.kagane.org/api/v2/image/{coverId}/compressed",
-            RefUrl = "https://kagane.org/series/" + request.Id,
+            NonProxiedCoverUrl = string.IsNullOrEmpty(coverId) ? null : $"https://yuzuki.kagane.to/api/v2/image/{coverId}/compressed",
+            RefUrl = "https://kagane.to/series/" + request.Id,
             Status = ToPublicationStatus(response.SelectString("publication_status")),
             TranslationStatus = ToPublicationStatus(response.SelectString("upload_status")),
             Year = null,
@@ -383,14 +383,15 @@ public class KaganeRepository(
         var accessToken = accessor.SelectString("access_token");
         var cacheUrl = accessor.SelectString("cache_url");
 
-        return accessor.SelectMany("pages").Select(entry =>
+        return accessor.Select("manifest").SelectMany("pages").Select(entry =>
         {
-            var pageUrl = $"{cacheUrl}/api/v2/books/file/{chapter.Id}/{entry.SelectString("page_uuid")}"
+            var ext = "." + entry.SelectString("ext");
+            var pageUrl = $"{cacheUrl}/api/v2/books/page/{chapter.Id}/{entry.SelectString("page_id")}{ext}"
                 .SetQueryParam("token", accessToken)
                 .SetQueryParam("is_datasaver", "false")
                 .ToString();
 
-            return new DownloadUrl(pageUrl, pageUrl, ".webp");
+            return new DownloadUrl(pageUrl, pageUrl, ext);
         }).ToList();
     }
 
@@ -405,7 +406,7 @@ public class KaganeRepository(
         }
 
         using var content = new StringContent(string.Empty, Encoding.UTF8, "application/json");
-        var response = await Client.PostAsync("https://kagane.org/api/integrity", content);
+        var response = await Client.PostAsync("https://kagane.to/api/integrity", content);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStreamAsync();
