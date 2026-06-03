@@ -22,6 +22,7 @@ public sealed record DownloadInfo
     public required double Speed { get; init; }
     public required string DownloadDir { get; init; }
     public required Guid UserId { get; init; }
+    public required Guid? MonitoredSeriesId { get; init; }
 }
 
 public enum SpeedType

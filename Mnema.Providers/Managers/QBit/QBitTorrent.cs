@@ -65,5 +65,6 @@ public class QBitTorrent(DownloadRequestDto request, TorrentInfo torrentInfo) : 
         Speed = torrentInfo.DownloadSpeed,
         DownloadDir = Request.BaseDir,
         UserId = Request.UserId,
+        MonitoredSeriesId = Request.GetKey(RequestConstants.MonitoredSeriesId)
     };
 }
