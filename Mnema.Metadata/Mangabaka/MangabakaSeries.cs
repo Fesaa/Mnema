@@ -19,6 +19,8 @@ public enum MangabakaPublicationStatus
     Hiatus,
     [EnumMember(Value = "upcoming")]
     Upcoming,
+    [EnumMember(Value = "unknown")]
+    Unknown,
 }
 
 public static class MangabakaPublicationStatusExtensions

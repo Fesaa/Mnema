@@ -271,6 +271,7 @@ internal partial class MangabakaMetadataService(
             MangabakaPublicationStatus.Cancelled => PublicationStatus.Cancelled,
             MangabakaPublicationStatus.Hiatus => PublicationStatus.Paused,
             MangabakaPublicationStatus.Upcoming => PublicationStatus.Ongoing, // Close enough
+            MangabakaPublicationStatus.Unknown => PublicationStatus.Unknown,
             _ => throw new ArgumentOutOfRangeException(nameof(publicationStatus), publicationStatus, null)
         };
     }
