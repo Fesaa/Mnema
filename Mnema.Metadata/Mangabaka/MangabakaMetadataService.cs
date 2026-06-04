@@ -239,7 +239,7 @@ internal partial class MangabakaMetadataService(
         var artists = series.Artists?
             .Select(p => Person.Create(p, PersonRole.Colorist)) ?? [];
 
-        var contentRating = series.TagsV2
+        var contentRating = series.TagsV2?
             .Select(t => (MangabakaContentRating?)t.ContentRating)
             .Append(series.ContentRating)
             .DefaultIfEmpty(null)

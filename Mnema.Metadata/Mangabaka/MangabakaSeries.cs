@@ -245,7 +245,7 @@ internal class MangabakaSeries
     public string? Tags { get; set; }
 
     [Column("tags_v2")]
-    public List<MangabakaTagV2> TagsV2 { get; set; }
+    public List<MangabakaTagV2>? TagsV2 { get; set; }
 
     [Column("last_updated_at")]
     public string? LastUpdatedAt { get; set; }
