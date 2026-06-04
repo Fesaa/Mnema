@@ -57,6 +57,54 @@ public class MangabakaTitle
     public bool IsPrimary { get; set;}
 }
 
+internal enum MangabakaTagWeight
+{
+    [EnumMember(Value = "core")]
+    Core,
+    [EnumMember(Value = "defining")]
+    Defining,
+    [EnumMember(Value = "recurrent")]
+    Recurrent,
+    [EnumMember(Value = "incidental")]
+    Incidental,
+    [EnumMember(Value = "unweighted")]
+    Unweighted
+}
+
+internal enum MangabakaContentRating
+{
+    [EnumMember(Value = "safe")]
+    [JsonStringEnumMemberName( "safe")]
+    Safe,
+    [EnumMember(Value = "suggestive")]
+    [JsonStringEnumMemberName( "suggestive")]
+    Suggestive,
+    [EnumMember(Value = "erotica")]
+    [JsonStringEnumMemberName( "erotica")]
+    Erotica,
+    [EnumMember(Value = "pornographic")]
+    [JsonStringEnumMemberName( "pornographic")]
+    Pornographic,
+}
+
+internal class MangabakaTagV2
+{
+    [JsonPropertyName("is_spoiler")]
+    public bool IsSpoiler { get; set; }
+
+    [JsonPropertyName("is_genre")]
+    public bool IsGenre { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+
+    [JsonPropertyName("weight")]
+    public MangabakaTagWeight Weight { get; set; }
+
+    [JsonPropertyName("content_rating")]
+    public MangabakaContentRating ContentRating { get; set; }
+}
+
 [Table("series", Schema = "main")]
 internal class MangabakaSeries
 {
@@ -161,7 +209,7 @@ internal class MangabakaSeries
     public string? Anime { get; set; }
 
     [Column("content_rating")]
-    public string? ContentRating { get; set; }
+    public MangabakaContentRating? ContentRating { get; set; }
 
     [Column("type")]
     public string? Type { get; set; }
@@ -197,7 +245,7 @@ internal class MangabakaSeries
     public string? Tags { get; set; }
 
     [Column("tags_v2")]
-    public string? TagsV2 { get; set; }
+    public List<MangabakaTagV2> TagsV2 { get; set; }
 
     [Column("last_updated_at")]
     public string? LastUpdatedAt { get; set; }
@@ -205,209 +253,11 @@ internal class MangabakaSeries
     [Column("source_anilist_id")]
     public int? SourceAnilistId { get; set; }
 
-    [Column("source_anilist_rating")]
-    public float? SourceAnilistRating { get; set; }
-
-    [Column("source_anilist_rating_normalized")]
-    public int? SourceAnilistRatingNormalized { get; set; }
-
-    [Column("source_anilist_cover")]
-    public string? SourceAnilistCover { get; set; }
-
-    [Column("source_anilist_last_updated_at")]
-    public string? SourceAnilistLastUpdatedAt { get; set; }
-
-    [Column("source_anilist_response")]
-    public string? SourceAnilistResponse { get; set; }
-
-    [Column("source_anime_planet_id")]
-    public string? SourceAnimePlanetId { get; set; }
-
-    [Column("source_anime_planet_rating")]
-    public int? SourceAnimePlanetRating { get; set; }
-
-    [Column("source_anime_planet_rating_normalized")]
-    public int? SourceAnimePlanetRatingNormalized { get; set; }
-
-    [Column("source_anime_planet_cover")]
-    public string? SourceAnimePlanetCover { get; set; }
-
-    [Column("source_anime_planet_last_updated_at")]
-    public string? SourceAnimePlanetLastUpdatedAt { get; set; }
-
-    [Column("source_anime_planet_response")]
-    public string? SourceAnimePlanetResponse { get; set; }
-
-    [Column("source_shikimori_id")]
-    public string? SourceShikimoriId { get; set; }
-
-    [Column("source_shikimori_rating")]
-    public string? SourceShikimoriRating { get; set; }
-
-    [Column("source_shikimori_rating_normalized")]
-    public string? SourceShikimoriRatingNormalized { get; set; }
-
-    [Column("source_shikimori_cover")]
-    public string? SourceShikimoriCover { get; set; }
-
-    [Column("source_shikimori_last_updated_at")]
-    public string? SourceShikimoriLastUpdatedAt { get; set; }
-
-    [Column("source_shikimori_response")]
-    public string? SourceShikimoriResponse { get; set; }
-
-    [Column("source_anime_news_network_id")]
-    public string? SourceAnimeNewsNetworkId { get; set; }
-
-    [Column("source_anime_news_network_rating")]
-    public string? SourceAnimeNewsNetworkRating { get; set; }
-
-    [Column("source_anime_news_network_rating_normalized")]
-    public string? SourceAnimeNewsNetworkRatingNormalized { get; set; }
-
-    [Column("source_anime_news_network_cover")]
-    public string? SourceAnimeNewsNetworkCover { get; set; }
-
-    [Column("source_anime_news_network_last_updated_at")]
-    public string? SourceAnimeNewsNetworkLastUpdatedAt { get; set; }
-
-    [Column("source_anime_news_network_response")]
-    public string? SourceAnimeNewsNetworkResponse { get; set; }
-
-    [Column("source_manga_updates_id")]
-    public string? SourceMangaUpdatesId { get; set; }
-
-    [Column("source_manga_updates_rating")]
-    public float? SourceMangaUpdatesRating { get; set; }
-
-    [Column("source_manga_updates_rating_normalized")]
-    public int? SourceMangaUpdatesRatingNormalized { get; set; }
-
-    [Column("source_manga_updates_cover")]
-    public string? SourceMangaUpdatesCover { get; set; }
-
-    [Column("source_manga_updates_last_updated_at")]
-    public string? SourceMangaUpdatesLastUpdatedAt { get; set; }
-
-    [Column("source_manga_updates_response")]
-    public string? SourceMangaUpdatesResponse { get; set; }
-
     [Column("source_my_anime_list_id")]
     public string? SourceMyAnimeListId { get; set; }
 
-    [Column("source_my_anime_list_rating")]
-    public string? SourceMyAnimeListRating { get; set; }
-
-    [Column("source_my_anime_list_rating_normalized")]
-    public string? SourceMyAnimeListRatingNormalized { get; set; }
-
-    [Column("source_my_anime_list_cover")]
-    public string? SourceMyAnimeListCover { get; set; }
-
-    [Column("source_my_anime_list_last_updated_at")]
-    public string? SourceMyAnimeListLastUpdatedAt { get; set; }
-
-    [Column("source_my_anime_list_response")]
-    public string? SourceMyAnimeListResponse { get; set; }
-
-    [Column("source_kitsu_id")]
-    public int? SourceKitsuId { get; set; }
-
-    [Column("source_kitsu_rating")]
-    public string? SourceKitsuRating { get; set; }
-
-    [Column("source_kitsu_rating_normalized")]
-    public string? SourceKitsuRatingNormalized { get; set; }
-
-    [Column("source_kitsu_cover")]
-    public string? SourceKitsuCover { get; set; }
-
-    [Column("source_kitsu_last_updated_at")]
-    public string? SourceKitsuLastUpdatedAt { get; set; }
-
-    [Column("source_kitsu_response")]
-    public string? SourceKitsuResponse { get; set; }
-
-    [Column("relationships_other")]
-    public string? RelationshipsOther { get; set; }
-
-    [Column("relationships_adaptation")]
-    public string? RelationshipsAdaptation { get; set; }
-
-    [Column("relationships_prequel")]
-    public string? RelationshipsPrequel { get; set; }
-
-    [Column("relationships_main_story")]
-    public string? RelationshipsMainStory { get; set; }
-
-    [Column("relationships_sequel")]
-    public string? RelationshipsSequel { get; set; }
-
-    [Column("anime_end")]
-    public string? AnimeEnd { get; set; }
-
-    [Column("anime_start")]
-    public string? AnimeStart { get; set; }
-
-    [Column("relationships_alternative")]
-    public string? RelationshipsAlternative { get; set; }
-
-    [Column("secondary_titles_ko")]
-    public string? SecondaryTitlesKo { get; set; }
-
-    [Column("relationships_side_story")]
-    public string? RelationshipsSideStory { get; set; }
-
-    [Column("relationships_spin_off")]
-    public string? RelationshipsSpinOff { get; set; }
-
-    [Column("secondary_titles_ja-ro")]
-    public string? SecondaryTitlesJaRo { get; set; }
-
-    [Column("secondary_titles_ja")]
-    public string? SecondaryTitlesJa { get; set; }
-
-    [Column("secondary_titles_es")]
-    public string? SecondaryTitlesEs { get; set; }
-
-    [Column("secondary_titles_zh-ro")]
-    public string? SecondaryTitlesZhRo { get; set; }
-
-    [Column("secondary_titles_ko-ro")]
-    public string? SecondaryTitlesKoRo { get; set; }
-
-    [Column("secondary_titles_vi")]
-    public string? SecondaryTitlesVi { get; set; }
-
-    [Column("secondary_titles_zh")]
-    public string? SecondaryTitlesZh { get; set; }
-
-    [Column("secondary_titles_es-la")]
-    public string? SecondaryTitlesEsLa { get; set; }
-
-    [Column("secondary_titles_th")]
-    public string? SecondaryTitlesTh { get; set; }
-
-    [Column("secondary_titles_pt")]
-    public string? SecondaryTitlesPt { get; set; }
-
-    [Column("secondary_titles_fr")]
-    public string? SecondaryTitlesFr { get; set; }
-
-    [Column("secondary_titles_zh-hk")]
-    public string? SecondaryTitlesZhHk { get; set; }
-
-    [Column("secondary_titles_de")]
-    public string? SecondaryTitlesDe { get; set; }
-
-    [Column("secondary_titles_pt-br")]
-    public string? SecondaryTitlesPtBr { get; set; }
-
-    [Column("secondary_titles_ru")]
-    public string? SecondaryTitlesRu { get; set; }
-
-    [Column("secondary_titles_uk")]
-    public string? SecondaryTitlesUk { get; set; }
+    [Column("source_manga_updates_id")]
+    public string? SourceMangaUpdatesId { get; set; }
 
     public List<string> CollectLinks()
     {
