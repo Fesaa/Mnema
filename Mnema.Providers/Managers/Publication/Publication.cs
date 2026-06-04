@@ -176,6 +176,7 @@ internal partial class Publication(
         Speed = Math.Floor(_speedTracker?.IntermediateSpeed() ?? 0),
         DownloadDir = DownloadDir,
         UserId = Request.UserId,
+        MonitoredSeriesId = Request.GetKey(RequestConstants.MonitoredSeriesId)
     };
 
     public string Id => Series != null ? Series.Id : Request.Id;

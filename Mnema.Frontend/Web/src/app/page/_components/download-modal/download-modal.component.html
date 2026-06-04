@@ -18,9 +18,12 @@
           <li class="nav-item" (click)="activeTab = 'general'">
             <a class="nav-link" [class.active]="activeTab === 'general'">{{ t('general') }}</a>
           </li>
-          <li class="nav-item" (click)="activeTab = 'advanced'">
-            <a class="nav-link" [class.active]="activeTab === 'advanced'">{{ t('advanced') }}</a>
-          </li>
+
+          @if (advancedFormDefinitionValue.controls.length > 0) {
+            <li class="nav-item" (click)="activeTab = 'advanced'">
+              <a class="nav-link" [class.active]="activeTab === 'advanced'">{{ t('advanced') }}</a>
+            </li>
+          }
         </ul>
 
         <div class="tab-content mt-2 mx-4">

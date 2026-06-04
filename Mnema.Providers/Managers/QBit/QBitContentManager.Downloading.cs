@@ -147,6 +147,7 @@ internal partial class QBitContentManager
             Speed = 0,
             DownloadDir = downloadDir,
             UserId = request.UserId,
+            MonitoredSeriesId = monitoredSeriesId,
         };
 
         await signalR.AddContent(request.UserId, info);

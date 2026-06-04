@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text.RegularExpressions;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.En;
 using Lucene.Net.Analysis.TokenAttributes;
@@ -240,6 +239,12 @@ internal partial class MangabakaMetadataService(
         var artists = series.Artists?
             .Select(p => Person.Create(p, PersonRole.Colorist)) ?? [];
 
+        var contentRating = series.TagsV2?
+            .Select(t => (MangabakaContentRating?)t.ContentRating)
+            .Append(series.ContentRating)
+            .DefaultIfEmpty(null)
+            .Max();
+
         return new MetadataSearchResult
         {
             Id = series.Id.ToString(),
@@ -249,9 +254,11 @@ internal partial class MangabakaMetadataService(
             Summary = series.Description ?? string.Empty,
             Status = FromMangabakaPublicationStatus(series.Status),
             RefUrl = $"https://mangabaka.org/{series.Id}",
-            Tags = series.Genres?
-                .Select(g => new Tag(g, true))
-                .ToList() ?? [], // Mangabaka tags are pure nonsense because they have MU
+            Tags = series.TagsV2?
+                .Where(t => t.Weight < MangabakaTagWeight.Recurrent) // Should we make this a preference?
+                .Select(t => new Tag(t.Name, t.IsGenre))
+                .ToList() ?? [],
+            AgeRating = FromMangaBakaContentRating(contentRating),
             People = publishers.Concat(writers).Concat(artists).ToList(),
             Links = series.CollectLinks(),
             CoverUrl = series.CoverX350X3,
@@ -276,6 +283,16 @@ internal partial class MangabakaMetadataService(
         };
     }
 
-    [GeneratedRegex(@"[^a-z0-9\s]")]
-    private static partial Regex TermNormalisationRegex();
+    private static AgeRating FromMangaBakaContentRating(MangabakaContentRating? contentRating)
+    {
+        return contentRating switch
+        {
+            MangabakaContentRating.Safe => AgeRating.Everyone,
+            MangabakaContentRating.Suggestive => AgeRating.Mature15Plus,
+            MangabakaContentRating.Erotica => AgeRating.Mature17Plus,
+            MangabakaContentRating.Pornographic => AgeRating.R18Plus,
+            null => AgeRating.Unknown,
+            _ => throw new ArgumentOutOfRangeException(nameof(contentRating), contentRating, null)
+        };
+    }
 }
