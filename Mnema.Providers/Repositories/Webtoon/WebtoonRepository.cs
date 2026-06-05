@@ -180,7 +180,8 @@ internal class WebtoonRepository(
         }
     }
 
-    public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    public async Task<IList<DownloadUrl>> ChapterUrls(MetadataBag metadata, Chapter chapter,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(chapter.RefUrl)) throw new MnemaException("Chapter URL is missing");
 

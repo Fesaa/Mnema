@@ -43,6 +43,7 @@ public class KaganeRepository(
     private static readonly IMetadataKey<IEnumerable<string>> ExcludedGenres = MetadataKeys.Strings("excluded_genres");
     private static readonly IMetadataKey<IEnumerable<string>> IncludedTags = MetadataKeys.Strings("included_tags");
     private static readonly IMetadataKey<IEnumerable<string>> ExcludedTags = MetadataKeys.Strings("excluded_tags");
+    private static readonly IMetadataKey<string> IntegrityToken = MetadataKeys.String("integrity_token");
 
     private AsyncLazy<List<Genre>> Genres => new(() => Task.FromResult(new List<Genre>()));
     private AsyncLazy<List<Genre>> Tags => new(() => Task.FromResult(new List<Genre>()));
@@ -203,6 +204,12 @@ public class KaganeRepository(
                 {
                     Key = RequestConstants.MangaBakaKey.Key,
                     Type = FormType.Text
+                },
+                new FormControlDefinition
+                {
+                    Key = IntegrityToken.Key,
+                    Type = FormType.Text,
+                    Advanced = true,
                 }
             ]);
     }
@@ -355,7 +362,7 @@ public class KaganeRepository(
         };
     }
 
-    public override async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    public override async Task<IList<DownloadUrl>> ChapterUrls(MetadataBag metadata, Chapter chapter, CancellationToken cancellationToken)
     {
         var wvd = Base64Wvd;
         if (string.IsNullOrEmpty(wvd)) throw new InvalidOperationException("WVD is not configured");
@@ -370,7 +377,11 @@ public class KaganeRepository(
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
         request.Content = content;
 
-        var integrityToken = await GetIntegrityToken();
+        var integrityToken = metadata.GetKey(IntegrityToken);
+        if (string.IsNullOrEmpty(integrityToken))
+        {
+            integrityToken = await GetIntegrityToken();
+        }
         request.Headers.Add("x-integrity-token", integrityToken);
 
         using var response = await Client.SendAsync(request, cancellationToken);

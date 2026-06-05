@@ -56,5 +56,6 @@ public abstract class AbstractRepository(IDistributedCache cache): IRepository
 
     public abstract Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken);
 
-    public abstract Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken);
+    public abstract Task<IList<DownloadUrl>> ChapterUrls(MetadataBag metadata, Chapter chapter,
+        CancellationToken cancellationToken);
 }

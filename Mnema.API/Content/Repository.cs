@@ -61,9 +61,10 @@ public interface IRepository: IContentRepository
     /// <summary>
     ///     Retrieve all urls that should be downloaded for a series
     /// </summary>
+    /// <param name="metadata"></param>
     /// <param name="chapter"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="Mnema.Common.Exceptions.MnemaException">If something outside our control fails</exception>
-    Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken);
+    Task<IList<DownloadUrl>> ChapterUrls(MetadataBag metadata, Chapter chapter, CancellationToken cancellationToken);
 }

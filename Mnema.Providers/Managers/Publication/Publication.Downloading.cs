@@ -199,7 +199,7 @@ internal partial class Publication
 
     private async Task DownloadChapter(Channel<IoWork> channel, Chapter chapter)
     {
-        var urls = await _repository.ChapterUrls(chapter, _tokenSource.Token);
+        var urls = await _repository.ChapterUrls(Request.Metadata, chapter, _tokenSource.Token);
 
         if (urls.Count == 0)
         {

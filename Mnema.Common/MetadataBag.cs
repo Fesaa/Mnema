@@ -117,8 +117,8 @@ public interface IMetadataKey<T>
 
     string Key { get; }
 
-    T Get(MetadataBag bag);
-    void Set(MetadataBag bag, T value);
+    internal T Get(MetadataBag bag);
+    internal void Set(MetadataBag bag, T value);
 }
 
 public static class MetadataKeys

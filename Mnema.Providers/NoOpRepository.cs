@@ -47,7 +47,8 @@ public class NoOpRepository: IRepository
         });
     }
 
-    public Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    public Task<IList<DownloadUrl>> ChapterUrls(MetadataBag metadata, Chapter chapter,
+        CancellationToken cancellationToken)
     {
         return Task.FromResult<IList<DownloadUrl>>(new List<DownloadUrl>());
     }

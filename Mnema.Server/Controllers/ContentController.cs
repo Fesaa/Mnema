@@ -105,7 +105,7 @@ public class ContentController(
             TranslationGroups = []
         };
 
-        return Ok(await repository.ChapterUrls(chapter, HttpContext.RequestAborted));
+        return Ok(await repository.ChapterUrls(new MetadataBag(), chapter, HttpContext.RequestAborted));
     }
 
     [HttpGet("comic-info")]

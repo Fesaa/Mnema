@@ -133,7 +133,7 @@ public static class ServiceProviderExtensions
             });
 
             services.AddTransient(_ => new RateLimitingHandler(kaganeLimiter));
-            services.AddHttpClient(nameof(Provider.Kagane), ConfigureDefaultClient("https://yuzuki.kagane.to"))
+            services.AddHttpClient(nameof(Provider.Kagane), ConfigureDefaultClient("https://yuzuki.kagane.to", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:151.0) Gecko/20100101 Firefox/151.0"))
                 .AddHttpMessageHandler<RateLimitingHandler>();
 
             #endregion
@@ -173,13 +173,13 @@ public static class ServiceProviderExtensions
         }
     }
 
-    private static Action<HttpClient> ConfigureDefaultClient(string uri)
+    private static Action<HttpClient> ConfigureDefaultClient(string uri, string? userAgent = null)
     {
         return client =>
         {
             client.BaseAddress = new Uri(uri);
             client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
+            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, userAgent ?? "Mnema");
         };
     }
 }

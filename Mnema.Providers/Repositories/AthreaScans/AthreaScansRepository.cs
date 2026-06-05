@@ -207,7 +207,8 @@ public class AthreaScansRepository(IHttpClientFactory httpClientFactory, IDistri
         };
     }
 
-    public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    public async Task<IList<DownloadUrl>> ChapterUrls(MetadataBag metadata, Chapter chapter,
+        CancellationToken cancellationToken)
     {
         var result = await HttpClient.GetCachedStringAsync(chapter.Id, cache, cancellationToken: cancellationToken);
         if (result.IsErr)

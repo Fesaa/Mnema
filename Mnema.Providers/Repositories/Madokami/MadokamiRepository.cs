@@ -204,7 +204,8 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
         };
     }
 
-    public Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    public Task<IList<DownloadUrl>> ChapterUrls(MetadataBag metadata, Chapter chapter,
+        CancellationToken cancellationToken)
     {
         var baseUrl = Client.BaseAddress?.ToString().TrimEnd('/');
         return Task.FromResult<IList<DownloadUrl>>(new List<DownloadUrl>

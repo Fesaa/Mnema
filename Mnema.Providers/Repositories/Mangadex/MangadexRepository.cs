@@ -173,7 +173,8 @@ internal class MangadexRepository : IRepository
         };
     }
 
-    public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    public async Task<IList<DownloadUrl>> ChapterUrls(MetadataBag metadata, Chapter chapter,
+        CancellationToken cancellationToken)
     {
         var url = $"/at-home/server/{chapter.Id}";
 

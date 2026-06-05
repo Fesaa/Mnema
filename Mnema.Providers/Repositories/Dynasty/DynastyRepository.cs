@@ -101,7 +101,8 @@ internal class DynastyRepository(
         return ParseChapterPageAsSeries(document, request);
     }
 
-    public async Task<IList<DownloadUrl>> ChapterUrls(Chapter chapter, CancellationToken cancellationToken)
+    public async Task<IList<DownloadUrl>> ChapterUrls(MetadataBag metadata, Chapter chapter,
+        CancellationToken cancellationToken)
     {
         var result =
             await Client.GetCachedStringAsync($"chapters/{chapter.Id}", cache, cancellationToken: cancellationToken);
