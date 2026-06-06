@@ -322,11 +322,14 @@ internal class DiscordConnectionService(
             return;
         }
 
+        var username = connection.Metadata.GetKey(UsernameKey);
+        var avatar = connection.Metadata.GetKey(AvatarKey);
+
         using var client = new DiscordWebhookClient(url);
 
         try
         {
-            await client.SendMessageAsync(embeds: embeds, components: components);
+            await client.SendMessageAsync(username: username, avatarUrl: avatar, embeds: embeds, components: components);
         }
         catch (Exception ex)
         {
