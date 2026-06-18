@@ -150,7 +150,14 @@ internal class MonitoredSeriesScheduler(
 
             var parseResult = parserService.FullParse(release.ReleaseName, monitoredRelease.ContentFormat);
 
-            if (!parseResult.Series.Intersect(monitoredRelease.ValidTitles).Any())
+            var hasTitleMatch = parseResult.Series.Any(seriesName =>
+            {
+                var normalizedSeriesName = seriesName.ToNormalized();
+
+                return monitoredRelease.ValidTitles.Any(title => title.ToNormalized() == normalizedSeriesName);
+            });
+
+            if (!hasTitleMatch)
                 continue;
 
             // Ensure the release is in the correct format
@@ -159,11 +166,11 @@ internal class MonitoredSeriesScheduler(
             if (!formats.Contains(monitoredRelease.Format))
                 continue;
 
-            var allIgnored = chapters
+            var shouldSkipDownload = chapters
                 .Select(chapter => scannerService.FindMatch(monitoredRelease.Chapters, chapter))
-                .All(c => c?.Status == MonitoredChapterStatus.NotMonitored);
+                .All(c => c?.Status is MonitoredChapterStatus.Available or MonitoredChapterStatus.NotMonitored);
 
-            if (allIgnored)
+            if (shouldSkipDownload)
                 continue;
 
             return monitoredRelease;
