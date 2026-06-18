@@ -336,7 +336,7 @@ internal class DiscordConnectionService(
             logger.LogError(ex, "Failed to send message to Discord webhook trying again in 1s");
             await Task.Delay(1000);
 
-            await client.SendMessageAsync(embeds: embeds, components: components);
+            await client.SendMessageAsync(username: username, avatarUrl: avatar, embeds: embeds, components: components);
         }
     }
 }
