@@ -364,18 +364,9 @@ public class KaganeRepository(
 
     public override async Task<IList<DownloadUrl>> ChapterUrls(MetadataBag metadata, Chapter chapter, CancellationToken cancellationToken)
     {
-        var wvd = Base64Wvd;
-        if (string.IsNullOrEmpty(wvd)) throw new InvalidOperationException("WVD is not configured");
-
-        var f = SHA256.HashData(Encoding.UTF8.GetBytes($":{chapter.Id}")).Take(16).ToArray();
-        var challenge = GetChallengeWvd(f, wvd);
-
         var url = $"/api/v2/books/{chapter.Id}?data_saver=false";
-        var body = JsonSerializer.Serialize(new { challenge });
-        using var content = new StringContent(body, Encoding.UTF8, "application/json");
 
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
-        request.Content = content;
 
         var integrityToken = metadata.GetKey(IntegrityToken);
         if (string.IsNullOrEmpty(integrityToken))
@@ -383,6 +374,7 @@ public class KaganeRepository(
             integrityToken = await GetIntegrityToken();
         }
         request.Headers.Add("x-integrity-token", integrityToken);
+        request.Headers.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0");
 
         using var response = await Client.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
