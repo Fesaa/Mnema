@@ -39,6 +39,7 @@ internal class DiscordConnectionService(
         ConnectionEvent.TooManyForAutomatedDownload,
         ConnectionEvent.DownloadClientEvents,
         ConnectionEvent.Exception,
+        ConnectionEvent.GenericDownloadInfo,
     ];
 
     public override Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
@@ -96,6 +97,25 @@ internal class DiscordConnectionService(
             embed.WithImageUrl(info.ImageUrl);
 
         return SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
+    }
+
+    public override Task CommunicateDownloadInfo(Connection connection, DownloadInfo info, string title, string description)
+    {
+        var embed = new EmbedBuilder()
+            .WithTitle(title)
+            .WithDescription(description.Limit(MaxDescriptionLength))
+            .WithColor(0x3498db)
+            .WithTimestamp(DateTime.UtcNow)
+            .WithFields(BuildDefaultEmbedFields(info))
+            .WithFooter(new EmbedFooterBuilder().WithText($"ID: {info.Id}"));
+
+        if (!string.IsNullOrEmpty(info.RefUrl))
+            embed.WithUrl(info.RefUrl);
+
+        if (!string.IsNullOrEmpty(info.ImageUrl))
+            embed.WithImageUrl(info.ImageUrl);
+
+        return SendMessage(connection, [embed.Build()]);
     }
 
     public override Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
@@ -336,7 +356,7 @@ internal class DiscordConnectionService(
             logger.LogError(ex, "Failed to send message to Discord webhook trying again in 1s");
             await Task.Delay(1000);
 
-            await client.SendMessageAsync(embeds: embeds, components: components);
+            await client.SendMessageAsync(username: username, avatarUrl: avatar, embeds: embeds, components: components);
         }
     }
 }

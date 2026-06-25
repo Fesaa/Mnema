@@ -47,6 +47,12 @@ internal class ConnectionService(
             => service.CommunicateSubscriptionExhausted(connection, info));
     }
 
+    public void CommunicateDownloadInfo(DownloadInfo info, string title, string description)
+    {
+        DoForAll(ConnectionEvent.GenericDownloadInfo, (service, connection)
+            => service.CommunicateDownloadInfo(connection, info, title, description));
+    }
+
     public async Task CommunicateSeriesMonitored(Guid id, CancellationToken cancellationToken)
     {
         var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, ct: cancellationToken);

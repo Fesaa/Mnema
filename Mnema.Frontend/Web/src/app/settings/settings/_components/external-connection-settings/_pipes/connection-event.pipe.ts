@@ -10,6 +10,12 @@ export class ConnectionEventPipe implements PipeTransform {
 
   transform(event: ConnectionEvent): string {
     switch (event) {
+      case ConnectionEvent.TooManyForAutomatedDownload:
+        return translate('settings.connections.shared.event.TooManyForAutomatedDownload');
+      case ConnectionEvent.DownloadClientEvents:
+        return translate('settings.connections.shared.event.DownloadClientEvents');
+      case ConnectionEvent.GenericDownloadInfo:
+        return translate('settings.connections.shared.event.GenericDownloadInfo');
       case ConnectionEvent.SubscriptionExhausted:
         return translate('settings.connections.shared.event.SubscriptionExhausted');
       case ConnectionEvent.SeriesMonitored:
