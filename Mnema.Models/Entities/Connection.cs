@@ -64,4 +64,9 @@ public enum ConnectionEvent
     ///     Fired when an exception occurs through the application. This does not catch all of them
     /// </summary>
     Exception = 8,
+
+    /// <summary>
+    /// Generic download information
+    /// </summary>
+    GenericDownloadInfo = 9,
 }

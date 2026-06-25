@@ -17,6 +17,7 @@ public interface IConnectionService
     void CommunicateDownloadFinished(DownloadInfo info);
     void CommunicateDownloadFailure(DownloadInfo info, Exception ex);
     void CommunicateSeriesExhausted(DownloadInfo info);
+    void CommunicateDownloadInfo(DownloadInfo info, string title, string description);
     Task CommunicateSeriesMonitored(Guid id, CancellationToken cancellationToken = default);
     Task CommunicateSeriesUnmonitored(Guid id, CancellationToken cancellationToken = default);
     void CommunicateTooManyForAutomatedDownload(MonitoredSeries info, int amount);
@@ -35,6 +36,7 @@ public interface IConnectionHandlerService
     Task CommunicateDownloadFinished(Connection connection, DownloadInfo info);
     Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex);
     Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info);
+    Task CommunicateDownloadInfo(Connection connection, DownloadInfo info, string title, string description);
     Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series);
     Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series);
     Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries info, int amount);

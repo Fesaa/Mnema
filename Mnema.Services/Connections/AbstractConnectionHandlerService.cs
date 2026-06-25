@@ -33,6 +33,11 @@ public abstract class AbstractConnectionHandlerService: IConnectionHandlerServic
         throw new NotImplementedException();
     }
 
+    public virtual Task CommunicateDownloadInfo(Connection connection, DownloadInfo info, string title, string description)
+    {
+        throw new NotImplementedException();
+    }
+
     public virtual Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
     {
         throw new NotImplementedException();

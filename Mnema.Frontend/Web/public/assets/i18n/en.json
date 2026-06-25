@@ -767,7 +767,8 @@
           "SeriesUnmonitored": "Series Unmonitored",
           "TooManyForAutomatedDownload": "Too many for automated download",
           "DownloadClientEvents": "Download client events",
-          "Exception": "Exception"
+          "Exception": "Exception",
+          "GenericDownloadInfo": "Generic download info",
         }
       },
       "edit": {
@@ -796,7 +797,8 @@
           "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
           "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
           "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}",
-          "Exception": "{{settings.connections.shared.event.Exception}}"
+          "Exception": "{{settings.connections.shared.event.Exception}}",
+          "GenericDownloadInfo": "{{settings.connections.shared.event.GenericDownloadInfo}}"
         }
       },
       "Kavita": {

@@ -78,6 +78,14 @@ internal partial class Publication
             Request.StartImmediately = false;
         }
 
+        var allOneShots = Series!.Chapters.All(c => c.IsOneShot);
+        if (allOneShots && !Request.GetKey(RequestConstants.DownloadOneShotKey) && Request.StartImmediately)
+        {
+            _connectionService.CommunicateDownloadInfo(DownloadInfo, "One-Shot Download",
+                "All chapters in this series are One-Shots, but you've decided to not download one shots. Paused download, double check your decision!");
+            Request.StartImmediately = false;
+        }
+
         State = Request.StartImmediately ? ContentState.Ready : ContentState.Waiting;
         await _messageService.UpdateContent(Request.UserId, DownloadInfo);
 
