@@ -768,7 +768,7 @@
           "TooManyForAutomatedDownload": "Too many for automated download",
           "DownloadClientEvents": "Download client events",
           "Exception": "Exception",
-          "GenericDownloadInfo": "Generic download info",
+          "GenericDownloadInfo": "Generic download info"
         }
       },
       "edit": {
