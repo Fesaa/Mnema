@@ -1,9 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Common;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 using Mnema.Services.Scheduled;
@@ -354,5 +361,62 @@ public class MonitoredSeriesSchedulerTests
         var result = await MonitoredSeriesScheduler.FindMatch(scope, [series], release, CancellationToken.None);
 
         Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task GetProviders_ExcludesDisabledProviders()
+    {
+        var entities = new List<MonitoredSeries>
+        {
+            new()
+            {
+                Provider = Provider.Mangadex,
+                Title = string.Empty,
+                BaseDir = string.Empty
+            },
+            new()
+            {
+                Provider = Provider.Nyaa,
+                Title = string.Empty,
+                BaseDir = string.Empty
+            }
+        };
+
+        var settings = new List<ProviderSettings>
+        {
+            new() { Provider = Provider.Mangadex, Settings = new MetadataBag()},
+            new() { Provider = Provider.Nyaa, Settings = new MetadataBag() },
+        };
+
+        settings.Last().Settings.SetKey(ProviderSettings.Disable, true);
+
+        var unitOfWorkMock = Substitute.For<IUnitOfWork>();
+        var providerSettingsRepositoryMock = Substitute.For<IProviderSettingsRepository>();
+        unitOfWorkMock.ProviderSettingsRepository.Returns(providerSettingsRepositoryMock);
+        providerSettingsRepositoryMock.GetAllSettings(Arg.Any<CancellationToken>()).Returns(settings);
+
+        var sut = new TestableMonitoredSeriesScheduler(
+            Substitute.For<ILogger<MonitoredSeriesScheduler>>(),
+            Substitute.For<IServiceScopeFactory>(),
+            Substitute.For<IRecurringJobManagerV2>(),
+            Substitute.For<IWebHostEnvironment>(),
+            unitOfWorkMock);
+
+        var result = await sut.InvokeGetProviders(entities);
+
+        Assert.Single(result);
+        Assert.Equal(Provider.Mangadex, result[0]);
+    }
+
+    private class TestableMonitoredSeriesScheduler(
+        ILogger<MonitoredSeriesScheduler> logger,
+        IServiceScopeFactory scopeFactory,
+        IRecurringJobManagerV2 recurringJobManager,
+        IWebHostEnvironment environment,
+        IUnitOfWork unitOfWork
+    ) : MonitoredSeriesScheduler(logger, scopeFactory, recurringJobManager, environment, unitOfWork)
+    {
+        public Task<List<Provider>> InvokeGetProviders(List<MonitoredSeries> entities) =>
+            GetProviders(entities);
     }
 }
