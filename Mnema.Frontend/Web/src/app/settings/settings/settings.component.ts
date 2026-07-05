@@ -16,6 +16,9 @@ import {
 import {DownloadClientSettingsComponent} from "./_components/download-client/download-client-settings.component";
 import {ReleaseBrowserComponent} from "@mnema/settings/settings/_components/release-browser/release-browser.component";
 import {AuthKeysComponent} from "@mnema/settings/settings/_components/auth-keys/auth-keys.component";
+import {
+  ProviderSettingsComponent
+} from "@mnema/settings/settings/_components/provider-settings/provider-settings.component";
 
 @Component({
   selector: 'app-settings',
@@ -28,6 +31,7 @@ import {AuthKeysComponent} from "@mnema/settings/settings/_components/auth-keys/
     DownloadClientSettingsComponent,
     ReleaseBrowserComponent,
     AuthKeysComponent,
+    ProviderSettingsComponent,
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']

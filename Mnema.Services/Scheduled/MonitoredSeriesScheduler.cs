@@ -19,7 +19,8 @@ internal class MonitoredSeriesScheduler(
     ILogger<MonitoredSeriesScheduler> logger,
     IServiceScopeFactory scopeFactory,
     IRecurringJobManagerV2 recurringJobManager,
-    IWebHostEnvironment environment
+    IWebHostEnvironment environment,
+    IUnitOfWork unitOfWork
 ) : AbstractScheduler<MonitoredSeriesScheduler, MonitoredSeries>(logger, scopeFactory, recurringJobManager, environment)
 {
     protected override string WatcherJobId => "monitored-releases.rss";
@@ -30,12 +31,17 @@ internal class MonitoredSeriesScheduler(
         return unitOfWork.MonitoredSeriesRepository.GetAll(MonitoredSeriesIncludes.Chapters, cancellationToken);
     }
 
-    protected override List<Provider> GetProviders(List<MonitoredSeries> entities)
+    protected override async Task<List<Provider>> GetProviders(List<MonitoredSeries> entities)
     {
-        return entities
+        var providers = entities
             .Select(m => m.Provider)
             .Distinct()
             .ToList();
+
+        var providerSettings = await unitOfWork.ProviderSettingsRepository.GetAllSettings(CancellationToken.None);
+        var enabledProviders = providerSettings.Where(ps => ps.IsEnabled).Select(ps => ps.Provider).ToList();
+
+        return providers.Where(enabledProviders.Contains).ToList();
     }
 
     protected override Task<ProcessResult> ProcessEntitiesAsync(IServiceScope scope, List<ContentRelease> releases, List<MonitoredSeries> entities, CancellationToken cancellationToken)

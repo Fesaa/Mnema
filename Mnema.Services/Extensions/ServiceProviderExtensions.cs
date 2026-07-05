@@ -39,6 +39,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<IMonitoredSeriesService, MonitoredSeriesService>();
         services.AddScoped<IAuthKeyService, AuthKeyService>();
         services.AddScoped<ICalendarService, CalendarService>();
+        services.AddScoped<IProviderSettingsService, ProviderSettingsService>();
 
         #region External Connection
 

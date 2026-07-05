@@ -15,6 +15,7 @@ public interface IUnitOfWork
     IContentReleaseRepository ImportedReleaseRepository { get; }
     IMonitoredSeriesRepository MonitoredSeriesRepository { get; }
     IAuthKeyRepository AuthKeyRepository { get; }
+    IProviderSettingsRepository ProviderSettingsRepository { get; }
 
     Task<bool> CommitAsync(CancellationToken cancellationToken = default);
     bool HasChanges();

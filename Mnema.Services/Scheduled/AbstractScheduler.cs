@@ -63,7 +63,7 @@ internal abstract class AbstractScheduler<TScheduler, TEntity>(
         if (entities.Count == 0)
             return;
 
-        var providers = GetProviders(entities);
+        var providers = await GetProviders(entities);
 
         logger.LogTrace("Searching for recent updated for {ProviderCount} providers", providers.Count);
 
@@ -99,7 +99,7 @@ internal abstract class AbstractScheduler<TScheduler, TEntity>(
 
     protected abstract Task<List<TEntity>> GetEntitiesAsync(IUnitOfWork unitOfWork, CancellationToken cancellationToken);
 
-    protected abstract List<Provider> GetProviders(List<TEntity> entities);
+    protected abstract Task<List<Provider>> GetProviders(List<TEntity> entities);
 
     protected abstract Task<ProcessResult> ProcessEntitiesAsync(IServiceScope scope, List<ContentRelease> releases, List<TEntity> entities, CancellationToken cancellationToken);
 

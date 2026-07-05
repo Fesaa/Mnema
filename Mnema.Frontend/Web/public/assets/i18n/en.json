@@ -40,7 +40,8 @@
       "download-clients": "Download Clients",
       "logout": "Logout",
       "releases": "Releases",
-      "auth-keys": "Auth Keys"
+      "auth-keys": "Auth Keys",
+      "provider-settings": "Provider Settings"
     }
   },
 
@@ -931,7 +932,24 @@
         "title": "Copied to clipboard",
         "summary": "Key: {{key}}"
       }
+    },
+    "provider-settings": {
+      "title": "Provider Settings",
+      "header": {
+        "name": "Provider",
+        "edit": "Edit"
+      },
+      "edit": {
+        "title": "Edit Provider Settings: {{provider}}",
+        "close": "{{common.close}}",
+        "save": "{{common.save}}"
+      }
     }
+  },
+
+  "provider-settings": {
+    "disabled-title": "Disable",
+    "disabled-tooltip": "Stop this provider from being used for monitored series (Skip search)"
   },
 
   "download-client-pipe": {

@@ -361,6 +361,22 @@ namespace Mnema.Database.Migrations
                     b.ToTable("ManualMigrationHistory");
                 });
 
+            modelBuilder.Entity("Mnema.Models.Entities.ProviderSettings", b =>
+                {
+                    b.Property<int>("Provider")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Settings")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("{}");
+
+                    b.HasKey("Provider");
+
+                    b.ToTable("ProviderSettings");
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.ServerSetting", b =>
                 {
                     b.Property<int>("Key")
