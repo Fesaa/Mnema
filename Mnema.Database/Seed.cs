@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Mnema.Common;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
@@ -33,10 +34,10 @@ public static class Seed
             if (existing == null) ctx.ServerSettings.Add(defaultServerSetting);
         }
 
-
         await ctx.SaveChangesAsync();
 
         await SeedMetadataProviderSettings(ctx);
+        await SeedProviderSettings(ctx);
     }
 
     private static async Task SeedMetadataProviderSettings(MnemaDataContext ctx)
@@ -62,6 +63,24 @@ public static class Seed
         }
 
         setting.Value = JsonSerializer.Serialize(settings);
+
+        await ctx.SaveChangesAsync();
+    }
+
+    private static async Task SeedProviderSettings(MnemaDataContext ctx)
+    {
+        var providers = Enum.GetValues<Provider>();
+        var existing = await ctx.ProviderSettings.ToListAsync();
+        var missing = providers.Except(existing.Select(p => p.Provider));
+
+        foreach (var provider in missing)
+        {
+            ctx.ProviderSettings.Add(new ProviderSettings
+            {
+                Provider = provider,
+                Settings = new MetadataBag()
+            });
+        }
 
         await ctx.SaveChangesAsync();
     }

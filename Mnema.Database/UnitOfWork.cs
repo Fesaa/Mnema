@@ -20,6 +20,7 @@ public class UnitOfWork(ILogger<UnitOfWork> logger, MnemaDataContext ctx, IMappe
     public IContentReleaseRepository ImportedReleaseRepository { get; } = new ImportedContentReleaseRepository(ctx, mapper);
     public IMonitoredSeriesRepository MonitoredSeriesRepository { get; } = new MonitoredSeriesRepository(ctx, mapper);
     public IAuthKeyRepository AuthKeyRepository { get; } = new AuthKeyRepository(ctx, mapper);
+    public IProviderSettingsRepository ProviderSettingsRepository { get; } = new ProviderSettingsRepository(ctx, mapper);
 
     public async Task<bool> CommitAsync(CancellationToken cancellationToken = default)
     {

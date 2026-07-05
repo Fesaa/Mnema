@@ -1,0 +1,39 @@
+<div class="mt-4" *transloco="let t; prefix: 'settings.provider-settings'">
+
+  <h2 class="h2 fw-bold mt-4 mb-3">{{ t('title') }}</h2>
+
+  @for (provider of AllProviders; track provider) {
+
+  }
+
+  <app-table
+    [trackByIdFunc]="trackBy"
+    [items]="AllProviders"
+  >
+
+    <ng-template #header>
+      <tr>
+        <th class="table-header-cell">{{ t('header.name') }}</th>
+        <th class="table-header-cell" style="width: 15%">{{ t('header.edit') }}</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #cell let-provider>
+      <td class="table-cell">
+        {{ provider | providerName }}
+      </td>
+
+      <td class="table-cell">
+        <button
+          type="button"
+          class="btn btn-small"
+          (click)="editProviderSettings(provider)"
+        >
+          <i class="fa fa-edit"></i>
+        </button>
+      </td>
+    </ng-template>
+
+  </app-table>
+
+</div>

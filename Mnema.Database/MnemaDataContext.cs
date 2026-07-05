@@ -37,6 +37,7 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<MonitoredChapter> MonitoredChapters { get; set; }
     public DbSet<ManualMigrationHistory> ManualMigrationHistory { get; set; }
     public DbSet<AuthKey> AuthKeys { get; set; }
+    public DbSet<ProviderSettings> ProviderSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -93,6 +94,12 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
         builder.Entity<AuthKey>()
             .PrimitiveCollection(k => k.Roles)
             .HasDefaultValue(new List<string>());
+
+        builder.Entity<ProviderSettings>()
+            .Property(ps => ps.Settings)
+            .HasJsonConversion(new MetadataBag())
+            .HasColumnType("TEXT")
+            .HasDefaultValue(new MetadataBag());
     }
 
     private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)

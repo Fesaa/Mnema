@@ -1,15 +1,18 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mnema.API;
 using Mnema.Models.DTOs.UI;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
 
-public class FormController: BaseApiController
+public class FormController(IProviderSettingsService providerSettingsService): BaseApiController
 {
 
-    [HttpGet("metadata-provider-settings")]
     [Authorize(Roles.ManageSettings)]
+    [HttpGet("metadata-provider-settings")]
     public ActionResult<FormDefinition> GetMetadataProviderSettings()
     {
         var form = new FormDefinition
@@ -184,6 +187,13 @@ public class FormController: BaseApiController
         };
 
         return Ok(form);
+    }
+
+    [Authorize(Roles.ManageSettings)]
+    [HttpGet("provider-settings")]
+    public async Task<ActionResult<FormDefinition>> GetProviderSettingsForms([FromQuery] Provider provider)
+    {
+        return Ok(await providerSettingsService.GetSettingsForm(provider, HttpContext.RequestAborted));
     }
 
 }

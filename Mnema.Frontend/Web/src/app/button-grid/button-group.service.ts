@@ -20,6 +20,7 @@ export enum SettingsID {
   Connections = "connections",
   Releases = "releases",
   AuthKeys = "auth-keys",
+  ProviderSettings = "provider-settings"
 }
 
 export interface Button {
@@ -194,7 +195,14 @@ export class ButtonGroupService {
           navUrl: '/settings',
           navExtras: { fragment: SettingsID.AuthKeys },
           id: SettingsID.AuthKeys
-        }
+        },
+        {
+          title: translate('button-groups.settings.provider-settings'),
+          icon: 'fa fa-cogs',
+          navUrl: '/settings',
+          navExtras: { fragment: SettingsID.ProviderSettings },
+          id: SettingsID.ProviderSettings
+        },
       ],
     };
   });

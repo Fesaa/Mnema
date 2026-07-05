@@ -3,6 +3,7 @@ import {HttpClient} from "@angular/common/http";
 import {environment} from "@env/environment";
 import {FormDefinition} from "@mnema/generic-form/form";
 import {of, tap} from "rxjs";
+import {Provider} from "@mnema/_models/page";
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +17,10 @@ export class FormService {
 
   getMetadataProviderSettingsForm() {
     return this.getForm('metadata-provider-settings');
+  }
+
+  getProviderSettingsForm(provider: Provider) {
+    return this.getForm(`provider-settings?provider=${provider}`);
   }
 
   private getForm(endpoint: string) {

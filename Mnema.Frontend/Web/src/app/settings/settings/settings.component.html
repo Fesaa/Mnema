@@ -42,4 +42,10 @@
     }
   }
 
+  @defer (when selected() === SettingsID.ProviderSettings; prefetch on idle) {
+    @if (selected() === SettingsID.ProviderSettings && canSee(SettingsID.ProviderSettings)) {
+      <app-provider-settings />
+    }
+  }
+
 </div>
