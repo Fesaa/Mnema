@@ -60,11 +60,12 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
             catch (Exception ex)
             {
                 var errorMessage = $"Failed to search for recently updated for {provider.ToString()}";
-                logger.LogError(ex, errorMessage);
 
                 var consecutiveFailures = providerSettings.Settings.Increment(ProviderSettings.ConsecutiveFailures);
-                var disableAfter = await settingsService.GetSettingsAsync<int>(ServerSettingKey.AutoDisableAfter);
 
+                logger.LogError(ex, $"{errorMessage} - {consecutiveFailures} consecutive failures");
+
+                var disableAfter = await settingsService.GetSettingsAsync<int>(ServerSettingKey.AutoDisableAfter);
                 if (consecutiveFailures >= disableAfter)
                 {
                     providerSettings.Settings.SetKey(ProviderSettings.Disable, true);
