@@ -41,7 +41,8 @@ export class ServerSettingsComponent {
   settingsForm: FormGroup<{
     maxConcurrentImages: FormControl<number>
     maxConcurrentTorrents: FormControl<number>
-    subscriptionRefreshHour: FormControl<number>;
+    subscriptionRefreshHour: FormControl<number>
+    autoDisableProviderAfter: FormControl<number>
   }> | undefined;
 
   metadataProvidersFormDefinition = signal<FormDefinition | null>(null);
@@ -67,6 +68,7 @@ export class ServerSettingsComponent {
       maxConcurrentImages: this.fb.control(config.maxConcurrentImages, [Validators.required, Validators.min(1), Validators.max(5)]),
       maxConcurrentTorrents: this.fb.control(config.maxConcurrentTorrents, [Validators.required, Validators.min(1), Validators.max(10)]),
       subscriptionRefreshHour: this.fb.control(config.subscriptionRefreshHour),
+      autoDisableProviderAfter: this.fb.control(config.autoDisableProviderAfter)
     });
 
     for (let key in config.metadataProviderSettings) {

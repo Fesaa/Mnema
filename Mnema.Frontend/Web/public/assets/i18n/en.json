@@ -731,6 +731,10 @@
         "subTitle": "Amount of torrents downloading at once",
         "tooltip": ""
       },
+      "auto-disable-provider-after": {
+        "label": "Auto disable provider after",
+        "tooltip": "After how many consecutive failure should a provider be disabled (removed from automatic search)"
+      },
       "save": "Save",
       "toasts": {
         "save": {

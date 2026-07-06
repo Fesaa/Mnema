@@ -102,6 +102,14 @@ public class MetadataBag : GenericBag<string>
         if (!ContainsKey(key.Key))
             SetKey(key, value);
     }
+
+    public int Increment(IMetadataKey<int> key, int amount = 1)
+    {
+        var value = GetKey(key);
+        SetKey(key, value + amount);
+
+        return GetKey(key);
+    }
 }
 
 public class GenericBag<T> : Dictionary<string, IList<T>>
