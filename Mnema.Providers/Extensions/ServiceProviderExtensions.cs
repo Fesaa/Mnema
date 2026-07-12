@@ -55,8 +55,7 @@ public static class ServiceProviderExtensions
             services.AddKeyedScoped<IContentRepository>(Provider.Nyaa,
                 (s, _) => s.GetRequiredService<NyaaRepository>());
 
-            services.AddHttpClient(nameof(Provider.Nyaa), ConfigureDefaultClient("https://nyaa.si"))
-                .AddHttpMessageHandler<AutomaticRateLimitRetryHandler>();
+            services.AddHttpClient(nameof(Provider.Nyaa), ConfigureDefaultClient("https://nyaa.si"));
 
             #endregion
 
@@ -67,8 +66,7 @@ public static class ServiceProviderExtensions
             services.AddKeyedScoped<IPreDownloadHook, LoadVolumesHook>(Provider.Mangadex);
             services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Mangadex);
 
-            services.AddHttpClient(nameof(Provider.Mangadex), ConfigureDefaultClient("https://api.mangadex.org"))
-                .AddHttpMessageHandler<AutomaticRateLimitRetryHandler>();
+            services.AddHttpClient(nameof(Provider.Mangadex), ConfigureDefaultClient("https://api.mangadex.org"));
 
             #endregion
 
@@ -91,7 +89,7 @@ public static class ServiceProviderExtensions
                 client.Timeout = TimeSpan.FromSeconds(30);
                 client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
                 client.DefaultRequestHeaders.Add(HeaderNames.Referer, "https://www.webtoons.com/");
-            }).AddHttpMessageHandler<AutomaticRateLimitRetryHandler>();
+            });
 
             #endregion
 
@@ -101,8 +99,7 @@ public static class ServiceProviderExtensions
             services.AddRepository<DynastyRepository>(Provider.Dynasty);
             services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Dynasty);
 
-            services.AddHttpClient(nameof(Provider.Dynasty), ConfigureDefaultClient("https://dynasty-scans.com/"))
-                .AddHttpMessageHandler<AutomaticRateLimitRetryHandler>();
+            services.AddHttpClient(nameof(Provider.Dynasty), ConfigureDefaultClient("https://dynasty-scans.com/"));
 
             services.AddScoped<IScheduled, ProviderJobScheduler>();
 
@@ -137,9 +134,10 @@ public static class ServiceProviderExtensions
             });
 
             services.AddTransient(_ => new RateLimitingHandler(kaganeLimiter));
-            services.AddHttpClient(nameof(Provider.Kagane), ConfigureDefaultClient("https://yuzuki.kagane.to", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0"))
-                .AddHttpMessageHandler<RateLimitingHandler>()
-                .AddHttpMessageHandler<AutomaticRateLimitRetryHandler>();
+            services.AddHttpClient(nameof(Provider.Kagane),
+                    ConfigureDefaultClient("https://yuzuki.kagane.to",
+                        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0"))
+                .AddHttpMessageHandler<RateLimitingHandler>();
 
             #endregion
 
@@ -151,8 +149,7 @@ public static class ServiceProviderExtensions
 
             services.AddTransient<MadokamiBasicAuthHandler>();
             services.AddHttpClient(nameof(Provider.MadoKami), ConfigureDefaultClient("https://manga.madokami.al/"))
-                .AddHttpMessageHandler<MadokamiBasicAuthHandler>()
-                .AddHttpMessageHandler<AutomaticRateLimitRetryHandler>();
+                .AddHttpMessageHandler<MadokamiBasicAuthHandler>();
 
             services.AddKeyedScoped<IConfigurationProvider, MadokamiRepository>(DownloadClientType.Madokami);
 
@@ -163,8 +160,7 @@ public static class ServiceProviderExtensions
             services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.AthreaScans);
             services.AddRepository<AthreaScansRepository>(Provider.AthreaScans);
             services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.AthreaScans);
-            services.AddHttpClient(nameof(Provider.AthreaScans), ConfigureDefaultClient("https://athreascans.com/"))
-                .AddHttpMessageHandler<AutomaticRateLimitRetryHandler>();
+            services.AddHttpClient(nameof(Provider.AthreaScans), ConfigureDefaultClient("https://athreascans.com/"));
 
             #endregion
         }

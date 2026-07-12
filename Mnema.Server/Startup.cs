@@ -44,7 +44,13 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         services.AddSingleton(appConfig);
 
-        services.AddScoped<AutomaticRateLimitRetryHandler>();
+        services.AddTransient<AutomaticRateLimitRetryHandler>();
+        services.AddTransient<ConnectResetRetryHandler>();
+        services.ConfigureHttpClientDefaults(http =>
+        {
+            http.AddHttpMessageHandler<ConnectResetRetryHandler>();
+            http.AddHttpMessageHandler<AutomaticRateLimitRetryHandler>();
+        });
 
         services.AddProviders();
         services.AddMnemaServices(AuthDisabled);
