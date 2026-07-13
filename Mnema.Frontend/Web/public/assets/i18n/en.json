@@ -132,7 +132,9 @@
     "manga_baka_id-title": "{{provider-metadata.manga_baka_id-title}}",
     "manga_baka_id-tooltip": "{{provider-metadata.manga_baka_id-tooltip}}",
     "ignore_non_matched_volumes-title": "{{provider-metadata.ignore_non_matched_volumes-title}}",
-    "ignore_non_matched_volumes-tooltip": "{{provider-metadata.ignore_non_matched_volumes-tooltip}}"
+    "ignore_non_matched_volumes-tooltip": "{{provider-metadata.ignore_non_matched_volumes-tooltip}}",
+    "integrity_token-title": "Integrity Token",
+    "integrity_token-tooltip": "Manually copied token"
   },
 
   "provider-metadata": {
