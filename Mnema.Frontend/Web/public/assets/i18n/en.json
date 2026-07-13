@@ -955,7 +955,9 @@
 
   "provider-settings": {
     "disabled-title": "Disable",
-    "disabled-tooltip": "Stop this provider from being used for monitored series (Skip search)"
+    "disabled-tooltip": "Stop this provider from being used for monitored series (Skip search)",
+    "block_automatic_downloads-title": "Block Automatic Downloads",
+    "block_automatic_downloads-tooltip": "Always require manual confirmation for downloads for this provider"
   },
 
   "download-client-pipe": {
