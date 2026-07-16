@@ -30,7 +30,8 @@ internal class WebtoonRepository(
     ILogger<WebtoonRepository> logger,
     IDistributedCache cache,
     IHttpClientFactory httpClientFactory,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IParserService parserService)
     : IRepository
 {
     private const string format = "dddd, dd MMM yyyy HH:mm:ss 'GMT'";
@@ -296,19 +297,40 @@ internal class WebtoonRepository(
         });
     }
 
-    private static List<Chapter> ParseChapters(HtmlDocument document)
+    private List<Chapter> ParseChapters(HtmlDocument document)
     {
-        return document.DocumentNode.QuerySelectorAll("._episodeItem > a").Select(node => new Chapter
+        return document.DocumentNode.QuerySelectorAll("._episodeItem > a").Select(node =>
         {
-            Id = node.GetAttributeValue("data-episode-no", node.GetAttributeValue("href", string.Empty)),
-            Title = node.QuerySelector(".subj span").InnerText,
-            RefUrl = node.GetAttributeValue("href", string.Empty),
-            CoverUrl = node.QuerySelector("span img")?.GetAttributeValue("src", string.Empty),
-            VolumeMarker = string.Empty,
-            ChapterMarker = node.QuerySelector(".tx")?.InnerText.RemovePrefix("#") ?? string.Empty,
-            Tags = [],
-            People = [],
-            TranslationGroups = []
+            var title = node.QuerySelector(".subj span").InnerText;
+            var chapterMarker = string.Empty;
+
+            if (float.TryParse(title, out _))
+            {
+                chapterMarker = title;
+            }
+            else
+            {
+                var parseResult = parserService.ParseChapter(title, ContentFormat.Manga);
+                if (!parserService.IsDefaultChapter(parseResult))
+                {
+                    chapterMarker = parseResult;
+                }
+            }
+
+
+
+            return new Chapter
+            {
+                Id = node.GetAttributeValue("data-episode-no", node.GetAttributeValue("href", string.Empty)),
+                Title = title,
+                RefUrl = node.GetAttributeValue("href", string.Empty),
+                CoverUrl = node.QuerySelector("span img")?.GetAttributeValue("src", string.Empty),
+                VolumeMarker = string.Empty,
+                ChapterMarker = chapterMarker,
+                Tags = [],
+                People = [],
+                TranslationGroups = []
+            };
         }).ToList();
     }
 }
