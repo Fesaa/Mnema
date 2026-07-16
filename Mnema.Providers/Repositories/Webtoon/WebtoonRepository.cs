@@ -303,6 +303,12 @@ internal partial class WebtoonRepository(
         return document.DocumentNode.QuerySelectorAll("._episodeItem > a").Select(node =>
         {
             var title = node.QuerySelector(".subj span").InnerText;
+            var chapterMarker = node.QuerySelector(".tx")?.InnerText.RemovePrefix("#") ?? string.Empty;
+            if (string.IsNullOrEmpty(chapterMarker))
+            {
+                chapterMarker = ParseChapterNumber(title);
+            }
+
             return new Chapter
             {
                 Id = node.GetAttributeValue("data-episode-no", node.GetAttributeValue("href", string.Empty)),
@@ -310,7 +316,7 @@ internal partial class WebtoonRepository(
                 RefUrl = node.GetAttributeValue("href", string.Empty),
                 CoverUrl = node.QuerySelector("span img")?.GetAttributeValue("src", string.Empty),
                 VolumeMarker = string.Empty,
-                ChapterMarker = ParseChapterNumber(title),
+                ChapterMarker = chapterMarker,
                 Tags = [],
                 People = [],
                 TranslationGroups = []
