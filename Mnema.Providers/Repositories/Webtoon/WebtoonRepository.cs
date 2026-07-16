@@ -37,6 +37,9 @@ internal partial class WebtoonRepository(
 {
     private const string format = "dddd, dd MMM yyyy HH:mm:ss 'GMT'";
     private static readonly XmlSerializer XmlSerializer = new(typeof(RssFeed));
+
+    private static readonly IMetadataKey<bool> ForceIndexChapterNumbers = MetadataKeys.Bool("forceIndexChapterNumbers");
+
     private HttpClient Client => httpClientFactory.CreateClient(nameof(Provider.Webtoons));
 
     public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination,
@@ -162,9 +165,9 @@ internal partial class WebtoonRepository(
             Links = [],
             Chapters = chapters.Select((chapter, idx) =>
             {
-                if (noChapterMarkers)
+                if (noChapterMarkers || request.Metadata.GetKey(ForceIndexChapterNumbers))
                 {
-                    chapter.ChapterMarker = (idx + 1).ToString();
+                    chapter.ChapterMarker = (chapters.Count - idx).ToString();
                 }
 
                 return chapter with { SortOrder = idx };
@@ -287,6 +290,13 @@ internal partial class WebtoonRepository(
             {
                 Key = RequestConstants.MangaBakaKey.Key,
                 Type = FormType.Text
+            },
+            new FormControlDefinition
+            {
+                Key = ForceIndexChapterNumbers.Key,
+                Type = FormType.Switch,
+                Advanced = true,
+                DefaultOption = "false"
             }
         ]);
     }
@@ -310,13 +320,24 @@ internal partial class WebtoonRepository(
 
     private List<Chapter> ParseChapters(HtmlDocument document)
     {
-        return document.DocumentNode.QuerySelectorAll("._episodeItem > a").Select(node =>
+        return document.DocumentNode.QuerySelectorAll("._episodeItem").Select(listItem =>
         {
+            var node = listItem.QuerySelector("a");
+
             var title = node.QuerySelector(".subj span").InnerText;
             var chapterMarker = node.QuerySelector(".tx")?.InnerText.RemovePrefix("#") ?? string.Empty;
             if (string.IsNullOrEmpty(chapterMarker))
             {
                 chapterMarker = ParseChapterNumber(title);
+            }
+
+            if (string.IsNullOrEmpty(chapterMarker))
+            {
+                chapterMarker = node
+                    .GetAttributeValue("data-episode-no", node.GetAttributeValue("href", string.Empty))
+                    .Split('=')
+                    .LastOrDefault()
+                    ?.Trim();
             }
 
             return new Chapter

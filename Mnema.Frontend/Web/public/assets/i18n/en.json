@@ -177,7 +177,9 @@
     "manga_baka_id-title": "Mangabaka id",
     "manga_baka_id-tooltip": "Series id on mangabaka.org",
     "ignore_non_matched_volumes-title": "Ignore non-matched content",
-    "ignore_non_matched_volumes-tooltips": "Don't download content if metadata is loaded and cannot be matched"
+    "ignore_non_matched_volumes-tooltips": "Don't download content if metadata is loaded and cannot be matched",
+    "forceIndexChapterNumbers-title": "Force index chapter numbers",
+    "forceIndexChapterNumbers-tooltip": "Forcefully use the index as the chapter number. In case webtoon is being horrible about it"
   },
 
   "refresh-frequency-pipe": {
