@@ -138,6 +138,8 @@ internal partial class WebtoonRepository(
         if (infoHeaderNode == null || detailNode == null)
             throw new MnemaException($"Failed to parse series metadata for {request.Id}");
 
+        var noChapterMarkers = chapters.All(c => string.IsNullOrEmpty(c.ChapterMarker));
+
         return new Series
         {
             Id = request.Id,
@@ -158,7 +160,15 @@ internal partial class WebtoonRepository(
                 })
                 .ToList() ?? [],
             Links = [],
-            Chapters = chapters.Select((chapter, idx) => chapter with { SortOrder = idx }).ToList()
+            Chapters = chapters.Select((chapter, idx) =>
+            {
+                if (noChapterMarkers)
+                {
+                    chapter.ChapterMarker = (idx + 1).ToString();
+                }
+
+                return chapter with { SortOrder = idx };
+            }).ToList()
         };
 
         List<string> ParsePages(HtmlNode rootNode)
