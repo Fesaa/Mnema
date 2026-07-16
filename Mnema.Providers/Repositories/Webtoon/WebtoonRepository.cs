@@ -92,7 +92,8 @@ internal partial class WebtoonRepository(
 
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
     {
-        var allowPartialChapterData = request.Metadata.GetKey(RequestConstants.AllowPartialChapterData);
+        var allowPartialChapterData = request.GetKey(RequestConstants.AllowPartialChapterData)
+            && !request.GetKey(ForceIndexChapterNumbers);
         var baseUrl = Client.BaseAddress!.ToString().TrimEnd('/');
 
         List<string> pagesToVisit = [$"/{request.Id}"];
