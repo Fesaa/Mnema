@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -26,7 +27,7 @@ using Mnema.Providers.Extensions;
 
 namespace Mnema.Providers.Webtoon;
 
-internal class WebtoonRepository(
+internal partial class WebtoonRepository(
     ILogger<WebtoonRepository> logger,
     IDistributedCache cache,
     IHttpClientFactory httpClientFactory,
@@ -302,23 +303,6 @@ internal class WebtoonRepository(
         return document.DocumentNode.QuerySelectorAll("._episodeItem > a").Select(node =>
         {
             var title = node.QuerySelector(".subj span").InnerText;
-            var chapterMarker = string.Empty;
-
-            if (float.TryParse(title, out _))
-            {
-                chapterMarker = title;
-            }
-            else
-            {
-                var parseResult = parserService.ParseChapter(title, ContentFormat.Manga);
-                if (!parserService.IsDefaultChapter(parseResult))
-                {
-                    chapterMarker = parseResult;
-                }
-            }
-
-
-
             return new Chapter
             {
                 Id = node.GetAttributeValue("data-episode-no", node.GetAttributeValue("href", string.Empty)),
@@ -326,11 +310,37 @@ internal class WebtoonRepository(
                 RefUrl = node.GetAttributeValue("href", string.Empty),
                 CoverUrl = node.QuerySelector("span img")?.GetAttributeValue("src", string.Empty),
                 VolumeMarker = string.Empty,
-                ChapterMarker = chapterMarker,
+                ChapterMarker = ParseChapterNumber(title),
                 Tags = [],
                 People = [],
                 TranslationGroups = []
             };
         }).ToList();
     }
+
+    private string ParseChapterNumber(string input)
+    {
+        if (float.TryParse(input, out _))
+        {
+            return input;
+        }
+
+        // 16 - 2
+        var hyphenated = HyphenatedDecimal().Replace(input.Trim(), ".");
+        if (float.TryParse(hyphenated, out _))
+        {
+            return hyphenated;
+        }
+
+        var parseResult = parserService.ParseChapter(input, ContentFormat.Manga);
+        if (!parserService.IsDefaultChapter(parseResult))
+        {
+            return parseResult;
+        }
+
+        return string.Empty;
+    }
+
+    [GeneratedRegex(@"\s*-\s*")]
+    private static partial Regex HyphenatedDecimal();
 }
