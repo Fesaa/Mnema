@@ -132,7 +132,9 @@
     "manga_baka_id-title": "{{provider-metadata.manga_baka_id-title}}",
     "manga_baka_id-tooltip": "{{provider-metadata.manga_baka_id-tooltip}}",
     "ignore_non_matched_volumes-title": "{{provider-metadata.ignore_non_matched_volumes-title}}",
-    "ignore_non_matched_volumes-tooltip": "{{provider-metadata.ignore_non_matched_volumes-tooltip}}"
+    "ignore_non_matched_volumes-tooltip": "{{provider-metadata.ignore_non_matched_volumes-tooltip}}",
+    "integrity_token-title": "Integrity Token",
+    "integrity_token-tooltip": "Manually copied token"
   },
 
   "provider-metadata": {
@@ -731,6 +733,10 @@
         "subTitle": "Amount of torrents downloading at once",
         "tooltip": ""
       },
+      "auto-disable-provider-after": {
+        "label": "Auto disable provider after",
+        "tooltip": "After how many consecutive failure should a provider be disabled (removed from automatic search)"
+      },
       "save": "Save",
       "toasts": {
         "save": {
@@ -949,7 +955,9 @@
 
   "provider-settings": {
     "disabled-title": "Disable",
-    "disabled-tooltip": "Stop this provider from being used for monitored series (Skip search)"
+    "disabled-tooltip": "Stop this provider from being used for monitored series (Skip search)",
+    "block_automatic_downloads-title": "Block Automatic Downloads",
+    "block_automatic_downloads-tooltip": "Always require manual confirmation for downloads for this provider"
   },
 
   "download-client-pipe": {

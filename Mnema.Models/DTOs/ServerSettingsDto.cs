@@ -14,6 +14,7 @@ public class ServerSettingsDto
     public int SubscriptionRefreshHour { get; set; }
     public DateTime LastUpdateDate { get; set; }
     public Dictionary<MetadataProvider, MetadataProviderSettingsDto> MetadataProviderSettings { get; set; }
+    public int AutoDisableProviderAfter { get; set; }
 }
 
 public class UpdateServerSettingsDto
@@ -22,4 +23,5 @@ public class UpdateServerSettingsDto
     public int MaxConcurrentImages { get; set; }
     public int SubscriptionRefreshHour { get; set; }
     public Dictionary<MetadataProvider, MetadataProviderSettingsDto> MetadataProviderSettings { get; set; }
+    public int AutoDisableProviderAfter { get; set; }
 }

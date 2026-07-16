@@ -10,4 +10,5 @@ public enum ServerSettingKey
     SubscriptionRefreshHour = 6,
     LastUpdateDate = 7,
     MetadataProviderSettings = 8,
+    AutoDisableAfter = 9
 }

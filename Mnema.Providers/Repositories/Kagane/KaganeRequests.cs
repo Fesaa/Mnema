@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Mnema.Providers.Kagane;
+namespace Mnema.Providers.Repositories.Kagane;
 
 public sealed record KaganeSearchRequest
 {

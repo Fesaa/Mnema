@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Mnema.Providers.Kagane;
+namespace Mnema.Providers.Repositories.Kagane;
 
 public class IntegrityDto
 {

@@ -9,6 +9,7 @@ export type Config = {
   installDate: Date;
   lastUpdateDate: Date;
   metadataProviderSettings: Record<keyof typeof MetadataProvider, MetadataProviderSettingsDto>;
+  autoDisableProviderAfter: number;
 }
 
 export interface MetadataProviderSettingsDto {

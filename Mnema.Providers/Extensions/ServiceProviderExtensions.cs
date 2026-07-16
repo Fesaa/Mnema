@@ -5,15 +5,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Common.Http;
 using Mnema.Models.Entities.Content;
 using Mnema.Providers.Cleanup;
 using Mnema.Providers.Dynasty;
-using Mnema.Providers.Kagane;
 using Mnema.Providers.Managers.Publication;
 using Mnema.Providers.Managers.QBit;
 using Mnema.Providers.Mangadex;
 using Mnema.Providers.Nyaa;
 using Mnema.Providers.Repositories.AthreaScans;
+using Mnema.Providers.Repositories.Kagane;
 using Mnema.Providers.Repositories.Madokami;
 using Mnema.Providers.Services;
 using Mnema.Providers.Webtoon;
@@ -133,7 +134,9 @@ public static class ServiceProviderExtensions
             });
 
             services.AddTransient(_ => new RateLimitingHandler(kaganeLimiter));
-            services.AddHttpClient(nameof(Provider.Kagane), ConfigureDefaultClient("https://yuzuki.kagane.to", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0"))
+            services.AddHttpClient(nameof(Provider.Kagane),
+                    ConfigureDefaultClient("https://yuzuki.kagane.to",
+                        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0"))
                 .AddHttpMessageHandler<RateLimitingHandler>();
 
             #endregion

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -15,15 +14,13 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
-using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 using Mnema.Providers.Common;
-using Mnema.Providers.Kagane.Crypto;
 
-namespace Mnema.Providers.Kagane;
+namespace Mnema.Providers.Repositories.Kagane;
 
 public class KaganeRepository(
     IConfiguration configuration,
@@ -45,11 +42,7 @@ public class KaganeRepository(
     private static readonly IMetadataKey<IEnumerable<string>> ExcludedTags = MetadataKeys.Strings("excluded_tags");
     private static readonly IMetadataKey<string> IntegrityToken = MetadataKeys.String("integrity_token");
 
-    private AsyncLazy<List<Genre>> Genres => new(() => Task.FromResult(new List<Genre>()));
-    private AsyncLazy<List<Genre>> Tags => new(() => Task.FromResult(new List<Genre>()));
-
     protected override HttpClient Client => httpClientFactory.CreateClient(nameof(Provider.Kagane));
-    private string? Base64Wvd => configuration.GetSection("Authentication").GetSection("Kagane").Get<string>();
 
     public override async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination, CancellationToken cancellationToken)
     {
@@ -57,8 +50,8 @@ public class KaganeRepository(
             .SetQueryParam("page", pagination.PageNumber)
             .SetQueryParam("size", pagination.PageSize);
 
-        var genres = (await Genres).Select(g => g.Id).ToHashSet();
-        var tags = (await Tags).Select(g => g.Id).ToHashSet();
+        var genres = KaganeConstants.Genres.Select(g => g.Id).ToHashSet();
+        var tags = KaganeConstants.Tags.Select(g => g.Id).ToHashSet();
 
         var body = new KaganeSearchRequest
         {
@@ -214,49 +207,46 @@ public class KaganeRepository(
             ]);
     }
 
-    public override async Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    public override Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        var genres = await Genres;
-        var tags = await Tags;
-
-        return [
-            new FormControlDefinition
-            {
-                Key = PublicationStatus.Key,
-                Type = FormType.MultiSelect,
-                Options = [FormControlOption.Option("Completed", "Completed"), FormControlOption.Option("Ongoing", "Ongoing"), FormControlOption.Option("Hiatus", "Hiatus"), FormControlOption.Option("Abandoned", "Abandoned")],
-            },
-            new FormControlDefinition
-            {
-                Key = ContentRating.Key,
-                Type = FormType.MultiSelect,
-                Options = [FormControlOption.Option("Pornographic", "Pornographic"), FormControlOption.Option("Erotica", "Erotica"), FormControlOption.Option("Suggestive", "Suggestive"), FormControlOption.Option("Safe", "Safe")],
-            },
-            new FormControlDefinition
-            {
-                Key = IncludedGenres.Key,
-                Type = FormType.MultiSelect,
-                Options = genres.Select(g => FormControlOption.Option(g.Name, g.Id)).ToList(),
-            },
-            new FormControlDefinition
-            {
-                Key = ExcludedGenres.Key,
-                Type = FormType.MultiSelect,
-                Options = genres.Select(g => FormControlOption.Option(g.Name, g.Id)).ToList(),
-            },
-            new FormControlDefinition
-            {
-                Key = IncludedTags.Key,
-                Type = FormType.MultiSelect,
-                Options = tags.Select(g => FormControlOption.Option(g.Name, g.Id)).ToList(),
-            },
-            new FormControlDefinition
-            {
-                Key = ExcludedTags.Key,
-                Type = FormType.MultiSelect,
-                Options = tags.Select(g => FormControlOption.Option(g.Name, g.Id)).ToList(),
-            }
-        ];
+        return Task.FromResult<List<FormControlDefinition>>([
+                new FormControlDefinition
+                {
+                    Key = PublicationStatus.Key,
+                    Type = FormType.MultiSelect,
+                    Options = [FormControlOption.Option("Completed", "Completed"), FormControlOption.Option("Ongoing", "Ongoing"), FormControlOption.Option("Hiatus", "Hiatus"), FormControlOption.Option("Abandoned", "Abandoned")],
+                },
+                new FormControlDefinition
+                {
+                    Key = ContentRating.Key,
+                    Type = FormType.MultiSelect,
+                    Options = [FormControlOption.Option("Pornographic", "Pornographic"), FormControlOption.Option("Erotica", "Erotica"), FormControlOption.Option("Suggestive", "Suggestive"), FormControlOption.Option("Safe", "Safe")],
+                },
+                new FormControlDefinition
+                {
+                    Key = IncludedGenres.Key,
+                    Type = FormType.MultiSelect,
+                    Options = KaganeConstants.Genres.Select(g => FormControlOption.Option(g.Name, g.Id)).ToList(),
+                },
+                new FormControlDefinition
+                {
+                    Key = ExcludedGenres.Key,
+                    Type = FormType.MultiSelect,
+                    Options = KaganeConstants.Genres.Select(g => FormControlOption.Option(g.Name, g.Id)).ToList(),
+                },
+                new FormControlDefinition
+                {
+                    Key = IncludedTags.Key,
+                    Type = FormType.MultiSelect,
+                    Options = KaganeConstants.Tags.Select(g => FormControlOption.Option(g.Name, g.Id)).ToList(),
+                },
+                new FormControlDefinition
+                {
+                    Key = ExcludedTags.Key,
+                    Type = FormType.MultiSelect,
+                    Options = KaganeConstants.Tags.Select(g => FormControlOption.Option(g.Name, g.Id)).ToList(),
+                }
+            ]);
     }
 
     public override async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
@@ -269,7 +259,7 @@ public class KaganeRepository(
             .FirstOrDefault()?
             .SelectString("image_id");
 
-        var genres = (await Genres).ToDictionary(g => g.Id, g => g);
+        var genres = KaganeConstants.Genres.ToDictionary(g => g.Id, g => g);
 
         return new Series
         {
@@ -461,30 +451,6 @@ public class KaganeRepository(
             default:
                 return Models.Publication.PublicationStatus.Unknown;
         }
-    }
-
-    private static string GetChallengeWvd(byte[] f, string wvdBase64)
-    {
-        var cdm = Cdm.FromData(wvdBase64);
-        var psshBytes = Cdm.GetPssh(f);
-        var parsed = PsshParser.Parse(psshBytes);
-
-        if (parsed.Content is not ProtectionSystemHeaderBox pssh)
-            throw new InvalidOperationException("Failed to parse PSSH box");
-
-        return cdm.GetLicenseChallenge(pssh);
-    }
-
-    private async Task<List<T>> LoadList<T>(string url)
-    {
-        var res = await Client.GetCachedAsync<List<T>>(url, cache);
-        if (res.IsErr)
-        {
-            logger.LogWarning(res.Error, "Failed to load data @ {Url}", url);
-            return [];
-        }
-
-        return res.Unwrap();
     }
 
 }

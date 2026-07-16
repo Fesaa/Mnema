@@ -10,12 +10,13 @@ using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services;
 
 internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory serviceScopeFactory,
-    IConnectionService connectionService) : ISearchService
+    IConnectionService connectionService, IUnitOfWork unitOfWork, ISettingsService settingsService) : ISearchService
 {
     public Task<PagedList<SearchResult>> Search(SearchRequest searchRequest, PaginationParams paginationParams,
         CancellationToken cancellationToken)
@@ -47,20 +48,37 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
                 continue;
             }
 
+            var providerSettings = await unitOfWork.ProviderSettingsRepository.GetSettingsForProvider(provider, cancellationToken);
+
             try
             {
                 var recentlyUpdated = await GetRecentlyUpdated(provider, repository, cancellationToken);
 
                 releases.AddRange(recentlyUpdated);
+                providerSettings.Settings.SetKey(ProviderSettings.ConsecutiveFailures, 0);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to search for recently updated {Provider}", provider.ToString());
+                var errorMessage = $"Failed to search for recently updated for {provider.ToString()}";
 
-                connectionService.CommunicateException($"Failed to search for recently updated for {provider.ToString()}", ex);
+                var consecutiveFailures = providerSettings.Settings.Increment(ProviderSettings.ConsecutiveFailures);
+
+                logger.LogError(ex, $"{errorMessage} - {consecutiveFailures} consecutive failures");
+
+                var disableAfter = await settingsService.GetSettingsAsync<int>(ServerSettingKey.AutoDisableAfter);
+                if (consecutiveFailures >= disableAfter)
+                {
+                    providerSettings.Settings.SetKey(ProviderSettings.Disable, true);
+                    errorMessage += $" for {disableAfter} consecutive failures, disabling provider";
+                }
+
+                connectionService.CommunicateException(errorMessage, ex);
             }
 
+            unitOfWork.ProviderSettingsRepository.Update(providerSettings);
         }
+
+        await unitOfWork.CommitAsync(cancellationToken);
 
         return releases;
     }

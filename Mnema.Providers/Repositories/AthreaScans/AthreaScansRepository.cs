@@ -57,6 +57,11 @@ public class AthreaScansRepository(IHttpClientFactory httpClientFactory, IDistri
             };
         }).WhereNotNull().ToList();
 
+        if (items.Count == 0)
+        {
+            return PagedList<SearchResult>.Empty();
+        }
+
         return new PagedList<SearchResult>(items, totalPages * 10, pagination.PageNumber, 10);
     }
 

@@ -205,8 +205,10 @@ public class MetadataResolver(
             foreach (var fromChapter in from.Chapters)
             {
                 var match = into.Chapters.FirstOrDefault(c
-                    => c.VolumeMarker == fromChapter.VolumeMarker
-                    && c.ChapterMarker == fromChapter.ChapterMarker);
+                        => !string.IsNullOrEmpty(c.ChapterMarker)
+                           && !string.IsNullOrEmpty(c.VolumeMarker)
+                           && c.VolumeMarker == fromChapter.VolumeMarker
+                           && c.ChapterMarker == fromChapter.ChapterMarker);
 
                 if (match != null)
                 {

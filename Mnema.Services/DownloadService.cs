@@ -1,21 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 
 namespace Mnema.Services;
 
-internal class DownloadService(ILogger<DownloadService> logger, IServiceScopeFactory scopeFactory) : IDownloadService
+internal class DownloadService(ILogger<DownloadService> logger, IServiceScopeFactory scopeFactory, IUnitOfWork unitOfWork) : IDownloadService
 {
     public async Task StartDownload(DownloadRequestDto request)
     {
         using var scope = scopeFactory.CreateScope();
         var contentManager = scope.ServiceProvider.GetRequiredKeyedService<IContentManager>(request.Provider);
+
+        var providerSettings = await unitOfWork.ProviderSettingsRepository.GetSettingsForProvider(request.Provider, CancellationToken.None);
+        if (providerSettings.Settings.GetKey(ProviderSettings.BlockAutomaticDownloads) && request.StartImmediately)
+        {
+            logger.LogTrace("Automatic downloads are blocked for {Provider}, setting StartImmediately to false", request.Provider.ToString());
+            request.StartImmediately = false;
+        }
 
         await contentManager.Download(request);
     }

@@ -54,6 +54,24 @@
                   </app-settings-item>
                 }
 
+                @if (getFormControl('autoDisableProviderAfter'); as control) {
+                  <app-settings-item
+                    [control]="control"
+                    [title]="t('auto-disable-provider-after.label')"
+                    [tooltip]="t('auto-disable-provider-after.tooltip')"
+                  >
+                    <ng-template #view>{{ control.value }}</ng-template>
+
+                    <ng-template #edit>
+                      <input
+                        type="number"
+                        class="form-control"
+                        formControlName="autoDisableProviderAfter"
+                      />
+                    </ng-template>
+                  </app-settings-item>
+                }
+
 
               </div>
             </div>

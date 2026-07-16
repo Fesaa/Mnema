@@ -48,6 +48,12 @@ public class ProviderSettingsService(ILogger<ProviderSettingsService> logger, IS
                     Type = FormType.Switch,
                     DefaultOption = false,
                 },
+                new FormControlDefinition
+                {
+                    Key = ProviderSettings.BlockAutomaticDownloads.Key,
+                    Type = FormType.Switch,
+                    DefaultOption = false,
+                },
                 ..extraFormControls
             ]
         };

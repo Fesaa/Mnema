@@ -56,6 +56,9 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                     dto.MetadataProviderSettings =
                         DeserializeSetting<Dictionary<MetadataProvider, MetadataProviderSettingsDto>>(serverSetting);
                     break;
+                case ServerSettingKey.AutoDisableAfter:
+                    dto.AutoDisableProviderAfter = DeserializeSetting<int>(serverSetting);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
                         "Unknown server settings key");
@@ -80,6 +83,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                 ServerSettingKey.SubscriptionRefreshHour => dto.SubscriptionRefreshHour,
                 ServerSettingKey.LastUpdateDate => null,
                 ServerSettingKey.MetadataProviderSettings => dto.MetadataProviderSettings,
+                ServerSettingKey.AutoDisableAfter => dto.AutoDisableProviderAfter,
                 _ => throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
                     "Unknown server settings key")
             };
@@ -104,12 +108,13 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             ServerSettingKey.SubscriptionRefreshHour => int.Parse(setting.Value),
             ServerSettingKey.LastUpdateDate => DateTime.Parse(setting.Value, CultureInfo.InvariantCulture),
             ServerSettingKey.MetadataProviderSettings => JsonSerializer.Deserialize<T>(setting.Value),
+            ServerSettingKey.AutoDisableAfter => int.Parse(setting.Value),
             _ => default(T)
         };
 
         return result switch
         {
-            null => throw new ArgumentException($"No converter found for key {setting.Key}"),
+            null => throw new ArgumentException($"[DeserializeSetting] No converter found for key {setting.Key}"),
             T typedResult => typedResult,
             _ => throw new ArgumentException(
                 $"Failed to convert {setting.Key} - {setting.Value} to type {typeof(T).Name}")
@@ -128,7 +133,8 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             ServerSettingKey.SubscriptionRefreshHour => setting.ToString(),
             ServerSettingKey.LastUpdateDate => setting.ToString(),
             ServerSettingKey.MetadataProviderSettings => JsonSerializer.Serialize(setting),
-            _ => throw new ArgumentException($"No converter found for key {key}")
+            ServerSettingKey.AutoDisableAfter => setting.ToString(),
+            _ => throw new ArgumentException($"[SerializeSetting] No converter found for key {key}")
         } ?? string.Empty;
     }
 
@@ -156,7 +162,8 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             { ServerSettingKey.InstallDate, typeof(DateTime) },
             { ServerSettingKey.SubscriptionRefreshHour, typeof(int) },
             { ServerSettingKey.LastUpdateDate, typeof(DateTime) },
-            { ServerSettingKey.MetadataProviderSettings , typeof(Dictionary<MetadataProvider, MetadataProviderSettingsDto>)}
+            { ServerSettingKey.MetadataProviderSettings, typeof(Dictionary<MetadataProvider, MetadataProviderSettingsDto>)},
+            { ServerSettingKey.AutoDisableAfter, typeof(int)},
         };
     }
 }
