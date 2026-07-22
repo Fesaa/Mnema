@@ -71,7 +71,7 @@ internal partial class Publication
             return;
         }
 
-        if (_monitoredSeries != null && !Request.GetKey(RequestConstants.FirstDownload) &&
+        if (Request.StartImmediately && _monitoredSeries != null && !Request.GetKey(RequestConstants.FirstDownload) &&
             (QueuedChapters.Count > 10 || QueuedChapters.Count - ReDownloads == Series!.Chapters.Count))
         {
             _connectionService.CommunicateTooManyForAutomatedDownload(_monitoredSeries!, QueuedChapters.Count);
