@@ -30,7 +30,7 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
             .Where(m => m.NormalizedTitle.Contains(query))
             .WhereIf(provider.HasValue, m => m.Provider == provider)
             .ProjectTo<MonitoredSeriesDto>(mapper.ConfigurationProvider)
-            .OrderBy(m => m.Id)
+            .OrderBy(m => m.Title)
             .AsPagedList(pagination, cancellationToken);
     }
 
