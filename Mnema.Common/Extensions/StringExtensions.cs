@@ -103,9 +103,7 @@ public static class StringExtensions
 
         public int AsInt()
         {
-            if (int.TryParse(s, out var result)) return result;
-
-            return 0;
+            return int.TryParse(s, out var result) ? result : 0;
         }
 
         public DateTime? AsDateTime(string format)
