@@ -14,6 +14,7 @@ public sealed record MonitoredSeriesDto: IDatabaseEntity
 
     /// <inheritdoc cref="MonitoredSeries.Title" />
     public required string Title { get; init; }
+    public string NormalizedTitle { get; set; }
     public string Summary { get; init; }
     public string? CoverUrl { get; init; }
     public string? RefUrl { get; init; }
