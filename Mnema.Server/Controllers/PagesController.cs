@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
@@ -64,6 +65,15 @@ public class PagesController(
     public async Task<IActionResult> UpdatePages([FromBody] PageDto dto)
     {
         await pagesService.UpdatePage(dto);
+
+        return Ok();
+    }
+
+    [HttpPost("{pageId:guid}/set-default")]
+    [Authorize(Roles.ManagePages)]
+    public async Task<IActionResult> SetPageDefaults(Guid pageId, [FromBody] MetadataBag defaults)
+    {
+        await pagesService.SetPageDefaults(pageId, defaults, HttpContext.RequestAborted);
 
         return Ok();
     }

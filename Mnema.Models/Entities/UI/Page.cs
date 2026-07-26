@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Mnema.Common;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Entities.User;
@@ -14,6 +15,7 @@ public class Page: IDatabaseEntity
     public required int SortValue { get; set; }
     public required Provider Provider { get; set; }
     public string CustomRootDir { get; set; } = string.Empty;
+    public MetadataBag DefaultOptions { get; set; } = new();
 
     public IList<MnemaUser> Users { get; set; } = [];
 }
