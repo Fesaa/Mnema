@@ -8,8 +8,9 @@ import {ConnectionEventPipe} from "./_pipes/connection-event.pipe";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {GenericFormModalComponent} from "../../../../generic-form/generic-form-modal/generic-form-modal.component";
 import {DefaultModalOptions} from "../../../../_models/default-modal-options";
-import {finalize, map, of, switchMap} from "rxjs";
+import {filter, finalize, map, of, switchMap, tap} from "rxjs";
 import {ListSelectModalComponent} from "../../../../shared/_component/list-select-modal/list-select-modal.component";
+import {NotificationService} from "@mnema/_services/notification.service";
 
 @Component({
   selector: 'app-external-connection-settings',
@@ -26,6 +27,7 @@ import {ListSelectModalComponent} from "../../../../shared/_component/list-selec
 export class ConnectionSettingsComponent {
 
   private readonly connectionService = inject(ConnectionService);
+  private readonly notificationService = inject(NotificationService);
   private readonly modalService = inject(ModalService);
 
   protected pageReloader = new EventEmitter<void>();
@@ -59,6 +61,8 @@ export class ConnectionSettingsComponent {
         return this.modalService.onClose$<Connection>(modal);
       }),
       switchMap(c => this.connectionService.updateConnection(c)),
+      filter(() => connection?.type === ConnectionType.Native),
+      switchMap(() => this.notificationService.enabled()),
       finalize(() => this.pageReloader.emit()),
     ).subscribe()
   }

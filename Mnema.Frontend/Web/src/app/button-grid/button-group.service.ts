@@ -90,52 +90,58 @@ export class ButtonGroupService {
   actionGroup = computed<ButtonGroup>(() => {
     this.translationReloaded();
 
+    let buttons = [
+      {
+        title: translate('button-groups.actions.monitored-series'),
+        icon: 'fa fa-television',
+        requiredRoles: [Role.Subscriptions],
+        navUrl: '/monitored-series',
+        standAlone: true,
+      },
+      {
+        title: translate('button-groups.actions.downloads'),
+        icon: 'fa fa-download',
+        requiredRoles: [Role.Subscriptions],
+        navUrl: '/active-downloads',
+        standAlone: true,
+        badge: this.activeDownloadsService.items().length > 0
+          ? `${this.activeDownloadsService.items().length}` : undefined,
+      },
+      {
+        title: translate('button-groups.actions.search-series'),
+        icon: 'fa fa-magnifying-glass',
+        requiredRoles: [Role.Subscriptions],
+        navUrl: '/series-search',
+      },
+      {
+        title: translate('button-groups.actions.missing-chapters'),
+        icon: 'fa fa-puzzle-piece',
+        requiredRoles: [Role.Subscriptions],
+        navUrl: '/missing-chapters',
+      },
+      {
+        title: translate('button-groups.actions.notifications'),
+        icon: 'fa fa-inbox',
+        navUrl: '/notifications',
+        badge: this.notificationService.notificationsCount() > 0
+          ? `${this.notificationService.notificationsCount()}` : undefined,
+      },
+      {
+        title: translate('button-groups.settings.logout'),
+        icon: 'fa fa-user-minus',
+        onClick: () => this.accountService.logout(),
+      },
+    ];
+
+    if (!this.notificationService.notificationsEnabled()) {
+      buttons = buttons.filter(btn => btn.navUrl !== '/notifications');
+    }
+
     return {
       key: ButtonGroupKey.Actions,
       title: translate('button-groups.actions.title'),
       icon: 'fa fa-bars',
-      buttons: [
-        {
-          title: translate('button-groups.actions.monitored-series'),
-          icon: 'fa fa-television',
-          requiredRoles: [Role.Subscriptions],
-          navUrl: '/monitored-series',
-          standAlone: true,
-        },
-        {
-          title: translate('button-groups.actions.downloads'),
-          icon: 'fa fa-download',
-          requiredRoles: [Role.Subscriptions],
-          navUrl: '/active-downloads',
-          standAlone: true,
-          badge: this.activeDownloadsService.items().length > 0
-            ? `${this.activeDownloadsService.items().length}` : undefined,
-        },
-        {
-          title: translate('button-groups.actions.search-series'),
-          icon: 'fa fa-magnifying-glass',
-          requiredRoles: [Role.Subscriptions],
-          navUrl: '/series-search',
-        },
-        {
-          title: translate('button-groups.actions.missing-chapters'),
-          icon: 'fa fa-puzzle-piece',
-          requiredRoles: [Role.Subscriptions],
-          navUrl: '/missing-chapters',
-        },
-        {
-          title: translate('button-groups.actions.notifications'),
-          icon: 'fa fa-inbox',
-          navUrl: '/notifications',
-          badge: this.notificationService.notificationsCount() > 0
-            ? `${this.notificationService.notificationsCount()}` : undefined,
-        },
-        {
-          title: translate('button-groups.settings.logout'),
-          icon: 'fa fa-user-minus',
-          onClick: () => this.accountService.logout(),
-        },
-      ],
+      buttons: buttons,
     };
   });
 

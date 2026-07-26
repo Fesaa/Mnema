@@ -403,10 +403,7 @@ internal class DynastyRepository(
                 continue;
             }
 
-            if (idLink.EndsWith(".atom"))
-            {
-                idLink = idLink.RemoveSuffix(".atom");
-            }
+            idLink = idLink.RemoveSuffix(".atom");
 
             if (series.ExternalId != idLink)
             {
