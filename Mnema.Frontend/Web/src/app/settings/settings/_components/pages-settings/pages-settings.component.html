@@ -56,6 +56,14 @@
 
             <button
               type="button"
+              class="btn btn-small"
+              (click)="editDefaults(item)"
+            >
+              <i class="fa fa-pencil-alt"></i>
+            </button>
+
+            <button
+              type="button"
               class="btn btn-small text-danger"
               (click)="remove(item)"
             >

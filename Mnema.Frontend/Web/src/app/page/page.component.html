@@ -1,11 +1,9 @@
-@if (page() !== undefined) {
+@if (page(); as page) {
   <div class="" *transloco="let t;prefix:'page'">
 
     <div [class.hidden]="!showForm()" class="mx-2">
       <app-search-form
-        [title]="page()!.title"
-        [provider]="page()!.provider"
-        [modifiers]="page()!.modifiers ?? []"
+        [page]="page"
         (searchSubmitted)="search($event)"
       />
     </div>
@@ -34,8 +32,7 @@
           <ng-template #items let-results>
             <div class="results-grid">
               @for (res of results; track res.id) {
-                <app-search-result [metadata]="metadata()!" [page]="page()!"
-                                   [searchResult]="res" [@fadeAnimation]></app-search-result>
+                <app-search-result [metadata]="metadata()!" [page]="page" [searchResult]="res" [@fadeAnimation]></app-search-result>
               }
             </div>
           </ng-template>

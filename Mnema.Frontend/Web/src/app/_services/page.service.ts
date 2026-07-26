@@ -5,6 +5,7 @@ import {AllProviders, Page, Provider} from "../_models/page";
 import {catchError, from, map, mergeMap, Observable, of, switchMap, tap, toArray} from "rxjs";
 import {AccountService} from "./account.service";
 import {FormControlDefinition} from "../generic-form/form";
+import {MetadataBag} from "@mnema/_models/search";
 
 @Injectable({
   providedIn: 'root'
@@ -77,6 +78,10 @@ export class PageService {
         }));
       })
     );
+  }
+
+  setPageDefaults(page: Page, defaults: MetadataBag) {
+    return this.httpClient.post(this.baseUrl + page.id + '/set-defaults', defaults);
   }
 
   orderPages(order: string[]) {

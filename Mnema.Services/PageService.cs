@@ -51,16 +51,28 @@ internal class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork, 
         if (repository == null)
             throw new NotFoundException();
 
-        var metadata = await repository.DownloadMetadata(cancellationToken);
+        var modifiers = await repository.Modifiers(cancellationToken);
 
-        page.DefaultOptions.Clear();
+        bool isModified = false;
 
-        foreach (var option in metadata)
+        if (page.DefaultOptions.Count > 0)
+        {
+            page.DefaultOptions.Clear();
+            isModified = true;
+        }
+
+        foreach (var option in modifiers)
         {
             if (defaults.TryGetValue(option.Key, out var value))
             {
                 page.DefaultOptions.Add(option.Key, value);
+                isModified = true;
             }
+        }
+
+        if (isModified)
+        {
+            unitOfWork.PagesRepository.Update(page);
         }
 
         await unitOfWork.CommitAsync(cancellationToken);

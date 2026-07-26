@@ -2,7 +2,7 @@ import {Component, computed, effect, input, output, signal} from '@angular/core'
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 
 import {SearchRequest} from "../../../_models/search";
-import {Provider} from "../../../_models/page";
+import {Page, Provider} from "../../../_models/page";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {TypeaheadComponent, TypeaheadSettings} from "../../../type-ahead/typeahead.component";
 import {of} from "rxjs";
@@ -17,9 +17,12 @@ import {FormControlDefinition, FormControlOption, FormType} from "../../../gener
 })
 export class SearchFormComponent {
 
-  title = input.required<string>();
-  provider = input.required<Provider>();
-  modifiers = input<FormControlDefinition[]>([]);
+  page = input.required<Page>();
+  searchLabel = input('button-search');
+
+  title = computed(() => this.page().title);
+  provider = computed(() => this.page().provider);
+  modifiers = computed(() => this.page().modifiers ?? []);
   loading = input<boolean>(false);
 
   hasModifiers = computed(() => this.modifiers().length > 0);
@@ -54,6 +57,12 @@ export class SearchFormComponent {
     const defaultSelections: { [key: string]: string[] } = {};
 
     currentModifiers.forEach(modifier => {
+      const userDefault = this.page().defaultOptions[modifier.key];
+      if (userDefault && userDefault.length > 0) {
+        defaultSelections[modifier.key] = userDefault;
+        return;
+      }
+
       const defaults = this.getDefaultValues(modifier);
       if (!defaults) {
         defaultSelections[modifier.key] = [];

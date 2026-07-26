@@ -69,7 +69,7 @@ public class PagesController(
         return Ok();
     }
 
-    [HttpPost("{pageId:guid}/set-default")]
+    [HttpPost("{pageId:guid}/set-defaults")]
     [Authorize(Roles.ManagePages)]
     public async Task<IActionResult> SetPageDefaults(Guid pageId, [FromBody] MetadataBag defaults)
     {

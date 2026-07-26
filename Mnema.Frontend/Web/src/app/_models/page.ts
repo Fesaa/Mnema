@@ -1,4 +1,5 @@
 import {FormControlDefinition} from "../generic-form/form";
+import {MetadataBag} from "@mnema/_models/search";
 
 export type Page = {
   id: string;
@@ -9,6 +10,7 @@ export type Page = {
   modifiers?: FormControlDefinition[];
   metadata?: FormControlDefinition[],
   customRootDir: string;
+  defaultOptions: MetadataBag;
 }
 
 export enum Provider {
