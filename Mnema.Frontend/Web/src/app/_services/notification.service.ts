@@ -4,6 +4,7 @@ import {environment} from "../../environments/environment";
 import {Notification} from "../_models/notifications";
 import {PagedList} from "../_models/paged-list";
 import {EventType, SignalRService} from "./signal-r.service";
+import {map, tap} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -14,9 +15,11 @@ export class NotificationService {
   private readonly signalR = inject(SignalRService);
 
   notificationsCount = signal(0);
+  notificationsEnabled = signal(false);
 
   constructor() {
     this.reload();
+    this.enabled().subscribe()
 
     this.signalR.events$.subscribe(event => {
       if (event.type === EventType.NotificationAdd) {
@@ -28,6 +31,13 @@ export class NotificationService {
         this.notificationsCount.update(n => Math.max(0, n - amount));
       }
     });
+  }
+
+  enabled() {
+    return this.http.get(this.baseUrl + '/enabled', {responseType: 'text'}).pipe(
+      map(res => res.toLowerCase() === 'true'),
+      tap(enabled => this.notificationsEnabled.set(enabled))
+    );
   }
 
   reload() {

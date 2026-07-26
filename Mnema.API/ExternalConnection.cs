@@ -52,4 +52,7 @@ public interface IConnectionHandlerService
     Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken);
 }
 
-public interface IConnectionRepository: IEntityRepository<Connection, ConnectionDto>;
+public interface IConnectionRepository : IEntityRepository<Connection, ConnectionDto>
+{
+    Task<bool> ConnectionExistsForType(ConnectionType type, CancellationToken cancellationToken);
+}

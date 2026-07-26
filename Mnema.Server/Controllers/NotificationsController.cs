@@ -5,11 +5,18 @@ using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
 using Mnema.Common;
 using Mnema.Models.DTOs.User;
+using Mnema.Models.Entities;
 
 namespace Mnema.Server.Controllers;
 
 public class NotificationsController(IUnitOfWork unitOfWork, IMessageService messageService) : BaseApiController
 {
+    [HttpGet("enabled")]
+    public async Task<ActionResult<bool>> Enabled()
+    {
+        return Ok(await unitOfWork.ConnectionRepository.ConnectionExistsForType(ConnectionType.Native, HttpContext.RequestAborted));
+    }
+
     [HttpGet("all")]
     public async Task<ActionResult<IList<NotificationDto>>> GetNotifications([FromQuery] PaginationParams? pagination)
     {
