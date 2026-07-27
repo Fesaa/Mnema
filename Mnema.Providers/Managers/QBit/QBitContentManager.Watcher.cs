@@ -43,15 +43,17 @@ internal partial class QBitContentManager
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
+        var downloads = await unitOfWork.ExternalDownloadRepository.GetByExternalIds(torrents.Select(t => t.Hash));
+
         List<QBitTorrent> inUploadState = [];
         List<QBitTorrent> queuedForSignalR = [];
 
         foreach (var tInfo in torrents)
         {
-            var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
-            if (request == null) continue;
-
-            (UploadStates.Contains(tInfo.State) ? inUploadState : queuedForSignalR).Add(new QBitTorrent(request, tInfo));
+            if (downloads.TryGetValue(tInfo.Hash, out var torrent))
+            {
+                (UploadStates.Contains(tInfo.State) ? inUploadState : queuedForSignalR).Add(new QBitTorrent(torrent, tInfo));
+            }
         }
 
         var uploadHashes = inUploadState.Select(t => t.Id).ToList();

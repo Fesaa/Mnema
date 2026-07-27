@@ -34,17 +34,18 @@ internal partial class QBitContentManager
     [DisableConcurrentExecution(timeoutInSeconds: 86400 * 2)] // 2 days
     public async Task CleanupTorrent(string hash, CancellationToken ct)
     {
+        using var scope = scopeFactory.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
         var torrent = await GetTorrent(hash, ct);
         if (torrent == null)
         {
-            await cache.RemoveAsync(RequestCacheKey + hash, ct);
+            await unitOfWork.ExternalDownloadRepository.DeleteByExternalId(hash, ct);
             _cleanupTorrents.TryRemove(hash, out _);
 
             return;
         }
 
-        using var scope = scopeFactory.CreateScope();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var connectionService = scope.ServiceProvider.GetRequiredService<IConnectionService>();
         var monitoredSeriesService = scope.ServiceProvider.GetRequiredService<IMonitoredSeriesService>();
@@ -94,8 +95,11 @@ internal partial class QBitContentManager
 
     private async Task<QBitTorrent?> GetTorrent(string hash, CancellationToken ct)
     {
-        var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + hash, token: ct);
-        if (request == null)
+        using var scope = scopeFactory.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        var externalDownload = await unitOfWork.ExternalDownloadRepository.GetByExternalId(hash, ct);
+        if (externalDownload == null)
         {
             logger.LogWarning("Tried to get a torrent without matching request: {Id}", hash);
             return null;
@@ -110,7 +114,7 @@ internal partial class QBitContentManager
             return null;
         }
 
-        return new QBitTorrent(request, qbitTorrent);
+        return new QBitTorrent(externalDownload, qbitTorrent);
     }
 
 }

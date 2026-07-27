@@ -110,7 +110,25 @@ internal partial class QBitContentManager
         };
 
         await qBitClient.AddTorrentsAsync(addRequest, ct);
-        await cache.SetAsJsonAsync(RequestCacheKey + request.Id, request, RequestCacheKeyOptions, token: ct);
+
+        unitOfWork.ExternalDownloadRepository.Add(new ExternalDownload
+        {
+            ExternalId = request.Id,
+            Provider = request.Provider,
+            UserId = request.UserId,
+            Metadata = request.Metadata,
+            BaseDir = request.BaseDir,
+            Files = chapters.Select(chapter => new ExternalDownloadFile
+                {
+                    FileName = chapter.FileName,
+                    VolumeMarker = chapter.VolumeMarker,
+                    ChapterMarker = chapter.ChapterMarker,
+                    Selected = toDownloadChapters.Any(cp => cp.Title == chapter.Title)
+                })
+                .ToList(),
+        });
+
+        await unitOfWork.CommitAsync(ct);
 
         if (toDownloadChapters.Count != chapters.Count)
         {

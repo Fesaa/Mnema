@@ -1,13 +1,15 @@
 using System;
 using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 using QBittorrent.Client;
 
 namespace Mnema.Providers.Managers.QBit;
 
-public class QBitTorrent(DownloadRequestDto request, TorrentInfo torrentInfo) : IContent
+public class QBitTorrent(ExternalDownload externalDownload, TorrentInfo torrentInfo) : IContent
 {
     public string Id => torrentInfo.Hash;
     public string Title => torrentInfo.Name;
@@ -44,11 +46,22 @@ public class QBitTorrent(DownloadRequestDto request, TorrentInfo torrentInfo) : 
         _ => throw new ArgumentOutOfRangeException()
     };
 
-    public DownloadRequestDto Request => request;
+    public DownloadRequestDto Request => new()
+    {
+        UserId = externalDownload.UserId,
+        Provider = externalDownload.Provider,
+        Id = externalDownload.ExternalId,
+        Metadata = externalDownload.Metadata,
+        BaseDir = externalDownload.BaseDir,
+
+        TempTitle = string.Empty,
+    };
+
+    public T GetKey<T>(IMetadataKey<T> key) => externalDownload.GetKey(key);
 
     public DownloadInfo DownloadInfo => new()
     {
-        Provider = request.Provider,
+        Provider = externalDownload.Provider,
         Id = Id,
         ContentState = State,
         Name = Title,
@@ -63,8 +76,8 @@ public class QBitTorrent(DownloadRequestDto request, TorrentInfo torrentInfo) : 
         Estimated = State == ContentState.Downloading ? torrentInfo.EstimatedTime?.TotalSeconds ?? 0 : 0,
         SpeedType = SpeedType.Bytes,
         Speed = torrentInfo.DownloadSpeed,
-        DownloadDir = Request.BaseDir,
-        UserId = Request.UserId,
-        MonitoredSeriesId = Request.GetKey(RequestConstants.MonitoredSeriesId)
+        DownloadDir = externalDownload.BaseDir,
+        UserId = externalDownload.UserId,
+        MonitoredSeriesId = externalDownload.GetKey(RequestConstants.MonitoredSeriesId)
     };
 }
