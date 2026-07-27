@@ -12,7 +12,12 @@ import {TableComponent} from "../../../../shared/_component/table/table.componen
 import {ModalService} from "../../../../_services/modal.service";
 import {EditPageModalComponent} from "./_components/edit-page-modal/edit-page-modal.component";
 import {DefaultModalOptions} from "../../../../_models/default-modal-options";
-import {catchError, merge, of, switchMap, take, tap} from "rxjs";
+import {catchError, filter, merge, of, switchMap, take, tap} from "rxjs";
+import {
+  EditPageDefaultsModalComponent
+} from "@mnema/settings/settings/_components/pages-settings/_components/edit-page-defaults-modal/edit-page-defaults-modal.component";
+import {MetadataBag} from "@mnema/_models/search";
+import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   selector: 'app-pages-settings',
@@ -22,6 +27,7 @@ import {catchError, merge, of, switchMap, take, tap} from "rxjs";
     TranslocoDirective,
     CdkDragHandle,
     TableComponent,
+    NgbTooltip,
   ],
   templateUrl: './pages-settings.component.html',
   styleUrl: './pages-settings.component.scss',
@@ -53,11 +59,21 @@ export class PagesSettingsComponent {
       provider: Provider.MANGADEX,
       icon: '',
       sortValue: 0,
+      defaultOptions: {},
     });
-
 
     merge(modal.dismissed, modal.closed).pipe(
       take(1),
+      switchMap(() => this.pageService.refreshPages()),
+    ).subscribe();
+  }
+
+  editDefaults(page: Page) {
+    const [modal, component] = this.modalService.open(EditPageDefaultsModalComponent, DefaultModalOptions);
+    component.page.set(page)
+
+    this.modalService.onClose$<MetadataBag>(modal).pipe(
+      switchMap(defaults => this.pageService.setPageDefaults(page, defaults)),
       switchMap(() => this.pageService.refreshPages()),
     ).subscribe();
   }

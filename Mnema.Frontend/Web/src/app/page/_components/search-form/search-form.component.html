@@ -1,17 +1,19 @@
 <div class="search-form-container" *transloco="let t; prefix: 'search-form'">
   <form [formGroup]="searchForm" (ngSubmit)="onSubmit()" class="search-form">
 
-    <div class="form-group mb-4">
-      <label for="query" class="form-label fw-semibold text-primary">{{ t('search-query-label') }}</label>
-      <input
-        type="text"
-        id="query"
-        class="form-control form-control-lg search-input"
-        formControlName="query"
-        [placeholder]="t('search-query-placeholder', {name: title()})"
-        autocomplete="off"
-        [class.is-invalid]="searchForm.get('query')?.touched && searchForm.get('query')?.errors">
-    </div>
+    @if (!onlyModifiers()) {
+      <div class="form-group mb-4">
+        <label for="query" class="form-label fw-semibold text-primary">{{ t('search-query-label') }}</label>
+        <input
+          type="text"
+          id="query"
+          class="form-control form-control-lg search-input"
+          formControlName="query"
+          [placeholder]="t('search-query-placeholder', {name: title()})"
+          autocomplete="off"
+          [class.is-invalid]="searchForm.get('query')?.touched && searchForm.get('query')?.errors">
+      </div>
+    }
 
     @if (hasModifiers()) {
       <div class="modifiers-section mb-4">
@@ -25,6 +27,7 @@
               @if (modifier.type === FormType.Switch) {
                 <div class="form-check form-switch d-flex align-items-center">
                   <input
+                    [checked]="isSwitchChecked(modifier)"
                     (change)="onModifierSwitchChange(modifier, $event)"
                     type="checkbox"
                     class="form-check-input"
@@ -33,15 +36,15 @@
                   <label class="form-check-label ms-2 user-select-none" [for]="modifier.key">{{t(modifier.key)}}</label>
                 </div>
               } @else if (modifier.type === FormType.DropDown) {
+                @let selectedValue = getDropdownValue(modifier);
+
                 <div class="">
                   {{t(modifier.key + '.label')}}
-                  <select class="form-select">
+                  <select
+                    class="form-select"
+                    (change)="onDropdownChange(modifier, $event)">
                     @for (option of modifier.options; track option.key) {
-                      <option
-                        [value]="option.value"
-                        [selected]="option.default"
-                        (click)="onModifierSelection(modifier, option)"
-                      >
+                      <option [value]="option.value" [selected]="selectedValue === option.value">
                         {{option.key}}
                       </option>
                     }
@@ -63,20 +66,22 @@
       </div>
     }
 
-    <div class="form-actions d-flex gap-3 justify-content-end">
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="loading()">
-        @if (loading()) {
-          <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-          <span>{{ t('button-searching') }}</span>
-        } @else {
-          <i class="fa fa-search me-2"></i>
-          <span>{{ t('button-search') }}</span>
-        }
-      </button>
-    </div>
 
+    @if (!onlyModifiers()) {
+      <div class="form-actions d-flex gap-3 justify-content-end">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="loading()">
+          @if (loading()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <span>{{ t('button-searching') }}</span>
+          } @else {
+            <i class="fa fa-search me-2"></i>
+            <span>{{ t('button-search') }}</span>
+          }
+        </button>
+      </div>
+    }
   </form>
 </div>

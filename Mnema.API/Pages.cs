@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Mnema.Common;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.UI;
 
@@ -22,5 +24,6 @@ public interface IPagesRepository
 public interface IPagesService
 {
     Task UpdatePage(PageDto dto);
+    Task SetPageDefaults(Guid pageId, MetadataBag defaults, CancellationToken cancellationToken);
     Task OrderPages(Guid[] ids);
 }

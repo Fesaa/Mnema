@@ -1,14 +1,19 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
+using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.UI;
 
 namespace Mnema.Services;
 
-internal class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork) : IPagesService
+internal class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork, IServiceProvider serviceProvider) : IPagesService
 {
     public async Task UpdatePage(PageDto dto)
     {
@@ -34,6 +39,43 @@ internal class PageService(ILogger<PageService> logger, IUnitOfWork unitOfWork) 
             unitOfWork.PagesRepository.Update(page);
 
         await unitOfWork.CommitAsync();
+    }
+
+    public async Task SetPageDefaults(Guid pageId, MetadataBag defaults, CancellationToken cancellationToken)
+    {
+        var page = await unitOfWork.PagesRepository.GetPageById(pageId);
+        if (page == null)
+            throw new NotFoundException();
+
+        var repository = serviceProvider.GetKeyedService<IContentRepository>(page.Provider);
+        if (repository == null)
+            throw new NotFoundException();
+
+        var modifiers = await repository.Modifiers(cancellationToken);
+
+        bool isModified = false;
+
+        if (page.DefaultOptions.Count > 0)
+        {
+            page.DefaultOptions.Clear();
+            isModified = true;
+        }
+
+        foreach (var option in modifiers)
+        {
+            if (defaults.TryGetValue(option.Key, out var value))
+            {
+                page.DefaultOptions.Add(option.Key, value);
+                isModified = true;
+            }
+        }
+
+        if (isModified)
+        {
+            unitOfWork.PagesRepository.Update(page);
+        }
+
+        await unitOfWork.CommitAsync(cancellationToken);
     }
 
     public async Task OrderPages(Guid[] ids)

@@ -100,6 +100,12 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
             .HasJsonConversion(new MetadataBag())
             .HasColumnType("TEXT")
             .HasDefaultValue(new MetadataBag());
+
+        builder.Entity<Page>()
+            .Property(p => p.DefaultOptions)
+            .HasJsonConversion(new MetadataBag())
+            .HasColumnType("TEXT")
+            .HasDefaultValue(new MetadataBag());
     }
 
     private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)

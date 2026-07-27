@@ -1,12 +1,12 @@
-import {Component, computed, effect, input, output, signal} from '@angular/core';
+import {Component, computed, effect, input, output, signal, untracked, viewChild} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 
-import {SearchRequest} from "../../../_models/search";
-import {Provider} from "../../../_models/page";
+import {MetadataBag, SearchRequest} from "@mnema/_models/search";
+import {Page} from "@mnema/_models/page";
 import {TranslocoDirective} from "@jsverse/transloco";
-import {TypeaheadComponent, TypeaheadSettings} from "../../../type-ahead/typeahead.component";
+import {TypeaheadComponent, TypeaheadSettings} from "@mnema/type-ahead/typeahead.component";
 import {of} from "rxjs";
-import {FormControlDefinition, FormControlOption, FormType} from "../../../generic-form/form";
+import {FormControlDefinition, FormControlOption, FormType} from "@mnema/generic-form/form";
 
 @Component({
   selector: 'app-search-form',
@@ -17,14 +17,18 @@ import {FormControlDefinition, FormControlOption, FormType} from "../../../gener
 })
 export class SearchFormComponent {
 
-  title = input.required<string>();
-  provider = input.required<Provider>();
-  modifiers = input<FormControlDefinition[]>([]);
+  page = input.required<Page>();
+  onlyModifiers = input(false);
+
+  title = computed(() => this.page().title);
+  provider = computed(() => this.page().provider);
+  modifiers = computed(() => this.page().modifiers ?? []);
   loading = input<boolean>(false);
 
   hasModifiers = computed(() => this.modifiers().length > 0);
 
   searchSubmitted = output<SearchRequest>();
+
   modifierSelections = signal<{ [key: string]: string[] }>({});
 
   searchForm: FormGroup;
@@ -54,6 +58,12 @@ export class SearchFormComponent {
     const defaultSelections: { [key: string]: string[] } = {};
 
     currentModifiers.forEach(modifier => {
+      const userDefault = untracked(this.page).defaultOptions[modifier.key];
+      if (userDefault && userDefault.length > 0) {
+        defaultSelections[modifier.key] = userDefault;
+        return;
+      }
+
       const defaults = this.getDefaultValues(modifier);
       if (!defaults) {
         defaultSelections[modifier.key] = [];
@@ -95,9 +105,9 @@ export class SearchFormComponent {
       return of(filtered);
     }
 
-    const defaults = this.getDefaultValues(mod);
+    const defaults = untracked(this.modifierSelections)[mod.key];
     if (defaults) {
-      settings.savedData = defaults;
+      settings.savedData = mod.options.filter(o => defaults.includes(o.value));
     }
 
     settings.trackByIdentityFn = (idx, mv) =>  `${mv.key}`;
@@ -117,10 +127,27 @@ export class SearchFormComponent {
   }
 
   onModifierSelection(mod: FormControlDefinition, event: FormControlOption[] | FormControlOption) {
-    this.modifierSelections.update(s => {
-      s[mod.key] = Array.isArray(event) ? event.map(mv => mv.value) : [event.value];
-      return s;
-    })
+    this.modifierSelections.update(s => ({
+      ...s,
+      [mod.key]: Array.isArray(event) ? event.map(mv => mv.value) : [event.value]
+    }));
+  }
+
+  onDropdownChange(mod: FormControlDefinition, event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    const option = mod.options.find(o => o.value === value);
+    console.log(mod.key, value, option);
+    if (option) {
+      this.onModifierSelection(mod, option);
+    }
+  }
+
+  isSwitchChecked(mod: FormControlDefinition): boolean {
+    return this.modifierSelections()[mod.key]?.[0] === 'true';
+  }
+
+  getDropdownValue(mod: FormControlDefinition): string {
+    return this.modifierSelections()[mod.key]?.[0] ?? '';
   }
 
   onSubmit(): void {
@@ -129,6 +156,18 @@ export class SearchFormComponent {
     }
 
     const formValue = this.searchForm.value;
+
+
+    const searchRequest: SearchRequest = {
+      provider: this.provider(),
+      query: formValue.query,
+      modifiers: this.packModifiers(),
+    };
+
+    this.searchSubmitted.emit(searchRequest);
+  }
+
+  packModifiers(): MetadataBag {
     const modifierSelections = this.modifierSelections();
     const modifiersToSend: { [key: string]: string[] } = {};
 
@@ -139,17 +178,12 @@ export class SearchFormComponent {
       }
     });
 
-    const searchRequest: SearchRequest = {
-      provider: this.provider(),
-      query: formValue.query,
-      modifiers: Object.keys(modifiersToSend).length > 0 ? modifiersToSend :{}
-    };
-
-    this.searchSubmitted.emit(searchRequest);
+    return Object.keys(modifiersToSend).length > 0 ? modifiersToSend :{};
   }
 
   trackModifier = (index: number, modifier: FormControlDefinition) => {
     return `${this.title()}_${index}_${modifier.key}`
   };
+
   protected readonly FormType = FormType;
 }

@@ -56,6 +56,16 @@
 
             <button
               type="button"
+              class="btn btn-small"
+              [ngbTooltip]="t('edit-defaults-tooltip')"
+              (click)="editDefaults(item)"
+              [disabled]="item.modifiers.length === 0"
+            >
+              <i class="fa fa-pencil-alt"></i>
+            </button>
+
+            <button
+              type="button"
               class="btn btn-small text-danger"
               (click)="remove(item)"
             >

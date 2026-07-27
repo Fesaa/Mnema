@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Mnema.Common;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Interfaces;
 
@@ -14,6 +15,7 @@ public class PageDto: IDatabaseEntity
     public required Provider Provider { get; set; }
     public IList<FormControlDefinition>? Modifiers { get; set; }
     public string CustomRootDir { get; set; } = string.Empty;
+    public MetadataBag DefaultOptions { get; set; } = new();
 
     public List<FormControlDefinition> Metadata { get; set; } = [];
 }

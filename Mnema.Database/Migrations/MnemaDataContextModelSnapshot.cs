@@ -18,7 +18,7 @@ namespace Mnema.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -400,6 +400,12 @@ namespace Mnema.Database.Migrations
                     b.Property<string>("CustomRootDir")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("DefaultOptions")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("{}");
 
                     b.Property<string>("Icon")
                         .IsRequired()

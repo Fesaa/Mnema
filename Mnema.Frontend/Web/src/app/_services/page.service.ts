@@ -5,13 +5,13 @@ import {AllProviders, Page, Provider} from "../_models/page";
 import {catchError, from, map, mergeMap, Observable, of, switchMap, tap, toArray} from "rxjs";
 import {AccountService} from "./account.service";
 import {FormControlDefinition} from "../generic-form/form";
+import {MetadataBag} from "@mnema/_models/search";
 
 @Injectable({
   providedIn: 'root'
 })
 export class PageService {
 
-  private readonly accountService = inject(AccountService);
   private readonly httpClient = inject( HttpClient);
 
   public static readonly DEFAULT_PAGE_SORT = 9999;
@@ -21,15 +21,6 @@ export class PageService {
   public readonly pages = this._pages.asReadonly();
 
   private metadataCache: { [key: number]: FormControlDefinition[] } = {};
-
-  constructor() {
-    effect(() => {
-      const user = this.accountService.currentUser();
-      if (!user) return;
-
-      this.refreshPages().subscribe();
-    });
-  }
 
   refreshPages() {
     return this.httpClient.get<Page[]>(this.baseUrl).pipe(
@@ -77,6 +68,10 @@ export class PageService {
         }));
       })
     );
+  }
+
+  setPageDefaults(page: Page, defaults: MetadataBag) {
+    return this.httpClient.post(this.baseUrl + page.id + '/set-defaults', defaults);
   }
 
   orderPages(order: string[]) {
