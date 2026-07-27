@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, model} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, model, viewChild} from '@angular/core';
 import {TranslocoDirective} from "@jsverse/transloco";
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {SearchFormComponent} from "@mnema/page/_components/search-form/search-form.component";
@@ -20,12 +20,13 @@ export class EditPageDefaultsModalComponent {
   private readonly modal = inject(NgbActiveModal);
 
   page = model.required<Page>();
+  pageSearchForm = viewChild.required(SearchFormComponent);
 
   protected close() {
     this.modal.dismiss();
   }
 
-  protected save(searchRequest: SearchRequest) {
-    this.modal.close(searchRequest.modifiers);
+  protected save() {
+    this.modal.close(this.pageSearchForm().packModifiers());
   }
 }

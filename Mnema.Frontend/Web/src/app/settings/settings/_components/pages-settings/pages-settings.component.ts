@@ -17,6 +17,7 @@ import {
   EditPageDefaultsModalComponent
 } from "@mnema/settings/settings/_components/pages-settings/_components/edit-page-defaults-modal/edit-page-defaults-modal.component";
 import {MetadataBag} from "@mnema/_models/search";
+import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   selector: 'app-pages-settings',
@@ -26,6 +27,7 @@ import {MetadataBag} from "@mnema/_models/search";
     TranslocoDirective,
     CdkDragHandle,
     TableComponent,
+    NgbTooltip,
   ],
   templateUrl: './pages-settings.component.html',
   styleUrl: './pages-settings.component.scss',
@@ -71,7 +73,8 @@ export class PagesSettingsComponent {
     component.page.set(page)
 
     this.modalService.onClose$<MetadataBag>(modal).pipe(
-      switchMap(defaults => this.pageService.setPageDefaults(page, defaults))
+      switchMap(defaults => this.pageService.setPageDefaults(page, defaults)),
+      switchMap(() => this.pageService.refreshPages()),
     ).subscribe();
   }
 

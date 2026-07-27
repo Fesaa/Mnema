@@ -604,6 +604,7 @@
       "title": "Pages",
       "icon": "Icon",
       "name": "Name",
+      "edit-defaults-tooltip": "Edit search modifier defaults",
       "header": {
         "icon": "Icon",
         "title": "Title",
@@ -1361,6 +1362,12 @@
 
     "chapter_settings_tags-title": "Chapter Tags",
     "chapter_settings_tags-tooltip": "Fetch chapter-specific tags"
+  },
+
+  "edit-page-defaults": {
+    "title": "Edit Page Defaults: {{page}}",
+    "close": "{{common.close}}",
+    "save": "{{common.save}}"
   }
 
 }

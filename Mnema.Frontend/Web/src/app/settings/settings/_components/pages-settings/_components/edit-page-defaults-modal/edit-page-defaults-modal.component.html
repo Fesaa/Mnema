@@ -5,7 +5,7 @@
   <div class="modal-container">
 
     <div class="modal-header">
-      <span class="modal-title">{{t('title')}}</span>
+      <span class="modal-title">{{t('title', { page: page().title } )}}</span>
       <button type="button" class="btn-close" [attr.aria-label]="t('close')" (click)="close()">
       </button>
     </div>
@@ -14,9 +14,18 @@
 
       <app-search-form
         [page]="page()"
-        (searchSubmitted)="save($event)"
+        [onlyModifiers]="true"
       />
 
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="close()">
+        {{t(('close'))}}
+      </button>
+      <button class="btn btn-primary" (click)="save()">
+        {{t('save')}}
+      </button>
     </div>
 
   </div>
