@@ -416,7 +416,6 @@ public class MonitoredSeriesSchedulerTests
         IUnitOfWork unitOfWork
     ) : MonitoredSeriesScheduler(logger, scopeFactory, recurringJobManager, environment, unitOfWork)
     {
-        public Task<List<Provider>> InvokeGetProviders(List<MonitoredSeries> entities) =>
-            GetProviders(entities);
+        public Task<List<Provider>> InvokeGetProviders(List<MonitoredSeries> entities) => GetProviders(entities);
     }
 }
