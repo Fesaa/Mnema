@@ -6,13 +6,11 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
-using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
@@ -24,7 +22,6 @@ namespace Mnema.Providers.Managers.QBit;
 internal partial class QBitContentManager(
     ILogger<QBitContentManager> logger,
     ApplicationConfiguration configuration,
-    IDistributedCache cache,
     IServiceScopeFactory scopeFactory,
     IQBitClient qBitClient)
     : IContentManager, IConfigurationProvider
@@ -33,10 +30,8 @@ internal partial class QBitContentManager(
     private const string UrlKey = "url";
     private const string UsernameKey = "username";
     private const string PasswordKey = "password";
-    private const string RequestCacheKey = "QBitTorrent-Request-";
 
     private static readonly List<Provider> SupportedProviders = [Provider.Nyaa];
-    private static readonly DistributedCacheEntryOptions RequestCacheKeyOptions = new();
 
     public async Task Download(DownloadRequestDto request)
     {
@@ -69,6 +64,7 @@ internal partial class QBitContentManager(
 
         using var scope = scopeFactory.CreateScope();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
         try
         {
@@ -76,9 +72,10 @@ internal partial class QBitContentManager(
         }
         finally
         {
-            await cache.RemoveAsync(RequestCacheKey + request.Id);
             await messageService.DeleteContent(request.UserId, request.Id);
         }
+
+        await unitOfWork.ExternalDownloadRepository.DeleteByExternalId(request.Id);
     }
 
     public Task MoveToDownloadQueue(string id) => StartDownload(id);
@@ -97,8 +94,13 @@ internal partial class QBitContentManager(
         if (!SupportedProviders.Contains(provider))
             throw new MnemaException($"Provider {provider} is not supported");
 
+        using var scope = scopeFactory.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
         var torrents = await GetTorrents(provider);
         if (torrents.Count == 0) return [];
+
+        var downloads = await unitOfWork.ExternalDownloadRepository.GetByExternalIds(torrents.Select(t => t.Hash));
 
         List<IContent> contents = [];
 
@@ -106,10 +108,10 @@ internal partial class QBitContentManager(
         {
             if (UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
 
-            var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
-            if (request == null) continue;
-
-            contents.Add(new QBitTorrent(request, tInfo));
+            if (downloads.TryGetValue(tInfo.Hash, out var download))
+            {
+                contents.Add(new QBitTorrent(download, tInfo));
+            }
         }
 
         return contents;
