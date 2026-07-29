@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
@@ -70,6 +71,8 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
                 {
                     providerSettings.Settings.SetKey(ProviderSettings.Disable, true);
                     errorMessage += $" for {disableAfter} consecutive failures, disabling provider";
+
+                    BackgroundJob.Schedule(() => EnableProvider(provider, CancellationToken.None), TimeSpan.FromHours(2));
                 }
 
                 connectionService.CommunicateException(errorMessage, ex);
@@ -81,6 +84,16 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
         await unitOfWork.CommitAsync(cancellationToken);
 
         return releases;
+    }
+
+    public async Task EnableProvider(Provider provider, CancellationToken cancellationToken)
+    {
+        var providerSettings = await unitOfWork.ProviderSettingsRepository.GetSettingsForProvider(provider, cancellationToken);
+
+        providerSettings.Settings.SetKey(ProviderSettings.ConsecutiveFailures, 0);
+        unitOfWork.ProviderSettingsRepository.Update(providerSettings);
+
+        await unitOfWork.CommitAsync(cancellationToken);
     }
 
     private async Task<IList<ContentRelease>> GetRecentlyUpdated(Provider provider, IContentRepository repository,
