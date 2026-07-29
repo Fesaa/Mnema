@@ -14,9 +14,12 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 
-namespace Mnema.Providers.Nyaa;
+namespace Mnema.Providers.Repositories.Nyaa;
 
-public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepository
+public class NyaaRepository(
+    IHttpClientFactory httpClientFactory, IGroupedReleaseDetector groupedReleaseDetector,
+    IScannerService scannerService, IParserService parserService
+    ): IContentRepository
 {
 
     private static readonly XmlSerializer XmlSerializer = new(typeof(RssFeed));
@@ -72,16 +75,55 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
             return [];
         }
 
-        return feed.Channel.Items
-            .Select(item => new ContentRelease
+        List<ContentRelease> releases = [];
+
+        foreach (var item in feed.Channel.Items)
+        {
+            if (!groupedReleaseDetector.IsGroupedRelease(Provider.Nyaa, item.Title))
             {
-                ReleaseId = item.InfoHash,
-                ReleaseName = item.Title,
-                ReleaseDate = item.PubDate.AsDateTime(DateTimeFormat) ?? DateTime.UtcNow,
-                DownloadUrl =  item.Link,
-                Provider = Provider.Nyaa,
-            })
-            .ToList();
+                releases.Add(new ContentRelease
+                {
+                    ReleaseId = item.InfoHash,
+                    ReleaseName = item.Title,
+                    ReleaseDate = item.PubDate.AsDateTime(DateTimeFormat) ?? DateTime.UtcNow,
+                    DownloadUrl =  item.Link,
+                    Provider = Provider.Nyaa,
+                });
+                continue;
+            }
+
+            var files = await scannerService.ParseRawTorrentFiles(item.Link, cancellationToken);
+
+            releases.AddRange(files
+                .Select(f =>
+                {
+                    var contentFormat = f.FileName.GetFileType().ContentFormatFromFileExt();
+                    return contentFormat == null ? null : parserService.FullParse(f.FileName, contentFormat.Value);
+                })
+                .WhereNotNull()
+                .GroupMergingSeries()
+                .Select(g =>
+                {
+                    if (g.Items.Count == 0) return null;
+
+                    var lastestResult = g.Items.MaxBy(i => i.Chapter.MaxNumber);
+                    if (lastestResult == null) return null;
+
+                    return new ContentRelease
+                    {
+                        ReleaseId = $"{item.InfoHash}#{g.Series.First().ToNormalized()}",
+                        ContentId = item.InfoHash,
+                        ReleaseName = g.Series.First(),
+                        ContentName = lastestResult.Input,
+                        ReleaseDate = item.PubDate.AsDateTime(DateTimeFormat) ?? DateTime.UtcNow,
+                        DownloadUrl =  item.Link,
+                        Provider = Provider.Nyaa,
+                    };
+                })
+                .WhereNotNull());
+        }
+
+        return releases;
     }
 
     public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)

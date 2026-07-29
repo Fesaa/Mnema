@@ -40,6 +40,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<IAuthKeyService, AuthKeyService>();
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<IProviderSettingsService, ProviderSettingsService>();
+        services.AddScoped<IGroupedReleaseDetector, GroupedReleaseDetector>();
 
         #region External Connection
 

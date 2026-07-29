@@ -51,6 +51,11 @@ public class ContentRelease: IEntityDate, IDatabaseEntity
     /// </summary>
     public string DownloadUrl { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Is this release part of a group. I.e. <see cref="ReleaseId"/> is not unique
+    /// </summary>
+    public bool IsGroupedRelease { get; set; }
+
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModifiedUtc { get; set; }
 }

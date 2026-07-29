@@ -40,7 +40,7 @@ public class ScannerService(
     private static readonly StreamPipeReaderOptions StreamPipeReaderOptions = new();
     private static readonly DistributedCacheEntryOptions CacheEntryOptions = new()
     {
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
     };
 
     public List<OnDiskContent> ScanDirectory(string path, ContentFormat contentFormat, Format format,
@@ -178,6 +178,36 @@ public class ScannerService(
         await cache.SetAsJsonAsync(remoteUrl, res, CacheEntryOptions, cancellationToken);
 
         return res;
+    }
+
+    public async Task<List<RawTorrentFile>> ParseRawTorrentFiles(string remoteUrl, CancellationToken cancellationToken)
+    {
+        var cacheKey = $"{nameof(ParseRawTorrentFiles)}:{remoteUrl}";
+
+        var cached = await cache.GetAsJsonAsync<List<RawTorrentFile>>(cacheKey, cancellationToken);
+        if (cached != null)
+            return cached;
+
+        var stream = await httpClient.GetStreamAsync(remoteUrl, cancellationToken);
+
+        var torrent = await BencodeParser.ParseAsync<Torrent>(stream, StreamPipeReaderOptions, cancellationToken);
+
+        var files = torrent.FileMode switch
+        {
+            TorrentFileMode.Unknown => [],
+            TorrentFileMode.Single => [
+                new RawTorrentFile(torrent.DisplayName, torrent.File.FileName)
+            ],
+            TorrentFileMode.Multi => torrent.Files
+                .Select(f => new RawTorrentFile(f.FileName, f.FullPath))
+                .ToList(),
+
+            _ => throw new ArgumentOutOfRangeException(nameof(torrent.FileMode), torrent.FileMode, null)
+        };
+
+        await cache.SetAsJsonAsync(remoteUrl, files, CacheEntryOptions, cancellationToken);
+
+        return files;
     }
 
     private Chapter ParseChapter(string path, string file, ContentFormat contentFormat)

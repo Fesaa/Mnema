@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace Mnema.Providers.Nyaa;
+namespace Mnema.Providers.Repositories.Nyaa;
 
 [XmlRoot("rss")]
 public class RssFeed

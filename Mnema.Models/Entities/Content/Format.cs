@@ -29,4 +29,14 @@ public static class FormatExtensions
             _ => throw new ArgumentOutOfRangeException(nameof(contentFormat), contentFormat, null)
         };
     }
+
+    public static ContentFormat? ContentFormatFromFileExt(this string fileExt)
+    {
+        return fileExt switch
+        {
+            ".cbz" => ContentFormat.Manga,
+            ".epub" => ContentFormat.LightNovel,
+            _ => null
+        };
+    }
 }
