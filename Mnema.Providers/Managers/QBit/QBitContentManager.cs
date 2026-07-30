@@ -66,6 +66,12 @@ internal partial class QBitContentManager(
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
+        var externalDownload = await GetExternalDownload(request.Id, CancellationToken.None);
+        if (externalDownload.Metadata.GetKey(RequestConstants.IsGroupedDownload))
+        {
+            throw new NotImplementedException();
+        }
+
         try
         {
             await qBitClient.DeleteTorrentsAsync([request.Id], true);
@@ -78,15 +84,15 @@ internal partial class QBitContentManager(
         await unitOfWork.ExternalDownloadRepository.DeleteByExternalId(request.Id);
     }
 
-    public Task MoveToDownloadQueue(string id) => StartDownload(id);
-
     public async Task<bool> HasContent(Provider provider, string id)
     {
         if (!SupportedProviders.Contains(provider))
             throw new MnemaException($"Provider {provider} is not supported");
 
-        var torrents = await GetTorrents(provider);
-        return torrents.Any(c => c.Hash == id);
+        var scope = scopeFactory.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        return await unitOfWork.ExternalDownloadRepository.ExistsByExternalId(id);
     }
 
     public async Task<IEnumerable<IContent>> GetAllContent(Provider provider)

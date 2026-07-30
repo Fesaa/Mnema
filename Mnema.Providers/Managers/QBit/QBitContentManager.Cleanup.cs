@@ -22,13 +22,6 @@ internal partial class QBitContentManager
 
     private readonly ConcurrentDictionary<string, bool> _cleanupTorrents = [];
 
-    private void EnqueueForCleanup(ExternalDownloadContent torrent)
-    {
-        if (!_cleanupTorrents.TryAdd(torrent.Id, true)) return;
-
-        BackgroundJob.Enqueue(() => CleanupTorrent(torrent.Id, CancellationToken.None));
-    }
-
     [AutomaticRetry(Attempts = 0)] // Do not retry this we should be handling all meaningful errors
     [Queue(HangfireQueue.TorrentCleanup)]
     [DisableConcurrentExecution(timeoutInSeconds: 86400 * 2)] // 2 days
@@ -46,6 +39,12 @@ internal partial class QBitContentManager
 
         foreach (var externalDownload in infos.externalDownloads)
         {
+            if (externalDownload.IsErrored)
+            {
+                logger.LogTrace("Skipping over {Title} as it's in an errored state", externalDownload.Title);
+                continue;
+            }
+
             var sw = Stopwatch.StartNew();
 
             try
@@ -56,8 +55,11 @@ internal partial class QBitContentManager
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to cleanup external download {Id} - {TorrentHash}",
-                    externalDownload.Id, externalDownload.ExternalId);
+                logger.LogError(ex, "Failed to cleanup external download {Title} - {TorrentHash}",
+                    externalDownload.Title, externalDownload.ExternalId);
+
+                externalDownload.IsErrored = true;
+                await unitOfWork.CommitAsync(ct);
             }
 
             logger.LogInformation("[{Title}/{Id}] Cleaned up in {Elapsed}ms",  externalDownload.Title, externalDownload.ExternalId, sw.ElapsedMilliseconds);

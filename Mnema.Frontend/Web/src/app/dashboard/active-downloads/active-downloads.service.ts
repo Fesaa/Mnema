@@ -42,6 +42,9 @@ export class ActiveDownloadsService {
         case EventType.BulkContentInfoUpdate:
           (event.data as InfoStat[]).forEach(i => this.updateInfo(i));
           break;
+        case EventType.RefreshDashboard:
+          this.reload();
+          break;
       }
     });
   }

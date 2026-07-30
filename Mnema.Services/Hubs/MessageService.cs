@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Mnema.API;
@@ -53,6 +54,11 @@ internal class MessageService(IHubContext<MessageHub> ctx) : IMessageService
         {
             ContentId = contentId
         });
+    }
+
+    public async Task RefreshDashboard(Guid userId)
+    {
+        await SendToUser(userId, nameof(MessageEventType.RefreshDashboard));
     }
 
     public async Task NotificationAdded(Guid userId, int amount)

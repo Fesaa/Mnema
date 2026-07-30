@@ -22,6 +22,7 @@ public class ExternalDownload: IEntityDate, IDatabaseEntity
     public required Provider Provider { get; set; }
     public required Guid UserId { get; set; }
     public required MetadataBag Metadata { get; set; }
+    public bool IsErrored { get; set; }
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModifiedUtc { get; set; }
 
@@ -35,6 +36,7 @@ public class ExternalDownloadFile
     public Guid Id { get; set; }
     public required string FileName { get; set; }
     public required string FullPath { get; set; }
+    public required long FileSize { get; set; }
     public required string? VolumeMarker { get; set; }
     public required string? ChapterMarker { get; set; }
     public required bool Selected { get; set; } = true;

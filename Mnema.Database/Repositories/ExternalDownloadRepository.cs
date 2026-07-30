@@ -29,6 +29,11 @@ public class ExternalDownloadRepository(MnemaDataContext ctx, IMapper mapper)
             .ToDictionaryAsync(g => g.Key, g => g.ToList(), ct);
     }
 
+    public Task<bool> ExistsByExternalId(string externalId, CancellationToken ct = default)
+    {
+        return ctx.ExternalDownloads.AnyAsync(d => d.ExternalId == externalId, ct);
+    }
+
     public Task DeleteByExternalId(string externalId, CancellationToken ct = default)
     {
         return ctx.ExternalDownloads

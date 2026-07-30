@@ -196,6 +196,6 @@ public class ContentController(
         if (contentManager == null)
             return NotFound();
 
-        return Ok(await contentManager.RelayMessage(message));
+        return Ok(await contentManager.RelayMessage(message, HttpContext.RequestAborted));
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Extensions;
@@ -57,25 +58,38 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
         TempTitle = string.Empty,
     };
 
-    public DownloadInfo DownloadInfo => new()
+    public DownloadInfo DownloadInfo
     {
-        Provider = externalDownload.Provider,
-        Id = Id,
-        ContentState = State,
-        Name = Title,
-        Description = Series?.Summary,
-        ImageUrl = Series?.CoverUrl,
-        RefUrl = Series?.RefUrl,
-        ReDownloadSize = string.Empty,
-        Size = torrentInfo.Size.AsHumanReadableSize(),
-        TotalSize = torrentInfo.TotalSize?.AsHumanReadableSize() ?? string.Empty,
-        Downloading = State == ContentState.Downloading,
-        Progress = Math.Floor(torrentInfo.Progress * 100),
-        Estimated = State == ContentState.Downloading ? torrentInfo.EstimatedTime?.TotalSeconds ?? 0 : 0,
-        SpeedType = SpeedType.Bytes,
-        Speed = torrentInfo.DownloadSpeed,
-        DownloadDir = externalDownload.BaseDir,
-        UserId = externalDownload.UserId,
-        MonitoredSeriesId = externalDownload.GetKey(RequestConstants.MonitoredSeriesId)
-    };
+        get
+        {
+            var totalSize = externalDownload.Files.Select(f => f.FileSize).Sum().AsHumanReadableSize();
+            var downloadedSize = externalDownload.Files
+                .Where(f => f.Selected)
+                .Select(f => f.FileSize)
+                .Sum()
+                .AsHumanReadableSize();
+
+            return new DownloadInfo
+            {
+                Provider = externalDownload.Provider,
+                Id = externalDownload.Id.ToString(),
+                ContentState = State,
+                Name = Title,
+                Description = Series?.Summary,
+                ImageUrl = Series?.CoverUrl,
+                RefUrl = Series?.RefUrl,
+                ReDownloadSize = string.Empty,
+                Size = downloadedSize,
+                TotalSize = totalSize,
+                Downloading = State == ContentState.Downloading,
+                Progress = Math.Floor(torrentInfo.Progress * 100),
+                Estimated = State == ContentState.Downloading ? torrentInfo.EstimatedTime?.TotalSeconds ?? 0 : 0,
+                SpeedType = SpeedType.Bytes,
+                Speed = torrentInfo.DownloadSpeed,
+                DownloadDir = externalDownload.BaseDir,
+                UserId = externalDownload.UserId,
+                MonitoredSeriesId = externalDownload.GetKey(RequestConstants.MonitoredSeriesId)
+            };
+        }
+    }
 }

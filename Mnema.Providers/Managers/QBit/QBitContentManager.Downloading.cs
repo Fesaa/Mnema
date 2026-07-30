@@ -198,7 +198,7 @@ internal partial class QBitContentManager
         return torrents.Count == 0;
     }
 
-    private async Task SaveExternalDownloadRecord(IUnitOfWork uow, DownloadRequestDto request, string title, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload, CancellationToken ct)
+    private static async Task SaveExternalDownloadRecord(IUnitOfWork uow, DownloadRequestDto request, string title, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload, CancellationToken ct)
     {
         var externalDownload = new ExternalDownload
         {
@@ -212,6 +212,7 @@ internal partial class QBitContentManager
             {
                 FileName = pair.File.FileName,
                 FullPath = pair.File.FilePath,
+                FileSize =  pair.File.FileSize,
                 VolumeMarker = pair.ParseResult.VolumeMarker,
                 ChapterMarker = pair.ParseResult.ChapterMarker,
                 Selected = toDownload.Contains(pair)

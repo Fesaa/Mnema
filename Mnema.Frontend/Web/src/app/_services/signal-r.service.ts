@@ -16,6 +16,7 @@ export enum EventType {
   NotificationAdd = "NotificationAdd",
   BulkContentInfoUpdate = "BulkContentInfoUpdate",
   MetadataRefreshed= "MetadataRefreshed",
+  RefreshDashboard = "RefreshDashboard",
 }
 
 export interface Event<T> {

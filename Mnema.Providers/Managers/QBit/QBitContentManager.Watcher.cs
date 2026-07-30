@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.Common.Exceptions;
@@ -67,16 +69,13 @@ internal partial class QBitContentManager
             return;
         }
 
-        var dict = inUploadState.ToDictionary(t => t.Id);
-
         foreach (var id in nonImportedUploads)
         {
-            if (!dict.TryGetValue(id, out var torrent))
-                continue;
+            if (!_cleanupTorrents.TryAdd(id, true)) return;
 
-            EnqueueForCleanup(torrent);
+            BackgroundJob.Enqueue(() => CleanupTorrent(id, CancellationToken.None));
 
-            queuedForSignalR.Add(torrent);
+            queuedForSignalR.AddRange(inUploadState.Where(t => t.Id == id));
         }
 
         await UpdateUi(messageService, queuedForSignalR);

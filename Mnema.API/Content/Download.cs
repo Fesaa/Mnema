@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
@@ -24,8 +25,7 @@ public interface IContentManager
 {
     Task Download(DownloadRequestDto request);
     Task StopDownload(StopRequestDto request);
-    Task MoveToDownloadQueue(string id);
     Task<bool> HasContent(Provider provider, string id);
     Task<IEnumerable<IContent>> GetAllContent(Provider provider);
-    Task<MessageDto> RelayMessage(MessageDto message);
+    Task<MessageDto> RelayMessage(MessageDto message, CancellationToken ct = default);
 }
