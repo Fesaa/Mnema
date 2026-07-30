@@ -42,7 +42,7 @@ public partial class ParserService: IParserService
     public const int SpecialVolumeNumber = 100_000;
     public const string SpecialVolume = "100000";
 
-    private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(500);
+    private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(2000);
 
     private const string ImageFileExtensions = @"(\.png|\.jpeg|\.jpg|\.webp|\.gif|\.avif)"; // Don't forget to update CoverChooser
     private const string ArchiveFileExtensions = @"\.cbz|\.zip|\.rar|\.cbr|\.tar.gz|\.7zip|\.7z|\.cb7|\.cbt";
