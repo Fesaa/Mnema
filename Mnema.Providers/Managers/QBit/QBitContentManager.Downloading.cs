@@ -78,7 +78,7 @@ internal partial class QBitContentManager
             await qBitClient.ResumeTorrentsAsync([request.Id], ct);
         }
 
-        await BroadcastDownloadStartedAsync(services, request, series, title, downloadDir, torrentInfo.Size);
+        await BroadcastDownloadStartedAsync(services, request, series, title, downloadDir, seriesFiles, toDownload);
     }
 
     #region Helper Methods
@@ -246,8 +246,11 @@ internal partial class QBitContentManager
         }, ct);
     }
 
-    private static async Task BroadcastDownloadStartedAsync(ResolvedServices services, DownloadRequestDto request, Series? series, string title, string downloadDir, string totalSize)
+    private static async Task BroadcastDownloadStartedAsync(ResolvedServices services, DownloadRequestDto request, Series? series, string title, string downloadDir, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload)
     {
+        var totalSize = seriesFiles.Select(f => f.File.FileSize).Sum().AsHumanReadableSize();
+        var toDownloadSize = toDownload.Select(f => f.File.FileSize).Sum().AsHumanReadableSize();
+
         var info = new DownloadInfo
         {
             Provider = request.Provider,
@@ -257,7 +260,7 @@ internal partial class QBitContentManager
             Description = series?.Summary,
             ImageUrl = series?.CoverUrl,
             RefUrl = series?.RefUrl,
-            Size = string.Empty,
+            Size = toDownloadSize,
             ReDownloadSize = string.Empty,
             TotalSize = totalSize,
             Downloading = request.StartImmediately,

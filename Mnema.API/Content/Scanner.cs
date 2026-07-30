@@ -6,11 +6,9 @@ using Mnema.Models.Publication;
 
 namespace Mnema.API.Content;
 
-public sealed record TorrentScanResult(string Size, List<Chapter> Chapters);
-
 public sealed record ParsedTorrentInfo(string Size, List<TorrentFile> Files);
 
-public sealed record TorrentFile(string FileName, string FilePath);
+public sealed record TorrentFile(string FileName, string FilePath, long FileSize);
 
 public interface IScannerService
 {
