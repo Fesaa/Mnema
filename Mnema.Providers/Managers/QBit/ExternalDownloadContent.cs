@@ -16,6 +16,8 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
     public string Title => externalDownload.Title;
     public string DownloadDir => torrentInfo.SavePath;
 
+    public TorrentInfo TorrentInfo => torrentInfo;
+
     /// <summary>
     /// Optional series metadata that can be set during the process
     /// </summary>

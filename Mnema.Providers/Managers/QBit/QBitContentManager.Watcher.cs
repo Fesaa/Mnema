@@ -45,40 +45,24 @@ internal partial class QBitContentManager
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        var downloads = await unitOfWork.ExternalDownloadRepository.GetByExternalIds(torrents.Select(t => t.Hash));
+        var downloads = await unitOfWork.ExternalDownloadRepository
+            .GetByExternalIds(torrents.Select(t => t.Hash));
 
-        List<ExternalDownloadContent> inUploadState = [];
-        List<ExternalDownloadContent> queuedForSignalR = [];
+        var content = torrents
+            .Where(t => downloads.ContainsKey(t.Hash))
+            .SelectMany(t => downloads[t.Hash].Select(ed => new ExternalDownloadContent(ed, t)))
+            .ToList();
 
-        foreach (var tInfo in torrents)
-        {
-            if (downloads.TryGetValue(tInfo.Hash, out var externalDownloads))
-            {
-                foreach (var externalDownload in externalDownloads)
-                {
-                    (UploadStates.Contains(tInfo.State) ? inUploadState : queuedForSignalR).Add(new ExternalDownloadContent(externalDownload, tInfo));
-                }
-            }
-        }
+        var toProcessFinishedContentHashes = content
+            .Where(c => UploadStates.Contains(c.TorrentInfo.State))
+            .Where(c => !_cleanupTorrents.ContainsKey(c.Id))
+            .Select(c => c.Id)
+            .ToHashSet();
 
-        var uploadHashes = inUploadState.Select(t => t.Id).ToList();
-        var nonImportedUploads = await unitOfWork.ImportedReleaseRepository.FilterReleases(uploadHashes);
-        if (nonImportedUploads.Count == 0)
-        {
-            await UpdateUi(messageService, queuedForSignalR);
-            return;
-        }
+        await UpdateUi(messageService, content);
 
-        foreach (var id in nonImportedUploads)
-        {
-            if (!_cleanupTorrents.TryAdd(id, true)) return;
-
+        foreach (var id in toProcessFinishedContentHashes.Where(id => _cleanupTorrents.TryAdd(id, true)))
             BackgroundJob.Enqueue(() => CleanupTorrent(id, CancellationToken.None));
-
-            queuedForSignalR.AddRange(inUploadState.Where(t => t.Id == id));
-        }
-
-        await UpdateUi(messageService, queuedForSignalR);
     }
 
     private static async Task UpdateUi(IMessageService messageService, List<ExternalDownloadContent> torrents)
