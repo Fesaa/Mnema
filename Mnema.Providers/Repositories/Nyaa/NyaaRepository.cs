@@ -118,6 +118,7 @@ public class NyaaRepository(
                         ReleaseDate = item.PubDate.AsDateTime(DateTimeFormat) ?? DateTime.UtcNow,
                         DownloadUrl =  item.Link,
                         Provider = Provider.Nyaa,
+                        IsGroupedRelease = true,
                     };
                 })
                 .WhereNotNull());

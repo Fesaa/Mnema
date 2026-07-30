@@ -153,13 +153,14 @@ internal class MonitoredSeriesScheduler(
 
             try
             {
-                if (string.IsNullOrEmpty(release.ContentId) || !startedContent.Contains(release.ContentId))
+                if (string.IsNullOrEmpty(release.ContentId) || !startedContent.Contains(release.ContentId) || release.IsGroupedRelease)
                 {
 
-                    if (!await downloadService.HasContent(release.Provider, release.ContentId ?? release.ReleaseId))
+                    if (release.IsGroupedRelease || !await downloadService.HasContent(release.Provider, release.ContentId ?? release.ReleaseId))
                     {
                         var metadata = match.MetadataForDownloadRequest();
                         metadata.SetKey(RequestConstants.AllowPartialChapterData, true);
+                        metadata.SetKey(RequestConstants.IsGroupedDownload, release.IsGroupedRelease);
 
                         await downloadService.StartDownload(new DownloadRequestDto
                         {
@@ -178,6 +179,10 @@ internal class MonitoredSeriesScheduler(
                         logger.LogDebug("Content {Title} - {Id} is already being downloaded, not starting new download",
                             release.ContentName.OrNonEmpty(match.Title), release.ContentId ?? release.ReleaseId);
                     }
+                }
+                else
+                {
+                    logger.LogDebug("Skipping release {@Release}", release);
                 }
 
                 if (!string.IsNullOrEmpty(release.ContentId))
@@ -230,8 +235,8 @@ internal class MonitoredSeriesScheduler(
                 return monitoredRelease;
             }
 
-
-            var parseResult = parserService.FullParse(release.ReleaseName, monitoredRelease.ContentFormat);
+            var toParseName = release.ContentName.OrNonEmpty(release.ReleaseName);
+            var parseResult = parserService.FullParse(toParseName, monitoredRelease.ContentFormat);
 
             var hasTitleMatch = parseResult.Series.Any(seriesName =>
             {
@@ -253,12 +258,13 @@ internal class MonitoredSeriesScheduler(
                     {
                         Id = string.Empty,
                         Title = string.Empty,
+                        FileName = f.FileName,
                         VolumeMarker = chapterParseResult.Volume.Value,
                         ChapterMarker = chapterParseResult.Chapter.Value,
                     };
                 }).ToList();
 
-            var formats = chapters.Select(c => parserService.ParseFormat(c.FileName));
+            var formats = chapters.Select(c => parserService.ParseFormat(c.FileName)).ToList();
             if (!formats.Contains(monitoredRelease.Format))
                 continue;
 
