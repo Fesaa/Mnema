@@ -61,7 +61,7 @@ internal partial class QBitContentManager
 
         var newDownload = await EnsureTorrentAddedAsync(request, title, ct);
 
-        await SaveExternalDownloadRecord(services.UnitOfWork, request, title, seriesFiles, toDownload, ct);
+        var externalDownload = await SaveExternalDownloadRecord(services.UnitOfWork, request, title, seriesFiles, toDownload, ct);
 
         if (toDownload.Count != torrentInfo.Files.Count)
         {
@@ -73,7 +73,7 @@ internal partial class QBitContentManager
             await qBitClient.ResumeTorrentsAsync([request.Id], ct);
         }
 
-        await BroadcastDownloadStartedAsync(services, request, series, title, downloadDir, seriesFiles, toDownload);
+        await BroadcastDownloadStartedAsync(services, request, series, externalDownload);
     }
 
     #region Helper Methods
@@ -199,7 +199,7 @@ internal partial class QBitContentManager
         return torrents.Count == 0;
     }
 
-    internal static async Task SaveExternalDownloadRecord(IUnitOfWork uow, DownloadRequestDto request, string title, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload, CancellationToken ct)
+    internal static async Task<ExternalDownload> SaveExternalDownloadRecord(IUnitOfWork uow, DownloadRequestDto request, string title, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload, CancellationToken ct)
     {
         var externalDownload = new ExternalDownload
         {
@@ -226,6 +226,8 @@ internal partial class QBitContentManager
         externalDownload.Metadata.SetKey(RequestConstants.ExternalDownloadId, externalDownload.Id);
         uow.ExternalDownloadRepository.Update(externalDownload);
         await uow.CommitAsync(ct);
+
+        return externalDownload;
     }
 
     internal async Task ApplyTorrentFileFiltersAsync(string requestId, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload, bool newDownload, CancellationToken ct)
@@ -248,17 +250,17 @@ internal partial class QBitContentManager
         }, ct);
     }
 
-    internal static async Task BroadcastDownloadStartedAsync(ResolvedServices services, DownloadRequestDto request, Series? series, string title, string downloadDir, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload)
+    internal static async Task BroadcastDownloadStartedAsync(ResolvedServices services, DownloadRequestDto request, Series? series, ExternalDownload externalDownload)
     {
-        var totalSize = seriesFiles.Select(f => f.File.FileSize).Sum().AsHumanReadableSize();
-        var toDownloadSize = toDownload.Select(f => f.File.FileSize).Sum().AsHumanReadableSize();
+        var totalSize = externalDownload.Files.Select(f => f.FileSize).Sum().AsHumanReadableSize();
+        var toDownloadSize = externalDownload.Files.Select(f => f.FileSize).Sum().AsHumanReadableSize();
 
         var info = new DownloadInfo
         {
             Provider = request.Provider,
-            Id = request.Id,
+            Id = externalDownload.Id.ToString(),
             ContentState = ContentState.Queued,
-            Name = title,
+            Name = externalDownload.Title,
             Description = series?.Summary,
             ImageUrl = series?.CoverUrl,
             RefUrl = series?.RefUrl,
@@ -270,7 +272,7 @@ internal partial class QBitContentManager
             Estimated = 0,
             SpeedType = SpeedType.Bytes,
             Speed = 0,
-            DownloadDir = downloadDir,
+            DownloadDir = Path.Join(externalDownload.BaseDir, externalDownload.Title),
             UserId = request.UserId,
             MonitoredSeriesId = request.GetKey(RequestConstants.MonitoredSeriesId),
         };
