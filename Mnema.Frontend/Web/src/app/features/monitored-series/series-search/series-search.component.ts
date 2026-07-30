@@ -83,8 +83,8 @@ export class SeriesSearchComponent implements OnInit {
 
   monitor(series: Series) {
     const validTitles = [series.title];
-    if (series.localizedSeries) {
-      validTitles.push(series.title);
+    if (series.localizedSeries && !validTitles.includes(series.localizedSeries)) {
+      validTitles.push(series.localizedSeries);
     }
 
     const [modal, component] = this.modalService.open(EditMonitoredSeriesModalComponent, DefaultModalOptions);
