@@ -198,6 +198,8 @@ namespace Mnema.Database.SqliteMigrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ExternalId");
+
                     b.ToTable("ExternalDownloads");
                 });
 

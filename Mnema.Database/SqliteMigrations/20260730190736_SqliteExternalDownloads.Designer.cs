@@ -12,8 +12,8 @@ using Mnema.Database;
 namespace Mnema.Database.SqliteMigrations
 {
     [DbContext(typeof(SqliteMnemaDataContext))]
-    [Migration("20260730155403_SqliteGroupedDownloadChanges")]
-    partial class SqliteGroupedDownloadChanges
+    [Migration("20260730190736_SqliteExternalDownloads")]
+    partial class SqliteExternalDownloads
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -177,6 +177,9 @@ namespace Mnema.Database.SqliteMigrations
                         .HasColumnType("TEXT")
                         .HasDefaultValue("[]");
 
+                    b.Property<bool>("IsErrored")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("LastModifiedUtc")
                         .HasColumnType("TEXT");
 
@@ -197,6 +200,8 @@ namespace Mnema.Database.SqliteMigrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExternalId");
 
                     b.ToTable("ExternalDownloads");
                 });

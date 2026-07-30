@@ -92,6 +92,9 @@ namespace Mnema.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsGroupedRelease")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("LastModifiedUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -178,6 +181,9 @@ namespace Mnema.Database.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValue("[]");
 
+                    b.Property<bool>("IsErrored")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("LastModifiedUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -190,10 +196,16 @@ namespace Mnema.Database.Migrations
                     b.Property<int>("Provider")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExternalId");
 
                     b.ToTable("ExternalDownloads");
                 });

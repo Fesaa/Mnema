@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using Microsoft.EntityFrameworkCore;
 using Mnema.Common;
-using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.Entities.Content;
@@ -10,6 +9,7 @@ namespace Mnema.Models.Entities.Content;
 /// <summary>
 /// Represents a download being down by an external client (I.e. Qbit)
 /// </summary>
+[Index(nameof(ExternalId), IsUnique = false)]
 public class ExternalDownload: IEntityDate, IDatabaseEntity
 {
     public Guid Id { get; set; }
