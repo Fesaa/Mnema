@@ -91,4 +91,6 @@ public interface IParserService
     float MaxNumberFromRange(string range);
     ParseResult FullParse(string input, ContentFormat type);
     Format ParseFormat(string filePath);
+
+    T? FindMatch<T>(List<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers;
 }

@@ -316,7 +316,7 @@ public class MonitoredSeriesService(
                 continue;
             }
 
-            var matchingFile = scannerService.FindMatch(onDiskContent, chapter);
+            var matchingFile = parserService.FindMatch(onDiskContent, chapter);
 
             var status = MonitoredChapterStatus.Missing;
             if (matchingFile != null)

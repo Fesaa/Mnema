@@ -43,17 +43,12 @@ internal partial class QBitContentManager
             : null;
 
         var downloadDir = Path.Join(request.BaseDir, title);
-        var existingContent = services.ScannerService.ScanDirectory(
-            downloadDir,
-            request.Metadata.GetKey(RequestConstants.ContentFormatKey),
-            request.Metadata.GetKey(RequestConstants.FormatKey),
-            ct);
 
         var torrentInfo = await services.ScannerService.ParseTorrentFile(request.DownloadUrl, ct);
 
         var normalizedTitles = GetNormalizedTitles(title, series);
         var seriesFiles = ParseSeriesFiles(request, torrentInfo.Files, normalizedTitles, services.ParserService);
-        var toDownload = FilterFilesToDownload(request, title, seriesFiles, mSeries, existingContent, services.ScannerService);
+        var toDownload = FilterFilesToDownload(request, title, seriesFiles, mSeries, services, ct);
 
         if (toDownload.Count == 0)
         {
@@ -83,7 +78,7 @@ internal partial class QBitContentManager
 
     #region Helper Methods
 
-    private static ResolvedServices ResolveServices(IServiceProvider sp) => new(
+    internal static ResolvedServices ResolveServices(IServiceProvider sp) => new(
         sp.GetRequiredService<IMetadataResolver>(),
         sp.GetRequiredService<IParserService>(),
         sp.GetRequiredService<IScannerService>(),
@@ -92,7 +87,7 @@ internal partial class QBitContentManager
         sp.GetRequiredService<IUnitOfWork>()
     );
 
-    private record ResolvedServices(
+    internal record ResolvedServices(
         IMetadataResolver MetadataResolver,
         IParserService ParserService,
         IScannerService ScannerService,
@@ -100,14 +95,14 @@ internal partial class QBitContentManager
         IMessageService MessageService,
         IUnitOfWork UnitOfWork);
 
-    private static string? ResolveTitle(DownloadRequestDto request, Series? series, IParserService parser)
+    internal static string? ResolveTitle(DownloadRequestDto request, Series? series, IParserService parser)
     {
         var cFormat = request.Metadata.GetKey(RequestConstants.ContentFormatKey);
         return request.Metadata.GetKey(RequestConstants.TitleOverride)
             .OrNonEmpty(series?.Title, parser.ParseSeries(request.TempTitle, cFormat), request.TempTitle);
     }
 
-    private static HashSet<string> GetNormalizedTitles(string title, Series? series)
+    internal static HashSet<string> GetNormalizedTitles(string title, Series? series)
     {
         return new[] { title, series?.Title, series?.LocalizedSeries }
             .WhereNotNull()
@@ -115,7 +110,7 @@ internal partial class QBitContentManager
             .ToHashSet();
     }
 
-    private static List<ParsedTorrentFile> ParseSeriesFiles(DownloadRequestDto request, IEnumerable<TorrentFile> files, HashSet<string> normalizedTitles, IParserService parser)
+    internal static List<ParsedTorrentFile> ParseSeriesFiles(DownloadRequestDto request, IEnumerable<TorrentFile> files, HashSet<string> normalizedTitles, IParserService parser)
     {
         var cFormat = request.Metadata.GetKey(RequestConstants.ContentFormatKey);
         var isGrouped = request.GetKey(RequestConstants.IsGroupedDownload);
@@ -126,19 +121,25 @@ internal partial class QBitContentManager
             .ToList();
     }
 
-    private List<ParsedTorrentFile> FilterFilesToDownload(DownloadRequestDto request, string title, List<ParsedTorrentFile> seriesFiles, MonitoredSeries? mSeries, List<OnDiskContent> existingContent, IScannerService scanner)
+    internal List<ParsedTorrentFile> FilterFilesToDownload(DownloadRequestDto request, string title, List<ParsedTorrentFile> seriesFiles, MonitoredSeries? mSeries, ResolvedServices services, CancellationToken ct)
     {
+        var downloadDir = Path.Join(request.BaseDir, title);
+        var existingContent = services.ScannerService.ScanDirectory(
+            downloadDir,
+            request.Metadata.GetKey(RequestConstants.ContentFormatKey),
+            request.Metadata.GetKey(RequestConstants.FormatKey), ct);
+
         var ignoreNonMatched = request.GetKey(RequestConstants.IgnoreNonMatchedVolumes);
 
         return seriesFiles
-            .WhereIf(mSeries != null, pair => ShouldDownloadMonitoredFile(pair, mSeries!, ignoreNonMatched, title, request.Id, scanner))
-            .Where(pair => IsFileNew(pair, existingContent, title, request.Id, scanner))
+            .WhereIf(mSeries != null, pair => ShouldDownloadMonitoredFile(pair, mSeries!, ignoreNonMatched, title, request.Id, services.ParserService))
+            .Where(pair => IsFileNew(pair, existingContent, title, request.Id, services.ParserService))
             .ToList();
     }
 
-    private bool ShouldDownloadMonitoredFile(ParsedTorrentFile pair, MonitoredSeries mSeries, bool ignoreNonMatched, string title, string requestId, IScannerService scanner)
+    internal bool ShouldDownloadMonitoredFile(ParsedTorrentFile pair, MonitoredSeries mSeries, bool ignoreNonMatched, string title, string requestId, IParserService parserService)
     {
-        var mChapter = scanner.FindMatch(mSeries.Chapters, pair.ParseResult);
+        var mChapter = parserService.FindMatch(mSeries.Chapters, pair.ParseResult);
         if (mChapter?.Status == MonitoredChapterStatus.NotMonitored)
         {
             logger.LogTrace("[{Title}/{Id}] Not downloading {FileName}: Chapter not monitored", title, requestId, pair.File.FileName);
@@ -154,9 +155,9 @@ internal partial class QBitContentManager
         return true;
     }
 
-    private bool IsFileNew(ParsedTorrentFile pair, List<OnDiskContent> existingContent, string title, string requestId, IScannerService scanner)
+    internal bool IsFileNew(ParsedTorrentFile pair, List<OnDiskContent> existingContent, string title, string requestId, IParserService parserService)
     {
-        var match = scanner.FindMatch(existingContent, pair.ParseResult);
+        var match = parserService.FindMatch(existingContent, pair.ParseResult);
         if (match == null)
         {
             logger.LogTrace("[{Title}/{Id}] Found new chapter to download: {FileName} - {ParseResult}", title, requestId, pair.File.FileName, pair.ParseResult);
@@ -167,7 +168,7 @@ internal partial class QBitContentManager
         return false;
     }
 
-    private async Task<bool> EnsureTorrentAddedAsync(DownloadRequestDto request, string title, CancellationToken ct)
+    internal async Task<bool> EnsureTorrentAddedAsync(DownloadRequestDto request, string title, CancellationToken ct)
     {
         var listRequest = new TorrentListQuery
         {
@@ -198,7 +199,7 @@ internal partial class QBitContentManager
         return torrents.Count == 0;
     }
 
-    private static async Task SaveExternalDownloadRecord(IUnitOfWork uow, DownloadRequestDto request, string title, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload, CancellationToken ct)
+    internal static async Task SaveExternalDownloadRecord(IUnitOfWork uow, DownloadRequestDto request, string title, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload, CancellationToken ct)
     {
         var externalDownload = new ExternalDownload
         {
@@ -227,7 +228,7 @@ internal partial class QBitContentManager
         await uow.CommitAsync(ct);
     }
 
-    private async Task ApplyTorrentFileFiltersAsync(string requestId, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload, bool newDownload, CancellationToken ct)
+    internal async Task ApplyTorrentFileFiltersAsync(string requestId, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload, bool newDownload, CancellationToken ct)
     {
         // Give qbit time to parse .torrent metadata
         await Task.Delay(TimeSpan.FromSeconds(2), ct);
@@ -247,7 +248,7 @@ internal partial class QBitContentManager
         }, ct);
     }
 
-    private static async Task BroadcastDownloadStartedAsync(ResolvedServices services, DownloadRequestDto request, Series? series, string title, string downloadDir, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload)
+    internal static async Task BroadcastDownloadStartedAsync(ResolvedServices services, DownloadRequestDto request, Series? series, string title, string downloadDir, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload)
     {
         var totalSize = seriesFiles.Select(f => f.File.FileSize).Sum().AsHumanReadableSize();
         var toDownloadSize = toDownload.Select(f => f.File.FileSize).Sum().AsHumanReadableSize();
@@ -280,7 +281,7 @@ internal partial class QBitContentManager
             services.ConnectionService.CommunicateDownloadStarted(info);
     }
 
-    private record ParsedTorrentFile(TorrentFile File, ParseResult ParseResult);
+    internal record ParsedTorrentFile(TorrentFile File, ParseResult ParseResult);
 
     #endregion
 }

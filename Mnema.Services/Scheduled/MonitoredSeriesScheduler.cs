@@ -269,7 +269,7 @@ internal class MonitoredSeriesScheduler(
                 continue;
 
             var shouldSkipDownload = chapters
-                .Select(chapter => scannerService.FindMatch(monitoredRelease.Chapters, chapter))
+                .Select(chapter => parserService.FindMatch(monitoredRelease.Chapters, chapter))
                 .All(c => c?.Status is MonitoredChapterStatus.Available or MonitoredChapterStatus.NotMonitored);
 
             if (shouldSkipDownload)

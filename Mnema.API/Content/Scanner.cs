@@ -16,6 +16,4 @@ public interface IScannerService
         CancellationToken cancellationToken);
 
     Task<ParsedTorrentInfo> ParseTorrentFile(string remoteUrl, CancellationToken cancellationToken);
-
-    T? FindMatch<T>(List<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers;
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Publication;
 
 namespace Mnema.Services;
 
@@ -1335,6 +1336,41 @@ public partial class ParserService: IParserService
     {
         if (string.IsNullOrEmpty(asin)) return false;
         return AsinRegex.Match(asin).Success;
+    }
+
+    public T? FindMatch<T>(List<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers
+    {
+        // If both markers are missing, no match can be made
+        if (string.IsNullOrEmpty(item.VolumeMarker) && string.IsNullOrEmpty(item.ChapterMarker))
+        {
+            return default;
+        }
+
+        // Matching Volume-only chapters
+        if (string.IsNullOrEmpty(item.ChapterMarker))
+        {
+            var volumeMatches = items.Where(c => c.VolumeMarker == item.VolumeMarker).ToList();
+
+            if (volumeMatches.Count == 1)
+                return volumeMatches[0];
+
+            return volumeMatches.FirstOrDefault(c => string.IsNullOrEmpty(c.ChapterMarker));
+        }
+
+        // Matching Chapter-only chapters
+        if (string.IsNullOrEmpty(item.VolumeMarker))
+        {
+            return items.FirstOrDefault(c => string.IsNullOrEmpty(c.VolumeMarker) && c.ChapterMarker == item.ChapterMarker);
+        }
+
+        // Exact Match (both Volume and Chapter set)
+        var exactMatch = items.FirstOrDefault(c => c.ChapterMarker == item.ChapterMarker && c.VolumeMarker == item.VolumeMarker);
+        if (exactMatch != null)
+            return exactMatch;
+
+        // Fallback: single partial match on volume
+        var partialMatches = items.Where(c => c.VolumeMarker == item.VolumeMarker).ToList();
+        return partialMatches.Count == 1 ? partialMatches[0] : default;
     }
 
 
