@@ -49,7 +49,7 @@ internal partial class QBitContentManager(
         };
 
         var torrents = await qBitClient.GetTorrentsAsync(listQuery);
-        if (torrents != null && torrents.Any(t => t.Hash == request.Id))
+        if (torrents.Any(t => t.Hash == request.Id) && !request.GetKey(RequestConstants.IsGroupedDownload))
         {
             throw new MnemaException($"Torrent with hash {request.Id} has already been added");
         }
@@ -108,9 +108,10 @@ internal partial class QBitContentManager(
         {
             if (UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
 
-            if (downloads.TryGetValue(tInfo.Hash, out var download))
+            if (downloads.TryGetValue(tInfo.Hash, out var externalDownloads))
             {
-                contents.Add(new QBitTorrent(download, tInfo));
+                foreach (var download in externalDownloads)
+                    contents.Add(new ExternalDownloadContentImpl(download, tInfo));
             }
         }
 

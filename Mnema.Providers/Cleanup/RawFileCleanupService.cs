@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
@@ -15,7 +17,7 @@ using Mnema.Models.Entities.User;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
-using TorrentContent = Mnema.Providers.Managers.QBit.QBitTorrent;
+using Mnema.Providers.Managers.QBit;
 
 namespace Mnema.Providers.Cleanup;
 
@@ -52,7 +54,7 @@ internal class RawFileCleanupService(
         var preferences = await unitOfWork.UserRepository.GetPreferences(request.UserId);
 
         var series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata);
-        if (content is TorrentContent torrent)
+        if (content is ExternalDownloadContentImpl torrent)
         {
             torrent.Series = series;
         }
@@ -103,10 +105,7 @@ internal class RawFileCleanupService(
 
     private async Task ProcessFilesAsync(CleanupContext context)
     {
-        var files = fileSystem.Directory.GetFiles(context.DownloadDirectory, "*", SearchOption.AllDirectories);
-        var allowedExtensions = parserService.FileExtensionsForFormat(context.Format);
-
-        var validFiles = files.Where(Filter).ToList();
+        var validFiles = await GetFilesToProcessAsync(context);
         if (validFiles.Count == 0)
         {
             logger.LogWarning("[{Title}/{Id}] No files found in directory {Directory} that match the format",
@@ -116,11 +115,29 @@ internal class RawFileCleanupService(
 
         await Parallel.ForEachAsync(validFiles, ParallelOptions,
             async (f, _) => await ProcessSingleFileAsync(context, f));
-        return;
+    }
 
-        bool Filter(string f)
+    private async Task<List<string>> GetFilesToProcessAsync(CleanupContext context)
+    {
+        var externalDownloadId = context.Request.GetKey(RequestConstants.ExternalDownloadId);
+        if (externalDownloadId == null)
         {
-            var allowed = allowedExtensions.IsMatch(fileSystem.Path.GetExtension(f));
+            var files = fileSystem.Directory.GetFiles(context.DownloadDirectory, "*", SearchOption.AllDirectories);
+            var allowedExtensions = parserService.FileExtensionsForFormat(context.Format);
+
+            var validFiles = files.Where(f => Filter(allowedExtensions, f)).ToList();
+            return validFiles;
+        }
+
+        var externalDownload = await unitOfWork.ExternalDownloadRepository.GetById(externalDownloadId.Value);
+        if (externalDownload == null)
+            throw new MnemaException($"Failed to find external download {externalDownloadId.Value} linked to {context.Title}");
+
+        return externalDownload.Files.Select(f => Path.Join(context.DownloadDirectory, f.FullPath)).ToList();
+
+        bool Filter(Regex ext, string f)
+        {
+            var allowed = ext.IsMatch(fileSystem.Path.GetExtension(f));
             if (!allowed)
             {
                 logger.LogDebug("[{Title}/{Id}] Skipping file {FileName} as it does not match the format {Format}",

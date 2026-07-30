@@ -13,18 +13,20 @@ namespace Mnema.Database.Repositories;
 public class ExternalDownloadRepository(MnemaDataContext ctx, IMapper mapper)
     : AbstractEntityEntityRepository<ExternalDownload, ExternalDownloadDto>(ctx, mapper), IExternalDownloadRepository
 {
-    public Task<ExternalDownload?> GetByExternalId(string externalId, CancellationToken ct = default)
+    public Task<List<ExternalDownload>> GetByExternalId(string externalId, CancellationToken ct = default)
     {
         return ctx.ExternalDownloads
-            .FirstOrDefaultAsync(d => d.ExternalId == externalId, ct);
+            .Where(d => d.ExternalId == externalId)
+            .ToListAsync(ct);;
     }
 
-    public Task<Dictionary<string, ExternalDownload>> GetByExternalIds(IEnumerable<string> ids,
+    public Task<Dictionary<string, List<ExternalDownload>>> GetByExternalIds(IEnumerable<string> ids,
         CancellationToken ct = default)
     {
         return ctx.ExternalDownloads
             .Where(d => ids.Contains(d.ExternalId))
-            .ToDictionaryAsync(d => d.ExternalId, ct);
+            .GroupBy(d => d.ExternalId)
+            .ToDictionaryAsync(g => g.Key, g => g.ToList(), ct);
     }
 
     public Task DeleteByExternalId(string externalId, CancellationToken ct = default)

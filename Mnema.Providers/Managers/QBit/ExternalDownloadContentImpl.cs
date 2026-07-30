@@ -9,10 +9,10 @@ using QBittorrent.Client;
 
 namespace Mnema.Providers.Managers.QBit;
 
-public class QBitTorrent(ExternalDownload externalDownload, TorrentInfo torrentInfo) : IContent
+public class ExternalDownloadContentImpl(ExternalDownload externalDownload, TorrentInfo torrentInfo) : IContent
 {
     public string Id => torrentInfo.Hash;
-    public string Title => torrentInfo.Name;
+    public string Title => externalDownload.Title;
     public string DownloadDir => torrentInfo.SavePath;
 
     /// <summary>
@@ -56,8 +56,6 @@ public class QBitTorrent(ExternalDownload externalDownload, TorrentInfo torrentI
 
         TempTitle = string.Empty,
     };
-
-    public T GetKey<T>(IMetadataKey<T> key) => externalDownload.GetKey(key);
 
     public DownloadInfo DownloadInfo => new()
     {

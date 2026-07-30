@@ -92,9 +92,9 @@ public class NyaaRepository(
                 continue;
             }
 
-            var files = await scannerService.ParseRawTorrentFiles(item.Link, cancellationToken);
+            var torrentInfo = await scannerService.ParseTorrentFile(item.Link, cancellationToken);
 
-            releases.AddRange(files
+            releases.AddRange(torrentInfo.Files
                 .Select(f =>
                 {
                     var contentFormat = f.FileName.GetFileType().ContentFormatFromFileExt();

@@ -1,9 +1,10 @@
 using System;
 using Mnema.Models.Entities.Interfaces;
+using Mnema.Models.Publication;
 
 namespace Mnema.Models.Entities.Content;
 
-public class MonitoredChapter: IEntityDate, IDatabaseEntity
+public class MonitoredChapter: IEntityDate, IDatabaseEntity, IHasPositionMarkers
 {
     public Guid Id { get; set; }
     public string ExternalId { get; set; }
@@ -32,6 +33,9 @@ public class MonitoredChapter: IEntityDate, IDatabaseEntity
 
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModifiedUtc { get; set; }
+
+    public string VolumeMarker => Volume;
+    public string ChapterMarker => Chapter;
 }
 
 public enum MonitoredChapterStatus

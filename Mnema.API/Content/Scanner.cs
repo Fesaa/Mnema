@@ -8,19 +8,16 @@ namespace Mnema.API.Content;
 
 public sealed record TorrentScanResult(string Size, List<Chapter> Chapters);
 
-public sealed record RawTorrentFile(string FileName, string FilePath);
+public sealed record ParsedTorrentInfo(string Size, List<TorrentFile> Files);
+
+public sealed record TorrentFile(string FileName, string FilePath);
 
 public interface IScannerService
 {
     List<OnDiskContent> ScanDirectory(string path, ContentFormat contentFormat, Format format,
         CancellationToken cancellationToken);
 
-    OnDiskContent ParseContent(string file, ContentFormat contentFormat);
+    Task<ParsedTorrentInfo> ParseTorrentFile(string remoteUrl, CancellationToken cancellationToken);
 
-    Task<TorrentScanResult> ParseTorrentFile(string remoteUrl, ContentFormat contentFormat, CancellationToken cancellationToken);
-
-    Task<List<RawTorrentFile>> ParseRawTorrentFiles(string remoteUrl, CancellationToken cancellationToken);
-
-    OnDiskContent? FindMatch(List<OnDiskContent> onDiskContents, Chapter chapter);
-    MonitoredChapter? FindMatch(List<MonitoredChapter> monitoredChapters, Chapter chapter);
+    T? FindMatch<T>(List<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers;
 }

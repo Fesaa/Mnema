@@ -13,6 +13,7 @@ using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Publication;
 
 namespace Mnema.Services.Scheduled;
 
@@ -243,8 +244,21 @@ internal class MonitoredSeriesScheduler(
                 continue;
 
             // Ensure the release is in the correct format
-            var (_, chapters) = await scannerService.ParseTorrentFile(release.DownloadUrl, monitoredRelease.ContentFormat, ct);
-            var formats = chapters.Select(c => parserService.ParseFormat(c.Title));
+            var chapters = (await scannerService.ParseTorrentFile(release.DownloadUrl, ct)).Files
+                .Select(f =>
+                {
+                    var chapterParseResult = parserService.FullParse(f.FileName, monitoredRelease.ContentFormat);
+
+                    return new Chapter
+                    {
+                        Id = string.Empty,
+                        Title = string.Empty,
+                        VolumeMarker = chapterParseResult.Volume.Value,
+                        ChapterMarker = chapterParseResult.Chapter.Value,
+                    };
+                }).ToList();
+
+            var formats = chapters.Select(c => parserService.ParseFormat(c.FileName));
             if (!formats.Contains(monitoredRelease.Format))
                 continue;
 

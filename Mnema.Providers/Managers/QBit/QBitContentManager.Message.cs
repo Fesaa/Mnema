@@ -25,7 +25,7 @@ internal partial class QBitContentManager
 
         object? data = message.Type switch {
             MessageType.ListContent => await ListContent(message),
-            MessageType.FilterContent => await FilterContent(message.ContentId, message.Data?.Deserialize<List<string>>()),
+            MessageType.FilterContent => throw new NotImplementedException(),
             MessageType.StartDownload => await StartDownload(message.ContentId),
             _ => throw new ArgumentOutOfRangeException(nameof(message), message.Type, "Unsupported message type")
         };
@@ -39,11 +39,15 @@ internal partial class QBitContentManager
         };
     }
 
-    private async Task<object?> FilterContent(string hash, List<string>? ids, CancellationToken ct = default)
+    private async Task<object?> FilterContent(string hash, Func<List<string>, List<string>> idsFunc, CancellationToken ct = default)
     {
-        if (ids == null) return null;
-
         var files = await qBitClient.GetTorrentContentsAsync(hash, ct);
+
+        var currentEnabled = files
+            .Where(f => f.Priority != TorrentContentPriority.Skip)
+            .Select(f => f.Name)
+            .ToList();
+        var ids = idsFunc(currentEnabled);
 
         var toDownload = new HashSet<int>();
         var toSkip = new HashSet<int>();

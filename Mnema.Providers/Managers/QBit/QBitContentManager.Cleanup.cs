@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -11,7 +12,6 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.API.External;
 using Mnema.Common.Extensions;
-using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using QBittorrent.Client;
 
@@ -22,7 +22,7 @@ internal partial class QBitContentManager
 
     private readonly ConcurrentDictionary<string, bool> _cleanupTorrents = [];
 
-    private void EnqueueForCleanup(QBitTorrent torrent)
+    private void EnqueueForCleanup(ExternalDownloadContentImpl torrent)
     {
         if (!_cleanupTorrents.TryAdd(torrent.Id, true)) return;
 
@@ -34,87 +34,81 @@ internal partial class QBitContentManager
     [DisableConcurrentExecution(timeoutInSeconds: 86400 * 2)] // 2 days
     public async Task CleanupTorrent(string hash, CancellationToken ct)
     {
-        using var scope = scopeFactory.CreateScope();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-        var torrent = await GetTorrent(hash, ct);
-        if (torrent == null)
+        var infos = await GetTorrent(hash, ct);
+        if (infos.externalDownloads.Count == 0)
         {
-            await unitOfWork.ExternalDownloadRepository.DeleteByExternalId(hash, ct);
             _cleanupTorrents.TryRemove(hash, out _);
-
             return;
         }
 
-        var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
-        var connectionService = scope.ServiceProvider.GetRequiredService<IConnectionService>();
-        var monitoredSeriesService = scope.ServiceProvider.GetRequiredService<IMonitoredSeriesService>();
+        using var scope = scopeFactory.CreateScope();
+        var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
 
         var sw = Stopwatch.StartNew();
 
-        try
+        foreach (var externalDownload in infos.externalDownloads)
         {
-            var cleanupService = scope.ServiceProvider.GetRequiredService<ICleanupService>();
-            await cleanupService.CleanupAsync(torrent, ct);
-
-            var monitoredSeriesId = torrent.Request.Metadata.GetKey(RequestConstants.MonitoredSeriesId);
-            if (monitoredSeriesId != null)
+            try
             {
-                BackgroundJob.Enqueue(() =>
-                    monitoredSeriesService.EnrichWithMetadata(monitoredSeriesId.Value, CancellationToken.None));
+                await CleanupExternalDownload(infos.torrentInfo, externalDownload, ct);
+
+                await unitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id, ct);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to cleanup external download {Id} - {TorrentHash}",
+                    externalDownload.Id, externalDownload.ExternalId);
+            }
+            finally
+            {
+                // TODO: Add series scoped to imported releases
             }
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to cleanup torrent {TorrentId}", torrent.Id);
-        }
-        finally
-        {
-            await messageService.DeleteContent(torrent.Request.UserId, torrent.Id);
-            connectionService.CommunicateDownloadFinished(torrent.DownloadInfo);
 
-            _cleanupTorrents.TryRemove(torrent.Id, out _);
-
-            unitOfWork.ImportedReleaseRepository.AddRange([
-                new ContentRelease
-                {
-                    ReleaseId = torrent.Id,
-                    ReleaseName = torrent.Title,
-                    ContentName = torrent.Title,
-                    Type = ReleaseType.Imported,
-                    ReleaseDate = DateTime.UtcNow,
-                    Provider = torrent.Request.Provider,
-                }
-            ]);
-
-            await unitOfWork.CommitAsync(ct);
-
-            logger.LogInformation("[{Title}/{Id}] Cleaned up in {Elapsed}ms",  torrent.Title, torrent.Id, sw.ElapsedMilliseconds);
-        }
+        _cleanupTorrents.TryRemove(infos.torrentInfo.Hash, out _);
+        logger.LogInformation("[{Title}/{Id}] Cleaned up in {Elapsed}ms",  infos.torrentInfo.Name, infos.torrentInfo.Hash, sw.ElapsedMilliseconds);
     }
 
-    private async Task<QBitTorrent?> GetTorrent(string hash, CancellationToken ct)
+    private async Task CleanupExternalDownload(TorrentInfo torrent, ExternalDownload externalDownload, CancellationToken ct)
+    {
+        using var scope = scopeFactory.CreateScope();
+
+        var content = new ExternalDownloadContentImpl(externalDownload, torrent);
+
+        await scope.GetRequiredService<ICleanupService>().CleanupAsync(content, ct);
+
+        var monitoredSeriesId = externalDownload.GetKey(RequestConstants.MonitoredSeriesId);
+        if (monitoredSeriesId != null)
+        {
+            BackgroundJob.Enqueue<IMonitoredSeriesService>(s => s.EnrichWithMetadata(monitoredSeriesId.Value, CancellationToken.None));
+        }
+
+        await scope.GetRequiredService<IMessageService>().DeleteContent(externalDownload.UserId, externalDownload.ExternalId);
+        scope.GetRequiredService<IConnectionService>().CommunicateDownloadFinished(content.DownloadInfo);
+    }
+
+    private async Task<(TorrentInfo torrentInfo, List<ExternalDownload> externalDownloads)> GetTorrent(string hash, CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        var externalDownload = await unitOfWork.ExternalDownloadRepository.GetByExternalId(hash, ct);
-        if (externalDownload == null)
-        {
-            logger.LogWarning("Tried to get a torrent without matching request: {Id}", hash);
-            return null;
-        }
+        var externalDownloads = await unitOfWork.ExternalDownloadRepository.GetByExternalId(hash, ct);
+        if (externalDownloads.Count == 0) return (null!, []);
 
         var query = new TorrentListQuery { Category = MnemaCategory, Hashes = [hash] };
-        var qbitTorrents = await qBitClient.GetTorrentsAsync(query, ct);
-        var qbitTorrent = qbitTorrents.FirstOrDefault(t => t.Hash == hash);
-        if (qbitTorrent == null)
+        var torrents = await qBitClient.GetTorrentsAsync(query, ct);
+
+        var torrentInfo = torrents.FirstOrDefault(t => t.Hash == hash);
+
+        if (torrentInfo == null)
         {
             logger.LogWarning("Torrent to get no longer exists on the download client: {Id}", hash);
-            return null;
+
+            await unitOfWork.ExternalDownloadRepository.DeleteByExternalId(hash, ct);
+            return (null!, []);
         }
 
-        return new QBitTorrent(externalDownload, qbitTorrent);
+        return (torrentInfo, externalDownloads);
     }
 
 }

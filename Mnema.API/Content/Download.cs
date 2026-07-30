@@ -17,21 +17,6 @@ public interface IDownloadService
     Task<bool> HasContent(Provider provider, string id);
 }
 
-public interface IContent
-{
-    string Id { get; }
-
-    string Title { get; }
-
-    string DownloadDir { get; }
-
-    ContentState State { get; }
-
-    DownloadRequestDto Request { get; }
-
-    DownloadInfo DownloadInfo { get; }
-}
-
 /// <summary>
 ///     A manger that holds all content off the same type (Publication custom / torrent)
 /// </summary>

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Publication;
 
 namespace Mnema.API.Content;
 
@@ -21,13 +22,16 @@ public interface IPublication : IContent
     Task DownloadContentAsync(CancellationTokenSource source);
 }
 
-public class OnDiskContent
+public class OnDiskContent: IHasPositionMarkers
 {
     public string SeriesName { get; set; }
     public string Path { get; set; }
     public string FileName { get; set; }
     public string? Chapter { get; set; }
     public string? Volume { get; set; }
+
+    public string VolumeMarker => Volume ?? string.Empty;
+    public string ChapterMarker => Chapter ?? string.Empty;
 }
 
 public static class RequestConstants
@@ -50,4 +54,5 @@ public static class RequestConstants
     public static readonly IMetadataKey<bool> FirstDownload = MetadataKeys.Bool("first_download");
     public static readonly IMetadataKey<bool> IgnoreNonMatchedVolumes = MetadataKeys.Bool("ignore_non_matched_volumes");
     public static readonly IMetadataKey<bool> IsGroupedDownload = MetadataKeys.Bool("is_grouped_download");
+    public static readonly IMetadataKey<Guid?> ExternalDownloadId = MetadataKeys.OptionalGuid("external_download_id");
 }

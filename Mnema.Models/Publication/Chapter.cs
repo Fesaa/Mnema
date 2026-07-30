@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace Mnema.Models.Publication;
 
-public sealed record Chapter
+public sealed record Chapter: IHasPositionMarkers
 {
     public required string Id { get; set; }
     public required string Title { get; set; }
@@ -20,10 +20,10 @@ public sealed record Chapter
     public string? RefUrl { get; set; }
 
     public DateTime? ReleaseDate { get; set; }
-    public required IList<Tag> Tags { get; set; }
-    public required IList<Person> People { get; set; }
+    public IList<Tag> Tags { get; set; } = [];
+    public IList<Person> People { get; set; } = [];
 
-    public required IList<string> TranslationGroups { get; set; }
+    public IList<string> TranslationGroups { get; set; } = [];
 
     public bool IsOneShot => string.IsNullOrEmpty(ChapterMarker) && string.IsNullOrEmpty(VolumeMarker);
 

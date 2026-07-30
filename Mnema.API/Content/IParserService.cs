@@ -2,11 +2,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Publication;
 
 namespace Mnema.API.Content;
 
 public record NumberRange(string Value, float MinNumber, float MaxNumber);
-public sealed record ParseResult(string Input, List<string> Series, NumberRange Volume, NumberRange Chapter);
+
+public sealed record ParseResult(string Input, List<string> Series, NumberRange Volume, NumberRange Chapter)
+    : IHasPositionMarkers
+{
+    public string VolumeMarker => Volume.Value;
+    public string ChapterMarker => Chapter.Value;
+
+    public override string ToString()
+    {
+        var seriesName = Series.Count > 0 ? string.Join(" ", Series) : "<No Series>";
+        return $"ParseResult[{seriesName} | Vol. {Volume.Value} | Ch. {Chapter.Value}]";
+    }
+}
 
 public static class ParseResultGrouping
 {

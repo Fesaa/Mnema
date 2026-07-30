@@ -45,14 +45,17 @@ internal partial class QBitContentManager
 
         var downloads = await unitOfWork.ExternalDownloadRepository.GetByExternalIds(torrents.Select(t => t.Hash));
 
-        List<QBitTorrent> inUploadState = [];
-        List<QBitTorrent> queuedForSignalR = [];
+        List<ExternalDownloadContentImpl> inUploadState = [];
+        List<ExternalDownloadContentImpl> queuedForSignalR = [];
 
         foreach (var tInfo in torrents)
         {
-            if (downloads.TryGetValue(tInfo.Hash, out var torrent))
+            if (downloads.TryGetValue(tInfo.Hash, out var externalDownloads))
             {
-                (UploadStates.Contains(tInfo.State) ? inUploadState : queuedForSignalR).Add(new QBitTorrent(torrent, tInfo));
+                foreach (var externalDownload in externalDownloads)
+                {
+                    (UploadStates.Contains(tInfo.State) ? inUploadState : queuedForSignalR).Add(new ExternalDownloadContentImpl(externalDownload, tInfo));
+                }
             }
         }
 
@@ -79,7 +82,7 @@ internal partial class QBitContentManager
         await UpdateUi(messageService, queuedForSignalR);
     }
 
-    private static async Task UpdateUi(IMessageService messageService, List<QBitTorrent> torrents)
+    private static async Task UpdateUi(IMessageService messageService, List<ExternalDownloadContentImpl> torrents)
     {
         var groups = torrents.GroupBy(t => t.Request.UserId);
 
