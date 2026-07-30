@@ -275,7 +275,9 @@ internal partial class QBitContentManager
         };
 
         await services.MessageService.AddContent(request.UserId, info);
-        services.ConnectionService.CommunicateDownloadStarted(info);
+
+        if (request.StartImmediately)
+            services.ConnectionService.CommunicateDownloadStarted(info);
     }
 
     private record ParsedTorrentFile(TorrentFile File, ParseResult ParseResult);
