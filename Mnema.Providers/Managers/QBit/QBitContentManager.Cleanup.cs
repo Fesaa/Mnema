@@ -22,7 +22,7 @@ internal partial class QBitContentManager
 
     private readonly ConcurrentDictionary<string, bool> _cleanupTorrents = [];
 
-    private void EnqueueForCleanup(ExternalDownloadContentImpl torrent)
+    private void EnqueueForCleanup(ExternalDownloadContent torrent)
     {
         if (!_cleanupTorrents.TryAdd(torrent.Id, true)) return;
 
@@ -44,10 +44,10 @@ internal partial class QBitContentManager
         using var scope = scopeFactory.CreateScope();
         var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
 
-        var sw = Stopwatch.StartNew();
-
         foreach (var externalDownload in infos.externalDownloads)
         {
+            var sw = Stopwatch.StartNew();
+
             try
             {
                 await CleanupExternalDownload(infos.torrentInfo, externalDownload, ct);
@@ -59,21 +59,18 @@ internal partial class QBitContentManager
                 logger.LogError(ex, "Failed to cleanup external download {Id} - {TorrentHash}",
                     externalDownload.Id, externalDownload.ExternalId);
             }
-            finally
-            {
-                // TODO: Add series scoped to imported releases
-            }
+
+            logger.LogInformation("[{Title}/{Id}] Cleaned up in {Elapsed}ms",  externalDownload.Title, externalDownload.ExternalId, sw.ElapsedMilliseconds);
         }
 
         _cleanupTorrents.TryRemove(infos.torrentInfo.Hash, out _);
-        logger.LogInformation("[{Title}/{Id}] Cleaned up in {Elapsed}ms",  infos.torrentInfo.Name, infos.torrentInfo.Hash, sw.ElapsedMilliseconds);
     }
 
     private async Task CleanupExternalDownload(TorrentInfo torrent, ExternalDownload externalDownload, CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
 
-        var content = new ExternalDownloadContentImpl(externalDownload, torrent);
+        var content = new ExternalDownloadContent(externalDownload, torrent);
 
         await scope.GetRequiredService<ICleanupService>().CleanupAsync(content, ct);
 

@@ -9,7 +9,7 @@ using QBittorrent.Client;
 
 namespace Mnema.Providers.Managers.QBit;
 
-public class ExternalDownloadContentImpl(ExternalDownload externalDownload, TorrentInfo torrentInfo) : IContent
+public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentInfo torrentInfo) : IContent
 {
     public string Id => torrentInfo.Hash;
     public string Title => externalDownload.Title;

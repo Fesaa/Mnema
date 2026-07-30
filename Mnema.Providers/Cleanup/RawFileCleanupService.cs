@@ -54,7 +54,7 @@ internal class RawFileCleanupService(
         var preferences = await unitOfWork.UserRepository.GetPreferences(request.UserId);
 
         var series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata);
-        if (content is ExternalDownloadContentImpl torrent)
+        if (content is ExternalDownloadContent torrent)
         {
             torrent.Series = series;
         }

@@ -22,7 +22,7 @@ internal class CleanupService(
             case Managers.Publication.Publication publication:
                 await publicationCleanupService.CleanupAsync(publication, cancellationToken);
                 return;
-            case ExternalDownloadContentImpl torrent:
+            case ExternalDownloadContent torrent:
                 await rawFileCleanupService.CleanupAsync(torrent, cancellationToken);
                 return;
         }

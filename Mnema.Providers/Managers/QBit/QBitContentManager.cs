@@ -111,7 +111,7 @@ internal partial class QBitContentManager(
             if (downloads.TryGetValue(tInfo.Hash, out var externalDownloads))
             {
                 foreach (var download in externalDownloads)
-                    contents.Add(new ExternalDownloadContentImpl(download, tInfo));
+                    contents.Add(new ExternalDownloadContent(download, tInfo));
             }
         }
 
