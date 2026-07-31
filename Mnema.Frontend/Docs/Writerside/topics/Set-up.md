@@ -24,7 +24,6 @@ You can use both at the same time
 | `OpenIdConnect:Secret`          |   | The secret key for OIDC handshake.                                                                                                                                            |
 | `NoAuthentication`              |   | Set the `true` if you wish to disable Authentication                                                                                                                          |
 | `Authentication:Hardcover`      |   | Your hardcover ApiKey, required if you wish to use hardcover as a metadata provider                                                                                           |
-| `Authentication:Kagane`         |   | Base64 of a WVD file. Only required if you wish to download from them                                                                                                         |
 | **Storage**                     |   |                                                                                                                                                                               |
 | `Application:BaseDir`           |   | **Required.** The root directory for media storage.                                                                                                                           |
 | `Application:DownloadDir`       |   | **Required.** The directory used for processing downloads.                                                                                                                    |

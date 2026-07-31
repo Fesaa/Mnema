@@ -1,57 +1,37 @@
 # Providers
 
 Mnema supports downloading from a select few sources (providers). These are 100% based on whatever I need to download from,
-you are however free to PR in support for any at any time. 
+you are however free to PR in support for any at any time.
 
-# Supported Providers
+## Provider Settings
 
-<warning>
-    Kagane and Webtoons sleep 100ms between recently updated scans. If you have an insane amount of subscription on them, this could cause issues.
-    Must be less than 9.000 combined, or the next sync will happen before the last finished.
-</warning>
+You can fully disable a provider from allowing automatic downloads (skips in Monitored Series). Or require manual confirmation
+before a download starts. These (and maybe more in the future) can be configured form the provider settings page.
 
-## Nyaa
+## Supported Providers
+
+### Nyaa
 
 Downloading from Nyaa requires a download client (QBit) setup, and will parse releases for matching `Valid Titles` in monitored series.
 It is recommended you have `Hardcover` and/or `Mangabaka` ids linked. Leave external id empty
 
-## Mangadex
+Torrents matching to a list of naming conversions will be considered a grouped release. And will parse the files inside
+as separate series. 
+
+### Mangadex
 
 Everything is supported.
 
-## Webtoons
+### Webtoons
 
 Everything is supported. Just two remarks, loading info for fresh downloads is super slow due to their pagination. Recently updated is fake
 and simply loads latest uploads for each monitored series
 
-## Dynasty
+### Dynasty
 
-Everything is supported.
+Everything is supported. Chapters can also be downloaded on their own (OneShots support).
 
-## Bato
-
-Bato is dead, will not work
-
-## Weebdex
-
-Weebdex is dead, will not work
-
-## Comix
-
-Everything works, they something add cloudflare protection on their API. During this time it won't work
-
-## Kagane
-
-Sometimes seems to work, sometimes doesn't. DRM and cloudflare are a massive pain. It works on my MacBook; not in the cluster. I can't be bothered.
-
-Everything works. One small remark, Kagane does not expose which chapter caused their updated_at or even a timestamp for updated at. Recently updated is thus fake
-and simply loads latest uploads for each monitored series
-
-<warning>
-    You are required to include a WVD file in base64 format at `Authentication.Kagane` to download
-</warning>
-
-## Madokami
+### Madokami
 
 Supported, with enriched metadata from Mangabaka & Hardcover. No metadata is taken from Madokami apart from the titles. 
 

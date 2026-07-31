@@ -5,6 +5,8 @@ on the provider. You're not required to use them, and can add content manually b
 
 ![pages.png](pages.png)
 
-A provider providers its own filter option, you can pick a nice icon to display it with in your navigation.
+A provider providers its own filter options. You may set defaults from the page settings.
+
+You can pick a nice icon to display it with in your navigation.
 
 ![page_options.png](page_options.png)
