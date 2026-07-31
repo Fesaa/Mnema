@@ -10,6 +10,8 @@ export type Config = {
   lastUpdateDate: Date;
   metadataProviderSettings: Record<keyof typeof MetadataProvider, MetadataProviderSettingsDto>;
   autoDisableProviderAfter: number;
+  imageConversionLossless: boolean;
+  imageConversionQuality: number;
 }
 
 export interface MetadataProviderSettingsDto {

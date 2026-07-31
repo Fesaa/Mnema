@@ -12,6 +12,7 @@ import {FormService} from "@mnema/_services/form.service";
 import {GenericFormComponent} from "@mnema/generic-form/generic-form.component";
 import {MetadataProvider} from "@mnema/features/monitored-series/metadata.service";
 import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factory.service";
+import {SettingsSwitchComponent} from "@mnema/shared/form/settings-switch/settings-switch.component";
 
 @Component({
   selector: 'app-server-settings',
@@ -19,7 +20,8 @@ import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factor
     ReactiveFormsModule,
     TranslocoDirective,
     SettingsItemComponent,
-    GenericFormComponent
+    GenericFormComponent,
+    SettingsSwitchComponent
   ],
   templateUrl: './server-settings.component.html',
   styleUrl: './server-settings.component.scss',
@@ -39,10 +41,12 @@ export class ServerSettingsComponent {
   config$ = toObservable(this.config);
 
   settingsForm: FormGroup<{
-    maxConcurrentImages: FormControl<number>
-    maxConcurrentTorrents: FormControl<number>
-    subscriptionRefreshHour: FormControl<number>
-    autoDisableProviderAfter: FormControl<number>
+    maxConcurrentImages: FormControl<number>,
+    maxConcurrentTorrents: FormControl<number>,
+    subscriptionRefreshHour: FormControl<number>,
+    autoDisableProviderAfter: FormControl<number>,
+    imageConversionLossless: FormControl<boolean>,
+    imageConversionQuality: FormControl<number>,
   }> | undefined;
 
   metadataProvidersFormDefinition = signal<FormDefinition | null>(null);
@@ -68,7 +72,9 @@ export class ServerSettingsComponent {
       maxConcurrentImages: this.fb.control(config.maxConcurrentImages, [Validators.required, Validators.min(1), Validators.max(5)]),
       maxConcurrentTorrents: this.fb.control(config.maxConcurrentTorrents, [Validators.required, Validators.min(1), Validators.max(10)]),
       subscriptionRefreshHour: this.fb.control(config.subscriptionRefreshHour),
-      autoDisableProviderAfter: this.fb.control(config.autoDisableProviderAfter)
+      autoDisableProviderAfter: this.fb.control(config.autoDisableProviderAfter),
+      imageConversionLossless: this.fb.control(config.imageConversionLossless),
+      imageConversionQuality: this.fb.control(config.imageConversionQuality),
     });
 
     for (let key in config.metadataProviderSettings) {

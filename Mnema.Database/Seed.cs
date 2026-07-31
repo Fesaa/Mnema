@@ -25,6 +25,8 @@ public static class Seed
         new() { Key = ServerSettingKey.LastUpdateDate, Value = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture) },
         new() { Key = ServerSettingKey.MetadataProviderSettings, Value = JsonSerializer.Serialize(new Dictionary<MetadataProvider, MetadataProviderSettingsDto>())},
         new() { Key = ServerSettingKey.AutoDisableAfter, Value = "5"},
+        new() { Key = ServerSettingKey.ImageConversionLossLess, Value = "false"},
+        new() { Key = ServerSettingKey.ImageConversionQuality, Value = "80"},
     ];
 
     public static async Task SeedDatabase(this MnemaDataContext ctx)
