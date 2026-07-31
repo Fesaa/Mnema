@@ -10,6 +10,7 @@ using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.User;
 using Mnema.Models.Enums;
 
 namespace Mnema.Database;
@@ -45,6 +46,7 @@ public static class Seed
         await SeedMetadataProviderSettings(ctx);
         await SeedProviderSettings(ctx);
         await RemoveDeprecatedProviders(ctx);
+        await SeedPreferences(ctx);
     }
 
     private static async Task SeedMetadataProviderSettings(MnemaDataContext ctx)
@@ -102,5 +104,25 @@ public static class Seed
         await ctx.Pages
             .Where(p => deprecatedProviders.Contains(p.Provider))
             .ExecuteDeleteAsync();
+    }
+
+    private static async Task SeedPreferences(MnemaDataContext ctx)
+    {
+        var hasPreferences = await ctx.Preferences.AnyAsync();
+        if (hasPreferences) return;
+
+        ctx.Preferences.Add(new Preferences
+        {
+            ImageFormat = ImageFormat.Upstream,
+            CoverFallbackMethod = CoverFallbackMethod.First,
+            ConvertToGenreList = [],
+            BlackListedTags = [],
+            WhiteListedTags = [],
+            AgeRatingMappings = [],
+            TagMappings = [],
+            PinSubscriptionTitles = true,
+        });
+
+        await ctx.SaveChangesAsync();
     }
 }

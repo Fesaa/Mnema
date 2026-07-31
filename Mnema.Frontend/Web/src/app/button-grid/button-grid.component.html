@@ -1,7 +1,7 @@
 @if (mobileMode()) {
   <div class="group-grid" [style.--mobile-cols]="mobileColumns()">
     <div class="grid-container">
-      @for (group of groups(); track $index) {
+      @for (group of toRenderGroups(); track $index) {
         @let groupedButtonsValue = buttonGroupService.groupedButtons(group);
         @let standAloneButtonsValue = buttonGroupService.standAloneButtons(group);
 
@@ -45,7 +45,7 @@
     </div>
   </div>
 } @else {
-  @for (group of groups(); track $index) {
+  @for (group of toRenderGroups(); track $index) {
 
     <div class="group-grid" [style.--mobile-cols]="mobileColumns()">
       @if (!mobileMode() && group.title) {
