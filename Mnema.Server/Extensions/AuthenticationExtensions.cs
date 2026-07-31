@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -18,13 +19,13 @@ using Mnema.Server.Middleware;
 
 namespace Mnema.Server.Extensions;
 
-public static class OpenIdConnectServiceExtensions
+public static class AuthenticationExtensions
 {
     private const string DynamicHybrid = nameof(DynamicHybrid);
     public const string OpenIdConnect = nameof(OpenIdConnect);
     public const string NoAuthentication = nameof(NoAuthentication);
 
-    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration,
+    public static IServiceCollection AddAuthentication(this IServiceCollection services, IConfiguration configuration,
         IWebHostEnvironment environment)
     {
         services.AddDataProtection()
@@ -48,12 +49,6 @@ public static class OpenIdConnectServiceExtensions
             return services;
         }
 
-        var openIdConnectConfig = configuration.GetSection(OpenIdConnect).Get<OpenIdConnectConfig>();
-        if (openIdConnectConfig is not { Valid: true })
-        {
-            throw new MnemaException("No valid OpenIDConnect configuration found");
-        }
-
         var auth = services.AddAuthentication(DynamicHybrid);
 
         auth.AddPolicyScheme(DynamicHybrid, DynamicHybrid, options =>
@@ -65,68 +60,38 @@ public static class OpenIdConnectServiceExtensions
                     return AuthKeyAuthenticationSchemeOptions.SchemeName;
                 }
 
-                return OpenIdConnect;
+                return CookieAuthenticationDefaults.AuthenticationScheme;
             };
         });
 
         auth.AddScheme<AuthKeyAuthenticationSchemeOptions, AuthKeyAuthenticationHandler>(AuthKeyAuthenticationSchemeOptions.SchemeName, null);
 
-        services.AddSingleton<ConfigurationManager<OpenIdConnectConfiguration>>(_ =>
-        {
-            var url = openIdConnectConfig.Authority + "/.well-known/openid-configuration";
-            return new ConfigurationManager<OpenIdConnectConfiguration>(
-                url,
-                new OpenIdConnectConfigurationRetriever(),
-                new HttpDocumentRetriever { RequireHttps = url.StartsWith("https") }
-            );
-        });
-        services.AddSingleton<OpenIdConnectConfig>(_ => openIdConnectConfig);
-        services.AddSingleton<TicketSerializer>();
-
         services.AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
             .Configure<ITicketStore>((options, store) =>
             {
-                options.ExpireTimeSpan = TimeSpan.FromDays(30);
+                options.Cookie.Name = "Mnema.Auth";
+                options.LoginPath = "/login.html";
+                options.AccessDeniedPath = "/access-denied.html";
+                options.ExpireTimeSpan = TimeSpan.FromDays(7);
                 options.SlidingExpiration = true;
-
-                options.Cookie.Name = IOpenIdConnectService.CookieName;
+                options.SessionStore = store;
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
-                options.Cookie.MaxAge = TimeSpan.FromDays(30);
-                options.SessionStore = store;
 
-                options.LoginPath = "/Auth/login";
-                options.LogoutPath = "/Auth/logout";
+                options.Events.OnRedirectToLogin = ctx =>
+                {
+                    if (ctx.Request.Path.StartsWithSegments("/api"))
+                    {
+                        ctx.Response.StatusCode = 401;
+                        return Task.CompletedTask;
+                    }
 
-                if (environment.IsDevelopment()) options.Cookie.Domain = null;
-
-                options.Events = new CookieAuthenticationEventsHelper();
+                    ctx.Response.Redirect(ctx.RedirectUri);
+                    return Task.CompletedTask;
+                };
             });
 
-        auth.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddOpenIdConnect(OpenIdConnect, options =>
-            {
-                options.Authority = openIdConnectConfig.Authority;
-                options.ClientId = openIdConnectConfig.ClientId;
-                options.ClientSecret = openIdConnectConfig.Secret;
-                options.RequireHttpsMetadata = options.Authority.StartsWith("https://");
-
-                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.ResponseType = OpenIdConnectResponseType.Code;
-                options.CallbackPath = "/signin-oidc";
-                options.SignedOutCallbackPath = "/signout-callback-oidc";
-
-                options.SaveTokens = true;
-                options.GetClaimsFromUserInfoEndpoint = true;
-                options.Scope.Clear();
-                options.Scope.Add("openid");
-                options.Scope.Add("profile");
-                options.Scope.Add("offline_access");
-                options.Scope.Add("roles");
-                options.Scope.Add("email");
-
-                options.Events = new OpenIdConnectEventHelper(environment.IsDevelopment());
-            });
+        auth.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
 
         return services;
     }

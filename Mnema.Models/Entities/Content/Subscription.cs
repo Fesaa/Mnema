@@ -1,19 +1,13 @@
 using System;
-using Microsoft.EntityFrameworkCore;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
-using Mnema.Models.Entities.User;
 
 namespace Mnema.Models.Entities.Content;
 
-[Index(nameof(UserId))]
 [Obsolete("Use MonitoredSeries")]
 public class Subscription: IEntityDate, IDatabaseEntity
 {
     public Guid Id { get; set; }
-
-    public Guid UserId { get; set; }
-    public MnemaUser User { get; set; }
 
     /// <summary>
     ///     The external content id

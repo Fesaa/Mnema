@@ -35,7 +35,7 @@ namespace Mnema.Server;
 public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
 
-    private bool AuthDisabled => configuration.GetSection(OpenIdConnectServiceExtensions.NoAuthentication).Get<bool>();
+    private bool AuthDisabled => configuration.GetSection(AuthenticationExtensions.NoAuthentication).Get<bool>();
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -140,7 +140,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddMnemaDatabase(configuration);
         services.AddDatabaseServices();
         services.AddAndConfigureHangFire(configuration);
-        services.AddIdentityServices(configuration, env);
+        services.AddAuthentication(configuration, env);
     }
 
     public void Configure(IApplicationBuilder app, IServiceProvider serviceProvider)
@@ -199,13 +199,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 if (ctx.Context.User.Identity?.IsAuthenticated ?? false)
                 {
                     ctx.Context.Response.Headers[HeaderNames.CacheControl] = "public,max-age=" + TimeSpan.FromHours(24);
-                    ctx.Context.Response.Headers[Headers.RobotsTag] = "noindex,nofollow";
                 }
-                else
-                {
-                    ctx.Context.Response.Redirect(
-                        $"/Auth/login?returnUrl={Uri.EscapeDataString(ctx.Context.Request.Path)}");
-                }
+                ctx.Context.Response.Headers[Headers.RobotsTag] = "noindex,nofollow";
             }
         });
         app.UseDefaultFiles();

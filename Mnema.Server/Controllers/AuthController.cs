@@ -1,33 +1,46 @@
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Mnema.Server.Extensions;
-using Swashbuckle.AspNetCore.Annotations;
+using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
 
-[Route("[controller]")]
-public class AuthController : Controller
+public class AuthController : BaseApiController
 {
-    [SwaggerIgnore]
-    [HttpGet("login")]
-    public IActionResult Login(string? returnUrl = null)
+    [AllowAnonymous]
+    [HttpPost("login")]
+    public async Task<IActionResult> Login()
     {
-        var properties = new AuthenticationProperties
+        var form = await Request.ReadFormAsync();
+        if (!form.TryGetValue("password", out var password))
         {
-            RedirectUri = returnUrl ?? "/"
-        };
+            return BadRequest();
+        }
 
-        return Challenge(properties, OpenIdConnectServiceExtensions.OpenIdConnect);
+        // TODO: Replace with actual password
+        if (password != "password")
+        {
+            return BadRequest();
+        }
+
+        var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+        identity.AddClaims(Roles.AllRoles.Select(r => new Claim(ClaimTypes.Role, r)));
+        var principal = new ClaimsPrincipal(identity);
+
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
+            new AuthenticationProperties { IsPersistent = true, });
+
+        return Redirect("/");
     }
 
-    [SwaggerIgnore]
     [HttpGet("logout")]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
-        return SignOut(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            OpenIdConnectServiceExtensions.OpenIdConnect
-        );
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        return Redirect("/");
     }
 }

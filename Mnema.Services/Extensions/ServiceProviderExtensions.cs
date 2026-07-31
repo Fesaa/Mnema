@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -19,8 +20,8 @@ public static class ServiceProviderExtensions
     {
         if (!authDisabled)
         {
+            services.AddSingleton<TicketSerializer>();
             services.AddSingleton<ITicketStore, CustomTicketStore>();
-            services.AddScoped<IOpenIdConnectService, OpenIdConnectService>();
         }
 
         services.AddScoped<ISettingsService, SettingsService>();
