@@ -122,6 +122,8 @@ internal class RawFileCleanupService(
         var externalDownloadId = context.Request.GetKey(RequestConstants.ExternalDownloadId);
         if (externalDownloadId == null)
         {
+            logger.LogWarning("No external download found, what's going on? Falling back to directory parsing");
+
             var files = fileSystem.Directory.GetFiles(context.DownloadDirectory, "*", SearchOption.AllDirectories);
             var allowedExtensions = parserService.FileExtensionsForFormat(context.Format);
 
@@ -153,6 +155,12 @@ internal class RawFileCleanupService(
 
     private async Task ProcessSingleFileAsync(CleanupContext context, string sourceFile)
     {
+        if (!fileSystem.File.Exists(sourceFile))
+        {
+            logger.LogWarning("Cannot process missing file: {FileName}", sourceFile);
+            return;
+        }
+
         var ignoreNonMatched = context.Request.Metadata.GetKey(RequestConstants.IgnoreNonMatchedVolumes);
 
         logger.LogDebug("Processing file {FileName} for cleanup", sourceFile);

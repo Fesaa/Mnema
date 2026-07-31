@@ -64,12 +64,8 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
     {
         get
         {
-            var totalSize = externalDownload.Files.Select(f => f.FileSize).Sum().AsHumanReadableSize();
-            var downloadedSize = externalDownload.Files
-                .Where(f => f.Selected)
-                .Select(f => f.FileSize)
-                .Sum()
-                .AsHumanReadableSize();
+            var totalSize = externalDownload.TotalFileSize.AsHumanReadableSize();
+            var downloadedSize = externalDownload.SelectedFileSize.AsHumanReadableSize();
 
             return new DownloadInfo
             {

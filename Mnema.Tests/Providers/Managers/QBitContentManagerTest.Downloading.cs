@@ -7,6 +7,7 @@ using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Providers.Managers.QBit;
 using Mnema.Services;

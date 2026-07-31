@@ -87,6 +87,8 @@ public class MetadataBag : GenericBag<string>
         SetValue(key, guid.ToString());
     }
 
+    public bool HasKey<T>(IMetadataKey<T> key) => ContainsKey(key.Key);
+
     public T GetKey<T>(IMetadataKey<T> key)
     {
         return key.Get(this);

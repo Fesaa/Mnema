@@ -252,8 +252,8 @@ internal partial class QBitContentManager
 
     internal static async Task BroadcastDownloadStartedAsync(ResolvedServices services, DownloadRequestDto request, Series? series, ExternalDownload externalDownload)
     {
-        var totalSize = externalDownload.Files.Select(f => f.FileSize).Sum().AsHumanReadableSize();
-        var toDownloadSize = externalDownload.Files.Select(f => f.FileSize).Sum().AsHumanReadableSize();
+        var totalSize = externalDownload.TotalFileSize.AsHumanReadableSize();
+        var toDownloadSize = externalDownload.SelectedFileSize.AsHumanReadableSize();
 
         var info = new DownloadInfo
         {

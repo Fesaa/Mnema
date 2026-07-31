@@ -12,6 +12,7 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.API.External;
 using Mnema.Common.Extensions;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using QBittorrent.Client;
 

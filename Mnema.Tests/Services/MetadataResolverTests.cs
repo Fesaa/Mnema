@@ -7,6 +7,7 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 using Mnema.Services;

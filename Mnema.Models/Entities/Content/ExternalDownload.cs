@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
@@ -29,6 +30,15 @@ public class ExternalDownload: IEntityDate, IDatabaseEntity
     public required List<ExternalDownloadFile> Files { get; set; }
 
     public T GetKey<T>(IMetadataKey<T> key) => Metadata.GetKey(key);
+
+    public long TotalFileSize => Files
+        .Select(f => f.FileSize)
+        .Sum();
+
+    public long SelectedFileSize => Files
+        .Where(f => f.Selected)
+        .Select(f => f.FileSize)
+        .Sum();
 }
 
 public class ExternalDownloadFile
