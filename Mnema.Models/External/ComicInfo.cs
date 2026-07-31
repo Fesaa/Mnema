@@ -13,7 +13,8 @@ public class ComicInfo
         Xmlns.Add("xsi", "http://www.w3.org/2001/XMLSchema-instance");
     }
 
-    [XmlNamespaceDeclarations] public XmlSerializerNamespaces Xmlns { get; set; }
+    [XmlNamespaceDeclarations]
+    public XmlSerializerNamespaces Xmlns { get; set; }
 
     public string Title { get; set; } = string.Empty;
     public string Summary { get; set; } = string.Empty;
@@ -27,6 +28,7 @@ public class ComicInfo
     public string Volume { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
     public string Genre { get; set; } = string.Empty;
+    public string Isbn { get; set; } = string.Empty;
     public int PageCount { get; set; }
     public string LanguageISO { get; set; } = string.Empty;
 

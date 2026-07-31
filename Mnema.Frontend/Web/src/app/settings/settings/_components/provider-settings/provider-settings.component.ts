@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {translate, TranslocoDirective} from "@jsverse/transloco";
-import {AllProviders, Provider} from "@mnema/_models/page";
+import {InUseProviders, Provider} from "@mnema/_models/page";
 import {FormService} from "@mnema/_services/form.service";
 import {forkJoin, switchMap} from "rxjs";
 import {ModalService} from "@mnema/_services/modal.service";
@@ -55,5 +55,5 @@ export class ProviderSettingsComponent {
     ).subscribe();
   }
 
-  protected readonly AllProviders = AllProviders;
+  protected readonly InUseProviders = InUseProviders;
 }

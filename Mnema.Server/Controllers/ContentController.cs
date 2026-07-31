@@ -73,6 +73,7 @@ public class ContentController(
         var metadata = new MetadataBag();
         metadata.SetKey(RequestConstants.FormatKey, format);
         metadata.SetKey(RequestConstants.ContentFormatKey, contentFormat);
+        metadata.SetKey(RequestConstants.AllowPartialChapterData, true);
 
         var request = new DownloadRequestDto
         {
@@ -196,6 +197,6 @@ public class ContentController(
         if (contentManager == null)
             return NotFound();
 
-        return Ok(await contentManager.RelayMessage(message));
+        return Ok(await contentManager.RelayMessage(message, HttpContext.RequestAborted));
     }
 }

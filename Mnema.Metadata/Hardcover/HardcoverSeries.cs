@@ -81,6 +81,8 @@ public sealed record HardcoverBook : HardcoverEntity
 
 public sealed record HardcoverBookEdition
 {
+    [JsonPropertyName("isbn_13")]
+    public string Isbn { get; init; }
     public List<HardoverContribution> Contributions { get; init; } = [];
     [JsonPropertyName("language")]
     public HardcoverLanguage? Language { get; init; }

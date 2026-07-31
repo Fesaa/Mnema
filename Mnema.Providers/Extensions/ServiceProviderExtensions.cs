@@ -12,10 +12,10 @@ using Mnema.Providers.Dynasty;
 using Mnema.Providers.Managers.Publication;
 using Mnema.Providers.Managers.QBit;
 using Mnema.Providers.Mangadex;
-using Mnema.Providers.Nyaa;
 using Mnema.Providers.Repositories.AthreaScans;
 using Mnema.Providers.Repositories.Kagane;
 using Mnema.Providers.Repositories.Madokami;
+using Mnema.Providers.Repositories.Nyaa;
 using Mnema.Providers.Services;
 using Mnema.Providers.Webtoon;
 using QBitContentManager = Mnema.Providers.Managers.QBit.QBitContentManager;
@@ -122,22 +122,7 @@ public static class ServiceProviderExtensions
             #region Kagane
 
             services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Kagane);
-            services.AddRepository<KaganeRepository>(Provider.Kagane);
-            services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Kagane);
-
-            var kaganeLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 5,
-                Window = TimeSpan.FromSeconds(1),
-                QueueLimit = 100,
-                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
-            });
-
-            services.AddTransient(_ => new RateLimitingHandler(kaganeLimiter));
-            services.AddHttpClient(nameof(Provider.Kagane),
-                    ConfigureDefaultClient("https://yuzuki.kagane.to",
-                        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0"))
-                .AddHttpMessageHandler<RateLimitingHandler>();
+            services.AddRepository<NoOpRepository>(Provider.Kagane);
 
             #endregion
 

@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Mnema.API;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities.Content;
 using QBittorrent.Client;
 
 namespace Mnema.Providers.Managers.QBit;
@@ -18,15 +20,15 @@ internal partial class QBitContentManager
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
-    public async Task<MessageDto> RelayMessage(MessageDto message)
+    public async Task<MessageDto> RelayMessage(MessageDto message, CancellationToken ct = default)
     {
         if (!SupportedProviders.Contains(message.Provider))
             throw new MnemaException($"Provider {message.Provider} is not supported");
 
-        object? data = message.Type switch {
-            MessageType.ListContent => await ListContent(message),
-            MessageType.FilterContent => await FilterContent(message.ContentId, message.Data?.Deserialize<List<string>>()),
-            MessageType.StartDownload => await StartDownload(message.ContentId),
+        var data = message.Type switch {
+            MessageType.ListContent => await ListContent(message, ct),
+            MessageType.FilterContent => await FilterContent(message, ct),
+            MessageType.StartDownload => await StartDownload(message, ct),
             _ => throw new ArgumentOutOfRangeException(nameof(message), message.Type, "Unsupported message type")
         };
 
@@ -39,11 +41,46 @@ internal partial class QBitContentManager
         };
     }
 
-    private async Task<object?> FilterContent(string hash, List<string>? ids, CancellationToken ct = default)
+    private async Task<object?> FilterContent(MessageDto message, CancellationToken ct)
     {
-        if (ids == null) return null;
+        var selectedIds = message.Data.Deserialize<List<string>>(JsonSerializerOptions);
+        if (selectedIds == null) return null;
 
+        var externalDownload = await GetExternalDownload(message.ContentId, ct);
+
+        await FilterContent(externalDownload.ExternalId, currentlyEnabled =>
+        {
+            var allSeriesPaths = externalDownload.Files.Select(f => f.FullPath);
+
+            return currentlyEnabled
+                .Except(allSeriesPaths)
+                .Concat(selectedIds)
+                .ToList();
+        }, ct);
+
+        using var scope = scopeFactory.CreateScope();
+        var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
+
+        externalDownload.Files.ForEach(file =>
+        {
+            file.Selected = selectedIds.Contains(file.FullPath);
+        });
+
+        unitOfWork.ExternalDownloadRepository.Update(externalDownload);
+        await unitOfWork.CommitAsync(ct);
+
+        return null;
+    }
+
+    private async Task FilterContent(string hash, Func<List<string>, List<string>> idsFunc, CancellationToken ct = default)
+    {
         var files = await qBitClient.GetTorrentContentsAsync(hash, ct);
+
+        var currentEnabled = files
+            .Where(f => f.Priority != TorrentContentPriority.Skip)
+            .Select(f => f.Name)
+            .ToList();
+        var ids = idsFunc(currentEnabled);
 
         var toDownload = new HashSet<int>();
         var toSkip = new HashSet<int>();
@@ -69,34 +106,37 @@ internal partial class QBitContentManager
 
         if (toSkip.Count > 0)
             await qBitClient.SetFilePriorityAsync(hash, toSkip, TorrentContentPriority.Skip, ct);
+    }
+
+    private async Task<object?> StartDownload(MessageDto message, CancellationToken ct)
+    {
+        var externalDownload = await GetExternalDownload(message.ContentId, ct);
+
+        await qBitClient.ResumeTorrentsAsync([externalDownload.ExternalId], CancellationToken.None);
+
+        using var scope = scopeFactory.CreateScope();
+        var messageService = scope.GetRequiredService<IMessageService>();
+
+        await messageService.RefreshDashboard(externalDownload.UserId);
 
         return null;
     }
 
-    private async Task<object?> StartDownload(string hash)
+    private async Task<List<ListContentData>?> ListContent(MessageDto message, CancellationToken cancellationToken)
     {
-        await qBitClient.ResumeTorrentsAsync([hash], CancellationToken.None);
+        var externalDownload = await GetExternalDownload(message.ContentId, cancellationToken);
 
-        return null;
+        return BuildTree(externalDownload.Files);
     }
 
-    private async Task<List<ListContentData>?> ListContent(MessageDto message)
-    {
-        var hash = message.ContentId;
-
-        var content = await qBitClient.GetTorrentContentsAsync(hash);
-
-        return BuildTree(content);
-    }
-
-    private List<ListContentData> BuildTree(IReadOnlyList<TorrentContent> files, int depth = 0)
+    private List<ListContentData> BuildTree(IReadOnlyList<ExternalDownloadFile> files, int depth = 0)
     {
         var tree = new List<ListContentData>();
 
         var filesByFirstDir = files
             .GroupBy(file =>
             {
-                var branch = file.Name.Split('/');
+                var branch = file.FullPath.Split('/');
                 return depth >= branch.Length ? string.Empty : branch[depth];
             });
 
@@ -108,18 +148,18 @@ internal partial class QBitContentManager
 
             var fileGroup = group.ToList();
             var firstFile = fileGroup[0];
-            var branch = firstFile.Name.Split('/');
+            var branch = firstFile.FullPath.Split('/');
 
             // Leaf node (file)
             if (branch.Length == depth + 1)
             {
-                var id = firstFile.Name;
-                var totalBytes = firstFile.Size.AsHumanReadableSize();
+                var id = firstFile.FullPath;
+                var totalBytes = firstFile.FileSize.AsHumanReadableSize();
 
                 tree.Add(new ListContentData
                 {
                     Label = $"{dir} {totalBytes}",
-                    Selected = firstFile.Priority > TorrentContentPriority.Skip,
+                    Selected = firstFile.Selected,
                     SubContentId = id
                 });
                 continue;
@@ -144,5 +184,24 @@ internal partial class QBitContentManager
         }
 
         return tree;
+    }
+
+    private async Task<ExternalDownload> GetExternalDownload(string id, CancellationToken ct = default)
+    {
+        if (!Guid.TryParse(id, out var guid))
+        {
+            throw new BadRequestException($"{id} is not a valid guid");
+        }
+
+        using var scope = scopeFactory.CreateScope();
+        var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
+
+        var externalDownload = await unitOfWork.ExternalDownloadRepository.GetById(guid, ct);
+        if (externalDownload == null)
+        {
+            throw new BadRequestException($"{id} is not a valid external download");
+        }
+
+        return externalDownload;
     }
 }

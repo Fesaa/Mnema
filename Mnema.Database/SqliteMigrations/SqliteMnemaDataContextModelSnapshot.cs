@@ -85,6 +85,9 @@ namespace Mnema.Database.SqliteMigrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsGroupedRelease")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("LastModifiedUtc")
                         .HasColumnType("TEXT");
 
@@ -146,6 +149,58 @@ namespace Mnema.Database.SqliteMigrations
                         .IsUnique();
 
                     b.ToTable("DownloadClients");
+                });
+
+            modelBuilder.Entity("Mnema.Models.Entities.Content.ExternalDownload", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BaseDir")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Files")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("[]");
+
+                    b.Property<bool>("IsErrored")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("LastModifiedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("{}");
+
+                    b.Property<int>("Provider")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExternalId");
+
+                    b.ToTable("ExternalDownloads");
                 });
 
             modelBuilder.Entity("Mnema.Models.Entities.Content.MonitoredChapter", b =>

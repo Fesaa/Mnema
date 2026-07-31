@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Common.Helpers;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.External;
 using Mnema.Models.Publication;
 

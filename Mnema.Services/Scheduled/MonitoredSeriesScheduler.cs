@@ -6,14 +6,18 @@ using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Publication;
 
 namespace Mnema.Services.Scheduled;
+
+internal sealed record ProcessResult(List<ContentRelease> Releases, int StartedDownloads, int FailedDownloads);
 
 internal class MonitoredSeriesScheduler(
     ILogger<MonitoredSeriesScheduler> logger,
@@ -21,17 +25,84 @@ internal class MonitoredSeriesScheduler(
     IRecurringJobManagerV2 recurringJobManager,
     IWebHostEnvironment environment,
     IUnitOfWork unitOfWork
-) : AbstractScheduler<MonitoredSeriesScheduler, MonitoredSeries>(logger, scopeFactory, recurringJobManager, environment)
+) : IScheduled
 {
-    protected override string WatcherJobId => "monitored-releases.rss";
-    protected override string WatcherDescription => "monitored releases watcher";
+    private const string WatcherJobId = "monitored-releases.rss";
+    private const string WatcherDescription = "monitored releases watcher";
+    private const string CronExpression = "*/15 * * * *";
 
-    protected override Task<List<MonitoredSeries>> GetEntitiesAsync(IUnitOfWork unitOfWork, CancellationToken cancellationToken)
+    private readonly RecurringJobOptions _recurringJobOptions = new()
     {
-        return unitOfWork.MonitoredSeriesRepository.GetAll(MonitoredSeriesIncludes.Chapters, cancellationToken);
+        TimeZone = TimeZoneInfo.Local
+    };
+
+    public Task EnsureScheduledAsync(CancellationToken cancellationToken)
+    {
+        if (environment.IsDevelopment())
+        {
+            logger.LogDebug("Updating {WatcherDescription} in development as a monthly recurring job", WatcherDescription);
+            recurringJobManager.AddOrUpdate<MonitoredSeriesScheduler>(WatcherJobId,
+                j => j.RunWatcher(CancellationToken.None),
+                "0 0 1 * *", _recurringJobOptions);
+        }
+        else
+        {
+            logger.LogDebug("Registering {WatcherDescription} task with cron {cron}", WatcherDescription, CronExpression);
+            recurringJobManager.AddOrUpdate<MonitoredSeriesScheduler>(WatcherJobId,
+                j => j.RunWatcher(CancellationToken.None),
+                CronExpression, _recurringJobOptions);
+        }
+
+        return Task.CompletedTask;
     }
 
-    protected override async Task<List<Provider>> GetProviders(List<MonitoredSeries> entities)
+    public async Task RunWatcher(CancellationToken cancellationToken)
+    {
+        using var scope = scopeFactory.CreateScope();
+
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        var searchService = scope.ServiceProvider.GetRequiredService<ISearchService>();
+
+        var entities = await unitOfWork.MonitoredSeriesRepository.GetAll(MonitoredSeriesIncludes.Chapters, cancellationToken);
+
+        if (entities.Count == 0)
+            return;
+
+        var providers = await GetProviders(entities);
+
+        logger.LogTrace("Searching for recent updated for {ProviderCount} providers", providers.Count);
+
+        var releases = await searchService.SearchReleases(providers, cancellationToken);
+        if (releases.Count == 0)
+        {
+            logger.LogDebug("No releases found across {Providers} providers", providers.Count);
+            return;
+        }
+
+        var newReleases = await FilterProcessedReleases(unitOfWork, releases, cancellationToken);
+
+        var result = await ProcessMonitoredReleases(scope, newReleases, entities, cancellationToken);
+        unitOfWork.ContentReleaseRepository.AddRange(result.Releases);
+
+        try
+        {
+            await unitOfWork.CommitAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while saving processed releases to the database. Duplicate downloads may start. Report this!");
+        }
+
+        logger.LogInformation(
+            "Found {TotalReleases} releases, {NewReleases} have not been processed. Started {StartedDownloads} downloads, {FailedDownloads} downloads failed",
+            releases.Count,
+            newReleases.Count,
+            result.StartedDownloads,
+            result.FailedDownloads
+        );
+    }
+
+    protected async Task<List<Provider>> GetProviders(List<MonitoredSeries> entities)
     {
         var providers = entities
             .Select(m => m.Provider)
@@ -44,9 +115,15 @@ internal class MonitoredSeriesScheduler(
         return providers.Where(enabledProviders.Contains).ToList();
     }
 
-    protected override Task<ProcessResult> ProcessEntitiesAsync(IServiceScope scope, List<ContentRelease> releases, List<MonitoredSeries> entities, CancellationToken cancellationToken)
+    private static async Task<List<ContentRelease>> FilterProcessedReleases(IUnitOfWork unitOfWork,
+        List<ContentRelease> releases, CancellationToken cancellationToken)
     {
-        return ProcessMonitoredReleases(scope, releases, entities, cancellationToken);
+        var releaseIds = releases.Select(r => r.ReleaseId).ToList();
+
+        var newIds = await unitOfWork.ContentReleaseRepository
+            .FilterReleases(releaseIds, cancellationToken);
+
+        return releases.Where(r => newIds.Contains(r.ReleaseId)).ToList();
     }
 
     public async Task<ProcessResult> ProcessMonitoredReleases(
@@ -76,13 +153,14 @@ internal class MonitoredSeriesScheduler(
 
             try
             {
-                if (string.IsNullOrEmpty(release.ContentId) || !startedContent.Contains(release.ContentId))
+                if (string.IsNullOrEmpty(release.ContentId) || !startedContent.Contains(release.ContentId) || release.IsGroupedRelease)
                 {
 
-                    if (!await downloadService.HasContent(release.Provider, release.ContentId ?? release.ReleaseId))
+                    if (release.IsGroupedRelease || !await downloadService.HasContent(release.Provider, release.ContentId ?? release.ReleaseId))
                     {
                         var metadata = match.MetadataForDownloadRequest();
                         metadata.SetKey(RequestConstants.AllowPartialChapterData, true);
+                        metadata.SetKey(RequestConstants.IsGroupedDownload, release.IsGroupedRelease);
 
                         await downloadService.StartDownload(new DownloadRequestDto
                         {
@@ -101,6 +179,10 @@ internal class MonitoredSeriesScheduler(
                         logger.LogDebug("Content {Title} - {Id} is already being downloaded, not starting new download",
                             release.ContentName.OrNonEmpty(match.Title), release.ContentId ?? release.ReleaseId);
                     }
+                }
+                else
+                {
+                    logger.LogDebug("Skipping release {@Release}", release);
                 }
 
                 if (!string.IsNullOrEmpty(release.ContentId))
@@ -153,8 +235,8 @@ internal class MonitoredSeriesScheduler(
                 return monitoredRelease;
             }
 
-
-            var parseResult = parserService.FullParse(release.ReleaseName, monitoredRelease.ContentFormat);
+            var toParseName = release.ContentName.OrNonEmpty(release.ReleaseName);
+            var parseResult = parserService.FullParse(toParseName, monitoredRelease.ContentFormat);
 
             var hasTitleMatch = parseResult.Series.Any(seriesName =>
             {
@@ -167,13 +249,27 @@ internal class MonitoredSeriesScheduler(
                 continue;
 
             // Ensure the release is in the correct format
-            var (_, chapters) = await scannerService.ParseTorrentFile(release.DownloadUrl, monitoredRelease.ContentFormat, ct);
-            var formats = chapters.Select(c => parserService.ParseFormat(c.Title));
+            var chapters = (await scannerService.ParseTorrentFile(release.DownloadUrl, ct)).Files
+                .Select(f =>
+                {
+                    var chapterParseResult = parserService.FullParse(f.FileName, monitoredRelease.ContentFormat);
+
+                    return new Chapter
+                    {
+                        Id = string.Empty,
+                        Title = string.Empty,
+                        FileName = f.FileName,
+                        VolumeMarker = chapterParseResult.Volume.Value,
+                        ChapterMarker = chapterParseResult.Chapter.Value,
+                    };
+                }).ToList();
+
+            var formats = chapters.Select(c => parserService.ParseFormat(c.FileName)).ToList();
             if (!formats.Contains(monitoredRelease.Format))
                 continue;
 
             var shouldSkipDownload = chapters
-                .Select(chapter => scannerService.FindMatch(monitoredRelease.Chapters, chapter))
+                .Select(chapter => parserService.FindMatch(monitoredRelease.Chapters, chapter))
                 .All(c => c?.Status is MonitoredChapterStatus.Available or MonitoredChapterStatus.NotMonitored);
 
             if (shouldSkipDownload)
@@ -184,5 +280,4 @@ internal class MonitoredSeriesScheduler(
 
         return null;
     }
-
 }

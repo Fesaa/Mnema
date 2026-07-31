@@ -38,6 +38,7 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<ManualMigrationHistory> ManualMigrationHistory { get; set; }
     public DbSet<AuthKey> AuthKeys { get; set; }
     public DbSet<ProviderSettings> ProviderSettings { get; set; }
+    public DbSet<ExternalDownload> ExternalDownloads { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -106,6 +107,18 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
             .HasJsonConversion(new MetadataBag())
             .HasColumnType("TEXT")
             .HasDefaultValue(new MetadataBag());
+
+        builder.Entity<ExternalDownload>()
+            .Property(p => p.Metadata)
+            .HasJsonConversion(new MetadataBag())
+            .HasColumnType("TEXT")
+            .HasDefaultValue(new MetadataBag());
+
+        builder.Entity<ExternalDownload>()
+            .Property(p => p.Files)
+            .HasJsonConversion([])
+            .HasColumnType("TEXT")
+            .HasDefaultValue(new List<ExternalDownloadFile>());
     }
 
     private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)

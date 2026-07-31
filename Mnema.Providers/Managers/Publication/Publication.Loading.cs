@@ -17,6 +17,7 @@ internal partial class Publication
 {
     private readonly IScannerService _scannerService = scope.ServiceProvider.GetRequiredService<IScannerService>();
     private readonly IMetadataResolver _metadataResolver = scope.ServiceProvider.GetRequiredService<IMetadataResolver>();
+    private readonly IParserService _parserService = scope.ServiceProvider.GetRequiredService<IParserService>();
     private MonitoredSeries? _monitoredSeries;
     private bool IsMonitored => _monitoredSeries != null;
 
@@ -119,7 +120,7 @@ internal partial class Publication
     {
         if (_monitoredSeries != null)
         {
-            var monitoredChapter = _scannerService.FindMatch(_monitoredSeries.Chapters, chapter);
+            var monitoredChapter = _parserService.FindMatch(_monitoredSeries.Chapters, chapter);
             if (monitoredChapter?.Status == MonitoredChapterStatus.NotMonitored)
             {
                 _logger.LogTrace("Ignoring chapter {ChapterId} as it is not monitored", chapter.Id);

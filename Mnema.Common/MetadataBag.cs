@@ -35,7 +35,7 @@ public class MetadataBag : GenericBag<string>
     }
 
     [return:NotNullIfNotNull(nameof(fallback))]
-    public string? GetStringOrDefault(string key, string? fallback)
+    internal string? GetStringOrDefault(string key, string? fallback)
     {
         var value = GetString(key);
 
@@ -86,6 +86,8 @@ public class MetadataBag : GenericBag<string>
     {
         SetValue(key, guid.ToString());
     }
+
+    public bool HasKey<T>(IMetadataKey<T> key) => ContainsKey(key.Key);
 
     public T GetKey<T>(IMetadataKey<T> key)
     {

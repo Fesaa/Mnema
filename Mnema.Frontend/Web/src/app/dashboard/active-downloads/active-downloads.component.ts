@@ -21,6 +21,10 @@ import {StopRequest} from "../../_models/search";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {SuggestionDashboardComponent} from "../_components/suggestion-dashboard/suggestion-dashboard.component";
 import {ActiveDownloadsService} from "./active-downloads.service";
+import {
+  DeleteDownloadModalComponent
+} from "@mnema/dashboard/_components/delete-download-modal/delete-download-modal.component";
+import {switchMap, tap} from "rxjs";
 
 @Component({
   selector: 'app-active-downloads',
@@ -60,26 +64,22 @@ export class ActiveDownloadsComponent {
   }));
 
   async stop(info: InfoStat) {
-    if (!await this.modalService.confirm({
-      question: translate("dashboard.confirm-stop", {name: this.contentTitle.transform(info.name)})
-    })) {
-      return;
-    }
+    const [modal, component] = this.modalService.open(DeleteDownloadModalComponent, DefaultModalOptions);
+    component.info.set(info);
 
-    const req: StopRequest = {
-      provider: info.provider,
-      delete: true,
-      id: info.id,
-    }
+    this.modalService.onClose$<boolean>(modal).pipe(
+      switchMap(removeFromDownloadClient => {
+        const req: StopRequest = {
+          provider: info.provider,
+          delete: true,
+          id: info.id,
+          deleteFromDownloadClient: removeFromDownloadClient,
+        }
 
-    this.contentService.stop(req).subscribe({
-      next: () => {
-        this.toastService.successLoco("dashboard.toasts.stopped-success", {}, {title: this.contentTitle.transform(info.name)});
-      },
-      error: (err) => {
-        this.toastService.genericError(err.error.message);
-      }
-    })
+        return this.contentService.stop(req)
+      }),
+      tap(() => this.toastService.successLoco("dashboard.toasts.stopped-success", {}, {title: this.contentTitle.transform(info.name)}))
+    ).subscribe()
   }
 
   async browse(info: InfoStat) {

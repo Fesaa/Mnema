@@ -7,6 +7,10 @@
 Each series gets its own entry, where you can view some of the relevant metadata and configure all its options. If the series
 is linked to its Hardcover entry it'll also display upcoming volumes.
 
+<note>
+    Mangabaka works will be supported once they're included in the database dump
+</note>
+
 ![monitored_series_series_page.png](monitored_series_series_page.png)
 
 From this page you can decide to trigger a download, edit its options and other data, or preview its metadata.

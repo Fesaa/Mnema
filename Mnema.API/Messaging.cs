@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.User;
@@ -18,6 +19,7 @@ public enum MessageEventType
     NotificationAdd,
     BulkContentInfoUpdate,
     MetadataRefreshed,
+    RefreshDashboard,
 }
 
 public interface IMessageService
@@ -30,6 +32,7 @@ public interface IMessageService
     Task UpdateContent(Guid userId, DownloadInfo info);
     Task BulkContentInfoUpdate(Guid userId, DownloadInfo[] downloadInfos);
     Task DeleteContent(Guid userId, string contentId);
+    Task RefreshDashboard(Guid userId);
 
     Task NotificationAdded(Guid userId, int amount);
     Task NotificationRemoved(Guid userId, int amount);

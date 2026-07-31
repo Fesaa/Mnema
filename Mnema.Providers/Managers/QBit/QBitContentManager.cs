@@ -6,13 +6,11 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
-using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
@@ -24,7 +22,6 @@ namespace Mnema.Providers.Managers.QBit;
 internal partial class QBitContentManager(
     ILogger<QBitContentManager> logger,
     ApplicationConfiguration configuration,
-    IDistributedCache cache,
     IServiceScopeFactory scopeFactory,
     IQBitClient qBitClient)
     : IContentManager, IConfigurationProvider
@@ -33,10 +30,8 @@ internal partial class QBitContentManager(
     private const string UrlKey = "url";
     private const string UsernameKey = "username";
     private const string PasswordKey = "password";
-    private const string RequestCacheKey = "QBitTorrent-Request-";
 
     private static readonly List<Provider> SupportedProviders = [Provider.Nyaa];
-    private static readonly DistributedCacheEntryOptions RequestCacheKeyOptions = new();
 
     public async Task Download(DownloadRequestDto request)
     {
@@ -54,12 +49,47 @@ internal partial class QBitContentManager(
         };
 
         var torrents = await qBitClient.GetTorrentsAsync(listQuery);
-        if (torrents != null && torrents.Any(t => t.Hash == request.Id))
+        if (torrents.Any(t => t.Hash == request.Id) && !request.GetKey(RequestConstants.IsGroupedDownload))
         {
             throw new MnemaException($"Torrent with hash {request.Id} has already been added");
         }
 
+        if (request.GetKey(RequestConstants.IsGroupedDownload))
+        {
+            await ValidateNoDuplicateSeriesInGroupedTorrent(request);
+        }
+
         BackgroundJob.Enqueue((Expression<Func<Task>>)(() => DownloadTorrent(request, CancellationToken.None)));
+    }
+
+    private async Task ValidateNoDuplicateSeriesInGroupedTorrent(DownloadRequestDto request)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        var hardcoverId = request.GetKey(RequestConstants.HardcoverSeriesIdKey);
+        var mangaBakaId = request.GetKey(RequestConstants.MangaBakaKey);
+
+        if (string.IsNullOrEmpty(hardcoverId) && string.IsNullOrEmpty(mangaBakaId))
+        {
+            throw new BadRequestException($"Grouped downloads must contain external metadata");
+        }
+
+        var externalDownloads = await unitOfWork.ExternalDownloadRepository.GetByExternalId(request.Id);
+
+        var alreadyBeingDownloaded = externalDownloads.Any(ed =>
+        {
+            var edHardcoverId = ed.GetKey(RequestConstants.HardcoverSeriesIdKey);
+            var edMangaBakaId = ed.GetKey(RequestConstants.MangaBakaKey);
+
+            return (!string.IsNullOrEmpty(edHardcoverId) && edHardcoverId == hardcoverId)
+                || (!string.IsNullOrEmpty(edMangaBakaId) && edMangaBakaId == mangaBakaId);
+        });
+
+        if (alreadyBeingDownloaded)
+        {
+            throw new BadRequestException($"A download for Hardcover({hardcoverId}) or MangaBaka({mangaBakaId}) is already being downloaded. Cannot queue the same series");
+        }
     }
 
     public async Task StopDownload(StopRequestDto request)
@@ -69,27 +99,45 @@ internal partial class QBitContentManager(
 
         using var scope = scopeFactory.CreateScope();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        try
+        var externalDownload = await GetExternalDownload(request.Id, CancellationToken.None);
+
+        if (!request.DeleteFromDownloadClient)
         {
-            await qBitClient.DeleteTorrentsAsync([request.Id], true);
-        }
-        finally
-        {
-            await cache.RemoveAsync(RequestCacheKey + request.Id);
+            await unitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id);
             await messageService.DeleteContent(request.UserId, request.Id);
+            return;
         }
-    }
 
-    public Task MoveToDownloadQueue(string id) => StartDownload(id);
+        var allDownloads = await unitOfWork.ExternalDownloadRepository.GetByExternalId(externalDownload.ExternalId);
+
+        if (allDownloads.Count > 1)
+        {
+            logger.LogDebug("More than one external download found for hash {Hash}, stopping download of files instead", externalDownload.ExternalId);
+
+            await FilterContent(externalDownload.ExternalId, currentlySelected => currentlySelected
+                .Except(externalDownload.Files.Select(f => f.FullPath))
+                .ToList(), CancellationToken.None);
+        }
+        else
+        {
+            await qBitClient.DeleteTorrentsAsync([externalDownload.ExternalId], true);
+        }
+
+        await unitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id);
+        await messageService.DeleteContent(request.UserId, request.Id);
+    }
 
     public async Task<bool> HasContent(Provider provider, string id)
     {
         if (!SupportedProviders.Contains(provider))
             throw new MnemaException($"Provider {provider} is not supported");
 
-        var torrents = await GetTorrents(provider);
-        return torrents.Any(c => c.Hash == id);
+        var scope = scopeFactory.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        return await unitOfWork.ExternalDownloadRepository.ExistsByExternalId(id);
     }
 
     public async Task<IEnumerable<IContent>> GetAllContent(Provider provider)
@@ -97,8 +145,13 @@ internal partial class QBitContentManager(
         if (!SupportedProviders.Contains(provider))
             throw new MnemaException($"Provider {provider} is not supported");
 
+        using var scope = scopeFactory.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
         var torrents = await GetTorrents(provider);
         if (torrents.Count == 0) return [];
+
+        var downloads = await unitOfWork.ExternalDownloadRepository.GetByExternalIds(torrents.Select(t => t.Hash));
 
         List<IContent> contents = [];
 
@@ -106,10 +159,11 @@ internal partial class QBitContentManager(
         {
             if (UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
 
-            var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
-            if (request == null) continue;
-
-            contents.Add(new QBitTorrent(request, tInfo));
+            if (downloads.TryGetValue(tInfo.Hash, out var externalDownloads))
+            {
+                foreach (var download in externalDownloads)
+                    contents.Add(new ExternalDownloadContent(download, tInfo));
+            }
         }
 
         return contents;

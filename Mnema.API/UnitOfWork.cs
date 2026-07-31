@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Mnema.API.Content;
 
 namespace Mnema.API;
 
@@ -16,6 +17,7 @@ public interface IUnitOfWork
     IMonitoredSeriesRepository MonitoredSeriesRepository { get; }
     IAuthKeyRepository AuthKeyRepository { get; }
     IProviderSettingsRepository ProviderSettingsRepository { get; }
+    IExternalDownloadRepository ExternalDownloadRepository { get; }
 
     Task<bool> CommitAsync(CancellationToken cancellationToken = default);
     bool HasChanges();

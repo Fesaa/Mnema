@@ -133,7 +133,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         return Task.FromResult<IEnumerable<IContent>>(_content.Values.ToList());
     }
 
-    public Task<MessageDto> RelayMessage(MessageDto message)
+    public Task<MessageDto> RelayMessage(MessageDto message, CancellationToken ct = default)
     {
         if (!_content.TryGetValue(message.ContentId, out var publication)) throw new NotFoundException();
 

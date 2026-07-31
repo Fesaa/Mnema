@@ -8,6 +8,7 @@ import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {LoadingSpinnerComponent} from "../../../shared/_component/loading-spinner/loading-spinner.component";
 import {NgTemplateOutlet} from "@angular/common";
 import {BadgeComponent} from "../../../shared/_component/badge/badge.component";
+import {finalize, tap} from "rxjs";
 
 @Component({
   selector: 'app-content-picker-dialog',
@@ -28,6 +29,7 @@ export class ContentPickerDialogComponent implements OnInit {
   content = signal<ListContentData[]>([]);
   selection = signal<string[]>([]);
   loading = signal(true);
+  submitting = signal(false);
 
   toggles = signal<Set<string>>(new Set());
   allToggled = computed(() => this.content().length === this.toggles().size);
@@ -145,20 +147,17 @@ export class ContentPickerDialogComponent implements OnInit {
       return;
     }
 
-    this.contentService.setFilter(this.info().provider, this.info().id, ids).subscribe({
-      next: () => {
+    this.submitting.set(true);
+    this.contentService.setFilter(this.info().provider, this.info().id, ids).pipe(
+      tap(() => {
         this.toastService.successLoco(
           'dashboard.content-picker.toasts.success',
           {},
           { amount: ids.length, title: this.info().name }
         );
-      },
-      error: err => {
-        this.toastService.genericError(err?.error?.message ?? 'Unknown error');
-      },
-    }).add(() => {
-      this.close();
-    });
+      }),
+      finalize(() => this.close()),
+    ).subscribe();
   }
 
   private getAllSubContentIds(list: ListContentData[], requiredSelected: boolean = false): string[] {

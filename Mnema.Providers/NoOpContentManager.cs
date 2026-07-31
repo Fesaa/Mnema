@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Mnema.API.Content;
 using Mnema.Models.DTOs.Content;
@@ -33,7 +34,7 @@ public class NoOpContentManager : IContentManager
         return Task.FromResult<IEnumerable<IContent>>([]);
     }
 
-    public Task<MessageDto> RelayMessage(MessageDto message)
+    public Task<MessageDto> RelayMessage(MessageDto message, CancellationToken ct = default)
     {
         return Task.FromResult(new MessageDto
         {

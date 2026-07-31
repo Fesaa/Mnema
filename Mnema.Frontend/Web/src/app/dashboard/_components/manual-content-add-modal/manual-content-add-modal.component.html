@@ -37,7 +37,7 @@
               <ng-template #view>{{control.value | providerName}}</ng-template>
               <ng-template #edit>
                 <select formControlName="provider" class="form-select form-control">
-                  @for (provider of AllProviders; track provider) {
+                  @for (provider of InUseProviders; track provider) {
                     <option [ngValue]="provider">{{provider | providerName}}</option>
                   }
                 </select>

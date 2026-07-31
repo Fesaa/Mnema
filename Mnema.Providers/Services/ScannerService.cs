@@ -40,7 +40,7 @@ public class ScannerService(
     private static readonly StreamPipeReaderOptions StreamPipeReaderOptions = new();
     private static readonly DistributedCacheEntryOptions CacheEntryOptions = new()
     {
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1),
     };
 
     public List<OnDiskContent> ScanDirectory(string path, ContentFormat contentFormat, Format format,
@@ -76,7 +76,7 @@ public class ScannerService(
         return contents;
     }
 
-    public OnDiskContent ParseContent(string path, ContentFormat contentFormat)
+    private OnDiskContent ParseContent(string path, ContentFormat contentFormat)
     {
         var file = Path.GetFileName(path);
 
@@ -151,9 +151,11 @@ public class ScannerService(
         return XmlHelper.Deserialize<ComicInfo>(XmlSerializer, comicInfoEntry.Open());
     }
 
-    public async Task<TorrentScanResult> ParseTorrentFile(string remoteUrl, ContentFormat contentFormat, CancellationToken cancellationToken)
+    public async Task<ParsedTorrentInfo> ParseTorrentFile(string remoteUrl, CancellationToken cancellationToken)
     {
-        var cached = await cache.GetAsJsonAsync<TorrentScanResult>(remoteUrl, cancellationToken);
+        var cacheKey = $"{remoteUrl}";
+
+        var cached = await cache.GetAsJsonAsync<ParsedTorrentInfo>(cacheKey, cancellationToken);
         if (cached != null)
             return cached;
 
@@ -161,115 +163,23 @@ public class ScannerService(
 
         var torrent = await BencodeParser.ParseAsync<Torrent>(stream, StreamPipeReaderOptions, cancellationToken);
 
-        var chapters = torrent.FileMode switch
+        var files = torrent.FileMode switch
         {
             TorrentFileMode.Unknown => [],
             TorrentFileMode.Single => [
-                ParseChapter(Path.Join(torrent.DisplayName, torrent.File.FileName), torrent.File.FileName, contentFormat)
+                new TorrentFile(torrent.DisplayName, Path.Join(torrent.DisplayName, torrent.File.FileName), torrent.TotalSize)
             ],
             TorrentFileMode.Multi => torrent.Files
-                .Select(f => ParseChapter(Path.Join(torrent.DisplayName, f.FullPath), f.FileName, contentFormat))
+                .Select(f => new TorrentFile(f.FileName, Path.Join(torrent.DisplayName, f.FullPath), f.FileSize))
                 .ToList(),
+
             _ => throw new ArgumentOutOfRangeException(nameof(torrent.FileMode), torrent.FileMode, null)
         };
 
-        var res = new TorrentScanResult(torrent.TotalSize.AsHumanReadableSize(), chapters);
+        var info = new ParsedTorrentInfo(torrent.TotalSize.AsHumanReadableSize(), files);
 
-        await cache.SetAsJsonAsync(remoteUrl, res, CacheEntryOptions, cancellationToken);
+        await cache.SetAsJsonAsync(remoteUrl, info, CacheEntryOptions, cancellationToken);
 
-        return res;
-    }
-
-    private Chapter ParseChapter(string path, string file, ContentFormat contentFormat)
-    {
-        var volume = parserService.ParseVolume(file, contentFormat);
-        var chapter = parserService.ParseChapter(file, contentFormat);
-
-        volume = parserService.IsLooseLeafVolume(volume) ? string.Empty : volume;
-        chapter = parserService.IsDefaultChapter(chapter) ? string.Empty : chapter;
-
-        return new Chapter
-        {
-            Id = string.Empty,
-            Title = path,
-            FileName = file,
-            VolumeMarker = volume,
-            ChapterMarker = chapter,
-            Tags = [],
-            People = [],
-            TranslationGroups = []
-        };
-    }
-
-    public OnDiskContent? FindMatch(List<OnDiskContent> onDiskContents, Chapter chapter)
-    {
-        if (string.IsNullOrEmpty(chapter.VolumeMarker) && string.IsNullOrEmpty(chapter.ChapterMarker))
-        {
-            return null;
-        }
-
-        if (string.IsNullOrEmpty(chapter.ChapterMarker))
-        {
-            var volumeMatches = onDiskContents.Where(c => c.Volume == chapter.VolumeMarker).ToList();
-
-            if (volumeMatches.Count == 1)
-                return volumeMatches[0];
-
-            return volumeMatches.FirstOrDefault(c => string.IsNullOrEmpty(c.Chapter));
-        }
-
-        if (string.IsNullOrEmpty(chapter.VolumeMarker))
-        {
-            return onDiskContents.FirstOrDefault(c
-                => string.IsNullOrEmpty(c.Volume) && c.Chapter == chapter.ChapterMarker);
-        }
-
-        var exactMatch = onDiskContents.FirstOrDefault(c
-            => c.Chapter == chapter.ChapterMarker && c.Volume == chapter.VolumeMarker);
-        if (exactMatch != null)
-            return exactMatch;
-
-        var partialMatches = onDiskContents
-            .Where(c => c.Volume == chapter.VolumeMarker)
-            .ToList();
-
-        // One partial match on volume, assume it's valid
-        return partialMatches.Count == 1 ? partialMatches[0] : null;
-    }
-
-    public MonitoredChapter? FindMatch(List<MonitoredChapter> monitoredChapters, Chapter chapter)
-    {
-        if (string.IsNullOrEmpty(chapter.VolumeMarker) && string.IsNullOrEmpty(chapter.ChapterMarker))
-        {
-            return null;
-        }
-
-        if (string.IsNullOrEmpty(chapter.ChapterMarker))
-        {
-            var volumeMatches = monitoredChapters.Where(c => c.Volume == chapter.VolumeMarker).ToList();
-
-            if (volumeMatches.Count == 1)
-                return volumeMatches[0];
-
-            return volumeMatches.FirstOrDefault(c => string.IsNullOrEmpty(c.Chapter));
-        }
-
-        if (string.IsNullOrEmpty(chapter.VolumeMarker))
-        {
-            return monitoredChapters.FirstOrDefault(c
-                => string.IsNullOrEmpty(c.Volume) && c.Chapter == chapter.ChapterMarker);
-        }
-
-        var exactMatch = monitoredChapters.FirstOrDefault(c
-            => c.Chapter == chapter.ChapterMarker && c.Volume == chapter.VolumeMarker);
-        if (exactMatch != null)
-            return exactMatch;
-
-        var partialMatches = monitoredChapters
-            .Where(c => c.Volume == chapter.VolumeMarker)
-            .ToList();
-
-        // One partial match on volume, assume it's valid
-        return partialMatches.Count == 1 ? partialMatches[0] : null;
+        return info;
     }
 }

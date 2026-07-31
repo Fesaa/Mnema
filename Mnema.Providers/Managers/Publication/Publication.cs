@@ -138,8 +138,7 @@ internal partial class Publication(
                 if (_fileSystem.File.Exists(dest))
                     _fileSystem.File.Delete(dest);
 
-                await ZipFile.CreateFromDirectoryAsync(src, dest,
-                    CompressionLevel.SmallestSize, false);
+                await ZipFile.CreateFromDirectoryAsync(src, dest, CompressionLevel.Optimal, false);
 
                 _fileSystem.Directory.Delete(src, true);
             }

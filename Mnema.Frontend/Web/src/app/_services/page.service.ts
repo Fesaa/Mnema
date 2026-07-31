@@ -1,9 +1,8 @@
-import {effect, inject, Injectable, signal} from '@angular/core';
+import {inject, Injectable, signal} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {environment} from "@env/environment";
-import {AllProviders, Page, Provider} from "../_models/page";
+import {InUseProviders, Page, Provider} from "../_models/page";
 import {catchError, from, map, mergeMap, Observable, of, switchMap, tap, toArray} from "rxjs";
-import {AccountService} from "./account.service";
 import {FormControlDefinition} from "../generic-form/form";
 import {MetadataBag} from "@mnema/_models/search";
 
@@ -87,7 +86,7 @@ export class PageService {
   }
 
   allowedProviders() {
-    return of(AllProviders);
+    return of(InUseProviders);
   }
 
   monitoredSeriesMetadata() {

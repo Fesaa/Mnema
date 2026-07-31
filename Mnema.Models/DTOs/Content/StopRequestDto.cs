@@ -9,9 +9,14 @@ public sealed record StopRequestDto
     public required Provider Provider { get; init; }
     public required string Id { get; init; }
 
-    [JsonPropertyName("delete")] public required bool DeleteFiles { get; init; }
+    [JsonPropertyName("delete")]
+    public required bool DeleteFiles { get; init; }
 
-    [JsonIgnore] public bool SaveDownload => !DeleteFiles;
+    public bool DeleteFromDownloadClient { get; init; } = true;
 
-    [JsonIgnore] public Guid UserId { get; set; }
+    [JsonIgnore]
+    public bool SaveDownload => !DeleteFiles;
+
+    [JsonIgnore]
+    public Guid UserId { get; set; }
 }

@@ -13,14 +13,20 @@ using Mnema.Common.Helpers;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
+using Mnema.Providers.Extensions;
 
-namespace Mnema.Providers.Nyaa;
+namespace Mnema.Providers.Repositories.Nyaa;
 
-public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepository
+public class NyaaRepository(
+    IHttpClientFactory httpClientFactory, IGroupedReleaseDetector groupedReleaseDetector,
+    IScannerService scannerService, IParserService parserService
+    ): IContentRepository
 {
 
     private static readonly XmlSerializer XmlSerializer = new(typeof(RssFeed));
     private const string DateTimeFormat = "ddd, dd MMM yyyy HH:mm:ss '-0000'";
+    private static readonly IMetadataKey<string> Category = MetadataKeys.String("category", "3_1");
+    private static readonly IMetadataKey<string> Filter = MetadataKeys.String("filter", "0");
 
     private HttpClient HttpClient => httpClientFactory.CreateClient(nameof(Provider.Nyaa));
 
@@ -28,8 +34,8 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
     {
         var url = "/"
             .SetQueryParam("page", "rss")
-            .SetQueryParam("c", request.Modifiers.GetStringOrDefault("category", "3_1"))
-            .SetQueryParam("f", request.Modifiers.GetStringOrDefault("filter", "0"))
+            .SetQueryParam("c", request.GetKey(Category))
+            .SetQueryParam("f", request.GetKey(Filter))
             .SetQueryParam("q", request.Query);
 
         var stream = await HttpClient.GetStreamAsync(url, cancellationToken);
@@ -72,16 +78,56 @@ public class NyaaRepository(IHttpClientFactory httpClientFactory): IContentRepos
             return [];
         }
 
-        return feed.Channel.Items
-            .Select(item => new ContentRelease
+        List<ContentRelease> releases = [];
+
+        foreach (var item in feed.Channel.Items)
+        {
+            if (!groupedReleaseDetector.IsGroupedRelease(Provider.Nyaa, item.Title))
             {
-                ReleaseId = item.InfoHash,
-                ReleaseName = item.Title,
-                ReleaseDate = item.PubDate.AsDateTime(DateTimeFormat) ?? DateTime.UtcNow,
-                DownloadUrl =  item.Link,
-                Provider = Provider.Nyaa,
-            })
-            .ToList();
+                releases.Add(new ContentRelease
+                {
+                    ReleaseId = item.InfoHash,
+                    ReleaseName = item.Title,
+                    ReleaseDate = item.PubDate.AsDateTime(DateTimeFormat) ?? DateTime.UtcNow,
+                    DownloadUrl =  item.Link,
+                    Provider = Provider.Nyaa,
+                });
+                continue;
+            }
+
+            var torrentInfo = await scannerService.ParseTorrentFile(item.Link, cancellationToken);
+
+            releases.AddRange(torrentInfo.Files
+                .Select(f =>
+                {
+                    var contentFormat = f.FileName.GetFileType().ContentFormatFromFileExt();
+                    return contentFormat == null ? null : parserService.FullParse(f.FileName, contentFormat.Value);
+                })
+                .WhereNotNull()
+                .GroupMergingSeries()
+                .Select(g =>
+                {
+                    if (g.Items.Count == 0) return null;
+
+                    var lastestResult = g.Items.MaxBy(i => i.Chapter.MaxNumber);
+                    if (lastestResult == null) return null;
+
+                    return new ContentRelease
+                    {
+                        ReleaseId = $"{item.InfoHash}#{g.Series.First().ToNormalized()}",
+                        ContentId = item.InfoHash,
+                        ReleaseName = g.Series.First(),
+                        ContentName = lastestResult.Input,
+                        ReleaseDate = item.PubDate.AsDateTime(DateTimeFormat) ?? DateTime.UtcNow,
+                        DownloadUrl =  item.Link,
+                        Provider = Provider.Nyaa,
+                        IsGroupedRelease = true,
+                    };
+                })
+                .WhereNotNull());
+        }
+
+        return releases;
     }
 
     public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)

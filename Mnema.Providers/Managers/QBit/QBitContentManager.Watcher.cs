@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.Common.Exceptions;
@@ -43,41 +45,27 @@ internal partial class QBitContentManager
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        List<QBitTorrent> inUploadState = [];
-        List<QBitTorrent> queuedForSignalR = [];
+        var downloads = await unitOfWork.ExternalDownloadRepository
+            .GetByExternalIds(torrents.Select(t => t.Hash));
 
-        foreach (var tInfo in torrents)
-        {
-            var request = await cache.GetAsJsonAsync<DownloadRequestDto>(RequestCacheKey + tInfo.Hash);
-            if (request == null) continue;
+        var content = torrents
+            .Where(t => downloads.ContainsKey(t.Hash))
+            .SelectMany(t => downloads[t.Hash].Select(ed => new ExternalDownloadContent(ed, t)))
+            .ToList();
 
-            (UploadStates.Contains(tInfo.State) ? inUploadState : queuedForSignalR).Add(new QBitTorrent(request, tInfo));
-        }
+        var toProcessFinishedContentHashes = content
+            .Where(c => UploadStates.Contains(c.TorrentInfo.State))
+            .Where(c => !_cleanupTorrents.ContainsKey(c.Id))
+            .Select(c => c.Id)
+            .ToHashSet();
 
-        var uploadHashes = inUploadState.Select(t => t.Id).ToList();
-        var nonImportedUploads = await unitOfWork.ImportedReleaseRepository.FilterReleases(uploadHashes);
-        if (nonImportedUploads.Count == 0)
-        {
-            await UpdateUi(messageService, queuedForSignalR);
-            return;
-        }
+        await UpdateUi(messageService, content);
 
-        var dict = inUploadState.ToDictionary(t => t.Id);
-
-        foreach (var id in nonImportedUploads)
-        {
-            if (!dict.TryGetValue(id, out var torrent))
-                continue;
-
-            EnqueueForCleanup(torrent);
-
-            queuedForSignalR.Add(torrent);
-        }
-
-        await UpdateUi(messageService, queuedForSignalR);
+        foreach (var id in toProcessFinishedContentHashes.Where(id => _cleanupTorrents.TryAdd(id, true)))
+            BackgroundJob.Enqueue(() => CleanupTorrent(id, CancellationToken.None));
     }
 
-    private static async Task UpdateUi(IMessageService messageService, List<QBitTorrent> torrents)
+    private static async Task UpdateUi(IMessageService messageService, List<ExternalDownloadContent> torrents)
     {
         var groups = torrents.GroupBy(t => t.Request.UserId);
 

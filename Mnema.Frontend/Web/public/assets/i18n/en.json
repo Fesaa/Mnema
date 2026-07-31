@@ -1376,6 +1376,14 @@
     "title": "Edit Page Defaults: {{page}}",
     "close": "{{common.close}}",
     "save": "{{common.save}}"
+  },
+
+  "delete-download-modal": {
+    "title": "Remove download",
+    "confirm-message": "Are you certain you want to stop downloading {{title}}",
+    "remove-from-download-client": "Remove from download client (Deletes files if last download for the entry)",
+    "cancel": "{{common.cancel}}",
+    "confirm": "{{common.confirm}}"
   }
 
 }

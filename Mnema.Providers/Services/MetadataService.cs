@@ -37,6 +37,9 @@ internal class MetadataService : IMetadataService
                 ci.Format = "Special";
             else
                 ci.Number = chapter.ChapterMarker;
+
+            if (!string.IsNullOrEmpty(chapter.Isbn))
+                ci.Isbn = chapter.Isbn;
         }
 
         foreach (var role in Enum.GetValues<PersonRole>())
