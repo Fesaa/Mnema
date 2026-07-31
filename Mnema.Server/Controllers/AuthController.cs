@@ -5,11 +5,12 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mnema.API.Services;
 using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
 
-public class AuthController : BaseApiController
+public class AuthController(IPasswordService passwordService) : BaseApiController
 {
     [AllowAnonymous]
     [HttpPost("login")]
@@ -18,13 +19,12 @@ public class AuthController : BaseApiController
         var form = await Request.ReadFormAsync();
         if (!form.TryGetValue("password", out var password))
         {
-            return BadRequest();
+            return Redirect("/login.html?error=invalid_password");
         }
 
-        // TODO: Replace with actual password
-        if (password != "password")
+        if (!await passwordService.VerifyHashedPassword(password.FirstOrDefault() ?? string.Empty))
         {
-            return BadRequest();
+            return Redirect("/login.html?error=invalid_password");
         }
 
         var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -37,10 +37,12 @@ public class AuthController : BaseApiController
         return Redirect("/");
     }
 
+    [AllowAnonymous]
     [HttpGet("logout")]
     public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
         return Redirect("/");
     }
 }

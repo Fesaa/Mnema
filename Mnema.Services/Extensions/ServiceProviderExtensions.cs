@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.API.Services;
 using Mnema.Models.Entities;
 using Mnema.Services.Connections;
 using Mnema.Services.Hubs;
@@ -41,6 +42,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<IProviderSettingsService, ProviderSettingsService>();
         services.AddScoped<IGroupedReleaseDetector, GroupedReleaseDetector>();
+        services.AddScoped<IPasswordService, PasswordService>();
 
         #region External Connection
 

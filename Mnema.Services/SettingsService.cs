@@ -89,6 +89,8 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                 case ServerSettingKey.ImageConversionQuality:
                     dto.ImageConversionQuality = DeserializeSetting<int>(serverSetting);
                     break;
+                case ServerSettingKey.Password:
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
                         "Unknown server settings key");
@@ -116,6 +118,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                 ServerSettingKey.AutoDisableAfter => dto.AutoDisableProviderAfter,
                 ServerSettingKey.ImageConversionLossLess => dto.ImageConversionLossless,
                 ServerSettingKey.ImageConversionQuality => dto.ImageConversionQuality,
+                ServerSettingKey.Password => null,
                 _ => throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
                     "Unknown server settings key")
             };
@@ -143,6 +146,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             ServerSettingKey.AutoDisableAfter => int.Parse(setting.Value),
             ServerSettingKey.ImageConversionLossLess => bool.Parse(setting.Value),
             ServerSettingKey.ImageConversionQuality => int.Parse(setting.Value),
+            ServerSettingKey.Password => setting.Value,
             _ => default(T)
         };
 
@@ -170,6 +174,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             ServerSettingKey.AutoDisableAfter => setting.ToString(),
             ServerSettingKey.ImageConversionLossLess => setting.ToString(),
             ServerSettingKey.ImageConversionQuality => setting.ToString(),
+            ServerSettingKey.Password => setting.ToString(),
             _ => throw new ArgumentException($"[SerializeSetting] No converter found for key {key}")
         } ?? string.Empty;
     }
@@ -202,6 +207,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             { ServerSettingKey.AutoDisableAfter, typeof(int)},
             { ServerSettingKey.ImageConversionLossLess, typeof(bool) },
             { ServerSettingKey.ImageConversionQuality, typeof(int) },
+            { ServerSettingKey.Password, typeof(string) },
         };
     }
 }

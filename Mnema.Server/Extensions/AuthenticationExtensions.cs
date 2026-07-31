@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,8 +24,7 @@ public static class AuthenticationExtensions
     public const string OpenIdConnect = nameof(OpenIdConnect);
     public const string NoAuthentication = nameof(NoAuthentication);
 
-    public static IServiceCollection AddAuthentication(this IServiceCollection services, IConfiguration configuration,
-        IWebHostEnvironment environment)
+    public static IServiceCollection AddAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDataProtection()
             .PersistKeysToDbContext<MnemaDataContext>()

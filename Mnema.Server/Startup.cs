@@ -14,12 +14,14 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi;
+using Mnema.API;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Http;
 using Mnema.Database.Extensions;
 using Mnema.Metadata.Extensions;
 using Mnema.Models;
+using Mnema.Models.Entities;
 using Mnema.Models.Internal;
 using Mnema.Providers.Extensions;
 using Mnema.Server.Configuration;
@@ -140,7 +142,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddMnemaDatabase(configuration);
         services.AddDatabaseServices();
         services.AddAndConfigureHangFire(configuration);
-        services.AddAuthentication(configuration, env);
+        services.AddAuthentication(configuration);
     }
 
     public void Configure(IApplicationBuilder app, IServiceProvider serviceProvider)
@@ -191,6 +193,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             DefaultRecordsPerPage = 10
         });
 
+        app.UseMiddleware<PasswordGuardMiddleware>();
         app.UseStaticFiles(new StaticFileOptions
         {
             HttpsCompression = HttpsCompressionMode.Compress,

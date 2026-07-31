@@ -10,7 +10,6 @@ using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 
 namespace Mnema.Database;
@@ -30,6 +29,7 @@ public static class Seed
         new() { Key = ServerSettingKey.AutoDisableAfter, Value = "5"},
         new() { Key = ServerSettingKey.ImageConversionLossLess, Value = "false"},
         new() { Key = ServerSettingKey.ImageConversionQuality, Value = "80"},
+        new() { Key = ServerSettingKey.Password, Value = ""},
     ];
 
     public static async Task SeedDatabase(this MnemaDataContext ctx)
