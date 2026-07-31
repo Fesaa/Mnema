@@ -1,0 +1,39 @@
+<ng-container *transloco="let t; prefix: 'delete-download-modal'">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h5 class="modal-title">{{t('title')}}</h5>
+      <button type="button" class="btn-close" [attr.aria-label]="t('close')" (click)="close()">
+      </button>
+    </div>
+
+    <div class="modal-body scrollable-modal">
+      <p class="mb-3">
+        {{ t('confirm-message', {title: info().name}) }}
+      </p>
+
+      @if (info().provider === Provider.NYAA) {
+        <div class="form-check form-switch">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            id="removeFromDownloadClient"
+            [(ngModel)]="removeFromDownloadClient"
+          />
+          <label class="form-check-label" for="removeFromDownloadClient">
+            {{ t('remove-from-download-client') }}
+          </label>
+        </div>
+      }
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="close()">
+        {{t('cancel')}}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="confirm()">
+        <span>{{ t('confirm')}}</span>
+      </button>
+    </div>
+  </div>
+</ng-container>

@@ -22,4 +22,5 @@ export type StopRequest = {
   provider: Provider;
   id: string;
   delete: boolean;
+  deleteFromDownloadClient: boolean;
 }
