@@ -133,7 +133,10 @@ internal class RawFileCleanupService(
         if (externalDownload == null)
             throw new MnemaException($"Failed to find external download {externalDownloadId.Value} linked to {context.Title}");
 
-        return externalDownload.Files.Select(f => Path.Join(context.DownloadDirectory, f.FullPath)).ToList();
+        return externalDownload.Files
+            .Where(f => f.Selected)
+            .Select(f => Path.Join(context.DownloadDirectory, f.FullPath))
+            .ToList();
 
         bool Filter(Regex ext, string f)
         {
