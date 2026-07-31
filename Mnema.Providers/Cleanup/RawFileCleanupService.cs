@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -166,6 +167,7 @@ internal class RawFileCleanupService(
         var ignoreNonMatched = context.Request.Metadata.GetKey(RequestConstants.IgnoreNonMatchedVolumes);
 
         logger.LogDebug("Processing file {FileName} for cleanup", sourceFile);
+        var sw = Stopwatch.StartNew();
 
         var fileName = fileSystem.Path.GetFileName(sourceFile);
         var resolution = metadataResolver.ResolveChapter(fileName, context.Series, context.ContentFormat);
@@ -196,6 +198,8 @@ internal class RawFileCleanupService(
         var coverUrl = resolution.ChapterEntity?.CoverUrl ?? context.Series?.CoverUrl;
 
         await HandleFormatAsync(context, sourceFile, destPath, coverUrl, comicInfo);
+
+        logger.LogDebug("Finished processing file {FileName} for cleanup in {Seconds}s", sourceFile, sw.Elapsed.TotalSeconds);
     }
 
     private string BuildChapterFileName(string title, ChapterResolutionResult resolution)
