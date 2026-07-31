@@ -38,6 +38,7 @@ internal partial class WebtoonRepository(
     private const string format = "dddd, dd MMM yyyy HH:mm:ss 'GMT'";
     private static readonly XmlSerializer XmlSerializer = new(typeof(RssFeed));
 
+    private static readonly IMetadataKey<string> SearchType = MetadataKeys.String("search_type", "originals");
     private static readonly IMetadataKey<bool> ForceIndexChapterNumbers = MetadataKeys.Bool("forceIndexChapterNumbers");
 
     private HttpClient Client => httpClientFactory.CreateClient(nameof(Provider.Webtoons));
@@ -45,7 +46,7 @@ internal partial class WebtoonRepository(
     public async Task<PagedList<SearchResult>> Search(SearchRequest request, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
-        var url = ("en/search/" + request.Modifiers.GetStringOrDefault("search_type", "originals"))
+        var url = ("en/search/" + request.GetKey(SearchType))
             .SetQueryParam("keyword", request.Query)
             .SetQueryParam("page", pagination.PageNumber + 1); // Webtoons is 1 indexed
 
@@ -309,7 +310,7 @@ internal partial class WebtoonRepository(
             new()
             {
                 Type = FormType.DropDown,
-                Key = "search_type",
+                Key = SearchType.Key,
                 Options =
                 [
                     FormControlOption.DefaultOption("originals", "Originals"),

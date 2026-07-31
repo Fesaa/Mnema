@@ -35,7 +35,7 @@ public class MetadataBag : GenericBag<string>
     }
 
     [return:NotNullIfNotNull(nameof(fallback))]
-    public string? GetStringOrDefault(string key, string? fallback)
+    internal string? GetStringOrDefault(string key, string? fallback)
     {
         var value = GetString(key);
 

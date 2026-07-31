@@ -24,6 +24,8 @@ public class NyaaRepository(
 
     private static readonly XmlSerializer XmlSerializer = new(typeof(RssFeed));
     private const string DateTimeFormat = "ddd, dd MMM yyyy HH:mm:ss '-0000'";
+    private static readonly IMetadataKey<string> Category = MetadataKeys.String("category", "3_1");
+    private static readonly IMetadataKey<string> Filter = MetadataKeys.String("filter", "0");
 
     private HttpClient HttpClient => httpClientFactory.CreateClient(nameof(Provider.Nyaa));
 
@@ -31,8 +33,8 @@ public class NyaaRepository(
     {
         var url = "/"
             .SetQueryParam("page", "rss")
-            .SetQueryParam("c", request.Modifiers.GetStringOrDefault("category", "3_1"))
-            .SetQueryParam("f", request.Modifiers.GetStringOrDefault("filter", "0"))
+            .SetQueryParam("c", request.GetKey(Category))
+            .SetQueryParam("f", request.GetKey(Filter))
             .SetQueryParam("q", request.Query);
 
         var stream = await HttpClient.GetStreamAsync(url, cancellationToken);
