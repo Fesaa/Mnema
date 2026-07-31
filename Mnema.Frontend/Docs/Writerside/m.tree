@@ -8,7 +8,7 @@
 
     <toc-element topic="Overview.md"/>
     <toc-element topic="Set-up.md"/>
-    <toc-element topic="OpenId-Connect.md"/>
+    <toc-element topic="First-Start-Up.md"/>
     <toc-element topic="Settings.md">
         <toc-element topic="Preferences.md"/>
         <toc-element topic="Pages.md"/>

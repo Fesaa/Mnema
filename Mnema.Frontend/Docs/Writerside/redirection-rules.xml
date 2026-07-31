@@ -10,4 +10,8 @@
         <description>Created after removal of "About Mnema" from Mnema</description>
         <accepts>mnema.html</accepts>
     </rule>
+    <rule id="3f2abd50">
+        <description>Created after removal of "OpenID Connect" from Mnema</description>
+        <accepts>OpenId-Connect.html</accepts>
+    </rule>
 </rules>
