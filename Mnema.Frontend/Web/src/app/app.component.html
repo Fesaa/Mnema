@@ -1,6 +1,7 @@
 <div *transloco="let t;">
   <div class="app-container"
-       [class.with-sidebar]="utilityService.breakPoint() > Breakpoint.Mobile && showNavBar()">
+       [class.with-sidebar]="utilityService.breakPoint() > Breakpoint.Mobile && showNavBar()"
+       [class.hide-layout]="hideLayout()">
     <app-nav-header></app-nav-header>
 
     <main class="main-content">

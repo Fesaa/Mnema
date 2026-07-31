@@ -31,6 +31,21 @@ public class ConfigController(ILogger<ConfigController> logger, ISettingsService
         return Ok();
     }
 
+    [HttpGet("is-setup")]
+    [AllowAnonymous]
+    public async Task<bool> IsSetup()
+    {
+        var passwordSetting = await unitOfWork.SettingsRepository.GetSettingsAsync(ServerSettingKey.Password);
+        return !string.IsNullOrEmpty(passwordSetting.Value);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("is-authenticated")]
+    public bool IsAuthenticated()
+    {
+        return User.Identity?.IsAuthenticated ?? false;
+    }
+
     [AllowAnonymous]
     [HttpPost("set-password")]
     public async Task<ActionResult> SetPassword()

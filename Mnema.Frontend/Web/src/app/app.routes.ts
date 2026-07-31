@@ -1,9 +1,16 @@
-import {Routes} from '@angular/router';
+import { Routes } from '@angular/router';
+import { setupGuard } from './_guards/setup.guard';
+import { authGuard } from './_guards/auth.guard';
+import { setupCompleteGuard } from './_guards/setup-complete.guard';
+import { loggedOutGuard } from './_guards/logged-out.guard';
+import {InitialSetupComponent} from "@mnema/authentication/initial-setup/initial-setup.component";
+import {LoginComponent} from "@mnema/authentication/login/login.component";
 
 export const routes: Routes = [
   {
     path: '',
     runGuardsAndResolvers: 'always',
+    canActivate: [setupGuard, authGuard],
     children: [
       {
         path: 'home',
@@ -17,11 +24,23 @@ export const routes: Routes = [
         path: 'settings',
         loadChildren: () => import('./_routes/settings.routes').then(m => m.routes)
       },
-      {path: '', pathMatch: 'full', redirectTo: 'home'},
+      { path: '', pathMatch: 'full', redirectTo: 'home' },
       {
         path: '',
         loadChildren: () => import('./_routes/extra.routes').then(m => m.routes)
       }
     ]
+  },
+  {
+    path: 'initial-setup',
+    canActivate: [setupCompleteGuard],
+    component: InitialSetupComponent,
+    data: { hideLayout: true }
+  },
+  {
+    path: 'login',
+    canActivate: [loggedOutGuard],
+    component: LoginComponent,
+    data: { hideLayout: true }
   },
 ];

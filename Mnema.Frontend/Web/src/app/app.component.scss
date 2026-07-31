@@ -14,7 +14,7 @@
     }
   }
 
-  &:not(.with-sidebar) {
+  &:not(.with-sidebar, .hide-layout) {
     .main-content {
       padding: 1rem;
     }

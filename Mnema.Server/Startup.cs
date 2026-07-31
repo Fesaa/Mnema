@@ -193,7 +193,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             DefaultRecordsPerPage = 10
         });
 
-        app.UseMiddleware<PasswordGuardMiddleware>();
         app.UseStaticFiles(new StaticFileOptions
         {
             HttpsCompression = HttpsCompressionMode.Compress,

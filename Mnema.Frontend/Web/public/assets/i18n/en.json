@@ -3,6 +3,29 @@
     "name": "Mnema"
   },
 
+  "login": {
+    "brandName": "Mnema",
+    "passwordLabel": "Password",
+    "errorWrongPassword": "Wrong password. Try again.",
+    "unlockBtn": "Login",
+    "footnote": "Self-hosted with Mnema"
+  },
+
+  "setup": {
+    "welcome": "Hello.",
+    "tagline": "Welcome to <strong>Mnema</strong>. Pick a password.",
+    "passwordLabel": "Password",
+    "passwordHint": "At least 8 characters.",
+    "confirmLabel": "Confirm password",
+    "submitBtn": "Set password",
+    "submittingBtn": "Setting password…",
+    "footnote": "This is only asked once, on first setup.",
+    "errors": {
+      "weak": "Password needs to be at least 8 characters.",
+      "mismatch": "Those passwords don't match."
+    }
+  },
+
   "common": {
     "edit": "Edit",
     "close": "Close",
@@ -321,27 +344,6 @@
     "settings": "Settings",
     "sign-out": "Log out",
     "navigation": "Navigation"
-  },
-
-  "login": {
-    "application-name": "{{application.name}}",
-    "sign-in": "Sign in",
-    "back-to-sign-in": "Back to Sign in",
-    "placeholder-reset": "Enter your new password",
-    "register": "Register",
-    "username": "{{shared.username}}",
-    "password": "{{shared.password}}",
-    "remember-me": "Remember me for 7 days",
-    "reset-password": "Reset {{shared.password}}",
-    "or": "Or",
-    "sign-in-with-oidc": "Sign in with OIDC",
-    "welcome-tagline": "Access your account securely and quickly",
-    "toasts": {
-      "login-failed": {
-        "title": "Error",
-        "summary": "Check your credentials"
-      }
-    }
   },
 
   "dashboard": {

@@ -19,12 +19,12 @@ public class AuthController(IPasswordService passwordService) : BaseApiControlle
         var form = await Request.ReadFormAsync();
         if (!form.TryGetValue("password", out var password))
         {
-            return Redirect("/login.html?error=invalid_password");
+            return Redirect("/login?error=invalid_password");
         }
 
         if (!await passwordService.VerifyHashedPassword(password.FirstOrDefault() ?? string.Empty))
         {
-            return Redirect("/login.html?error=invalid_password");
+            return Redirect("/login?error=invalid_password");
         }
 
         var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);

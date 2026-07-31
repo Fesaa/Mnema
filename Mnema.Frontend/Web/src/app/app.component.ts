@@ -1,5 +1,5 @@
 import {Component, DestroyRef, HostListener, inject, OnInit} from '@angular/core';
-import {RouterOutlet} from '@angular/router';
+import {NavigationEnd, Router, RouterOutlet} from '@angular/router';
 import {NavHeaderComponent} from "./nav-header/nav-header.component";
 import {Title} from "@angular/platform-browser";
 import {Event, EventType, SignalRService} from "./_services/signal-r.service";
@@ -7,8 +7,8 @@ import {Notification, NotificationColour} from "./_models/notifications";
 import {ToastrService} from "ngx-toastr";
 import {Breakpoint, UtilityService} from "./_services/utility.service";
 import {translate, TranslocoDirective, TranslocoService} from "@jsverse/transloco";
-import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {tap} from "rxjs";
+import {takeUntilDestroyed, toSignal} from "@angular/core/rxjs-interop";
+import {filter, map, tap} from "rxjs";
 import {ActiveDownloadsService} from "./dashboard/active-downloads/active-downloads.service";
 import {NotificationService} from "./_services/notification.service";
 import {NavService} from "@mnema/_services/nav.service";
@@ -30,6 +30,21 @@ export class AppComponent implements OnInit {
   private readonly activeDownloadService = inject(ActiveDownloadsService);
   private readonly notificationService = inject(NotificationService);
   private readonly navService = inject(NavService);
+  private readonly router = inject(Router);
+
+  readonly hideLayout = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map(() => {
+        let route = this.router.routerState.root;
+        while (route.firstChild) {
+          route = route.firstChild;
+        }
+        return route.snapshot.data['hideLayout'] === true;
+      })
+    ),
+    { initialValue: false }
+  );
 
   protected showNavBar = this.navService.showNav;
 
