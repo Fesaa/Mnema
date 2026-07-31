@@ -740,6 +740,14 @@
         "label": "Auto disable provider after",
         "tooltip": "After how many consecutive failure should a provider be disabled (removed from automatic search)"
       },
+      "image-conversion-quality": {
+        "label": "Image Conversion Quality",
+        "tooltip": "At which quality are images converted. Default: 80"
+      },
+      "image-conversion-lossless": {
+        "label": "Convert images lossless",
+        "tooltip": "Should images be converted lossless. Default: false"
+      },
       "save": "Save",
       "toasts": {
         "save": {
