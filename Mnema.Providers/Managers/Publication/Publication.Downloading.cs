@@ -35,7 +35,6 @@ internal sealed record DownloadWork(int Idx, DownloadUrl Url);
 internal sealed record DownloadContext
 {
     public ChannelReader<DownloadWork> Reader { get; set; }
-    public ChannelWriter<IoWork> Writer { get; init; }
     public Chapter Chapter { get; init; }
     public SemaphoreSlim? ChapterBarrier { get; init; }
 }
@@ -122,18 +121,10 @@ internal partial class Publication
             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
             QueueLimit = 10000
         });
-        var maxImages = _settings.MaxConcurrentImages;
-
-        var ioChannel = Channel.CreateBounded<IoWork>(maxImages * 2);
-
-        var workers = Enumerable.Range(0, maxImages * 2).Select(_ => IoWorker(ioChannel)).ToList();
-        workers.Add(ProcessDownloads(ioChannel));
 
         _ = Task.Run(SignalRUpdateLoop, _tokenSource.Token);
 
-        _ioTask = Task.WhenAll(workers);
-
-        await _ioTask;
+        await ProcessDownloads();
 
         _logger.LogInformation("[{Title}/{Id}] Downloaded all chapters in {Elapsed}ms",
             Title, Id, sw.ElapsedMilliseconds);
@@ -144,60 +135,30 @@ internal partial class Publication
         await _publicationManager.StopDownload(StopRequest(false));
     }
 
-    private async Task IoWorker(Channel<IoWork> channel)
-    {
-        await foreach (var ioWork in channel.Reader.ReadAllAsync(_tokenSource.Token))
-            try
-            {
-                await _ioHandler.HandleIoWork(Title, Id, ioWork, _tokenSource);
-                ioWork.ChapterBarrier?.Release();
-            }
-            catch (TaskCanceledException)
-            {
-                /* Ignored */
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[{Title}/{Id}] An exception occured while handling I/O", Title, Id);
-                await Cancel(ex);
-            }
-    }
-
-    private async Task ProcessDownloads(Channel<IoWork> channel)
+    private async Task ProcessDownloads()
     {
         var sw = Stopwatch.StartNew();
 
-        try
+        foreach (var chapterId in QueuedChapters)
         {
-            foreach (var chapterId in QueuedChapters)
+            if (_tokenSource.Token.IsCancellationRequested) break;
+
+            var chapter = Series!.Chapters.FirstOrDefault(c => c.Id == chapterId);
+            if (chapter == null)
             {
-                if (_tokenSource.Token.IsCancellationRequested) break;
-
-                var chapter = Series!.Chapters.FirstOrDefault(c => c.Id == chapterId);
-                if (chapter == null)
-                {
-                    _logger.LogWarning("[{Title}/{Id}] Not downloading chapter with id {ChapterId}, no matching info found", Title, Id, chapterId);
-                    continue;
-                }
-
-                await DownloadChapter(channel, chapter);
-                await _messageService.UpdateContent(Request.UserId, DownloadInfo);
+                _logger.LogWarning("[{Title}/{Id}] Not downloading chapter with id {ChapterId}, no matching info found", Title, Id, chapterId);
+                continue;
             }
 
-            _logger.LogDebug("[{Title}/{Id}] All content has been downloaded in {Elapsed}ms, waiting for I/O to complete",
-                Title, Id, sw.ElapsedMilliseconds);
+            await DownloadChapter(chapter);
+            await _messageService.UpdateContent(Request.UserId, DownloadInfo);
         }
-        catch (Exception ex)
-        {
-            channel.Writer.TryComplete(ex);
-        }
-        finally
-        {
-            channel.Writer.TryComplete();
-        }
+
+        _logger.LogDebug("[{Title}/{Id}] All content has been downloaded in {Elapsed}ms, waiting for I/O to complete",
+            Title, Id, sw.ElapsedMilliseconds);
     }
 
-    private async Task DownloadChapter(Channel<IoWork> channel, Chapter chapter)
+    private async Task DownloadChapter(Chapter chapter)
     {
         var urls = await _repository.ChapterUrls(Request.Metadata, chapter, _tokenSource.Token);
 
@@ -238,7 +199,6 @@ internal partial class Publication
             .Select(_ => DownloadWorker(new DownloadContext
             {
                 Reader = urlChannel.Reader,
-                Writer = channel.Writer,
                 Chapter = chapter,
                 ChapterBarrier = pendingIo
             })));
@@ -306,18 +266,19 @@ internal partial class Publication
 
             try
             {
-                var stream = await client.GetStreamAsync(url);
-
-                _speedTracker!.IncrementIntermediate();
-
-                await ctx.Writer.WriteAsync(new IoWork(
+                await using var stream = await client.GetStreamAsync(url);
+                var work = new IoWork(
                     Preferences,
                     stream,
                     ChapterPath(ctx.Chapter),
                     url,
                     task.Idx,
                     task.Url.Format,
-                    ctx.ChapterBarrier));
+                    ctx.ChapterBarrier);
+
+                await _ioHandler.HandleIoWork(Title, Id, work, _tokenSource);
+
+                _speedTracker!.IncrementIntermediate();
             }
             catch (Exception ex)
             {
