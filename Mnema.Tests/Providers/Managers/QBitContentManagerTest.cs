@@ -73,6 +73,7 @@ public partial class QBitContentManagerTest(ITestOutputHelper testOutputHelper):
         serviceProvider.GetService(typeof(IMetadataResolver)).Returns(metadataResolver);
 
         var scope = Substitute.For<IServiceScope>();
+        scope.ServiceProvider.Returns(serviceProvider);
 
         var scopeFactory = Substitute.For<IServiceScopeFactory>();
         scopeFactory.CreateScope().Returns(scope);

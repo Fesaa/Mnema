@@ -41,14 +41,13 @@ public partial class QBitContentManagerTest
         var (unitOfWork, _, _) = await CreateDatabase();
         var service = CreateServices(unitOfWork);
 
-
-
         service.QBitClient.GetTorrentsAsync(Arg.Any<TorrentListQuery>(), Arg.Any<CancellationToken>())
             .Returns([new TorrentInfo() { Hash = SpiceAndWolfHash }]);
 
         await service.QBitContentManager.Download(CreateDownloadRequestDto(new MetadataBag()
         {
-            [RequestConstants.IsGroupedDownload.Key] = ["true"]
+            [RequestConstants.IsGroupedDownload.Key] = ["true"],
+            [RequestConstants.HardcoverSeriesIdKey.Key] = ["53521"]
         }));
     }
 
