@@ -54,6 +54,7 @@ public class PublicationLoadingTests
         col.AddScoped<INamingService>(_ => new NamingService(Substitute.For<ILogger<NamingService>>(), new ApplicationConfiguration(), new ParserService()));
         col.AddKeyedScoped<IIoHandler>(provider, (_,_) => Substitute.For<IIoHandler>());
         col.AddScoped<IMetadataResolver>(_ => Substitute.For<IMetadataResolver>());
+        col.AddScoped<IParserService>(_ => new ParserService());
 
         var scope = col.BuildServiceProvider().CreateScope();
 
