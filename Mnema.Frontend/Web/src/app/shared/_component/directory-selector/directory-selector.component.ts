@@ -152,7 +152,6 @@ export class DirectorySelectorComponent implements OnInit {
       }),
       catchError(err => {
         this.routeStack.pop();
-        this.toastService.genericError(err.error.message);
         return of(null);
       })
     )

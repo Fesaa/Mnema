@@ -7,7 +7,7 @@ import {DownloadRequest, MetadataBag} from "../../../_models/search";
 import {ContentService} from "../../../_services/content.service";
 import {ToastService} from "../../../_services/toast.service";
 import {FormControlDefinition, FormDefinition} from "../../../generic-form/form";
-import {catchError, tap} from "rxjs";
+import {tap} from "rxjs";
 import {GenericFormComponent} from "../../../generic-form/generic-form.component";
 import {GenericFormFactoryService} from "../../../generic-form/generic-form-factory.service";
 
@@ -104,10 +104,6 @@ export class DownloadModalComponent implements OnInit {
     this.contentService.download(req).pipe(
       tap(() => this.saving.set(false)),
       tap(() => this.toastService.successLoco("page.download-dialog.toasts.download-success", {}, {name: this.info().name})),
-      catchError(err => {
-        this.toastService.genericError(err.error.message);
-        throw err;
-      }),
       tap(() => this.close())
     ).subscribe();
 

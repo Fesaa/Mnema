@@ -102,7 +102,6 @@ export class PagesSettingsComponent {
     this.pageService.orderPages(pages.map(p => p.id)).pipe(
       switchMap(() => this.pageService.refreshPages()),
       catchError(err => {
-        this.toastService.genericError(err.error.message);
         this.pages.set(copy);
         return of(pages);
       }),

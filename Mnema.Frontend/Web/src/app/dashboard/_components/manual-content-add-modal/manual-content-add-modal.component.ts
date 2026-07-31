@@ -6,7 +6,7 @@ import {DefaultModalOptions} from "../../../_models/default-modal-options";
 import {FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
 import {InUseProviders, Provider} from "../../../_models/page";
 import {PageService} from "../../../_services/page.service";
-import {catchError, of, tap} from "rxjs";
+import {finalize, tap} from "rxjs";
 import {SettingsItemComponent} from "../../../shared/form/settings-item/settings-item.component";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {DefaultValuePipe} from "../../../_pipes/default-value.pipe";
@@ -56,8 +56,6 @@ export class ManualContentAddModalComponent {
     const data = this.form.getRawValue();
     this.pageService.metadata(data.provider).pipe(
       tap(metadata => {
-        this.close();
-
         const [_, component] = this.modalService.open(DownloadModalComponent, DefaultModalOptions);
         component.metadataFormDefinition.set(metadata);
         component.defaultDir.set('');
@@ -75,10 +73,7 @@ export class ManualContentAddModalComponent {
           monitoredSeriesId: [],
         });
       }),
-      catchError(() => {
-        this.close();
-        return of(null);
-      })
+      finalize(() => this.close()),
     ).subscribe();
   }
 

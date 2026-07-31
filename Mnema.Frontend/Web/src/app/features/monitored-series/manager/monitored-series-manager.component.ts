@@ -5,7 +5,7 @@ import {PageService} from "@mnema/_services/page.service";
 import {dropAnimation} from "@mnema/_animations/drop-animation";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {catchError, debounceTime, distinctUntilChanged, EMPTY, tap} from "rxjs";
+import {debounceTime, distinctUntilChanged, tap} from "rxjs";
 import {Provider} from "@mnema/_models/page";
 import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 import {PaginatorComponent} from "@mnema/shared/_component/paginator/paginator.component";
@@ -120,10 +120,6 @@ export class MonitoredSeriesManagerComponent implements OnInit {
       tap(() => {
         this.toastService.successLoco('monitored-series.calendar.link-copied');
       }),
-      catchError(err => {
-        this.toastService.errorLoco('monitored-series.calendar.link-failure', {}, {msg: err.message});
-        return EMPTY;
-      })
     ).subscribe();
   }
 

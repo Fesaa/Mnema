@@ -8,7 +8,7 @@ import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {LoadingSpinnerComponent} from "../../../shared/_component/loading-spinner/loading-spinner.component";
 import {NgTemplateOutlet} from "@angular/common";
 import {BadgeComponent} from "../../../shared/_component/badge/badge.component";
-import {catchError, finalize, tap} from "rxjs";
+import {finalize, tap} from "rxjs";
 
 @Component({
   selector: 'app-content-picker-dialog',
