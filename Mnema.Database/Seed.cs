@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Mnema.Common;
+using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
@@ -41,6 +43,7 @@ public static class Seed
 
         await SeedMetadataProviderSettings(ctx);
         await SeedProviderSettings(ctx);
+        await RemoveDeprecatedProviders(ctx);
     }
 
     private static async Task SeedMetadataProviderSettings(MnemaDataContext ctx)
@@ -86,5 +89,17 @@ public static class Seed
         }
 
         await ctx.SaveChangesAsync();
+    }
+
+    private static async Task RemoveDeprecatedProviders(MnemaDataContext ctx)
+    {
+        var deprecatedProviders = typeof(Provider).GetFields()
+            .Where(f => f.GetCustomAttribute<ObsoleteAttribute>() != null)
+            .Select(f => (Provider?)f.GetValue(null))
+            .WhereNotNull();
+
+        await ctx.Pages
+            .Where(p => deprecatedProviders.Contains(p.Provider))
+            .ExecuteDeleteAsync();
     }
 }

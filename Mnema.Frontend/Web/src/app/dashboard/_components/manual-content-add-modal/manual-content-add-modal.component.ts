@@ -4,7 +4,7 @@ import {ModalService} from "../../../_services/modal.service";
 import {DownloadModalComponent} from "../../../page/_components/download-modal/download-modal.component";
 import {DefaultModalOptions} from "../../../_models/default-modal-options";
 import {FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
-import {AllProviders, Provider} from "../../../_models/page";
+import {InUseProviders, Provider} from "../../../_models/page";
 import {PageService} from "../../../_services/page.service";
 import {catchError, of, tap} from "rxjs";
 import {SettingsItemComponent} from "../../../shared/form/settings-item/settings-item.component";
@@ -82,5 +82,5 @@ export class ManualContentAddModalComponent {
     ).subscribe();
   }
 
-  protected readonly AllProviders = AllProviders;
+  protected readonly InUseProviders = InUseProviders;
 }

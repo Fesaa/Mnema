@@ -2,13 +2,9 @@
 
   <h2 class="h2 fw-bold mt-4 mb-3">{{ t('title') }}</h2>
 
-  @for (provider of AllProviders; track provider) {
-
-  }
-
   <app-table
     [trackByIdFunc]="trackBy"
-    [items]="AllProviders"
+    [items]="InUseProviders"
   >
 
     <ng-template #header>

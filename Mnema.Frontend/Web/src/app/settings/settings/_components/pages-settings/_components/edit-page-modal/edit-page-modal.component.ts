@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, inject, model, OnInit} from '@angular/core';
-import {AllProviders, Page} from "../../../../../../_models/page";
+import {InUseProviders, Page} from "../../../../../../_models/page";
 import {NgbActiveModal,} from "@ng-bootstrap/ng-bootstrap";
 import {PageService} from "../../../../../../_services/page.service";
 import {TranslocoDirective} from "@jsverse/transloco";
@@ -85,5 +85,5 @@ export class EditPageModalComponent implements OnInit {
     }).add(() => this.close())
   }
 
-  protected readonly AllProviders = AllProviders;
+  protected readonly InUseProviders = InUseProviders;
 }

@@ -26,5 +26,11 @@ export enum Provider {
   AthreaScans = 9,
 }
 
-export const AllProviders: Provider[] = Object.values(Provider).filter(value => typeof value === 'number') as number[];
-
+export const InUseProviders: Provider[] = [
+  Provider.NYAA,
+  Provider.MANGADEX,
+  Provider.WEBTOON,
+  Provider.DYNASTY,
+  Provider.Madokami,
+  Provider.AthreaScans,
+]

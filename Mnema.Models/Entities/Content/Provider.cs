@@ -14,6 +14,7 @@ public enum Provider
     Weebdex = 5,
     [Obsolete("Dumb anti scraper, not worth my time")]
     Comix = 6,
+    [Obsolete("Perm cloudflare protection")]
     Kagane = 7,
     MadoKami = 8,
     /// <remarks>Forgive me for my transgression, MTL is bad.</remarks>
