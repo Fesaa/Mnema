@@ -39,6 +39,7 @@ function initilizer() {
     filter(b => b),
     switchMap(() => settingService.checkIsAuthenticated()),
     filter(b => b),
+    switchMap(() => settingService.getConfig()),
     switchMap(() => pageService.refreshPages()),
     tap(() => navService.setNavVisibility(true))
   ), { defaultValue: null }).then(() => void 0);

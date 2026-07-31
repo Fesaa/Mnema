@@ -13,6 +13,9 @@ import {GenericFormComponent} from "@mnema/generic-form/generic-form.component";
 import {MetadataProvider} from "@mnema/features/monitored-series/metadata.service";
 import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factory.service";
 import {SettingsSwitchComponent} from "@mnema/shared/form/settings-switch/settings-switch.component";
+import {
+  ProviderSettingsComponent
+} from "@mnema/settings/settings/_components/provider-settings/provider-settings.component";
 
 @Component({
   selector: 'app-server-settings',
@@ -21,7 +24,8 @@ import {SettingsSwitchComponent} from "@mnema/shared/form/settings-switch/settin
     TranslocoDirective,
     SettingsItemComponent,
     GenericFormComponent,
-    SettingsSwitchComponent
+    SettingsSwitchComponent,
+    ProviderSettingsComponent
   ],
   templateUrl: './server-settings.component.html',
   styleUrl: './server-settings.component.scss',
@@ -52,7 +56,7 @@ export class ServerSettingsComponent {
   metadataProvidersFormDefinition = signal<FormDefinition | null>(null);
   metadataProvidersForms = new Map<keyof typeof MetadataProvider, FormGroup>();
 
-  tab: 'general' | 'metadata-provider' = 'general';
+  tab: 'general' | 'metadata-provider' | 'providers' = 'general';
   metadataProviderTab: keyof typeof MetadataProvider = 'Hardcover';
 
   constructor() {

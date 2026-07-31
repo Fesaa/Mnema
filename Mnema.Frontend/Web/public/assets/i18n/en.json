@@ -724,6 +724,7 @@
       "downloader": "Downloader",
       "general": "General",
       "metadata-provider": "Metadata Providers",
+      "providers": "Providers",
       "sub-refresh": {
         "label": "Download subscriptions at",
         "tooltip": "The hour at which subscriptions should run"

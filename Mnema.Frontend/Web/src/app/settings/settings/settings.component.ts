@@ -7,8 +7,6 @@ import {ServerSettingsComponent} from "./_components/server-settings/server-sett
 import {ConnectionSettingsComponent} from "./_components/external-connection-settings/connection-settings.component";
 import {
   Button,
-  ButtonGroup,
-  ButtonGroupKey,
   ButtonGroupService,
   SettingsID
 } from "../../button-grid/button-group.service";
@@ -30,7 +28,7 @@ import {
     DownloadClientSettingsComponent,
     ReleaseBrowserComponent,
     AuthKeysComponent,
-    ProviderSettingsComponent,
+
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']
