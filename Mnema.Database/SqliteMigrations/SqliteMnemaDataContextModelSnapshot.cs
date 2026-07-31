@@ -35,6 +35,38 @@ namespace Mnema.Database.SqliteMigrations
                     b.ToTable("DataProtectionKeys");
                 });
 
+            modelBuilder.Entity("Mnema.Models.Entities.Authentication.AuthKey", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastModifiedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("Roles")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("[]");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuthKeys");
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.Connection", b =>
                 {
                     b.Property<Guid>("Id")
@@ -193,9 +225,6 @@ namespace Mnema.Database.SqliteMigrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ExternalId");
@@ -331,9 +360,6 @@ namespace Mnema.Database.SqliteMigrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
                     b.PrimitiveCollection<string>("ValidTitles")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -379,12 +405,7 @@ namespace Mnema.Database.SqliteMigrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Subscriptions");
                 });
@@ -407,37 +428,42 @@ namespace Mnema.Database.SqliteMigrations
                     b.ToTable("ManualMigrationHistory");
                 });
 
-            modelBuilder.Entity("Mnema.Models.Entities.ProviderSettings", b =>
+            modelBuilder.Entity("Mnema.Models.Entities.Notification", b =>
                 {
-                    b.Property<int>("Provider")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Settings")
-                        .IsRequired()
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("{}");
+                        .HasColumnType("TEXT");
 
-                    b.HasKey("Provider");
+                    b.Property<string>("Body")
+                        .HasColumnType("TEXT");
 
-                    b.ToTable("ProviderSettings");
-                });
-
-            modelBuilder.Entity("Mnema.Models.Entities.ServerSetting", b =>
-                {
-                    b.Property<int>("Key")
+                    b.Property<int>("Colour")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Value")
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastModifiedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Read")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Summary")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Key");
+                    b.HasKey("Id");
 
-                    b.ToTable("ServerSettings");
+                    b.HasIndex("CreatedUtc");
+
+                    b.ToTable("Notifications");
                 });
 
-            modelBuilder.Entity("Mnema.Models.Entities.UI.Page", b =>
+            modelBuilder.Entity("Mnema.Models.Entities.Page", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -472,95 +498,7 @@ namespace Mnema.Database.SqliteMigrations
                     b.ToTable("Pages");
                 });
 
-            modelBuilder.Entity("Mnema.Models.Entities.User.AuthKey", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedUtc")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("LastModifiedUtc")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.PrimitiveCollection<string>("Roles")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("[]");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AuthKeys");
-                });
-
-            modelBuilder.Entity("Mnema.Models.Entities.User.MnemaUser", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Mnema.Models.Entities.User.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Body")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Colour")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedUtc")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("LastModifiedUtc")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("Read")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Summary")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedUtc");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notifications");
-                });
-
-            modelBuilder.Entity("Mnema.Models.Entities.User.UserPreferences", b =>
+            modelBuilder.Entity("Mnema.Models.Entities.Preferences", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -587,16 +525,13 @@ namespace Mnema.Database.SqliteMigrations
                     b.Property<bool>("PinSubscriptionTitles")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
                     b.PrimitiveCollection<string>("WhiteListedTags")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
                         .HasDefaultValue("[]");
 
-                    b.ComplexCollection(typeof(List<Dictionary<string, object>>), "AgeRatingMappings", "Mnema.Models.Entities.User.UserPreferences.AgeRatingMappings#AgeRatingMappingDto", b1 =>
+                    b.ComplexCollection(typeof(List<Dictionary<string, object>>), "AgeRatingMappings", "Mnema.Models.Entities.Preferences.AgeRatingMappings#AgeRatingMappingDto", b1 =>
                         {
                             b1.IsRequired();
 
@@ -610,7 +545,7 @@ namespace Mnema.Database.SqliteMigrations
                                 .HasColumnType("TEXT");
                         });
 
-                    b.ComplexCollection(typeof(List<Dictionary<string, object>>), "TagMappings", "Mnema.Models.Entities.User.UserPreferences.TagMappings#TagMappingDto", b1 =>
+                    b.ComplexCollection(typeof(List<Dictionary<string, object>>), "TagMappings", "Mnema.Models.Entities.Preferences.TagMappings#TagMappingDto", b1 =>
                         {
                             b1.IsRequired();
 
@@ -627,25 +562,37 @@ namespace Mnema.Database.SqliteMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("UserPreferences");
+                    b.ToTable("Preferences");
                 });
 
-            modelBuilder.Entity("MnemaUserPage", b =>
+            modelBuilder.Entity("Mnema.Models.Entities.ProviderSettings", b =>
                 {
-                    b.Property<Guid>("PagesId")
+                    b.Property<int>("Provider")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Settings")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("{}");
+
+                    b.HasKey("Provider");
+
+                    b.ToTable("ProviderSettings");
+                });
+
+            modelBuilder.Entity("Mnema.Models.Entities.ServerSetting", b =>
+                {
+                    b.Property<int>("Key")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("UsersId")
-                        .HasColumnType("TEXT");
+                    b.HasKey("Key");
 
-                    b.HasKey("PagesId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("MnemaUserPage");
+                    b.ToTable("ServerSettings");
                 });
 
             modelBuilder.Entity("Mnema.Models.Entities.Content.MonitoredChapter", b =>
@@ -659,78 +606,9 @@ namespace Mnema.Database.SqliteMigrations
                     b.Navigation("Series");
                 });
 
-            modelBuilder.Entity("Mnema.Models.Entities.Content.Subscription", b =>
-                {
-                    b.HasOne("Mnema.Models.Entities.User.MnemaUser", "User")
-                        .WithMany("Subscriptions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Mnema.Models.Entities.User.AuthKey", b =>
-                {
-                    b.HasOne("Mnema.Models.Entities.User.MnemaUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Mnema.Models.Entities.User.Notification", b =>
-                {
-                    b.HasOne("Mnema.Models.Entities.User.MnemaUser", "User")
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Mnema.Models.Entities.User.UserPreferences", b =>
-                {
-                    b.HasOne("Mnema.Models.Entities.User.MnemaUser", "User")
-                        .WithOne("Preferences")
-                        .HasForeignKey("Mnema.Models.Entities.User.UserPreferences", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("MnemaUserPage", b =>
-                {
-                    b.HasOne("Mnema.Models.Entities.UI.Page", null)
-                        .WithMany()
-                        .HasForeignKey("PagesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Mnema.Models.Entities.User.MnemaUser", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Mnema.Models.Entities.Content.MonitoredSeries", b =>
                 {
                     b.Navigation("Chapters");
-                });
-
-            modelBuilder.Entity("Mnema.Models.Entities.User.MnemaUser", b =>
-                {
-                    b.Navigation("Notifications");
-
-                    b.Navigation("Preferences")
-                        .IsRequired();
-
-                    b.Navigation("Subscriptions");
                 });
 #pragma warning restore 612, 618
         }

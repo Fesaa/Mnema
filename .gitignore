@@ -11,6 +11,7 @@ appsettings.Development.json
 Mnema.sln.DotSettings.user
 *.db
 Mnema.Metadata.Mangabaka.Lucene
+*.tar.gz
 **/bin/
 **/obj/
 *.db-wal
