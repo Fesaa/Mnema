@@ -87,6 +87,8 @@ internal class EpubFormatHandler(ILogger<EpubFormatHandler> logger, IFileSystem 
         UpdateCreators(metadata, info);
         UpdateSeries(metadata, info);
         UpdateTags(metadata, info);
+        UpdateWebLinks(metadata, info);
+        UpdateIsbn(metadata, info);
 
         metadata.GetOrCreateMeta(Opf, "dcterms:modified").Value = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
     }
@@ -153,5 +155,45 @@ internal class EpubFormatHandler(ILogger<EpubFormatHandler> logger, IFileSystem 
         {
             metadata.Add(new XElement(Dc + "subject", genre));
         }
+    }
+
+    private static void UpdateWebLinks(XElement metadata, ComicInfo info)
+    {
+        RemoveIdentifiersByScheme(metadata, "url");
+
+        if (string.IsNullOrWhiteSpace(info.Web)) return;
+
+        var links = info.Web
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct();
+
+        var i = 0;
+        foreach (var link in links)
+        {
+            metadata.Add(new XElement(Dc + "identifier",
+                new XAttribute("id", $"weblink{i++}"),
+                new XAttribute(Opf + "scheme", "url"),
+                link));
+        }
+    }
+
+    private static void UpdateIsbn(XElement metadata, ComicInfo info)
+    {
+        RemoveIdentifiersByScheme(metadata, "isbn");
+
+        if (string.IsNullOrWhiteSpace(info.Isbn)) return;
+
+        var normalized = info.Isbn.Replace("-", string.Empty).Trim();
+        metadata.Add(new XElement(Dc + "identifier",
+            new XAttribute("id", "isbn0"),
+            new XAttribute(Opf + "scheme", "ISBN"),
+            normalized));
+    }
+
+    private static void RemoveIdentifiersByScheme(XElement metadata, string scheme)
+    {
+        metadata.Elements(Dc + "identifier")
+            .Where(e => string.Equals(e.Attribute(Opf + "scheme")?.Value, scheme, StringComparison.OrdinalIgnoreCase))
+            .Remove();
     }
 }

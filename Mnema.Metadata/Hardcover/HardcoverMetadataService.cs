@@ -120,6 +120,7 @@ public class HardcoverMetadataService(
                 Summary = book.Description ?? string.Empty,
                 CoverUrl = book.Image?.Url,
                 RefUrl = $"{HardcoverBaseUrl}/id/book/{book.Id}",
+                Isbn = edition?.Isbn,
                 VolumeMarker = b.Position?.ToString() ?? string.Empty,
                 ChapterMarker = string.Empty,
                 SortOrder = b.Position,

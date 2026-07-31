@@ -18,6 +18,7 @@ public sealed record Chapter: IHasPositionMarkers
     public string? CoverUrl { get; set; }
     public string? CoverFileFormat { get; set; }
     public string? RefUrl { get; set; }
+    public string? Isbn { get; set; }
 
     public DateTime? ReleaseDate { get; set; }
     public IList<Tag> Tags { get; set; } = [];

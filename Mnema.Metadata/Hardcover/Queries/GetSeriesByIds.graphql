@@ -43,6 +43,7 @@ query GetSeriesByIds($ids: [Int!]) {
                 release_year
                 slug
                 editions {
+                    isbn_13
                     language {
                         language
                         code2
