@@ -42,8 +42,6 @@ internal partial class QBitContentManager
             ? await services.UnitOfWork.MonitoredSeriesRepository.GetById(monitoredSeriesId, ct: ct)
             : null;
 
-        var downloadDir = Path.Join(request.BaseDir, title);
-
         var torrentInfo = await services.ScannerService.ParseTorrentFile(request.DownloadUrl, ct);
 
         var normalizedTitles = GetNormalizedTitles(title, series);
@@ -63,17 +61,26 @@ internal partial class QBitContentManager
 
         var externalDownload = await SaveExternalDownloadRecord(services.UnitOfWork, request, title, seriesFiles, toDownload, ct);
 
-        if (toDownload.Count != torrentInfo.Files.Count)
+        try
         {
-            await ApplyTorrentFileFiltersAsync(request.Id, seriesFiles, toDownload, newDownload, ct);
-        }
+            if (toDownload.Count != torrentInfo.Files.Count)
+            {
+                await ApplyTorrentFileFiltersAsync(request.Id, seriesFiles, toDownload, newDownload, ct);
+            }
 
-        if (request.StartImmediately)
+            if (request.StartImmediately)
+            {
+                await qBitClient.ResumeTorrentsAsync([request.Id], ct);
+            }
+
+            await BroadcastDownloadStartedAsync(services, request, series, externalDownload);
+        }
+        catch (Exception ex)
         {
-            await qBitClient.ResumeTorrentsAsync([request.Id], ct);
-        }
+            logger.LogError(ex, "Failed to filter or start download. Aborting");
 
-        await BroadcastDownloadStartedAsync(services, request, series, externalDownload);
+            await services.UnitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id, ct);
+        }
     }
 
     #region Helper Methods

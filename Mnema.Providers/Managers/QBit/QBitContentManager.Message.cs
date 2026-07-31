@@ -75,6 +75,11 @@ internal partial class QBitContentManager
     private async Task FilterContent(string hash, Func<List<string>, List<string>> idsFunc, CancellationToken ct = default)
     {
         var files = await qBitClient.GetTorrentContentsAsync(hash, ct);
+        if (files == null)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5), ct);
+            files = await qBitClient.GetTorrentContentsAsync(hash, ct);
+        }
 
         var currentEnabled = files
             .Where(f => f.Priority != TorrentContentPriority.Skip)
