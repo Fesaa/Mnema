@@ -66,17 +66,16 @@ internal partial class QBitContentManager(
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        if (Guid.TryParse(request.Id, out var id))
+        var externalDownload = await GetExternalDownload(request.Id, CancellationToken.None);
+
+        if (!request.DeleteFromDownloadClient)
         {
-            await unitOfWork.ExternalDownloadRepository.DeleteById(id);
+            await unitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id);
             await messageService.DeleteContent(request.UserId, request.Id);
+            return;
         }
 
-        if (!request.DeleteFromDownloadClient) return;
-
-
-        var externalDownload = await GetExternalDownload(request.Id, CancellationToken.None);
-        var allDownloads = await unitOfWork.ExternalDownloadRepository.GetByExternalId(request.Id);
+        var allDownloads = await unitOfWork.ExternalDownloadRepository.GetByExternalId(externalDownload.ExternalId);
 
         if (allDownloads.Count > 1)
         {
@@ -85,10 +84,14 @@ internal partial class QBitContentManager(
             await FilterContent(externalDownload.ExternalId, currentlySelected => currentlySelected
                 .Except(externalDownload.Files.Select(f => f.FullPath))
                 .ToList(), CancellationToken.None);
-            return;
+        }
+        else
+        {
+            await qBitClient.DeleteTorrentsAsync([externalDownload.ExternalId], true);
         }
 
-        await qBitClient.DeleteTorrentsAsync([externalDownload.ExternalId], true);
+        await unitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id);
+        await messageService.DeleteContent(request.UserId, request.Id);
     }
 
     public async Task<bool> HasContent(Provider provider, string id)
