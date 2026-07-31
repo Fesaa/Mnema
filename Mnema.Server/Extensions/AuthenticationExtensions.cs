@@ -1,19 +1,12 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Mnema.API;
-using Mnema.Common.Exceptions;
 using Mnema.Database;
 using Mnema.Models.Internal;
-using Mnema.Server.Helpers;
 using Mnema.Server.Middleware;
 
 namespace Mnema.Server.Extensions;
@@ -21,7 +14,6 @@ namespace Mnema.Server.Extensions;
 public static class AuthenticationExtensions
 {
     private const string DynamicHybrid = nameof(DynamicHybrid);
-    public const string OpenIdConnect = nameof(OpenIdConnect);
     public const string NoAuthentication = nameof(NoAuthentication);
 
     public static IServiceCollection AddAuthentication(this IServiceCollection services, IConfiguration configuration)

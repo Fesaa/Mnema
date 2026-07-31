@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
@@ -9,10 +10,15 @@ using Mnema.API.Services;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
 using Mnema.Models.Internal;
+using Mnema.Server.Middleware;
 
 namespace Mnema.Server.Controllers;
 
-public class ConfigController(ILogger<ConfigController> logger, ISettingsService settingsService, IUnitOfWork unitOfWork, IPasswordService passwordService) : BaseApiController
+public class ConfigController(
+    ILogger<ConfigController> logger, ISettingsService settingsService,
+    IUnitOfWork unitOfWork, IPasswordService passwordService,
+    IAuthenticationSchemeProvider authenticationSchemeProvider
+    ) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<ServerSettingsDto>> GetSettings()
@@ -35,6 +41,9 @@ public class ConfigController(ILogger<ConfigController> logger, ISettingsService
     [AllowAnonymous]
     public async Task<bool> IsSetup()
     {
+        var noAuthScheme = await authenticationSchemeProvider.GetSchemeAsync(NoAuthAuthenticationSchemeOptions.SchemeName);
+        if (noAuthScheme != null) return true;
+
         var passwordSetting = await unitOfWork.SettingsRepository.GetSettingsAsync(ServerSettingKey.Password);
         return !string.IsNullOrEmpty(passwordSetting.Value);
     }
