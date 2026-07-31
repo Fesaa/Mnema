@@ -60,7 +60,7 @@ public class ImageService : IImageService
             {
                 using var image = Image.NewFromStream(stream);
 
-                image.WebpsaveStream(outputStream, lossless: true, q: 80);
+                image.WebpsaveStream(outputStream, lossless: false, q: 80);
                 break;
             }
             default:
