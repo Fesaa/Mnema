@@ -66,22 +66,29 @@ internal partial class QBitContentManager(
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        var externalDownload = await GetExternalDownload(request.Id, CancellationToken.None);
-        if (externalDownload.Metadata.GetKey(RequestConstants.IsGroupedDownload))
+        if (Guid.TryParse(request.Id, out var id))
         {
-            throw new NotImplementedException();
-        }
-
-        try
-        {
-            await qBitClient.DeleteTorrentsAsync([request.Id], true);
-        }
-        finally
-        {
+            await unitOfWork.ExternalDownloadRepository.DeleteById(id);
             await messageService.DeleteContent(request.UserId, request.Id);
         }
 
-        await unitOfWork.ExternalDownloadRepository.DeleteByExternalId(request.Id);
+        if (!request.DeleteFromDownloadClient) return;
+
+
+        var externalDownload = await GetExternalDownload(request.Id, CancellationToken.None);
+        var allDownloads = await unitOfWork.ExternalDownloadRepository.GetByExternalId(request.Id);
+
+        if (allDownloads.Count > 1)
+        {
+            logger.LogDebug("More than one external download found for hash {Hash}, stopping download of files instead", externalDownload.ExternalId);
+
+            await FilterContent(externalDownload.ExternalId, currentlySelected => currentlySelected
+                .Except(externalDownload.Files.Select(f => f.FullPath))
+                .ToList(), CancellationToken.None);
+            return;
+        }
+
+        await qBitClient.DeleteTorrentsAsync([externalDownload.ExternalId], true);
     }
 
     public async Task<bool> HasContent(Provider provider, string id)
