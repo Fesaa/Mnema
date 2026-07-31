@@ -15,6 +15,8 @@ public class ServerSettingsDto
     public DateTime LastUpdateDate { get; set; }
     public Dictionary<MetadataProvider, MetadataProviderSettingsDto> MetadataProviderSettings { get; set; }
     public int AutoDisableProviderAfter { get; set; }
+    public bool ImageConversionLossless { get; set; }
+    public int ImageConversionQuality { get; set; }
 }
 
 public class UpdateServerSettingsDto
@@ -24,4 +26,6 @@ public class UpdateServerSettingsDto
     public int SubscriptionRefreshHour { get; set; }
     public Dictionary<MetadataProvider, MetadataProviderSettingsDto> MetadataProviderSettings { get; set; }
     public int AutoDisableProviderAfter { get; set; }
+    public bool ImageConversionLossless { get; set; }
+    public int ImageConversionQuality { get; set; }
 }

@@ -59,6 +59,12 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                 case ServerSettingKey.AutoDisableAfter:
                     dto.AutoDisableProviderAfter = DeserializeSetting<int>(serverSetting);
                     break;
+                case ServerSettingKey.ImageConversionLossLess:
+                    dto.ImageConversionLossless = DeserializeSetting<bool>(serverSetting);
+                    break;
+                case ServerSettingKey.ImageConversionQuality:
+                    dto.ImageConversionQuality = DeserializeSetting<int>(serverSetting);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
                         "Unknown server settings key");
@@ -84,6 +90,8 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                 ServerSettingKey.LastUpdateDate => null,
                 ServerSettingKey.MetadataProviderSettings => dto.MetadataProviderSettings,
                 ServerSettingKey.AutoDisableAfter => dto.AutoDisableProviderAfter,
+                ServerSettingKey.ImageConversionLossLess => dto.ImageConversionLossless,
+                ServerSettingKey.ImageConversionQuality => dto.ImageConversionQuality,
                 _ => throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
                     "Unknown server settings key")
             };
@@ -109,6 +117,8 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             ServerSettingKey.LastUpdateDate => DateTime.Parse(setting.Value, CultureInfo.InvariantCulture),
             ServerSettingKey.MetadataProviderSettings => JsonSerializer.Deserialize<T>(setting.Value),
             ServerSettingKey.AutoDisableAfter => int.Parse(setting.Value),
+            ServerSettingKey.ImageConversionLossLess => bool.Parse(setting.Value),
+            ServerSettingKey.ImageConversionQuality => int.Parse(setting.Value),
             _ => default(T)
         };
 
@@ -134,6 +144,8 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             ServerSettingKey.LastUpdateDate => setting.ToString(),
             ServerSettingKey.MetadataProviderSettings => JsonSerializer.Serialize(setting),
             ServerSettingKey.AutoDisableAfter => setting.ToString(),
+            ServerSettingKey.ImageConversionLossLess => setting.ToString(),
+            ServerSettingKey.ImageConversionQuality => setting.ToString(),
             _ => throw new ArgumentException($"[SerializeSetting] No converter found for key {key}")
         } ?? string.Empty;
     }
@@ -164,6 +176,8 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             { ServerSettingKey.LastUpdateDate, typeof(DateTime) },
             { ServerSettingKey.MetadataProviderSettings, typeof(Dictionary<MetadataProvider, MetadataProviderSettingsDto>)},
             { ServerSettingKey.AutoDisableAfter, typeof(int)},
+            { ServerSettingKey.ImageConversionLossLess, typeof(bool) },
+            { ServerSettingKey.ImageConversionQuality, typeof(int) },
         };
     }
 }

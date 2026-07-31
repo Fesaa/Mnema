@@ -10,5 +10,7 @@ public enum ServerSettingKey
     SubscriptionRefreshHour = 6,
     LastUpdateDate = 7,
     MetadataProviderSettings = 8,
-    AutoDisableAfter = 9
+    AutoDisableAfter = 9,
+    ImageConversionLossLess = 10,
+    ImageConversionQuality = 11,
 }
