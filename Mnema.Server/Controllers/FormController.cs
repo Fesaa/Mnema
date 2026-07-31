@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;

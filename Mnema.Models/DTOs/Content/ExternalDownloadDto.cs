@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Mnema.Common;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Interfaces;
+using Mnema.Models.Enums;
 
 namespace Mnema.Models.DTOs.Content;
 
@@ -15,7 +16,6 @@ public class ExternalDownloadDto: IDatabaseEntity
     public string ExternalId { get; set; }
 
     public Provider Provider { get; set; }
-    public Guid UserId { get; set; }
     public MetadataBag Metadata { get; set; }
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModifiedUtc { get; set; }

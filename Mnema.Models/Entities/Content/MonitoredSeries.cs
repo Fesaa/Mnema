@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
+using Mnema.Models.Enums;
 
 namespace Mnema.Models.Entities.Content;
 
 public class MonitoredSeries: IEntityDate, IDatabaseEntity
 {
     public Guid Id { get; set; }
-
-    public Guid UserId { get; set; }
 
     /// <summary>
     /// This title has no effect on actual downloads
@@ -43,7 +42,7 @@ public class MonitoredSeries: IEntityDate, IDatabaseEntity
     public string HardcoverId { get; set; }
     public string MangaBakaId { get; set; }
     /// <summary>
-    /// This is the ID from a <see cref="Content.Provider"/>. This only makes sense for Mangadex, etc. Not for torrent sites
+    /// This is the ID from a <see cref="Enums.Provider"/>. This only makes sense for Mangadex, etc. Not for torrent sites
     /// </summary>
     public string ExternalId { get; set; }
     public string TitleOverride { get; set; }

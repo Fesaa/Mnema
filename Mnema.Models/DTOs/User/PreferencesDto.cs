@@ -3,7 +3,7 @@ using Mnema.Models.Entities.User;
 
 namespace Mnema.Models.DTOs.User;
 
-public class UserPreferencesDto
+public class PreferencesDto
 {
     public required ImageFormat ImageFormat { get; set; }
     public required CoverFallbackMethod CoverFallbackMethod { get; set; }

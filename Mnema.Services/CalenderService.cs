@@ -15,10 +15,10 @@ public class CalendarService(IUnitOfWork unitOfWork): ICalendarService
 {
     private static readonly CalendarSerializer CalendarSerializer = new();
 
-    public async Task<string> CreateCalendar(Guid userId, CancellationToken cancellationToken)
+    public async Task<string> CreateCalendar(CancellationToken cancellationToken)
     {
         var upcomingChapters =
-            await unitOfWork.MonitoredSeriesRepository.GetUpcomingChapters(userId, cancellationToken);
+            await unitOfWork.MonitoredSeriesRepository.GetUpcomingChapters(cancellationToken);
 
         var events = upcomingChapters.Select(c =>
         {

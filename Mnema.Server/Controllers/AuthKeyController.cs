@@ -13,9 +13,9 @@ public class AuthKeyController(IAuthKeyService authKeyService, IUnitOfWork unitO
 {
 
     [HttpGet]
-    public async Task<ActionResult<PagedList<AuthKeyDto>>> GetAuthKeysByUser([FromQuery] PaginationParams paginationParams)
+    public async Task<ActionResult<PagedList<AuthKeyDto>>> GetAuthKeys([FromQuery] PaginationParams paginationParams)
     {
-        return Ok(await unitOfWork.AuthKeyRepository.GetAuthKeysByUser(UserId, paginationParams, HttpContext.RequestAborted));
+        return Ok(await unitOfWork.AuthKeyRepository.GetAllDtosPaged(paginationParams, HttpContext.RequestAborted));
     }
 
     [HttpDelete("{id:guid}")]
@@ -23,8 +23,6 @@ public class AuthKeyController(IAuthKeyService authKeyService, IUnitOfWork unitO
     {
         var authKey = await unitOfWork.AuthKeyRepository.GetById(id, HttpContext.RequestAborted);
         if (authKey == null) return NotFound();
-
-        if (authKey.UserId != UserId) return Forbid();
 
         unitOfWork.AuthKeyRepository.Remove(authKey);
         await unitOfWork.CommitAsync();
@@ -35,7 +33,7 @@ public class AuthKeyController(IAuthKeyService authKeyService, IUnitOfWork unitO
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] AuthKeyDto dto)
     {
-        await authKeyService.CreateAuthKey(UserId, dto, User, HttpContext.RequestAborted);
+        await authKeyService.CreateAuthKey(dto, HttpContext.RequestAborted);
 
         return Ok();
     }
@@ -43,7 +41,7 @@ public class AuthKeyController(IAuthKeyService authKeyService, IUnitOfWork unitO
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] AuthKeyDto dto)
     {
-        await authKeyService.UpdateAuthKey(UserId, dto, User, HttpContext.RequestAborted);
+        await authKeyService.UpdateAuthKey(dto, HttpContext.RequestAborted);
 
         return Ok();
     }

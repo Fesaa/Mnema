@@ -20,6 +20,7 @@ using Lucene.Net.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Directory = System.IO.Directory;
 
 namespace Mnema.Metadata.Mangabaka;

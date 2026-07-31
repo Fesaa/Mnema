@@ -8,6 +8,7 @@ using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.API;
 
@@ -19,30 +20,29 @@ public enum MonitoredSeriesIncludes
 
 public interface IMonitoredSeriesRepository: INavigationalEntityRepository<MonitoredSeries, MonitoredSeriesDto, MonitoredSeriesIncludes>
 {
-    Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(Guid userId, string query, Provider? provider, PaginationParams pagination, CancellationToken cancellationToken);
-    Task<List<Provider>> GetProviders(Guid userId, CancellationToken cancellationToken = default);
+    Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(string query, Provider? provider, PaginationParams pagination, CancellationToken cancellationToken);
+    Task<List<Provider>> GetProviders(CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetSeriesEligibleForRefresh(CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByHardcoverIds(List<string> ids, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByMangaBakaIds(List<string> ids, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByExternalIds(List<string> ids, Provider provider, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByProvider(Provider provider, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Returns all chapters that have <see cref="MonitoredChapter.Status"/> equal to <see cref="MonitoredChapterStatus.Upcoming"/>
     /// </summary>
-    /// <param name="userId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<MonitoredChapter>> GetUpcomingChapters(Guid userId, CancellationToken cancellationToken = default);
+    Task<List<MonitoredChapter>> GetUpcomingChapters(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns all chapters that (should) have <see cref="MonitoredChapter.Status"/> equal to <see cref="MonitoredChapterStatus.Missing"/>
     /// </summary>
-    /// <param name="userId"></param>
     /// <param name="pagination"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<PagedList<MonitoredChapterDto>> GetMissingChapters(Guid userId, PaginationParams pagination, CancellationToken cancellationToken = default);
-    Task<bool> CheckDuplicateSeries(Guid userId, Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
+    Task<PagedList<MonitoredChapterDto>> GetMissingChapters(PaginationParams pagination, CancellationToken cancellationToken = default);
+    Task<bool> CheckDuplicateSeries(Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
 
     void RemoveRange(IEnumerable<MonitoredChapter> chapters);
 }
@@ -51,13 +51,13 @@ public interface IMonitoredSeriesService
 {
     public static readonly ImmutableArray<Provider> SupportedProviders = [..Enum.GetValues<Provider>()];
 
-    Task UpdateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
-    Task CreateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
+    Task UpdateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
+    Task CreateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     FormDefinition GetForm();
-    Task<FormDefinition> GetMetadataForm(Guid userId, Provider provider, CancellationToken cancellationToken = default);
+    Task<FormDefinition> GetMetadataForm(Provider provider, CancellationToken cancellationToken = default);
 
-    Task EnrichWithMetadata(Guid guid, CancellationToken cancellationToken = default, bool firstRun = false);
-    Task StartDownload(Guid userId, Guid seriesId, bool firstDownload, CancellationToken ct = default);
+    Task EnrichWithMetadata(Guid guid, CancellationToken cancellationToken = default);
+    Task StartDownload(Guid seriesId, bool firstDownload, CancellationToken ct = default);
 }
 
 public static class MonitoredSeriesExtensions

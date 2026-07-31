@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Mnema.API.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.Services;
 

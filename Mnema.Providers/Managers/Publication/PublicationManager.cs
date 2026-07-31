@@ -13,6 +13,7 @@ using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 
 namespace Mnema.Providers.Managers.Publication;
@@ -87,7 +88,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
 
         if (!_content.TryAdd(publication.Id, publication)) throw new MnemaException("Failed to add content");
 
-        await messageService.AddContent(request.UserId, publication.DownloadInfo);
+        await messageService.AddContent(publication.DownloadInfo);
 
         try
         {
@@ -96,16 +97,14 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         catch
         {
             _content.TryRemove(publication.Id, out _);
-            await messageService.DeleteContent(request.UserId, publication.Id);
+            await messageService.DeleteContent(publication.Id);
             throw;
         }
     }
 
     public async Task StopDownload(StopRequestDto request)
     {
-        if (!_content.TryRemove(request.Id, out var publication)) throw new NotFoundException();
-
-        if (publication.Request.UserId != request.UserId) throw new ForbiddenException();
+        if (!_content.TryRemove(request.Id, out var publication)) throw new NotFoundException(); ;
 
         if (publication.State != ContentState.Cancel)
             _logger.LogInformation("Removing content: {Id} - {Title}, SavingFiles: {DeleteFiles}",
@@ -265,7 +264,6 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
                 Provider = publication.Request.Provider,
                 Id = publication.Id,
                 DeleteFiles = true,
-                UserId = publication.Request.UserId
             });
         }
     }
@@ -295,7 +293,6 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
                 Provider = publication.Request.Provider,
                 Id = publication.Id,
                 DeleteFiles = true,
-                UserId = publication.Request.UserId
             });
         }
     }

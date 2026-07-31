@@ -24,19 +24,19 @@ public enum MessageEventType
 
 public interface IMessageService
 {
-    Task SizeUpdate(Guid userId, string contentId, string newSize);
-    Task ProgressUpdate(Guid userId, string contentId, ContentSpeedUpdate progressSpeedUpdate);
-    Task StateUpdate(Guid userId, string contentId, ContentState state);
+    Task SizeUpdate(string contentId, string newSize);
+    Task ProgressUpdate(string contentId, ContentSpeedUpdate progressSpeedUpdate);
+    Task StateUpdate(string contentId, ContentState state);
 
-    Task AddContent(Guid userId, DownloadInfo info);
-    Task UpdateContent(Guid userId, DownloadInfo info);
-    Task BulkContentInfoUpdate(Guid userId, DownloadInfo[] downloadInfos);
-    Task DeleteContent(Guid userId, string contentId);
-    Task RefreshDashboard(Guid userId);
+    Task AddContent(DownloadInfo info);
+    Task UpdateContent(DownloadInfo info);
+    Task BulkContentInfoUpdate(DownloadInfo[] downloadInfos);
+    Task DeleteContent(string contentId);
+    Task RefreshDashboard();
 
-    Task NotificationAdded(Guid userId, int amount);
-    Task NotificationRemoved(Guid userId, int amount);
-    Task Notify(Guid userId, NotificationDto notification);
+    Task NotificationAdded(int amount);
+    Task NotificationRemoved(int amount);
+    Task Notify(NotificationDto notification);
 
-    Task MetadataRefreshed(Guid userId, Guid seriesId);
+    Task MetadataRefreshed(Guid seriesId);
 }

@@ -1,9 +1,9 @@
-import {effect, Injectable} from '@angular/core';
+import {effect, inject, Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {environment} from "../../environments/environment";
 import {of, Subject} from "rxjs";
-import {AccountService} from "./account.service";
 import {ToastService} from "./toast.service";
+import {AuthKeyService} from "@mnema/settings/settings/_components/auth-keys/auth-key.service";
 
 @Injectable({
   providedIn: 'root'
@@ -13,18 +13,13 @@ export class ImageService {
   baseUrl = environment.apiUrl;
   apiKey: string | null = null;
 
-  constructor(private httpClient: HttpClient, private toastService: ToastService, private accountService: AccountService) {
-    effect(() => {
-      const user = this.accountService.currentUser();
-      if (user) {
-        this.apiKey = user.apiKey;
-      }
-    });
+  constructor(private httpClient: HttpClient) {
+
   }
 
   getImage(imageUrl: string) {
-    if (this.apiKey) {
-      return of(this.baseUrl + imageUrl + `?api-key=${this.apiKey}`);
+    if (true) {
+      return of(this.baseUrl + imageUrl);
     }
 
     const imageSrc = new Subject<string>();

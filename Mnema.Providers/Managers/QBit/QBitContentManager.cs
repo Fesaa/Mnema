@@ -14,6 +14,7 @@ using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using QBittorrent.Client;
 
@@ -106,7 +107,7 @@ internal partial class QBitContentManager(
         if (!request.DeleteFromDownloadClient)
         {
             await unitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id);
-            await messageService.DeleteContent(request.UserId, request.Id);
+            await messageService.DeleteContent(request.Id);
             return;
         }
 
@@ -126,7 +127,7 @@ internal partial class QBitContentManager(
         }
 
         await unitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id);
-        await messageService.DeleteContent(request.UserId, request.Id);
+        await messageService.DeleteContent(request.Id);
     }
 
     public async Task<bool> HasContent(Provider provider, string id)

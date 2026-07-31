@@ -117,7 +117,7 @@ internal partial class QBitContentManager
         using var scope = scopeFactory.CreateScope();
         var messageService = scope.GetRequiredService<IMessageService>();
 
-        await messageService.RefreshDashboard(externalDownload.UserId);
+        await messageService.RefreshDashboard();
 
         return null;
     }

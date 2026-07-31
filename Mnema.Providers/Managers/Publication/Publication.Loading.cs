@@ -9,6 +9,7 @@ using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 
 namespace Mnema.Providers.Managers.Publication;
@@ -31,7 +32,7 @@ internal partial class Publication
         var sw = Stopwatch.StartNew();
 
         State = ContentState.Loading;
-        await _messageService.StateUpdate(Request.UserId, Id, ContentState.Loading);
+        await _messageService.StateUpdate(Id, ContentState.Loading);
 
         var monitoredSeriesId = Request.Metadata.GetKey(RequestConstants.MonitoredSeriesId);
         if (monitoredSeriesId != null)
@@ -39,15 +40,7 @@ internal partial class Publication
             _monitoredSeries = await _unitOfWork.MonitoredSeriesRepository.GetById(monitoredSeriesId.Value, ct: cancellationToken);
         }
 
-        var preferences = await _unitOfWork.UserRepository.GetPreferences(Request.UserId);
-        if (preferences == null)
-        {
-            _logger.LogWarning("[{Title}/{Id}] Failed to load user preferences for {UserId}, stopping downloading", Title, Id, Request.UserId);
-            State = ContentState.Cancel;
-            await Cancel();
-            return;
-        }
-
+        var preferences = await _unitOfWork.SettingsRepository.GetPreferencesAsync(cancellationToken);
         Preferences = preferences;
 
         try
@@ -88,7 +81,7 @@ internal partial class Publication
         }
 
         State = Request.StartImmediately ? ContentState.Ready : ContentState.Waiting;
-        await _messageService.UpdateContent(Request.UserId, DownloadInfo);
+        await _messageService.UpdateContent(DownloadInfo);
 
         _logger.LogDebug("[{Title}/{Id}] Loading metadata, {ToDownload}/{Total} chapters in {Elapsed}ms",
             Title, Id, QueuedChapters.Count, Series!.Chapters.Count, sw.ElapsedMilliseconds);

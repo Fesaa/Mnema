@@ -111,7 +111,7 @@ internal partial class Publication
 
         _userSelectedIds = message.Data.Deserialize<List<string>>() ?? [];
 
-        await _messageService.SizeUpdate(Request.UserId, Id, DownloadInfo.Size);
+        await _messageService.SizeUpdate(Id, DownloadInfo.Size);
 
         return new MessageDto
         {
@@ -129,7 +129,7 @@ internal partial class Publication
         await _publicationManager.MoveToDownloadQueue(Id);
 
         State = ContentState.Ready;
-        await _messageService.StateUpdate(Request.UserId, Id, ContentState.Queued);
+        await _messageService.StateUpdate(Id, ContentState.Queued);
 
         return new MessageDto
         {

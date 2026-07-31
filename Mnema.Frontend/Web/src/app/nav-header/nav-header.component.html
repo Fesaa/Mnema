@@ -1,16 +1,7 @@
 @if (isDesktop()) {
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="account-section">
-        <div class="dropdown">
-          @if (currentUser()) {
-            <button class="account-toggle btn btn-secondary w-100">
-              <i class="fa fa-user me-2"></i>
-              {{ currentUser()?.name | titlecase }}
-            </button>
-          }
-        </div>
-      </div>
+      <h3>Mnema</h3>
     </div>
 
     <nav class="sidebar-nav">
@@ -26,49 +17,44 @@
       </a>
 
       @for (group of dashboardGroups(); track group.title) {
-        @if (buttonGroupService.anyVisible(group.buttons)) {
-          <div class="nav-group">
-            <div class="group-header" (click)="toggleGroup(group.key)">
-              <div class="group-title-content">
-                @if (group.icon) {
-                  <i class="{{ group.icon }} me-2"></i>
-                }
-                <span>{{ group.title }}</span>
-              </div>
-              <div class="group-header-actions">
-                <i class="fa fa-chevron-right chevron" [class.rotated]="isGroupExpanded(group.key)"></i>
-              </div>
+        <div class="nav-group">
+          <div class="group-header" (click)="toggleGroup(group.key)">
+            <div class="group-title-content">
+              @if (group.icon) {
+                <i class="{{ group.icon }} me-2"></i>
+              }
+              <span>{{ group.title }}</span>
             </div>
-
-            @if (isGroupExpanded(group.key)) {
-              <div class="group-content" @expandCollapse>
-                @for (btn of group.buttons; track btn.title) {
-                  @if (buttonGroupService.shouldRender(btn)) {
-
-                    @if (btn.onClick) {
-                      <button class="nav-link sub-link" (click)="btn.onClick()">
-                        <ng-container *ngTemplateOutlet="buttonTemplate; context: { $implicit: btn }"></ng-container>
-                      </button>
-                    } @else if (btn.navUrl) {
-                      <a
-                        class="nav-link sub-link"
-                        [routerLink]="[btn.navUrl]"
-                        [queryParams]="btn.navExtras?.queryParams"
-                        [fragment]="btn.navExtras?.fragment"
-                        [state]="btn.navExtras?.state"
-                        routerLinkActive="active"
-                        [class.settings]="group.key === ButtonGroupKey.Settings"
-                        [routerLinkActiveOptions]="{ exact: true }"
-                      >
-                        <ng-container *ngTemplateOutlet="buttonTemplate; context: { $implicit: btn }"></ng-container>
-                      </a>
-                    }
-                  }
-                }
-              </div>
-            }
+            <div class="group-header-actions">
+              <i class="fa fa-chevron-right chevron" [class.rotated]="isGroupExpanded(group.key)"></i>
+            </div>
           </div>
-        }
+
+          @if (isGroupExpanded(group.key)) {
+            <div class="group-content" @expandCollapse>
+              @for (btn of group.buttons; track btn.title) {
+                @if (btn.onClick) {
+                  <button class="nav-link sub-link" (click)="btn.onClick()">
+                    <ng-container *ngTemplateOutlet="buttonTemplate; context: { $implicit: btn }"></ng-container>
+                  </button>
+                } @else if (btn.navUrl) {
+                  <a
+                    class="nav-link sub-link"
+                    [routerLink]="[btn.navUrl]"
+                    [queryParams]="btn.navExtras?.queryParams"
+                    [fragment]="btn.navExtras?.fragment"
+                    [state]="btn.navExtras?.state"
+                    routerLinkActive="active"
+                    [class.settings]="group.key === ButtonGroupKey.Settings"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                  >
+                    <ng-container *ngTemplateOutlet="buttonTemplate; context: { $implicit: btn }"></ng-container>
+                  </a>
+                }
+              }
+            </div>
+          }
+        </div>
       }
     </nav>
   </aside>

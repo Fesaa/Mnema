@@ -206,7 +206,6 @@ internal partial class QBitContentManager
             ExternalId = request.Id,
             Title = title,
             Provider = request.Provider,
-            UserId = request.UserId,
             Metadata = request.Metadata,
             BaseDir = request.BaseDir,
             Files = seriesFiles.Select(pair => new ExternalDownloadFile
@@ -273,11 +272,10 @@ internal partial class QBitContentManager
             SpeedType = SpeedType.Bytes,
             Speed = 0,
             DownloadDir = Path.Join(externalDownload.BaseDir, externalDownload.Title),
-            UserId = request.UserId,
             MonitoredSeriesId = request.GetKey(RequestConstants.MonitoredSeriesId),
         };
 
-        await services.MessageService.AddContent(request.UserId, info);
+        await services.MessageService.AddContent(info);
 
         if (request.StartImmediately)
             services.ConnectionService.CommunicateDownloadStarted(info);

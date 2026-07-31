@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.Models.DTOs;
 

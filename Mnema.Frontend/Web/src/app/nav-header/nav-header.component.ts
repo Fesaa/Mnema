@@ -2,9 +2,7 @@ import {ChangeDetectionStrategy, Component, computed, effect, HostListener, inje
 import {toSignal} from "@angular/core/rxjs-interop";
 import {Breakpoint, UtilityService} from "../_services/utility.service";
 import {NavigationEnd, Router, RouterLink, RouterLinkActive} from "@angular/router";
-import {AccountService} from "../_services/account.service";
 import {NavService} from "../_services/nav.service";
-import {NotificationService} from "../_services/notification.service";
 import {ButtonGroup, ButtonGroupKey, ButtonGroupService} from "../button-grid/button-group.service";
 import {translate, TranslocoPipe} from "@jsverse/transloco";
 import {NgTemplateOutlet, TitleCasePipe} from "@angular/common";
@@ -19,7 +17,6 @@ import {filter, tap} from "rxjs";
   styleUrls: ['./nav-header.component.scss'],
   imports: [
     RouterLink,
-    TitleCasePipe,
     MobileGridComponent,
     TranslocoPipe,
     BadgeComponent,
@@ -51,13 +48,11 @@ import {filter, tap} from "rxjs";
 })
 export class NavHeaderComponent {
 
-  private readonly accountService = inject(AccountService);
   protected readonly navService = inject(NavService);
   protected readonly buttonGroupService = inject(ButtonGroupService);
   protected readonly utilityService = inject(UtilityService);
   private readonly router = inject(Router);
 
-  currentUser = this.accountService.currentUser;
   showNav = toSignal(this.navService.showNav$, {initialValue: false});
 
   isMobileGridOpen = signal(false);

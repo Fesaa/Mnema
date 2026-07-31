@@ -18,6 +18,7 @@ using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Common.Helpers;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;

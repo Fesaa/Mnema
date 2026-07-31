@@ -4,13 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Mnema.Common;
 using Mnema.Models.DTOs.UI;
-using Mnema.Models.Entities.UI;
+using Mnema.Models.Entities;
 
 namespace Mnema.API;
 
 public interface IPagesRepository
 {
-    Task<List<PageDto>> GetPageDtosForUser(Guid userId);
+    Task<List<PageDto>> GetPageDtosForUser();
     Task<List<Page>> GetPages();
     Task<Page?> GetPageById(Guid id);
     Task<int> GetHighestSort();

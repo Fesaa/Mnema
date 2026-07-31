@@ -1,20 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Mnema.Common;
 using Mnema.Models.DTOs.User;
-using Mnema.Models.Entities.User;
+using Mnema.Models.Entities;
 
 namespace Mnema.API;
 
-public interface INotificationRepository
+public interface INotificationRepository: IEntityRepository<Notification, NotificationDto>
 {
-    Task<PagedList<NotificationDto>> GetNotificationsForUser(Guid userId, bool? read, PaginationParams pagination);
-
-    Task<int> MarkNotificationsAsRead(Guid userId, IEnumerable<Guid> ids);
-    Task<int> MarkNotificationsAsUnRead(Guid userId, IEnumerable<Guid> ids);
-    Task DeleteNotifications(Guid userId, IEnumerable<Guid> ids);
-    Task<int> UnReadNotifications(Guid userId);
+    Task<int> MarkNotificationsAsRead(IEnumerable<Guid> ids);
+    Task<int> MarkNotificationsAsUnRead(IEnumerable<Guid> ids);
+    Task DeleteNotifications(IEnumerable<Guid> ids);
+    Task<int> UnReadNotifications();
 
     void AddNotification(Notification notification);
 }

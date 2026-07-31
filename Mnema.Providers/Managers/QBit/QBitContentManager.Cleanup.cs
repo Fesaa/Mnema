@@ -88,7 +88,7 @@ internal partial class QBitContentManager
             BackgroundJob.Enqueue<IMonitoredSeriesService>(s => s.EnrichWithMetadata(monitoredSeriesId.Value, CancellationToken.None));
         }
 
-        await messageService.DeleteContent(externalDownload.UserId, externalDownload.ExternalId);
+        await messageService.DeleteContent(externalDownload.ExternalId);
         connectionService.CommunicateDownloadFinished(content.DownloadInfo);
     }
 

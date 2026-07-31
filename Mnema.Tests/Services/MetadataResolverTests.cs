@@ -9,6 +9,7 @@ using Mnema.Common;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 using Mnema.Services;
 using NSubstitute;

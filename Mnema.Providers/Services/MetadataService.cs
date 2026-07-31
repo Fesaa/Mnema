@@ -5,6 +5,7 @@ using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.User;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.User;
 using Mnema.Models.External;
 using Mnema.Models.Publication;
@@ -13,7 +14,7 @@ namespace Mnema.Providers.Services;
 
 internal class MetadataService : IMetadataService
 {
-    public ComicInfo? CreateComicInfo(UserPreferences preferences, DownloadRequestDto request, string title, Series? series,
+    public ComicInfo? CreateComicInfo(Preferences preferences, DownloadRequestDto request, string title, Series? series,
         Chapter? chapter, string? note = null)
     {
         if (series == null) return null;
@@ -87,7 +88,7 @@ internal class MetadataService : IMetadataService
     }
 
     public (List<string>, List<string>) ProcessTags(
-        UserPreferences preferences, IList<Tag> inputTags, DownloadRequestDto request)
+        Preferences preferences, IList<Tag> inputTags, DownloadRequestDto request)
     {
         var mapToGenre = preferences.ConvertToGenreList.Select(g => g.ToNormalized()).ToList();
         var blackListed = preferences.BlackListedTags.Select(g => g.ToNormalized()).ToList();
@@ -135,7 +136,7 @@ internal class MetadataService : IMetadataService
         }
     }
 
-    public AgeRating? GetAgeRating(UserPreferences preferences, IList<Tag> inputTags)
+    public AgeRating? GetAgeRating(Preferences preferences, IList<Tag> inputTags)
     {
         var ageRatingMappings = preferences.AgeRatingMappings.Select(m => m with
         {

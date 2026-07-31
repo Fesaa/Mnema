@@ -26,7 +26,6 @@ public static class ServiceProviderExtensions
 
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<IPagesService, PageService>();
-        services.AddScoped<IUserService, UserService>();
         services.AddScoped<ISearchService, SearchService>();
         services.AddScoped<IDownloadService, DownloadService>();
         services.AddScoped<IScheduled, MonitoredSeriesScheduler>();

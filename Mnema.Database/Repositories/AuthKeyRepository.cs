@@ -1,29 +1,17 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Mnema.API;
-using Mnema.Common;
-using Mnema.Database.Extensions;
 using Mnema.Models.DTOs.User;
-using Mnema.Models.Entities.User;
+using Mnema.Models.Entities.Authentication;
 
 namespace Mnema.Database.Repositories;
 
 public class AuthKeyRepository(MnemaDataContext ctx, IMapper mapper) : AbstractEntityEntityRepository<AuthKey, AuthKeyDto>(ctx, mapper), IAuthKeyRepository
 {
-    public Task<PagedList<AuthKeyDto>> GetAuthKeysByUser(Guid userId, PaginationParams paginationParams, CancellationToken cancellationToken)
-    {
-        return ctx.AuthKeys
-            .Where(k => k.UserId == userId)
-            .ProjectTo<AuthKeyDto>(mapper.ConfigurationProvider)
-            .OrderByDescending(k => k.CreatedUtc)
-            .AsPagedList(paginationParams, cancellationToken);
-    }
 
     public Task<AuthKey?> GetAuthKey(string key, CancellationToken cancellationToken)
     {
@@ -32,10 +20,10 @@ public class AuthKeyRepository(MnemaDataContext ctx, IMapper mapper) : AbstractE
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public Task<AuthKey?> GetAuthKeyForUser(Guid userId, List<string> roles, CancellationToken cancellationToken)
+    public Task<AuthKey?> GetAuthKeyWithRoles(List<string> roles, CancellationToken cancellationToken)
     {
         return ctx.AuthKeys
-            .Where(k => k.UserId == userId && roles.All(r => k.Roles.Contains(r)))
+            .Where(k => roles.All(r => k.Roles.Contains(r)))
             .OrderByDescending(k => k.CreatedUtc)
             .FirstOrDefaultAsync(cancellationToken);
     }

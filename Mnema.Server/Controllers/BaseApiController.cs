@@ -10,9 +10,5 @@ namespace Mnema.Server.Controllers;
 [Route("api/[controller]")]
 public class BaseApiController : ControllerBase
 {
-    private Lazy<Guid> LazyUserId => new(() =>
-        Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException()));
-
-    protected Guid UserId => LazyUserId.Value;
 
 }

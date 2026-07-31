@@ -2,7 +2,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Mnema.Models.Entities.Interfaces;
 
-namespace Mnema.Models.Entities.User;
+namespace Mnema.Models.Entities;
 
 public enum NotificationColour
 {
@@ -12,7 +12,7 @@ public enum NotificationColour
     Error = 3
 }
 
-[Index(nameof(CreatedUtc)), Index(nameof(UserId))]
+[Index(nameof(CreatedUtc))]
 public class Notification : IEntityDate, IDatabaseEntity
 {
     public Guid Id { get; set; }
@@ -21,9 +21,6 @@ public class Notification : IEntityDate, IDatabaseEntity
     public string? Body { get; set; }
     public NotificationColour Colour { get; set; }
     public bool Read { get; set; } = false;
-
-    public required Guid UserId { get; set; }
-    public virtual MnemaUser User { get; set; }
 
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModifiedUtc { get; set; }

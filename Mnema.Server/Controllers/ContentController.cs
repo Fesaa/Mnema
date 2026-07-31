@@ -10,6 +10,7 @@ using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Publication;
 
@@ -129,7 +130,7 @@ public class ContentController(
         var chapter = series.Chapters.FirstOrDefault(c => c.Id == chapterId);
         if (chapter == null) return NotFound();
 
-        var pref = await unitOfWork.UserRepository.GetPreferences(UserId);
+        var pref = await unitOfWork.SettingsRepository.GetPreferencesAsync(HttpContext.RequestAborted);
 
 
         var ci = metadataService.CreateComicInfo(pref, request, series.Title, series, chapter);
@@ -140,8 +141,6 @@ public class ContentController(
     [HttpPost("download")]
     public async Task<IActionResult> Download(DownloadRequestDto request)
     {
-        request.UserId = UserId;
-
         await downloadService.StartDownload(request);
 
         return Ok();
@@ -177,14 +176,12 @@ public class ContentController(
     [HttpGet("stats")]
     public async Task<ActionResult<IEnumerable<DownloadInfo>>> Stats()
     {
-        return Ok(await downloadService.GetCurrentContent(UserId));
+        return Ok(await downloadService.GetCurrentContent());
     }
 
     [HttpPost("stop")]
     public async Task<IActionResult> Stop(StopRequestDto request)
     {
-        request.UserId = UserId;
-
         await downloadService.CancelDownload(request);
 
         return Ok();

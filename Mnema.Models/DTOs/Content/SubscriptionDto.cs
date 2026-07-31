@@ -2,6 +2,7 @@ using System;
 using Mnema.Common;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Interfaces;
+using Mnema.Models.Enums;
 
 namespace Mnema.Models.DTOs.Content;
 
@@ -9,9 +10,6 @@ public class SubscriptionDto: IDatabaseEntity
 {
     /// <inheritdoc cref="Subscription.Id" />
     public Guid Id { get; set; } = Guid.Empty;
-
-    /// <inheritdoc cref="Subscription.UserId" />
-    public Guid UserId { get; set; }
 
     /// <inheritdoc cref="Subscription.ContentId" />
     public required string ContentId { get; set; }

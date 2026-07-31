@@ -59,19 +59,9 @@ internal partial class QBitContentManager
             .Select(c => c.Id)
             .ToHashSet();
 
-        await UpdateUi(messageService, content);
+        await messageService.BulkContentInfoUpdate(content.Select(t => t.DownloadInfo).ToArray());
 
         foreach (var id in toProcessFinishedContentHashes.Where(id => _cleanupTorrents.TryAdd(id, true)))
             BackgroundJob.Enqueue(() => CleanupTorrent(id, CancellationToken.None));
-    }
-
-    private static async Task UpdateUi(IMessageService messageService, List<ExternalDownloadContent> torrents)
-    {
-        var groups = torrents.GroupBy(t => t.Request.UserId);
-
-        foreach (var group in groups)
-        {
-            await messageService.BulkContentInfoUpdate(group.Key, group.Select(t => t.DownloadInfo).ToArray());
-        }
     }
 }

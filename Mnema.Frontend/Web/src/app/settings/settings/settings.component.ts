@@ -1,7 +1,6 @@
 import {Component, computed, effect, inject, linkedSignal, signal} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NavService} from '../../_services/nav.service';
-import {AccountService} from '../../_services/account.service';
 import {PreferenceSettingsComponent} from "./_components/preference-settings/preference-settings.component";
 import {PagesSettingsComponent} from "./_components/pages-settings/pages-settings.component";
 import {ServerSettingsComponent} from "./_components/server-settings/server-settings.component";
@@ -39,17 +38,13 @@ import {
 export class SettingsComponent {
 
   private navService = inject(NavService);
-  private accountService = inject(AccountService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private readonly buttonGroupService = inject(ButtonGroupService);
 
-  user = this.accountService.currentUser;
   showMobileConfig = signal(false);
 
-  readonly visibleSettings = computed(() =>
-    this.buttonGroupService.settingsGroup().buttons
-      .filter(btn => btn.id && this.buttonGroupService.shouldRender(btn)));
+  readonly visibleSettings = computed(() => this.buttonGroupService.settingsGroup().buttons.filter(btn => btn.id));
 
   readonly selected = linkedSignal<Button[], SettingsID>({
     source: this.visibleSettings,

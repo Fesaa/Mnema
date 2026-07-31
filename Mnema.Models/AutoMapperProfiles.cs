@@ -5,8 +5,8 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.Authentication;
 using Mnema.Models.Entities.Content;
-using Mnema.Models.Entities.UI;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Models;
@@ -18,7 +18,7 @@ public class AutoMapperProfiles : Profile
         CreateMap<Subscription, SubscriptionDto>();
         CreateMap<Page, PageDto>();
         CreateMap<Notification, NotificationDto>();
-        CreateMap<UserPreferences, UserPreferencesDto>();
+        CreateMap<Preferences, PreferencesDto>();
         CreateMap<Connection, ConnectionDto>();
         CreateMap<ContentRelease, ContentReleaseDto>();
         CreateMap<DownloadClient, DownloadClientDto>();

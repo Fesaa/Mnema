@@ -15,14 +15,16 @@ using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
+using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 
 namespace Mnema.Providers.Managers.Publication;
 
 internal sealed record IoWork(
-    UserPreferences Preferences,
+    Preferences Preferences,
     Stream Stream,
     string FilePath,
     string Url,
@@ -76,7 +78,7 @@ internal partial class Publication
         if (Series == null)
             throw new MnemaException("Publication is downloading before series has loaded");
 
-        await _messageService.StateUpdate(Request.UserId, Id, ContentState.Downloading);
+        await _messageService.StateUpdate(Id, ContentState.Downloading);
 
         var hook = scope.ServiceProvider.GetKeyedService<IPreDownloadHook>(provider);
         if (hook != null) await hook.PreDownloadHook(this, scope, _tokenSource.Token);
@@ -130,7 +132,7 @@ internal partial class Publication
             Title, Id, sw.ElapsedMilliseconds);
 
         State = ContentState.Cleanup;
-        await _messageService.StateUpdate(Request.UserId, Id, ContentState.Cleanup);
+        await _messageService.StateUpdate(Id, ContentState.Cleanup);
 
         await _publicationManager.StopDownload(StopRequest(false));
     }
@@ -151,7 +153,7 @@ internal partial class Publication
             }
 
             await DownloadChapter(chapter);
-            await _messageService.UpdateContent(Request.UserId, DownloadInfo);
+            await _messageService.UpdateContent(DownloadInfo);
         }
 
         _logger.LogDebug("[{Title}/{Id}] All content has been downloaded in {Elapsed}ms, waiting for I/O to complete",
@@ -314,7 +316,7 @@ internal partial class Publication
         try
         {
             while (await timer.WaitForNextTickAsync(_tokenSource.Token))
-                await _messageService.UpdateContent(Request.UserId, DownloadInfo);
+                await _messageService.UpdateContent(DownloadInfo);
         }
         catch (OperationCanceledException)
         {

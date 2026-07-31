@@ -7,16 +7,15 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Mnema.API;
 using Mnema.Models.DTOs.UI;
-using Mnema.Models.Entities.UI;
+using Mnema.Models.Entities;
 
 namespace Mnema.Database.Repositories;
 
 public class PagesRepository(MnemaDataContext ctx, IMapper mapper) : IPagesRepository
 {
-    public Task<List<PageDto>> GetPageDtosForUser(Guid userId)
+    public Task<List<PageDto>> GetPageDtosForUser()
     {
         return ctx.Pages
-            //.Where(p => p.Users.Select(u => u.Id).Contains(userId))
             .OrderBy(p => p.SortValue)
             .ProjectTo<PageDto>(mapper.ConfigurationProvider)
             .ToListAsync();

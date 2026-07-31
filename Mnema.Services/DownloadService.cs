@@ -10,6 +10,7 @@ using Mnema.API.Content;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.Services;
 
@@ -38,7 +39,7 @@ internal class DownloadService(ILogger<DownloadService> logger, IServiceScopeFac
         return contentManager.StopDownload(request);
     }
 
-    public async Task<IList<DownloadInfo>> GetCurrentContent(Guid userId)
+    public async Task<IList<DownloadInfo>> GetCurrentContent()
     {
         var downloads = new List<DownloadInfo>();
 
@@ -56,9 +57,7 @@ internal class DownloadService(ILogger<DownloadService> logger, IServiceScopeFac
             {
                 var content = await contentManager.GetAllContent(provider);
 
-                downloads.AddRange(content
-                    .Where(c => c.Request.UserId == userId)
-                    .Select(c => c.DownloadInfo));
+                downloads.AddRange(content.Select(c => c.DownloadInfo));
             }
             catch (Exception e)
             {

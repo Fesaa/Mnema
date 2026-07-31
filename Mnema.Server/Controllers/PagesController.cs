@@ -10,6 +10,7 @@ using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using Mnema.Server.Configuration;
 
@@ -28,7 +29,7 @@ public class PagesController(
     [HttpGet]
     public async Task<ActionResult<IList<PageDto>>> GetPages()
     {
-        var pages = await unitOfWork.PagesRepository.GetPageDtosForUser(UserId);
+        var pages = await unitOfWork.PagesRepository.GetPageDtosForUser();
 
         foreach (var page in pages)
         {

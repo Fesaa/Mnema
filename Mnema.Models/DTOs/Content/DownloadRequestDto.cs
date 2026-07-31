@@ -4,13 +4,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Mnema.Common;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.Models.DTOs.Content;
 
 public sealed record DownloadRequestDto: IValidatableObject
 {
-    public Guid UserId { get; set; }
-
     public required Provider Provider { get; set; }
     public required string Id { get; set; }
     /// <summary>

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 
 namespace Mnema.Services;

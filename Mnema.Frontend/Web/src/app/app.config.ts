@@ -18,7 +18,6 @@ import {ProviderNamePipe} from "./_pipes/provider-name.pipe";
 import {SubscriptionExternalUrlPipe} from "./_pipes/subscription-external-url.pipe";
 import {provideTransloco} from "@jsverse/transloco";
 import {TranslocoLoaderImpl} from "./_services/transloco-loader";
-import {AccountService} from './_services/account.service';
 import {NavService} from "./_services/nav.service";
 import {catchError, firstValueFrom, of, switchMap, tap} from "rxjs";
 import {provideToastr} from "ngx-toastr";
@@ -30,22 +29,13 @@ function getBaseHref(platformLocation: PlatformLocation): string {
   return platformLocation.getBaseHrefFromDOM();
 }
 
-function bootstrapUser() {
-  const accountService = inject(AccountService);
+function preLoadPages() {
   const navService = inject(NavService);
   const pageService = inject(PageService);
 
-  return firstValueFrom(accountService.getMe().pipe(
-    catchError(() => of(null)),
-    switchMap(() => {
-      const user = accountService.currentUser();
-      if (!user) return of(null);
-
-      return pageService.refreshPages().pipe(tap(() => {
-        navService.setNavVisibility(true);
-      }));
-    })
-  )).then(() => void 0);
+  return firstValueFrom(pageService.refreshPages().pipe(tap(() => {
+    navService.setNavVisibility(true);
+  }))).then(() => void 0);
 }
 
 export const appConfig: ApplicationConfig = {
@@ -81,6 +71,6 @@ export const appConfig: ApplicationConfig = {
       useFactory: getBaseHref,
       deps: [PlatformLocation]
     },
-    provideAppInitializer(() => bootstrapUser()),
+    provideAppInitializer(() => preLoadPages()),
   ]
 };

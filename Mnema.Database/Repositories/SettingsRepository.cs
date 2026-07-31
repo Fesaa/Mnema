@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,11 @@ public class SettingsRepository(MnemaDataContext ctx, IMapper mapper) : ISetting
         ctx.Remove(setting);
     }
 
+    public void Update(Preferences preferences)
+    {
+        ctx.Entry(preferences).State = EntityState.Modified;
+    }
+
     public async Task<ServerSetting> GetSettingsAsync(ServerSettingKey key)
     {
         return await ctx.ServerSettings
@@ -30,5 +36,10 @@ public class SettingsRepository(MnemaDataContext ctx, IMapper mapper) : ISetting
     public async Task<IList<ServerSetting>> GetSettingsAsync()
     {
         return await ctx.ServerSettings.ToListAsync();
+    }
+
+    public Task<Preferences> GetPreferencesAsync(CancellationToken ct = default)
+    {
+        return ctx.Preferences.FirstAsync(cancellationToken: ct);
     }
 }
