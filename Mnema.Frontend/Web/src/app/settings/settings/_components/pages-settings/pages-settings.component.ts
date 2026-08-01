@@ -71,6 +71,7 @@ export class PagesSettingsComponent {
 
     this.modalService.onClose$<MetadataBag>(modal).pipe(
       switchMap(defaults => this.pageService.setPageDefaults(page, defaults)),
+      tap(() => this.toastService.successLoco("settings.pages.toasts.defaults.success", {}, {title: page.title})),
       switchMap(() => this.pageService.refreshPages()),
     ).subscribe();
   }

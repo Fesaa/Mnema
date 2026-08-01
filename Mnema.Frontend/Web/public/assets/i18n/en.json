@@ -614,6 +614,12 @@
       },
       "confirm-delete": "Are you sure you want to remove page: {{title}}?",
       "toasts": {
+        "defaults": {
+          "success": {
+            "title": "Success",
+            "summary": "Defaults updated for {{title}}"
+          }
+        },
         "delete": {
           "success": {
             "title": "Success",
@@ -955,18 +961,6 @@
       "copy": {
         "title": "Copied to clipboard",
         "summary": "Key: {{key}}"
-      }
-    },
-    "provider-settings": {
-      "title": "Provider Settings",
-      "header": {
-        "name": "Provider",
-        "edit": "Edit"
-      },
-      "edit": {
-        "title": "Edit Provider Settings: {{provider}}",
-        "close": "{{common.close}}",
-        "save": "{{common.save}}"
       }
     }
   },
