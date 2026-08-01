@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -24,6 +25,12 @@ internal sealed record ScanFolderDto
     public bool AbortOnNoSeriesMatch { get; set; } = true;
 }
 
+internal sealed record BaseDirMapping
+{
+    public required string Src { get; init; }
+    public required string Dest { get; init; }
+}
+
 internal class KavitaConnectionService(
     ILogger<KavitaConnectionService> logger,
     HttpClient httpClient,
@@ -32,8 +39,7 @@ internal class KavitaConnectionService(
 {
     private static readonly IMetadataKey<string> ApiKey = MetadataKeys.String("api-key");
     private static readonly IMetadataKey<string> UrlKey = MetadataKeys.String("url");
-    private static readonly IMetadataKey<string?> BaseDirSrcKey = MetadataKeys.OptionalString("basedir-src");
-    private static readonly IMetadataKey<string?> BaseDirDestKey = MetadataKeys.OptionalString("basedir-dest");
+    private static readonly IMetadataKey<List<BaseDirMapping>> BaseDirMappings = MetadataKeys.JsonArray<BaseDirMapping>("basedir-mappings");
 
     public override List<ConnectionEvent> SupportedEvents { get; } = [ConnectionEvent.DownloadFinished];
 
@@ -47,12 +53,15 @@ internal class KavitaConnectionService(
             return;
         }
 
-        var baseDirSrc = connection.Metadata.GetKey(BaseDirSrcKey);
-        var baseDirDest = connection.Metadata.GetKey(BaseDirDestKey);
+        var baseDirMappings = connection.Metadata.GetKey(BaseDirMappings);
 
         var baseDir = Path.Join(applicationConfiguration.BaseDir, info.DownloadDir);
-        if (!string.IsNullOrEmpty(baseDirSrc) && !string.IsNullOrEmpty(baseDirDest))
-            baseDir = baseDir.Replace(baseDirSrc, baseDirDest);
+
+        var mapping = baseDirMappings.FirstOrDefault(m =>
+            !string.IsNullOrEmpty(m.Src) && !string.IsNullOrEmpty(m.Dest) && baseDir.Contains(m.Src));
+
+        if (mapping is not null)
+            baseDir = baseDir.Replace(mapping.Src, mapping.Dest);
 
         if (baseDir.Contains(".."))
         {
@@ -101,13 +110,29 @@ internal class KavitaConnectionService(
             },
             new FormControlDefinition
             {
-                Key = BaseDirSrcKey.Key,
-                Type = FormType.Text
-            },
-            new FormControlDefinition
-            {
-                Key = BaseDirDestKey.Key,
-                Type = FormType.Text
+                Key = BaseDirMappings.Key,
+                Type = FormType.Array,
+                Controls =
+                [
+                    new FormControlDefinition
+                    {
+                        Key = nameof(BaseDirMapping.Src),
+                        Field = nameof(BaseDirMapping.Src),
+                        Type = FormType.Text,
+                        Validators = new FormValidatorsBuilder()
+                            .WithRequired()
+                            .Build()
+                    },
+                    new FormControlDefinition
+                    {
+                        Key = nameof(BaseDirMapping.Dest),
+                        Field = nameof(BaseDirMapping.Dest),
+                        Type = FormType.Text,
+                        Validators = new FormValidatorsBuilder()
+                            .WithRequired()
+                            .Build()
+                    }
+                ]
             },
         ]);
     }
