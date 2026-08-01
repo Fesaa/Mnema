@@ -14,9 +14,9 @@ public class PageDto: IDatabaseEntity
     public string Icon { get; set; } = string.Empty;
     public required int SortValue { get; set; }
     public required Provider Provider { get; set; }
-    public IList<FormControlDefinition>? Modifiers { get; set; }
+    public IList<FormFieldDefinition>? Modifiers { get; set; }
     public string CustomRootDir { get; set; } = string.Empty;
     public MetadataBag DefaultOptions { get; set; } = new();
 
-    public List<FormControlDefinition> Metadata { get; set; } = [];
+    public List<FormFieldDefinition> Metadata { get; set; } = [];
 }

@@ -22,14 +22,14 @@ public class NoOpRepository: IRepository
         return Task.FromResult<IList<ContentRelease>>(new List<ContentRelease>());
     }
 
-    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([]);
+        return Task.FromResult<List<FormFieldDefinition>>([]);
     }
 
-    public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([]);
+        return Task.FromResult<List<FormFieldDefinition>>([]);
     }
 
     public Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)

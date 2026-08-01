@@ -101,9 +101,9 @@ internal class NativeConnectionService(
         });
     }
 
-    public override Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
+    public override Task<List<FormFieldDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
     {
-        return Task.FromResult(new List<FormControlDefinition>());
+        return Task.FromResult(new List<FormFieldDefinition>());
     }
 
     private async Task SendNotification(Notification notification)

@@ -49,7 +49,7 @@ public interface IConnectionHandlerService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <remarks>Throws <see cref="NotImplementedException" /> when called on a non-keyed implementation</remarks>
-    Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken);
+    Task<List<FormFieldDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken);
 }
 
 public interface IConnectionRepository : IEntityRepository<Connection, ConnectionDto>

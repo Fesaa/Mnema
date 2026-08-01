@@ -3,10 +3,10 @@
   @for (control of formDefinition().controls; track control.key) {
     @let formControl = getFormControl(control);
     @let formControlName = getFormControlName(control);
-    @let forceSingle = control.forceSingle || control.type === FormType.Array;
+    @let forceSingle = control.forceSingle || control.fieldType === FormType.Array;
 
     <div [formGroup]="getFormGroup(control)" class="{{ (double() && !forceSingle) ? 'col-md-6' : 'col-md-12' }} col-sm-12 pt-4">
-      @switch (control.type) {
+      @switch (control.fieldType) {
         @case (FormType.Switch) {
           <app-settings-switch
             [control]="formControl"

@@ -36,24 +36,20 @@ public class ProviderSettingsService(ILogger<ProviderSettingsService> logger, IS
     public async Task<FormDefinition> GetSettingsForm(Provider provider, CancellationToken ct)
     {
         var configurationProvider = serviceProvider.GetKeyedService<IConfigurationProvider>(provider);
-        var extraFormControls = await (configurationProvider?.GetFormControls(ct) ?? Task.FromResult(new List<FormControlDefinition>()));
+        var extraFormControls = await (configurationProvider?.GetFormControls(ct) ?? Task.FromResult(new List<FormFieldDefinition>()));
 
         return new FormDefinition
         {
             Key = "provider-settings",
             DescriptionKey = "description",
             Controls = [
-                new FormControlDefinition
+                new SwitchFieldDefinition
                 {
                     Key = ProviderSettings.Disable.Key,
-                    Type = FormType.Switch,
-                    DefaultOption = false,
                 },
-                new FormControlDefinition
+                new SwitchFieldDefinition
                 {
                     Key = ProviderSettings.BlockAutomaticDownloads.Key,
-                    Type = FormType.Switch,
-                    DefaultOption = false,
                 },
                 ..extraFormControls
             ]

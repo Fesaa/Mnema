@@ -50,9 +50,9 @@ public abstract class AbstractRepository(IDistributedCache cache): IRepository
 
     public abstract Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken);
 
-    public abstract Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken);
+    public abstract Task<List<FormFieldDefinition>> DownloadMetadata(CancellationToken cancellationToken);
 
-    public abstract Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken);
+    public abstract Task<List<FormFieldDefinition>> Modifiers(CancellationToken cancellationToken);
 
     public abstract Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken);
 

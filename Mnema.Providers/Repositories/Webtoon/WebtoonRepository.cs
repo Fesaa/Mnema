@@ -269,53 +269,47 @@ internal partial class WebtoonRepository(
         return releases;
     }
 
-    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+            new SwitchFieldDefinition
             {
                 Key = RequestConstants.IncludeCover.Key,
-                Type = FormType.Switch,
-                DefaultOption = "true"
+                DefaultValue = true,
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.TitleOverride.Key,
-                Type = FormType.Text,
                 Advanced = true
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.HardcoverSeriesIdKey.Key,
-                Type = FormType.Text
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.MangaBakaKey.Key,
-                Type = FormType.Text
             },
-            new FormControlDefinition
+            new SwitchFieldDefinition
             {
                 Key = ForceIndexChapterNumbers.Key,
-                Type = FormType.Switch,
                 Advanced = true,
-                DefaultOption = "false"
+                DefaultValue = false,
             }
         ]);
     }
 
-    public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        return Task.FromResult(new List<FormControlDefinition>
+        return Task.FromResult(new List<FormFieldDefinition>
         {
-            new()
+            new DropDownFieldDefinition<string>
             {
-                Type = FormType.DropDown,
                 Key = SearchType.Key,
                 Options =
                 [
-                    FormControlOption.DefaultOption("originals", "Originals"),
-                    FormControlOption.Option("canvas", "Canvas")
+                    SelectOption<string>.DefaultOption("originals", "Originals"),
+                    SelectOption<string>.Option("canvas", "Canvas")
                 ]
             }
         });

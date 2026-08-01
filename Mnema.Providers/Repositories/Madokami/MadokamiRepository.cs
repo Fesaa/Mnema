@@ -89,78 +89,61 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
         }).WhereNotNull().ToList();
     }
 
-    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
-            {
-              Key  = RequestConstants.HardcoverSeriesIdKey.Key,
-              Type = FormType.Text,
-            },
-            new FormControlDefinition
-            {
-                Key  = RequestConstants.MangaBakaKey.Key,
-                Type = FormType.Text,
-            },
-            new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+            new SwitchFieldDefinition
             {
                 Key  = RequestConstants.IgnoreNonMatchedVolumes.Key,
-                Type = FormType.Switch,
                 Advanced = true,
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key  = RequestConstants.TitleOverride.Key,
-                Type = FormType.Text,
                 Advanced = true,
             },
-            new FormControlDefinition
+            new SwitchFieldDefinition
             {
                 Key  = RequestConstants.DownloadOneShotKey.Key,
-                Type = FormType.Switch,
-                DefaultOption = "true",
+                DefaultValue = true,
                 Advanced = true,
             },
-            new FormControlDefinition
+            new DropDownFieldDefinition<ContentFormat>(FieldValueType.Integer)
             {
                 Key = RequestConstants.ContentFormatKey.Key,
-                Type = FormType.DropDown,
                 Options = Enum.GetValues<ContentFormat>()
-                    .Select(f => new FormControlOption(f.ToString().ToLower(), f))
+                    .Select(f => new SelectOption<ContentFormat>(f.ToString().ToLower(), f))
                     .ToList(),
-                DefaultOption = ContentFormat.Manga,
+                DefaultValue = ContentFormat.Manga,
                 Validators = new FormValidatorsBuilder()
                     .WithRequired()
                     .Build()
             },
-            new FormControlDefinition
+            new DropDownFieldDefinition<Format>(FieldValueType.Integer)
             {
                 Key = RequestConstants.FormatKey.Key,
-                Type = FormType.DropDown,
                 Options = Enum.GetValues<Format>()
-                    .Select(f => new FormControlOption(f.ToString().ToLower(), f))
+                    .Select(f => new SelectOption<Format>(f.ToString().ToLower(), f))
                     .ToList(),
-                DefaultOption = Format.Archive,
+                DefaultValue = Format.Archive,
                 Validators = new FormValidatorsBuilder()
                     .WithRequired()
                     .Build()
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.HardcoverSeriesIdKey.Key,
-                Type = FormType.Text
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.MangaBakaKey.Key,
-                Type = FormType.Text
             }
         ]);
     }
 
-    public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([]);
+        return Task.FromResult<List<FormFieldDefinition>>([]);
     }
 
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)
@@ -215,21 +198,19 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
         });
     }
 
-    public Task<List<FormControlDefinition>> GetFormControls(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> GetFormControls(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+            new TextFieldDefinition
             {
                 Key = BasicAuthUsername.Key ,
-                Type = FormType.Text,
                 Validators = new FormValidatorsBuilder()
                     .WithRequired()
                     .Build()
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = BasicAuthPassword.Key ,
-                Type = FormType.Text,
                 Validators = new FormValidatorsBuilder()
                     .WithRequired()
                     .Build()

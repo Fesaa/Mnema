@@ -175,59 +175,50 @@ internal class DynastyRepository(
         }
     }
 
-    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+            new SwitchFieldDefinition
             {
                 Key = RequestConstants.DownloadOneShotKey.Key,
-                Type = FormType.Switch
             },
-            new FormControlDefinition
+            new SwitchFieldDefinition
             {
                 Key = RequestConstants.IncludeNotMatchedTagsKey.Key,
-                Type = FormType.Switch,
                 Advanced = true
             },
-            new FormControlDefinition
+            new SwitchFieldDefinition
             {
                 Key = RequestConstants.IncludeCover.Key,
-                Type = FormType.Switch,
-                DefaultOption = "true"
+                DefaultValue = true
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.TitleOverride.Key,
-                Type = FormType.Text,
                 Advanced = true
             },
-            new FormControlDefinition
+            new SwitchFieldDefinition
             {
                 Key = RequestConstants.SkipVolumeWithoutChapter.Key,
-                Type = FormType.Switch,
                 Advanced = true
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.HardcoverSeriesIdKey.Key,
-                Type = FormType.Text
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.MangaBakaKey.Key,
-                Type = FormType.Text
             }
         ]);
     }
 
-    public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+            new SwitchFieldDefinition
             {
-                Type = FormType.Switch,
                 Key = AllowChapters.Key,
-                Options = []
             }
         ]);
     }

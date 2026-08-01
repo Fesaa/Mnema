@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
+using System.Text.Json.Serialization.Metadata;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,6 +20,7 @@ using Mnema.Common.Http;
 using Mnema.Database.Extensions;
 using Mnema.Metadata.Extensions;
 using Mnema.Models;
+using Mnema.Models.DTOs.UI;
 using Mnema.Models.Internal;
 using Mnema.Providers.Extensions;
 using Mnema.Server.Configuration;
@@ -73,6 +75,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         }).AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.Converters.Add(new EmptyStringToGuidConverter());
+            options.JsonSerializerOptions.Converters.Add(new FormFieldDefinitionConverter());
         });
         services.AddEndpointsApiExplorer();
         services.AddRateLimiter();

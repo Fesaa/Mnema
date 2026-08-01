@@ -308,27 +308,24 @@ internal class DiscordConnectionService(
         return SendMessage(connection, [embed]);
     }
 
-    public override Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
+    public override Task<List<FormFieldDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+            new TextFieldDefinition
             {
                 Key = WebhookKey.Key,
-                Type = FormType.Text,
                 ForceSingle = true,
                 Validators = new FormValidatorsBuilder()
                     .WithStartsWith("https://discord.com/api/webhooks/")
                     .Build()
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = UsernameKey.Key,
-                Type = FormType.Text
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = AvatarKey.Key,
-                Type = FormType.Text
             }
         ]);
     }

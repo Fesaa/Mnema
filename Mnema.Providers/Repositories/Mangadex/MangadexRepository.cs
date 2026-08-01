@@ -55,7 +55,7 @@ internal class MangadexRepository : IRepository
     private readonly ILogger<MangadexRepository> _logger;
 
 
-    private readonly AsyncLazy<List<FormControlOption>> _tagOptions;
+    private readonly AsyncLazy<List<SelectOption<string>>> _tagOptions;
 
     public MangadexRepository(ILogger<MangadexRepository> logger, IDistributedCache cache,
         IHttpClientFactory httpClientFactory)
@@ -63,7 +63,7 @@ internal class MangadexRepository : IRepository
         _logger = logger;
         _cache = cache;
         _httpClientFactory = httpClientFactory;
-        _tagOptions = new AsyncLazy<List<FormControlOption>>(LoadTagOptions);
+        _tagOptions = new AsyncLazy<List<SelectOption<string>>>(LoadTagOptions);
     }
 
     private HttpClient Client => _httpClientFactory.CreateClient(nameof(Provider.Mangadex));
@@ -236,118 +236,104 @@ internal class MangadexRepository : IRepository
             .ToList();
     }
 
-    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+            new DropDownFieldDefinition<string>
             {
                 Key = RequestConstants.LanguageKey.Key,
-                Type = FormType.DropDown,
-                DefaultOption = "en",
+                DefaultValue = "en",
                 Options =
                 [
-                    new FormControlOption("en"),
-                    new FormControlOption("zh"),
-                    new FormControlOption("zh-hk"),
-                    new FormControlOption("es"),
-                    new FormControlOption("fr"),
-                    new FormControlOption("ja")
+                    new SelectOption<string>("en"),
+                    new SelectOption<string>("zh"),
+                    new SelectOption<string>("zh-hk"),
+                    new SelectOption<string>("es"),
+                    new SelectOption<string>("fr"),
+                    new SelectOption<string>("ja")
                 ]
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.ScanlationGroupKey.Key,
                 Advanced = true,
-                Type = FormType.Text
             },
-            new FormControlDefinition
+            new SwitchFieldDefinition
             {
                 Key = RequestConstants.DownloadOneShotKey.Key,
-                Type = FormType.Switch
             },
-            new FormControlDefinition
+            new SwitchFieldDefinition
             {
                 Key = RequestConstants.IncludeCover.Key,
-                Type = FormType.Switch,
-                DefaultOption = "true"
+                DefaultValue = true
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.TitleOverride.Key,
                 Advanced = true,
-                Type = FormType.Text
             },
-            new FormControlDefinition
+            new SwitchFieldDefinition
             {
                 Key = RequestConstants.AllowNonMatchingScanlationGroupKey.Key,
                 Advanced = true,
-                Type = FormType.Switch,
-                DefaultOption = "true"
+                DefaultValue = true,
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.HardcoverSeriesIdKey.Key,
-                Type = FormType.Text
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.MangaBakaKey.Key,
-                Type = FormType.Text
             }
         ]);
     }
 
-    public async Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    public async Task<List<FormFieldDefinition>> Modifiers(CancellationToken cancellationToken)
     {
         return
         [
-            new FormControlDefinition
+            new MultiSelectFieldDefinition<string>
             {
-                Type = FormType.MultiSelect,
                 Key = Status.Key,
                 Options =
                 [
-                    FormControlOption.Option("Cancelled", "cancelled"),
-                    FormControlOption.Option("Completed", "completed"),
-                    FormControlOption.Option("Hiatus", "hiatus"),
-                    FormControlOption.Option("Ongoing", "ongoing")
+                    SelectOption<string>.Option("Cancelled", "cancelled"),
+                    SelectOption<string>.Option("Completed", "completed"),
+                    SelectOption<string>.Option("Hiatus", "hiatus"),
+                    SelectOption<string>.Option("Ongoing", "ongoing")
                 ]
             },
-            new FormControlDefinition
+            new MultiSelectFieldDefinition<string>
             {
-                Type = FormType.MultiSelect,
                 Key = ContentRating.Key,
                 Options =
                 [
-                    FormControlOption.Option("Safe", "safe"),
-                    FormControlOption.Option("Suggestive", "suggestive"),
-                    FormControlOption.Option("Erotica", "erotica"),
-                    FormControlOption.Option("Pornographic", "pornographic")
+                    SelectOption<string>.Option("Safe", "safe"),
+                    SelectOption<string>.Option("Suggestive", "suggestive"),
+                    SelectOption<string>.Option("Erotica", "erotica"),
+                    SelectOption<string>.Option("Pornographic", "pornographic")
                 ]
             },
-            new FormControlDefinition
+            new MultiSelectFieldDefinition<string>
             {
-                Type = FormType.MultiSelect,
                 Key = IncludedTags.Key,
                 Options = await _tagOptions
             },
-            new FormControlDefinition
+            new MultiSelectFieldDefinition<string>
             {
-                Type = FormType.MultiSelect,
                 Key = ExcludedTags.Key,
                 Options = await _tagOptions
             },
-            new FormControlDefinition
+            new DropDownFieldDefinition<string>
             {
-                Type = FormType.DropDown,
                 Key = IncludedTagsMode.Key,
-                Options = [FormControlOption.DefaultOption("And", "AND"), FormControlOption.Option("Or", "OR")]
+                Options = [SelectOption<string>.DefaultOption("And", "AND"), SelectOption<string>.Option("Or", "OR")]
             },
-            new FormControlDefinition
+            new DropDownFieldDefinition<string>
             {
-                Type = FormType.DropDown,
                 Key = ExcludedTagsMode.Key,
-                Options = [FormControlOption.Option("And", "AND"), FormControlOption.DefaultOption("Or", "OR")]
+                Options = [SelectOption<string>.Option("And", "AND"), SelectOption<string>.DefaultOption("Or", "OR")]
             }
         ];
     }
@@ -424,7 +410,7 @@ internal class MangadexRepository : IRepository
         };
     }
 
-    private async Task<List<FormControlOption>> LoadTagOptions()
+    private async Task<List<SelectOption<string>>> LoadTagOptions()
     {
         var result = await Client.GetCachedAsync<TagResponse>("/manga/tag", _cache);
         if (result.IsErr)
@@ -433,10 +419,10 @@ internal class MangadexRepository : IRepository
             return [];
         }
 
-        List<FormControlOption> options = [];
+        List<SelectOption<string>> options = [];
         foreach (var tagData in result.Unwrap().Data)
             if (tagData.Attributes.Name.TryGetValue("en", out var value))
-                options.Add(FormControlOption.Option(value, tagData.Id));
+                options.Add(SelectOption<string>.Option(value, tagData.Id));
 
         return options;
     }

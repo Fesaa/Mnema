@@ -24,7 +24,7 @@
         <div class="row">
           @for (modifier of modifiers(); track trackModifier($index, modifier)) {
             <div class="col-md-6 mb-3">
-              @if (modifier.type === FormType.Switch) {
+              @if (modifier.fieldType === FormType.Switch) {
                 <div class="form-check form-switch d-flex align-items-center">
                   <input
                     [checked]="isSwitchChecked(modifier)"
@@ -35,7 +35,7 @@
                   />
                   <label class="form-check-label ms-2 user-select-none" [for]="modifier.key">{{t(modifier.key)}}</label>
                 </div>
-              } @else if (modifier.type === FormType.DropDown) {
+              } @else if (modifier.fieldType === FormType.DropDown) {
                 @let selectedValue = getDropdownValue(modifier);
 
                 <div class="">

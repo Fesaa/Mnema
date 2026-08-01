@@ -156,96 +156,82 @@ public class KaganeRepository(
         return releases;
     }
 
-    public override Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
+    public override Task<List<FormFieldDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
-            return Task.FromResult<List<FormControlDefinition>>([
-                new FormControlDefinition
+            return Task.FromResult<List<FormFieldDefinition>>([
+                new TextFieldDefinition
                 {
                     Key = RequestConstants.ScanlationGroupKey.Key,
                     Advanced = true,
-                    Type = FormType.Text
                 },
-                new FormControlDefinition
+                new SwitchFieldDefinition
                 {
                     Key = RequestConstants.DownloadOneShotKey.Key,
-                    Type = FormType.Switch
                 },
-                new FormControlDefinition
+                new SwitchFieldDefinition
                 {
                     Key = RequestConstants.IncludeCover.Key,
-                    Type = FormType.Switch,
-                    DefaultOption = "true"
+                    DefaultValue = true,
                 },
-                new FormControlDefinition
+                new TextFieldDefinition
                 {
                     Key = RequestConstants.TitleOverride.Key,
                     Advanced = true,
-                    Type = FormType.Text
                 },
-                new FormControlDefinition
+                new SwitchFieldDefinition
                 {
                     Key = RequestConstants.AllowNonMatchingScanlationGroupKey.Key,
                     Advanced = true,
-                    Type = FormType.Switch,
-                    DefaultOption = "true"
+                    DefaultValue = true,
                 },
-                new FormControlDefinition
+                new TextFieldDefinition
                 {
                     Key = RequestConstants.HardcoverSeriesIdKey.Key,
-                    Type = FormType.Text
                 },
-                new FormControlDefinition
+                new TextFieldDefinition
                 {
                     Key = RequestConstants.MangaBakaKey.Key,
-                    Type = FormType.Text
                 },
-                new FormControlDefinition
+                new TextFieldDefinition
                 {
                     Key = IntegrityToken.Key,
-                    Type = FormType.Text,
                     Advanced = true,
                 }
             ]);
     }
 
-    public override Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    public override Task<List<FormFieldDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-                new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+                new MultiSelectFieldDefinition<string>
                 {
                     Key = PublicationStatus.Key,
-                    Type = FormType.MultiSelect,
-                    Options = [FormControlOption.Option("Completed", "Completed"), FormControlOption.Option("Ongoing", "Ongoing"), FormControlOption.Option("Hiatus", "Hiatus"), FormControlOption.Option("Abandoned", "Abandoned")],
+                    Options = [SelectOption<string>.Option("Completed", "Completed"), SelectOption<string>.Option("Ongoing", "Ongoing"), SelectOption<string>.Option("Hiatus", "Hiatus"), SelectOption<string>.Option("Abandoned", "Abandoned")],
                 },
-                new FormControlDefinition
+                new MultiSelectFieldDefinition<string>
                 {
                     Key = ContentRating.Key,
-                    Type = FormType.MultiSelect,
-                    Options = [FormControlOption.Option("Pornographic", "Pornographic"), FormControlOption.Option("Erotica", "Erotica"), FormControlOption.Option("Suggestive", "Suggestive"), FormControlOption.Option("Safe", "Safe")],
+                    Options = [SelectOption<string>.Option("Pornographic", "Pornographic"), SelectOption<string>.Option("Erotica", "Erotica"), SelectOption<string>.Option("Suggestive", "Suggestive"), SelectOption<string>.Option("Safe", "Safe")],
                 },
-                new FormControlDefinition
+                new MultiSelectFieldDefinition<string>
                 {
                     Key = IncludedGenres.Key,
-                    Type = FormType.MultiSelect,
-                    Options = KaganeConstants.Genres.Select(g => FormControlOption.Option(g.Name, g.Id)).ToList(),
+                    Options = KaganeConstants.Genres.Select(g => SelectOption<string>.Option(g.Name, g.Id)).ToList(),
                 },
-                new FormControlDefinition
+                new MultiSelectFieldDefinition<string>
                 {
                     Key = ExcludedGenres.Key,
-                    Type = FormType.MultiSelect,
-                    Options = KaganeConstants.Genres.Select(g => FormControlOption.Option(g.Name, g.Id)).ToList(),
+                    Options = KaganeConstants.Genres.Select(g => SelectOption<string>.Option(g.Name, g.Id)).ToList(),
                 },
-                new FormControlDefinition
+                new MultiSelectFieldDefinition<string>
                 {
                     Key = IncludedTags.Key,
-                    Type = FormType.MultiSelect,
-                    Options = KaganeConstants.Tags.Select(g => FormControlOption.Option(g.Name, g.Id)).ToList(),
+                    Options = KaganeConstants.Tags.Select(g => SelectOption<string>.Option(g.Name, g.Id)).ToList(),
                 },
-                new FormControlDefinition
+                new MultiSelectFieldDefinition<string>
                 {
                     Key = ExcludedTags.Key,
-                    Type = FormType.MultiSelect,
-                    Options = KaganeConstants.Tags.Select(g => FormControlOption.Option(g.Name, g.Id)).ToList(),
+                    Options = KaganeConstants.Tags.Select(g => SelectOption<string>.Option(g.Name, g.Id)).ToList(),
                 }
             ]);
     }

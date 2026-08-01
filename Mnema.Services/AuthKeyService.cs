@@ -49,26 +49,24 @@ public partial class AuthKeyService(IUnitOfWork unitOfWork): IAuthKeyService
         await unitOfWork.CommitAsync(cancellationToken);
     }
 
-    public List<FormControlDefinition> GetAuthKeyForm(ClaimsPrincipal principal)
+    public List<FormFieldDefinition> GetAuthKeyForm(ClaimsPrincipal principal)
     {
         return
         [
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = "name",
                 Field = "name",
-                Type = FormType.Text,
                 Validators = new FormValidatorsBuilder()
                     .WithRequired()
                     .WithMinLength(4)
                     .WithMaxLength(32)
                     .Build(),
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = "key",
                 Field = "key",
-                Type = FormType.Text,
                 Validators = new FormValidatorsBuilder()
                     .WithRequired()
                     .WithMinLength(8)
@@ -76,17 +74,15 @@ public partial class AuthKeyService(IUnitOfWork unitOfWork): IAuthKeyService
                     .WithPattern(@"^[a-zA-Z0-9!\$%()*+,\-./:;<=>@\[\\\]^_`{|}~]+$")
                     .Build(),
             },
-            new FormControlDefinition
+            new MultiTextFieldDefinition
             {
                 Key = "roles",
                 Field = "roles",
-                Type = FormType.MultiText,
                 ForceSingle = true,
-                ValueType = FormValueType.String,
                 Options = principal.Claims
                     .Where(c => c.Type == ClaimTypes.Role)
                     .Select(c => c.Value)
-                    .Select(r => FormControlOption.Option(r, r))
+                    .Select(r => SelectOption<string>.Option(r, r))
                     .ToList(),
             },
         ];

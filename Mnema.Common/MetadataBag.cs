@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Numerics;
 using System.Text.Json;
 
 namespace Mnema.Common;
@@ -136,7 +137,8 @@ public class MetadataBag : GenericBag<string>
             SetKey(key, value);
     }
 
-    public int Increment(IMetadataKey<int> key, int amount = 1)
+    public T Increment<T>(IMetadataKey<T> key, T amount)
+    where T : IAdditionOperators<T,T,T>
     {
         var value = GetKey(key);
         SetKey(key, value + amount);

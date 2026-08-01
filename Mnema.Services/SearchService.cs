@@ -63,7 +63,7 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
             {
                 var errorMessage = $"Failed to search for recently updated for {provider.ToString()}";
 
-                var consecutiveFailures = providerSettings.Settings.Increment(ProviderSettings.ConsecutiveFailures);
+                var consecutiveFailures = providerSettings.Settings.Increment(ProviderSettings.ConsecutiveFailures, 1);
 
                 logger.LogError(ex, $"{errorMessage} - {consecutiveFailures} consecutive failures");
 

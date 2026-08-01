@@ -89,47 +89,42 @@ internal class KavitaConnectionService(
         response.EnsureSuccessStatusCode();
     }
 
-    public override Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
+    public override Task<List<FormFieldDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+            new TextFieldDefinition
             {
                 Key = ApiKey.Key,
-                Type = FormType.Text,
                 Validators = new FormValidatorsBuilder()
                     .WithRequired()
                     .WithMinLength(8)
                     .WithMaxLength(32)
                     .Build()
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = UrlKey.Key,
-                Type = FormType.Text,
                 Validators = new FormValidatorsBuilder()
                     .WithIsUrl()
                     .Build()
             },
-            new FormControlDefinition
+            new ArrayFieldDefinition
             {
                 Key = BaseDirMappings.Key,
-                Type = FormType.Array,
                 Controls =
                 [
-                    new FormControlDefinition
+                    new TextFieldDefinition
                     {
                         Key = nameof(BaseDirMapping.Src),
                         Field = nameof(BaseDirMapping.Src),
-                        Type = FormType.Text,
                         Validators = new FormValidatorsBuilder()
                             .WithRequired()
                             .Build()
                     },
-                    new FormControlDefinition
+                    new TextFieldDefinition
                     {
                         Key = nameof(BaseDirMapping.Dest),
                         Field = nameof(BaseDirMapping.Dest),
-                        Type = FormType.Text,
                         Validators = new FormValidatorsBuilder()
                             .WithRequired()
                             .Build()

@@ -131,97 +131,84 @@ public class NyaaRepository(
         return releases;
     }
 
-    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+            new DropDownFieldDefinition<Format>(FieldValueType.Integer)
             {
                 Key = RequestConstants.FormatKey.Key,
-                Type = FormType.DropDown,
-                ValueType = FormValueType.Integer,
                 Options = Enum.GetValues<Format>()
-                    .Select(f => new FormControlOption(f.ToString().ToLower(), f))
+                    .Select(f => new SelectOption<Format>(f.ToString().ToLower(), f))
                     .ToList(),
                 Validators = new FormValidatorsBuilder()
                     .WithRequired()
                     .Build(),
-                DefaultOption = Format.Archive,
+                DefaultValue = Format.Archive,
             },
-            new FormControlDefinition
+            new DropDownFieldDefinition<ContentFormat>(FieldValueType.Integer)
             {
                 Key = RequestConstants.ContentFormatKey.Key,
-                Type = FormType.DropDown,
-                ValueType = FormValueType.Integer,
                 Options = Enum.GetValues<ContentFormat>()
-                    .Select(f => new FormControlOption(f.ToString().ToLower(), f))
+                    .Select(f => new SelectOption<ContentFormat>(f.ToString().ToLower(), f))
                     .ToList(),
                 Validators = new FormValidatorsBuilder()
                     .WithRequired()
                     .Build(),
-                DefaultOption = ContentFormat.Manga
+                DefaultValue = ContentFormat.Manga
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.HardcoverSeriesIdKey.Key,
-                Type = FormType.Text,
-                ValueType = FormValueType.Integer,
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.MangaBakaKey.Key,
-                Type = FormType.Text,
-                ValueType = FormValueType.Integer,
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.TitleOverride.Key,
-                Type = FormType.Text
             },
-            new FormControlDefinition
+            new SwitchFieldDefinition
             {
                 Key = RequestConstants.IncludeCover.Key,
-                Type = FormType.Switch,
-                DefaultOption = "false",
+                DefaultValue = false,
                 Advanced = true,
             },
-            new FormControlDefinition
+            new SwitchFieldDefinition
             {
                 Key = RequestConstants.IgnoreNonMatchedVolumes.Key,
-                Type = FormType.Switch,
-                DefaultOption = "true",
+                DefaultValue = true,
                 Advanced = true,
             },
         ]);
     }
 
-    public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+            new DropDownFieldDefinition<string>
             {
                 Key = "category",
-                Type = FormType.DropDown,
                 Options = [
-                    new FormControlOption("All", "0"),
-                    new FormControlOption("Anime", "1_0"),
-                    new FormControlOption("Anime - AMV", "1_1"),
-                    new FormControlOption("Anime - English Translated", "1_2"),
-                    new FormControlOption("Anime - Non English Translated", "1_3"),
-                    new FormControlOption("Anime - Raw", "1_4"),
-                    FormControlOption.DefaultOption("Literature", "3_0"),
-                    new FormControlOption("Literature - English Translated", "3_1"),
-                    new FormControlOption("Literature - Non English Translated", "3_2"),
-                    new FormControlOption("Literature - Raw", "3_3"),
+                    new SelectOption<string>("All", "0"),
+                    new SelectOption<string>("Anime", "1_0"),
+                    new SelectOption<string>("Anime - AMV", "1_1"),
+                    new SelectOption<string>("Anime - English Translated", "1_2"),
+                    new SelectOption<string>("Anime - Non English Translated", "1_3"),
+                    new SelectOption<string>("Anime - Raw", "1_4"),
+                    SelectOption<string>.DefaultOption("Literature", "3_0"),
+                    new SelectOption<string>("Literature - English Translated", "3_1"),
+                    new SelectOption<string>("Literature - Non English Translated", "3_2"),
+                    new SelectOption<string>("Literature - Raw", "3_3"),
                 ],
             },
-            new FormControlDefinition
+            new DropDownFieldDefinition<string>
             {
                 Key = "filter",
-                Type = FormType.DropDown,
                 Options = [
-                    FormControlOption.DefaultOption("No Filter", "0"),
-                    new FormControlOption("No Remakes", "1"),
-                    new FormControlOption("Only Trusted", "2"),
+                    SelectOption<string>.DefaultOption("No Filter", "0"),
+                    new SelectOption<string>("No Remakes", "1"),
+                    new SelectOption<string>("Only Trusted", "2"),
                 ],
             },
         ]);

@@ -200,30 +200,27 @@ internal partial class QBitContentManager(
         return torrents;
     }
 
-    public Task<List<FormControlDefinition>> GetFormControls(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> GetFormControls(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+            new TextFieldDefinition
             {
                 Key = UrlKey,
-                Type = FormType.Text,
                 Validators = new FormValidatorsBuilder()
                     .WithIsUrl()
                     .WithRequired()
                     .Build()
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = UsernameKey,
-                Type = FormType.Text,
                 Validators = new FormValidatorsBuilder()
                     .WithRequired()
                     .Build()
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = PasswordKey,
-                Type = FormType.Text,
             },
         ]);
     }

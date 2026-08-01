@@ -77,12 +77,12 @@ export class SearchFormComponent {
   }
 
   private getDefaultValues(modifier: FormControlDefinition): FormControlOption[] | FormControlOption | undefined {
-    const defaults = modifier.options
+    const defaults = (modifier.options ?? [])
       .filter(value => value.default);
 
     if (defaults.length === 0) return undefined;
 
-    if (modifier.type === FormType.DropDown) {
+    if (modifier.fieldType === FormType.DropDown) {
       return defaults[0];
     }
 
@@ -92,13 +92,13 @@ export class SearchFormComponent {
   constructTypeaheadSettings(mod: FormControlDefinition): TypeaheadSettings<FormControlOption> {
     const settings = new TypeaheadSettings<FormControlOption>();
     settings.id = mod.key
-    settings.multiple = mod.type === FormType.MultiSelect;
-    settings.minCharacters = mod.options.length > 10 ? 1 : 0;
+    settings.multiple = mod.fieldType === FormType.MultiSelect;
+    settings.minCharacters = (mod.options ?? []).length > 10 ? 1 : 0;
 
     settings.fetchFn = (f) => {
-      if (mod.type === FormType.DropDown) return of(mod.options);
+      if (mod.fieldType === FormType.DropDown) return of(mod.options ?? []);
 
-      const filtered = mod.options
+      const filtered = (mod.options ?? [])
         .filter(v => v.key.toLowerCase().includes(f.toLowerCase())
           || v.value.toLowerCase().includes(f.toLowerCase()));
 
@@ -107,7 +107,7 @@ export class SearchFormComponent {
 
     const defaults = untracked(this.modifierSelections)[mod.key];
     if (defaults) {
-      settings.savedData = mod.options.filter(o => defaults.includes(o.value));
+      settings.savedData = (mod.options ?? []).filter(o => defaults.includes(o.value));
     }
 
     settings.trackByIdentityFn = (idx, mv) =>  `${mv.key}`;
@@ -135,7 +135,7 @@ export class SearchFormComponent {
 
   onDropdownChange(mod: FormControlDefinition, event: Event) {
     const value = (event.target as HTMLSelectElement).value;
-    const option = mod.options.find(o => o.value === value);
+    const option = (mod.options ?? []).find(o => o.value === value);
     console.log(mod.key, value, option);
     if (option) {
       this.onModifierSelection(mod, option);
@@ -174,7 +174,7 @@ export class SearchFormComponent {
     this.modifiers().forEach(modifier => {
       const selections = modifierSelections[modifier.key] || [];
       if (selections.length > 0) {
-        modifiersToSend[modifier.key] = modifier.type === FormType.MultiSelect ? selections : [selections[0]];
+        modifiersToSend[modifier.key] = modifier.fieldType === FormType.MultiSelect ? selections : [selections[0]];
       }
     });
 

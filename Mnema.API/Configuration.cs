@@ -7,6 +7,6 @@ namespace Mnema.API;
 
 public interface IConfigurationProvider
 {
-    Task<List<FormControlDefinition>> GetFormControls(CancellationToken cancellationToken);
+    Task<List<FormFieldDefinition>> GetFormControls(CancellationToken cancellationToken);
     Task ReloadConfiguration(CancellationToken cancellationToken);
 }

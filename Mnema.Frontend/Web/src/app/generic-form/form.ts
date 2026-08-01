@@ -11,13 +11,13 @@ export type FormControlDefinition = {
   advanced: boolean;
   forceSingle: boolean;
 
-  type: FormType;
+  fieldType: FormType;
   valueType: ValueType;
   disabled: boolean;
 
-  defaultOption: any;
-  options: FormControlOption[];
-  controls: FormControlDefinition[];
+  defaultValue: any;
+  options?: FormControlOption[];
+  controls?: FormControlDefinition[];
 }
 export type FormControlOption = {
   key: string;

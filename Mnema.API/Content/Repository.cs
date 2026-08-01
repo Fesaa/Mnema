@@ -36,14 +36,14 @@ public interface IContentRepository
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken);
+    Task<List<FormFieldDefinition>> DownloadMetadata(CancellationToken cancellationToken);
 
     /// <summary>
-    ///     Get all <see cref="FormControlDefinition" />s avaible for search for the provider
+    ///     Get all <see cref="FormFieldDefinition" />s avaible for search for the provider
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken);
+    Task<List<FormFieldDefinition>> Modifiers(CancellationToken cancellationToken);
 }
 
 public interface IRepository: IContentRepository
