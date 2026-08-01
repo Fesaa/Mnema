@@ -5,6 +5,7 @@ import { setupCompleteGuard } from './_guards/setup-complete.guard';
 import { loggedOutGuard } from './_guards/logged-out.guard';
 import {InitialSetupComponent} from "@mnema/authentication/initial-setup/initial-setup.component";
 import {LoginComponent} from "@mnema/authentication/login/login.component";
+import {devOnlyGuard} from "@mnema/_guards/dev-only.guard";
 
 export const routes: Routes = [
   {
@@ -28,8 +29,13 @@ export const routes: Routes = [
       {
         path: '',
         loadChildren: () => import('./_routes/extra.routes').then(m => m.routes)
-      }
+      },
     ]
+  },
+  {
+    path: 'dev-tools',
+    canActivate: [setupGuard, authGuard, devOnlyGuard],
+    loadChildren: () => import('./_routes/dev-tools.routes').then(m => m.routes)
   },
   {
     path: 'initial-setup',

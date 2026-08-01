@@ -614,6 +614,12 @@
       },
       "confirm-delete": "Are you sure you want to remove page: {{title}}?",
       "toasts": {
+        "defaults": {
+          "success": {
+            "title": "Success",
+            "summary": "Defaults updated for {{title}}"
+          }
+        },
         "delete": {
           "success": {
             "title": "Success",
@@ -829,10 +835,14 @@
         "api-key-tooltip": "Auth key generated from an Admin account",
         "url-title": "Kavita URL",
         "url-tooltip": "The URL pointing to your Kavita instance",
-        "basedir-src-title": "Source directory",
-        "basedir-src-tooltip": "Directory mapping in Mnema to replace",
-        "basedir-dest-title": "Dest directory",
-        "basedir-dest-tooltip": "Directory mapping in Kavita to replace with",
+        "basedir-mappings-title": "Directory Mappings",
+        "basedir-mappings-tooltip": "Correct difference in library paths",
+        "basedir-mappings": {
+          "Src-title": "Source",
+          "Src-tooltip": "Directory mapping in Mnema to replace",
+          "Dest-title": "Destination",
+          "Dest-tooltip": "Directory mapping in Kavita to replace with"
+        },
         "followed-events-title": "Followed Events",
         "followed-events-tooltip": "Events to act on",
         "followed-events": {
@@ -951,18 +961,6 @@
       "copy": {
         "title": "Copied to clipboard",
         "summary": "Key: {{key}}"
-      }
-    },
-    "provider-settings": {
-      "title": "Provider Settings",
-      "header": {
-        "name": "Provider",
-        "edit": "Edit"
-      },
-      "edit": {
-        "title": "Edit Provider Settings: {{provider}}",
-        "close": "{{common.close}}",
-        "save": "{{common.save}}"
       }
     }
   },

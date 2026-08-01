@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.Json;
 
 namespace Mnema.Common;
 
@@ -67,6 +68,30 @@ public class MetadataBag : GenericBag<string>
         return int.TryParse(value, out var result) ? result : null;
     }
 
+    internal List<T> GetJsonArray<T>(string key)
+    {
+        if (!TryGetValue(key, out var list) || list.Count == 0) return [];
+
+        var result = new List<T>(list.Count);
+
+        foreach (var item in list)
+        {
+            if (string.IsNullOrEmpty(item)) continue;
+
+            try
+            {
+                var parsed = JsonSerializer.Deserialize<T>(item);
+                if (parsed is not null) result.Add(parsed);
+            }
+            catch (JsonException)
+            {
+                throw new ArgumentException($"Invalid JSON for key '{key}': {item}");
+            }
+        }
+
+        return result;
+    }
+
     internal void SetBool(string key, bool b)
     {
         SetValue(key, b ? "true" : "false");
@@ -85,6 +110,12 @@ public class MetadataBag : GenericBag<string>
     internal void SetGuid(string key, Guid guid)
     {
         SetValue(key, guid.ToString());
+    }
+
+    internal void SetJsonArray<T>(string key, IEnumerable<T> values)
+    {
+        var serialized = values.Select(v => JsonSerializer.Serialize(v)).ToArray();
+        SetValue(key, serialized);
     }
 
     public bool HasKey<T>(IMetadataKey<T> key) => ContainsKey(key.Key);
@@ -226,6 +257,17 @@ public static class MetadataKeys
     public static IMetadataKey<IEnumerable<string>> Strings(string key, IEnumerable<string>? defaultValue = null)
     {
         return new MetadataKey<IEnumerable<string>>(key, m => m.GetStrings(key, defaultValue), (m, value) => m.SetValue(key, value.ToArray()));
+    }
+
+    public static IMetadataKey<List<T>> JsonArray<T>(string key, List<T>? fallback = null)
+    {
+        return new MetadataKey<List<T>>(key,
+            m =>
+            {
+                var value = m.GetJsonArray<T>(key);
+                return value.Count > 0 ? value : fallback ?? [];
+            },
+            (m, value) => m.SetJsonArray(key, value));
     }
 }
 
