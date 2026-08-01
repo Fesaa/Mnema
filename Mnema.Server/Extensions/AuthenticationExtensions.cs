@@ -60,8 +60,6 @@ public static class AuthenticationExtensions
             .Configure<ITicketStore>((options, store) =>
             {
                 options.Cookie.Name = "Mnema.Auth";
-                options.LoginPath = "/login.html";
-                options.AccessDeniedPath = "/access-denied.html";
                 options.ExpireTimeSpan = TimeSpan.FromDays(7);
                 options.SlidingExpiration = true;
                 options.SessionStore = store;

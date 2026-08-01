@@ -183,6 +183,17 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         });
         app.UseMiddleware<ExceptionMiddleware>();
 
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            HttpsCompression = HttpsCompressionMode.Compress,
+            OnPrepareResponse = ctx =>
+            {
+                ctx.Context.Response.Headers[HeaderNames.CacheControl] = "public,max-age=" + TimeSpan.FromHours(24);
+                ctx.Context.Response.Headers[Headers.RobotsTag] = "noindex,nofollow";
+            }
+        });
+        app.UseDefaultFiles();
+
         app.UseAuthentication();
         app.UseAuthorization();
 
@@ -192,20 +203,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             FaviconPath = "favicon.ico",
             DefaultRecordsPerPage = 10
         });
-
-        app.UseStaticFiles(new StaticFileOptions
-        {
-            HttpsCompression = HttpsCompressionMode.Compress,
-            OnPrepareResponse = ctx =>
-            {
-                if (ctx.Context.User.Identity?.IsAuthenticated ?? false)
-                {
-                    ctx.Context.Response.Headers[HeaderNames.CacheControl] = "public,max-age=" + TimeSpan.FromHours(24);
-                }
-                ctx.Context.Response.Headers[Headers.RobotsTag] = "noindex,nofollow";
-            }
-        });
-        app.UseDefaultFiles();
 
         app.UseEndpoints(builder =>
             {

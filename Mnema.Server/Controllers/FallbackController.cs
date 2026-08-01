@@ -1,14 +1,12 @@
 using System.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace Mnema.Server.Controllers;
 
 public class FallbackController : Controller
 {
-    [Authorize]
-    [SwaggerIgnore]
+    [AllowAnonymous]
     public IActionResult Index()
     {
         if (HttpContext.Request.Path.StartsWithSegments("/api") || HttpContext.Request.Path.StartsWithSegments("/ws"))

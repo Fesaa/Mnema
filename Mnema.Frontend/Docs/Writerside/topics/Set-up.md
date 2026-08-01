@@ -44,6 +44,8 @@ You can use both at the same time
 
 ## Docker compose example
 
+> If you mount `/persistent`, `/media`, and `/downloads`. Mnema will start up and not lose data witout needing to configure anything else 
+
 <code-block lang="yaml" language="yaml">
 services:
   mnema:
@@ -53,36 +55,18 @@ services:
       - "8080:8080"
     environment:
       - TZ=Europe/Brussels
-      - ConnectionStrings__Postgres=Host=postgres;Database=mnema;Username=mnema_user;Password=your_secure_password
       # - AutoMapperLicense=your_license_here
     volumes:
-      - ./data/persistent:/persistent
+      - ./data/mnema:/persistent
       - /path/to/your/media:/media
       - /path/to/your/downloads:/downloads
-     - ./appsettings.json:/Mnema/config/appsettings.json #Check in the kubernetes section for what should be in here
-    restart: unless-stopped
-
-  postgres:
-    image: postgres:17.4-alpine
-    container_name: mnema-db
-    environment:
-      - POSTGRES_DB=mnema
-      - POSTGRES_USER=mnema_user
-      - POSTGRES_PASSWORD=your_secure_password
-    volumes:
-      - ./data/postgres:/var/lib/postgresql/data
-
-  redis:
-    image: redis:8.2.2-alpine
-    container_name: mnema-redis
-    volumes:
-      - ./data/redis:/data
+     - ./appsettings.json:/Mnema/config/appsettings.json # Optional
     restart: unless-stopped
 </code-block>
 
 ## Kubernetes example
 
-I run my software in a kubernetes cluster, so this is how I run mine
+I run my software in a kubernetes cluster, so this is how I run mine. This is with Postgres & Redis
 
 <tabs>
     <tab title="ConfigMap">
