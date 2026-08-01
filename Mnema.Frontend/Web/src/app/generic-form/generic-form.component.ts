@@ -1,7 +1,14 @@
 import {ChangeDetectionStrategy, Component, computed, inject, input, output, Signal, untracked} from '@angular/core';
 
 import {FormControlDefinition, FormControlOption, FormDefinition, FormType} from "./form";
-import {FormBuilder, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule} from "@angular/forms";
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  NonNullableFormBuilder,
+  ReactiveFormsModule
+} from "@angular/forms";
 import {GENERIC_METADATA_FIELD, GenericFormFactoryService} from "./generic-form-factory.service";
 import {SettingsSwitchComponent} from "../shared/form/settings-switch/settings-switch.component";
 import {TranslocoDirective} from "@jsverse/transloco";
@@ -44,54 +51,16 @@ export class GenericFormComponent<T> {
   protected formGroupBuilder = computed(() =>
     this.nullable() ? this.nullableFormGroupBuilder : this.nonNullableFormGroupBuilder);
 
-  protected genericMetadataFieldPresent = computed(() => this.formDefinition().controls
-    .some(control => control.field === GENERIC_METADATA_FIELD));
+  genericForm = computed(() => {
 
-  genericForm: Signal<FormGroup> = computed(() => {
-    const formDefinition = this.formDefinition();
     const fb = this.formGroupBuilder();
 
-    // Type safety is only for the consumer, we cannot make such guarantees
-    const obj = untracked(this.initialValue) as any;
-
-    const formGroup: FormGroup = this.supplyFormGroup() ?? fb.group({})
-    for (let control of formDefinition.controls) {
-      if (control.field === GENERIC_METADATA_FIELD)
-        continue;
-
-      if (formGroup.get(control.field)) {
-        console.warn(`The FormGroup already included a control for ${control.field}, skipping`);
-        continue;
-      }
-
-      const formControl = fb.control(
-        this.genericFormFactoryService.initialValue(obj, control),
-        this.genericFormFactoryService.validators(control.validators),
-        );
-
-      formGroup.addControl(control.field, formControl);
-    }
-
-    const genericMetadataGroup = formGroup.get(GENERIC_METADATA_FIELD) as FormGroup | undefined;
-    if (this.genericMetadataFieldPresent()) {
-      const metadataBag = obj[GENERIC_METADATA_FIELD];
-      const controls = formDefinition.controls
-        .filter(control => control.field === GENERIC_METADATA_FIELD);
-
-      const control = this.genericFormFactoryService.genericMetadataGroup(
-        metadataBag,
-        controls,
-        fb,
-        genericMetadataGroup,
-      );
-
-      if (!!genericMetadataGroup) {
-        formGroup.setControl(GENERIC_METADATA_FIELD, control);
-      } else {
-        formGroup.addControl(GENERIC_METADATA_FIELD, control);
-      }
-
-    }
+    const formGroup = this.genericFormFactoryService.createFormGroup(
+      untracked(this.initialValue),
+      this.formDefinition().controls,
+      fb,
+      this.supplyFormGroup()
+    );
 
     this.formGroupTracker.emit(formGroup);
 
@@ -104,6 +73,27 @@ export class GenericFormComponent<T> {
     }
 
     return this.genericForm().get(control.field) as FormControl;
+  }
+
+  protected getFormArray(control: FormControlDefinition): FormArray<FormGroup> {
+    if (control.field === GENERIC_METADATA_FIELD) {
+      return this.genericForm().get(GENERIC_METADATA_FIELD)?.get(control.key) as FormArray<FormGroup>;
+    }
+
+    return this.genericForm().get(control.field) as FormArray<FormGroup>;
+  }
+
+  protected addArrayItem(control: FormControlDefinition): void {
+    this.getFormArray(control).push(
+      this.genericFormFactoryService.createArrayItem(
+        control,
+        this.formGroupBuilder()
+      )
+    );
+  }
+
+  protected removeArrayItem(control: FormControlDefinition, index: number) {
+    this.getFormArray(control).removeAt(index);
   }
 
   protected getFormGroup(control: FormControlDefinition) {

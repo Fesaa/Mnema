@@ -13,11 +13,11 @@ export type FormControlDefinition = {
 
   type: FormType;
   valueType: ValueType;
-  pipe?: FormPipe,
   disabled: boolean;
 
   defaultOption: any;
   options: FormControlOption[];
+  controls: FormControlDefinition[];
 }
 export type FormControlOption = {
   key: string;
@@ -31,7 +31,8 @@ export enum FormType {
   MultiSelect,
   Text,
   Directory,
-  MultiText
+  MultiText,
+  Array,
 }
 
 export enum ValueType {
@@ -40,7 +41,3 @@ export enum ValueType {
   String = 3,
 }
 
-export enum FormPipe {
-  ExternalConnectionEvent = 0,
-  ExternalConnectionType = 1,
-}

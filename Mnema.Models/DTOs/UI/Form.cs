@@ -41,6 +41,8 @@ public sealed record FormControlDefinition
     public object DefaultOption { get; set; } = string.Empty;
 
     public List<FormControlOption> Options { get; set; } = [];
+
+    public List<FormControlDefinition> Controls { get; set; } = [];
 }
 
 /// <summary>
@@ -77,7 +79,8 @@ public enum FormType
     MultiSelect = 2,
     Text = 3,
     Directory = 4,
-    MultiText = 5
+    MultiText = 5,
+    Array,
 }
 
 public enum FormValueType
