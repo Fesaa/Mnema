@@ -14,7 +14,7 @@ export const GENERIC_METADATA_FIELD = "metadata";
 })
 export class GenericFormFactoryService {
 
-  public debug = true;
+  public debug = false;
 
   private log(message: string, data?: unknown) {
     if (!this.debug) {
