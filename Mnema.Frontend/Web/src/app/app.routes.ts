@@ -25,11 +25,11 @@ export const routes: Routes = [
         path: 'settings',
         loadChildren: () => import('./_routes/settings.routes').then(m => m.routes)
       },
+      { path: '', pathMatch: 'full', redirectTo: 'home' },
       {
         path: '',
         loadChildren: () => import('./_routes/extra.routes').then(m => m.routes)
       },
-      { path: '', pathMatch: 'full', redirectTo: 'home' },
     ]
   },
   {
