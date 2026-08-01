@@ -245,12 +245,12 @@ internal class MangadexRepository : IRepository
                 DefaultValue = "en",
                 Options =
                 [
-                    new SelectOption<string>("en"),
-                    new SelectOption<string>("zh"),
-                    new SelectOption<string>("zh-hk"),
-                    new SelectOption<string>("es"),
-                    new SelectOption<string>("fr"),
-                    new SelectOption<string>("ja")
+                    SelectOption<string>.FromString("en"),
+                    SelectOption<string>.FromString("zh"),
+                    SelectOption<string>.FromString("zh-hk"),
+                    SelectOption<string>.FromString("es"),
+                    SelectOption<string>.FromString("fr"),
+                    SelectOption<string>.FromString("ja")
                 ]
             },
             new TextFieldDefinition
