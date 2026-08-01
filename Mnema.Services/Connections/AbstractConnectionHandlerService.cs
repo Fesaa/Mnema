@@ -63,5 +63,5 @@ public abstract class AbstractConnectionHandlerService: IConnectionHandlerServic
         throw new NotImplementedException();
     }
 
-    public abstract Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken);
+    public abstract Task<List<FormFieldDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken);
 }

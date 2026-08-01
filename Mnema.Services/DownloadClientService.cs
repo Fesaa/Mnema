@@ -116,26 +116,23 @@ public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitO
         {
             Key = $"settings.download-clients.{type.ToString()}",
             Controls = [
-                new FormControlDefinition
+                new TextFieldDefinition
                 {
                     Key = "name",
                     Field = "name",
-                    Type = FormType.Text,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .Build(),
                 },
-                new FormControlDefinition
+                new DropDownFieldDefinition<DownloadClientType>(FieldValueType.Integer)
                 {
                     Key = "type",
                     Field = "type",
-                    Type = FormType.DropDown,
-                    ValueType = FormValueType.Integer,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .Build(),
                     Options = freeTypes
-                        .Select(t => new FormControlOption(t.ToString().ToLower(), t))
+                        .Select(t => new SelectOption<DownloadClientType>(t.ToString().ToLower(), t))
                         .ToList()
                 },
                 ..await configurationProvider.GetFormControls(cancellationToken)

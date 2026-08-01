@@ -134,93 +134,80 @@ public class MonitoredSeriesService(
             Key = "edit-monitored-series-modal",
             Controls =
             [
-                new FormControlDefinition
+                new TextFieldDefinition
                 {
                     Key = "title",
                     Field = "title",
-                    Type = FormType.Text,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .Build(),
                 },
-                new FormControlDefinition
+                new TextFieldDefinition
                 {
                     Key = RequestConstants.TitleOverride.Key,
                     Field = "titleOverride",
-                    Type = FormType.Text,
                 },
-                new FormControlDefinition
+                new MultiTextFieldDefinition
                 {
                     Key = "valid-titles",
                     Field = "validTitles",
-                    Type = FormType.MultiText,
                     ForceSingle = true,
                 },
-                new FormControlDefinition
+                new DirectoryFieldDefinition
                 {
                     Key = "base-dir",
                     Field = "baseDir",
-                    Type = FormType.Directory,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .Build(),
                 },
-                new FormControlDefinition
+                new DropDownFieldDefinition<Provider>(FieldValueType.Integer)
                 {
                     Key = "provider",
                     Field = "provider",
-                    Type = FormType.DropDown,
-                    ValueType = FormValueType.Integer,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .Build(),
                     Options = IMonitoredSeriesService.SupportedProviders
-                        .Select(provider => new FormControlOption(provider.ToString().ToLower(), provider))
+                        .Select(provider => new SelectOption<Provider>(provider.ToString().ToLower(), provider))
                         .ToList(),
                 },
-                new FormControlDefinition
+                new DropDownFieldDefinition<Format>(FieldValueType.Integer)
                 {
                     Key = RequestConstants.FormatKey.Key,
                     Field = "format",
-                    Type = FormType.DropDown,
-                    ValueType = FormValueType.Integer,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .Build(),
                     Options = Enum.GetValues<Format>()
-                        .Select(f => new FormControlOption(f.ToString().ToLower(), f))
+                        .Select(f => new SelectOption<Format>(f.ToString().ToLower(), f))
                         .ToList(),
                 },
-                new FormControlDefinition
+                new DropDownFieldDefinition<ContentFormat>(FieldValueType.Integer)
                 {
                     Key = RequestConstants.ContentFormatKey.Key,
                     Field = "contentFormat",
-                    Type = FormType.DropDown,
-                    ValueType = FormValueType.Integer,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .Build(),
                     Options = Enum.GetValues<ContentFormat>()
-                        .Select(f => new FormControlOption(f.ToString().ToLower(), f))
+                        .Select(f => new SelectOption<ContentFormat>(f.ToString().ToLower(), f))
                         .ToList(),
                 },
-                new FormControlDefinition
+                new TextFieldDefinition
                 {
                     Key = RequestConstants.HardcoverSeriesIdKey.Key,
                     Field = "hardcoverId",
-                    Type = FormType.Text,
                 },
-                new FormControlDefinition
+                new TextFieldDefinition
                 {
                     Key = RequestConstants.MangaBakaKey.Key,
                     Field = "mangaBakaId",
-                    Type = FormType.Text,
                 },
-                new FormControlDefinition
+                new TextFieldDefinition
                 {
                     Key = RequestConstants.ExternalIdKey.Key,
                     Field = "externalId",
-                    Type = FormType.Text,
                 },
             ]
         };
@@ -230,7 +217,7 @@ public class MonitoredSeriesService(
     {
         var excludedKeys = GetForm().Controls.Select(c => c.Key).ToHashSet();
 
-        var allControls = new List<FormControlDefinition>();
+        var allControls = new List<FormFieldDefinition>();
 
         var repository = serviceProvider.GetKeyedService<IContentRepository>(provider);
         if (repository != null)

@@ -153,21 +153,19 @@ public class ContentController(
         {
             Key = "download-modal",
             Controls = [
-                new FormControlDefinition
+                new DirectoryFieldDefinition
                 {
                     Key = "dir",
                     Field = "baseDir",
-                    Type = FormType.Directory,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .Build(),
                 },
-                new FormControlDefinition
+                new SwitchFieldDefinition
                 {
                     Key = "start-immediately",
                     Field = "startImmediately",
-                    Type = FormType.Switch,
-                    DefaultOption = true,
+                    DefaultValue = true,
                 }
             ]
         });

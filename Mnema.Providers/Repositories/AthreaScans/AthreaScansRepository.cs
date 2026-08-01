@@ -110,37 +110,33 @@ public class AthreaScansRepository(IHttpClientFactory httpClientFactory, IDistri
         }).WhereNotNull().ToList();
     }
 
-    public Task<List<FormControlDefinition>> DownloadMetadata(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([
-            new FormControlDefinition
+        return Task.FromResult<List<FormFieldDefinition>>([
+            new SwitchFieldDefinition
             {
                 Key = RequestConstants.IncludeCover.Key,
-                Type = FormType.Switch,
-                DefaultOption = "true"
+                DefaultValue = true
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.TitleOverride.Key,
-                Type = FormType.Text,
                 Advanced = true
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.HardcoverSeriesIdKey.Key,
-                Type = FormType.Text
             },
-            new FormControlDefinition
+            new TextFieldDefinition
             {
                 Key = RequestConstants.MangaBakaKey.Key,
-                Type = FormType.Text
             }
         ]);
     }
 
-    public Task<List<FormControlDefinition>> Modifiers(CancellationToken cancellationToken)
+    public Task<List<FormFieldDefinition>> Modifiers(CancellationToken cancellationToken)
     {
-        return Task.FromResult<List<FormControlDefinition>>([]);
+        return Task.FromResult<List<FormFieldDefinition>>([]);
     }
 
     public async Task<Series> SeriesInfo(DownloadRequestDto request, CancellationToken cancellationToken)

@@ -136,24 +136,21 @@ internal class ConnectionService(
             Key = $"settings.connections.{type}",
             Controls =
             [
-                new FormControlDefinition
+                new TextFieldDefinition
                 {
                     Key = "name",
                     Field = "name",
-                    Type = FormType.Text,
                     Validators = new FormValidatorsBuilder()
                         .WithRequired()
                         .WithMinLength(1)
                         .Build()
                 },
-                new FormControlDefinition
+                new MultiSelectFieldDefinition<ConnectionEvent>(FieldValueType.Integer)
                 {
                     Key = "followed-events",
                     Field = "followedEvents",
-                    Type = FormType.MultiSelect,
-                    ValueType = FormValueType.Integer,
                     Options = service.SupportedEvents
-                        .Select(@event => new FormControlOption(@event.ToString(), @event))
+                        .Select(@event => new SelectOption<ConnectionEvent>(@event.ToString(), @event))
                         .ToList()
                 },
                 ..controls

@@ -14,7 +14,7 @@ export const GENERIC_METADATA_FIELD = "metadata";
 })
 export class GenericFormFactoryService {
 
-  public debug = false;
+  public debug = true;
 
   private log(message: string, data?: unknown) {
     if (!this.debug) {
@@ -33,7 +33,7 @@ export class GenericFormFactoryService {
     fb: FormBuilder | NonNullableFormBuilder
   ): FormGroup {
     this.log(`createArrayItem called for control '${control.field}'`, { control });
-    return this.createFormGroup({}, control.controls, fb);
+    return this.createFormGroup({}, control.controls ?? [], fb);
   }
 
   createFormArray(
@@ -50,7 +50,7 @@ export class GenericFormFactoryService {
       array.push(
         this.createFormGroup(
           value,
-          control.controls,
+          control.controls ?? [],
           fb
         )
       );
@@ -82,7 +82,7 @@ export class GenericFormFactoryService {
         continue;
       }
 
-      if (control.type === FormType.Array) {
+      if (control.fieldType === FormType.Array) {
         const rawValues = obj?.[control.field] ?? [];
         this.log(`Adding FormArray control for field '${control.field}'`, { rawValues });
         formGroup.addControl(
@@ -134,11 +134,11 @@ export class GenericFormFactoryService {
   }
 
   createTypeAheadSettings(obj: any, control: FormControlDefinition): TypeaheadSettings<FormControlOption> {
-    this.log(`createTypeAheadSettings called for control '${control.key}'`, { obj, controlType: control.type });
+    this.log(`createTypeAheadSettings called for control '${control.key}'`, { obj, controlType: control.fieldType });
 
-    if (control.type !== FormType.MultiSelect && control.type !== FormType.MultiText) {
-      this.log(`Invalid control type for TypeAhead: ${control.type}`);
-      throw new Error(`Invalid control type for ${control.type}`);
+    if (control.fieldType !== FormType.MultiSelect && control.fieldType !== FormType.MultiText) {
+      this.log(`Invalid control type for TypeAhead: ${control.fieldType}`);
+      throw new Error(`Invalid control type for ${control.fieldType}`);
     }
 
     const settings = new TypeaheadSettings<FormControlOption>();
@@ -146,7 +146,7 @@ export class GenericFormFactoryService {
     settings.multiple = true;
     settings.minCharacters = 0;
 
-    if (control.type === FormType.MultiText) {
+    if (control.fieldType === FormType.MultiText) {
       settings.addIfNonExisting = true;
       settings.addTransformFn = (text) => ({key: text, value: text, default: false});
       settings.compareFnForAdd = (optionList, filter) =>
@@ -155,7 +155,7 @@ export class GenericFormFactoryService {
 
     settings.fetchFn = (f) => {
       this.log(`TypeAhead fetchFn called with filter: '${f}' for key '${control.key}'`);
-      const filtered = control.options
+      const filtered = (control.options ?? [])
         .filter(v => (v.value + '').toLowerCase().includes(f.toLowerCase()));
 
       return of(filtered);
@@ -164,7 +164,7 @@ export class GenericFormFactoryService {
     if (obj) {
       const array = Array.isArray(obj) ? obj : [obj];
       settings.savedData = array.map(v =>
-        control.options.find(o => o.value == v) ?? (control.type === FormType.MultiText ? {
+        control.options?.find(o => o.value == v) ?? (control.fieldType === FormType.MultiText ? {
           key: v + '',
           value: v,
           default: false
@@ -260,10 +260,10 @@ export class GenericFormFactoryService {
 
     for (let control of controls) {
 
-      if (control.type === FormType.Array) {
+      if (control.fieldType === FormType.Array) {
         const rawValues = metadata[control.key];
 
-        let sourceValues = (rawValues && rawValues.length > 0) ? rawValues : control.defaultOption;
+        let sourceValues = (rawValues && rawValues.length > 0) ? rawValues : control.defaultValue;
         if (!Array.isArray(sourceValues)) {
           this.log(`Warning: sourceValues for '${control.key}' is not an array. Falling back to [].`, { sourceValues });
           sourceValues = [];
@@ -282,7 +282,7 @@ export class GenericFormFactoryService {
       }
 
       const currentValues = metadata[control.key];
-      const initialValue = currentValues && currentValues.length > 0 ? currentValues : control.defaultOption;
+      const initialValue = currentValues && currentValues.length > 0 ? currentValues : control.defaultValue;
       const transformedValue = this.transFormValueForFormType(initialValue, control);
 
       this.log(`Creating metadata FormControl for key '${control.key}'`, { initialValue, transformedValue });
@@ -362,7 +362,7 @@ export class GenericFormFactoryService {
       fieldName = control.key;
     }
 
-    const value = this.getNestedValue(obj, fieldName, control.defaultOption);
+    const value = this.getNestedValue(obj, fieldName, control.defaultValue);
     const transformed = this.transFormValueForFormType(value, control);
 
     this.log(`Derived initial value for '${control.field}' (key: '${control.key}')`, { raw: value, transformed });
@@ -387,7 +387,7 @@ export class GenericFormFactoryService {
   }
 
   private transFormValueForFormType(value: any, control: FormControlDefinition) {
-    switch (control.type) {
+    switch (control.fieldType) {
       case FormType.Switch:
         return this.transFormValue(value, ValueType.Boolean);
       case FormType.DropDown:

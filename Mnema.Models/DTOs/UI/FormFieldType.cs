@@ -1,0 +1,12 @@
+namespace Mnema.Models.DTOs.UI;
+
+public enum FormFieldType
+{
+    Switch = 0,
+    DropDown = 1,
+    MultiSelect = 2,
+    Text = 3,
+    Directory = 4,
+    MultiText = 5,
+    Array,
+}

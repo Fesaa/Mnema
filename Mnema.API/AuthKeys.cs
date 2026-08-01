@@ -18,5 +18,5 @@ public interface IAuthKeyService
 {
     Task CreateAuthKey(AuthKeyDto dto, CancellationToken cancellationToken);
     Task UpdateAuthKey(AuthKeyDto dto, CancellationToken cancellationToken);
-    List<FormControlDefinition> GetAuthKeyForm(ClaimsPrincipal principal);
+    List<FormFieldDefinition> GetAuthKeyForm(ClaimsPrincipal principal);
 }

@@ -113,7 +113,7 @@ export class GenericFormComponent<T> {
   }
 
   protected getFormOption(control: FormControlDefinition, value: any) {
-    return control.options.find(option => option.value === value);
+    return control.options?.find(option => option.value === value);
   }
 
   protected patchTypeAheadControlValue($event: FormControlOption[] | FormControlOption, formControl: FormControl) {
