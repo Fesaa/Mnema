@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
-using System.Reflection;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
@@ -13,15 +13,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using Microsoft.OpenApi;
-using Mnema.API;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Http;
 using Mnema.Database.Extensions;
 using Mnema.Metadata.Extensions;
 using Mnema.Models;
-using Mnema.Models.Entities;
 using Mnema.Models.Internal;
 using Mnema.Providers.Extensions;
 using Mnema.Server.Configuration;
@@ -30,6 +27,7 @@ using Mnema.Server.Helpers;
 using Mnema.Server.Middleware;
 using Mnema.Services.Extensions;
 using NeoSmart.Caching.Sqlite;
+using Scalar.AspNetCore;
 using Serilog;
 
 namespace Mnema.Server;
@@ -87,21 +85,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 .AddCachePolicy(CacheProfiles.OneDay, TimeSpan.FromDays(1))
                 .AddCachePolicy(CacheProfiles.OneWeek, TimeSpan.FromDays(7));
         });
-        services.AddSwaggerGen(c =>
-        {
-            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 
-            if (File.Exists(xmlPath)) c.IncludeXmlComments(xmlPath);
-
-            c.UseInlineDefinitionsForEnums();
-            c.SwaggerDoc("v1", new OpenApiInfo
-            {
-                Version = "0.0.1",
-                Title = "Mnema",
-                Description = "Mnema is your self-hosted go-to solution for content downloading"
-            });
-        });
+        services.AddOpenApi();
 
         services.AddResponseCompression(opts =>
         {
@@ -159,8 +144,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         app.UseRateLimiter();
 
         app.UseRouting();
-        app.UseSwagger();
-        app.UseSwaggerUI();
         app.UseResponseCaching();
 
         if (env.IsDevelopment())
@@ -206,6 +189,22 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 
         app.UseEndpoints(builder =>
             {
+                builder.MapOpenApi();
+                builder.MapScalarApiReference("/api-docs", async (options, ctx) =>
+                {
+                    if (!(ctx.User.Identity?.IsAuthenticated ?? false))
+                    {
+                        ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        await ctx.Response.CompleteAsync();
+                        return;
+                    }
+
+                    options.Agent = new ScalarAgentOptions { Disabled = true };
+                    options.Mcp = new ScalarMcpOptions { Disabled = true };
+                    options.HideClientButton = true;
+                    options.WithTitle("Mnema API Documentation");
+                });
+
                 builder.MapMnema();
                 builder.MapControllers();
                 builder.MapFallbackToController("Index", "Fallback");
