@@ -57,8 +57,10 @@ internal class KavitaConnectionService(
 
         var baseDir = Path.Join(applicationConfiguration.BaseDir, info.DownloadDir);
 
-        var mapping = baseDirMappings.FirstOrDefault(m =>
-            !string.IsNullOrEmpty(m.Src) && !string.IsNullOrEmpty(m.Dest) && baseDir.Contains(m.Src));
+        // run contains on longest first in case of inclusions
+        var mapping = baseDirMappings
+            .OrderByDescending(m => m.Src.Length)
+            .FirstOrDefault(m => !string.IsNullOrEmpty(m.Src) && !string.IsNullOrEmpty(m.Dest) && baseDir.Contains(m.Src));
 
         if (mapping is not null)
             baseDir = baseDir.Replace(mapping.Src, mapping.Dest);
