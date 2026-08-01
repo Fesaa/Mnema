@@ -13,6 +13,7 @@ using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 
 namespace Mnema.Services.Scheduled;
@@ -171,7 +172,6 @@ internal class MonitoredSeriesScheduler(
                             Metadata = metadata,
                             DownloadUrl = release.DownloadUrl,
                             StartImmediately = true,
-                            UserId = match.UserId,
                         });
                     }
                     else

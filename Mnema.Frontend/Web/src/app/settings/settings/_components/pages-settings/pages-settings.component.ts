@@ -4,7 +4,6 @@ import {PageService} from "../../../../_services/page.service";
 import {RouterLink} from "@angular/router";
 import {dropAnimation} from "../../../../_animations/drop-animation";
 import {ReactiveFormsModule} from "@angular/forms";
-import {AccountService} from "../../../../_services/account.service";
 import {ToastService} from "../../../../_services/toast.service";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {CdkDragDrop, CdkDragHandle, moveItemInArray} from "@angular/cdk/drag-drop";
@@ -38,9 +37,7 @@ export class PagesSettingsComponent {
   private readonly modalService = inject(ModalService);
   private readonly toastService = inject(ToastService);
   private readonly pageService = inject(PageService);
-  private readonly accountService = inject(AccountService);
 
-  user = computed(() => this.accountService.currentUser());
   pages = signal<Page[]>([]);
   loading = signal(true);
 

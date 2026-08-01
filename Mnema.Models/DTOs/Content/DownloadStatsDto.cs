@@ -1,5 +1,6 @@
 using System;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.Models.DTOs.Content;
 
@@ -21,7 +22,6 @@ public sealed record DownloadInfo
     public required SpeedType SpeedType { get; init; }
     public required double Speed { get; init; }
     public required string DownloadDir { get; init; }
-    public required Guid UserId { get; init; }
     public required Guid? MonitoredSeriesId { get; init; }
 }
 

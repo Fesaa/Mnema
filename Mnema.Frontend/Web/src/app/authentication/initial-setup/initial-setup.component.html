@@ -1,0 +1,58 @@
+<div class="scene" *transloco="let t">
+  <h1 class="wordmark">{{ t('setup.welcome') }}</h1>
+  <p class="tagline" [innerHTML]="t('setup.tagline')"></p>
+
+  <div class="card">
+    <form
+      id="setupForm"
+      method="post"
+      action="/api/Config/set-password"
+      novalidate
+      (submit)="onSubmit($event)"
+    >
+      <div
+        id="errorBanner"
+        class="error-banner"
+        [class.visible]="!!errorMessage()"
+        role="alert"
+      >
+        <span id="errorText">{{ errorMessage() }}</span>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="password">{{ t('setup.passwordLabel') }}</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          autocomplete="new-password"
+          minlength="8"
+          required
+          [class.invalid]="passwordInvalid()"
+          (input)="onInput('password', $any($event.target).value)"
+        />
+        <p class="hint">{{ t('setup.passwordHint') }}</p>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="confirmPassword">{{ t('setup.confirmLabel') }}</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          name="confirmPassword"
+          autocomplete="new-password"
+          minlength="8"
+          required
+          [class.invalid]="confirmInvalid()"
+          (input)="onInput('confirm', $any($event.target).value)"
+        />
+      </div>
+
+      <button type="submit" id="submitBtn" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? t('setup.submittingBtn') : t('setup.submitBtn') }}
+      </button>
+    </form>
+  </div>
+
+  <p class="footnote">{{ t('setup.footnote') }}</p>
+</div>

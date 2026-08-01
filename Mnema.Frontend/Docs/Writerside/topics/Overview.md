@@ -10,8 +10,8 @@ up to date with notifications.
 ## Requirements
 
 As Mnema is opinionated as first as foremost made for my setup, as such will only be provided as a container.
-First, and primary support (from me) goes to the full setup with postgres, oidc, and redis. However, it is possible to run Mnema
-fully standalone without authentication and sqlite instead.
+First, and primary support (from me) goes to the full setup with postgres, and redis. However, it is possible to run Mnema
+fully standalone with sqlite instead.
 
 
 ## Glossary

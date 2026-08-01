@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using Mnema.Common;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Interfaces;
+using Mnema.Models.Enums;
 
 namespace Mnema.Models.DTOs.Content;
 
 public sealed record MonitoredSeriesDto: IDatabaseEntity
 {
     public Guid Id { get; set; }
-
-    public Guid UserId { get; init; }
 
     /// <inheritdoc cref="MonitoredSeries.Title" />
     public required string Title { get; init; }

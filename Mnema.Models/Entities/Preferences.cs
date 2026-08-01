@@ -2,15 +2,13 @@ using System;
 using System.Collections.Generic;
 using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities.Interfaces;
+using Mnema.Models.Entities.User;
 
-namespace Mnema.Models.Entities.User;
+namespace Mnema.Models.Entities;
 
-public class UserPreferences: IDatabaseEntity
+public class Preferences: IDatabaseEntity
 {
     public Guid Id { get; set; }
-
-    public Guid UserId { get; set; }
-    public MnemaUser User { get; set; }
 
     public required ImageFormat ImageFormat { get; set; }
     public required CoverFallbackMethod CoverFallbackMethod { get; set; }

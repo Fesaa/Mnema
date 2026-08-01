@@ -1,0 +1,2 @@
+Mnema.Server/config/*
+!Mnema.Server/config/appsettings.json

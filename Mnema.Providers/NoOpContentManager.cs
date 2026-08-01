@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Mnema.API.Content;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.Providers;
 

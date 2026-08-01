@@ -7,6 +7,9 @@
     <li class="nav-item" (click)="tab = 'metadata-provider'">
       <a class="nav-link" [class.active]="tab === 'metadata-provider'">{{t('metadata-provider')}}</a>
     </li>
+    <li class="nav-item" (click)="tab = 'providers'">
+      <a class="nav-link" [class.active]="tab === 'providers'">{{t('providers')}}</a>
+    </li>
   </ul>
 
   <div class="tab-content mt-2">
@@ -137,5 +140,10 @@
         </div>
       }
     </div>
+
+    <div class="tab-pane" [class.active]="tab === 'providers'">
+      <app-provider-settings />
+    </div>
+
   </div>
 </div>

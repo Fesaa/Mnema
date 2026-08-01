@@ -1,0 +1,134 @@
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 12% 8%, var(--primary-color-lighter) 0%, transparent 38%),
+    radial-gradient(circle at 88% 92%, var(--secondary-color-lighter) 0%, transparent 42%),
+    var(--background-color);
+  background-attachment: fixed;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-primary);
+}
+
+.scene {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wordmark {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 32px;
+  letter-spacing: 0.01em;
+  margin: 0 0 32px 0;
+  color: var(--text-primary);
+}
+
+.card {
+  width: 100%;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 10px 30px var(--shadow-light);
+}
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.field-row {
+  position: relative;
+}
+
+input[type="password"] {
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1.5px solid var(--surface-border);
+  background: var(--background-color);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:focus {
+    border-color: var(--primary-color-light);
+    background: var(--surface-card);
+    box-shadow: 0 0 0 3px var(--primary-color-lighter);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+}
+
+.error-banner {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--error-color);
+  background: color-mix(in srgb, var(--error-color-light) 18%, transparent);
+  border: 1px solid var(--error-color-light);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 18px;
+
+  &.visible {
+    display: flex;
+  }
+}
+
+button[type="submit"] {
+  width: 100%;
+  margin-top: 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-light);
+  background: var(--primary-color);
+  border: none;
+  border-radius: 9px;
+  padding: 13px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+
+  &:hover {
+    background: var(--primary-color-light);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    background: var(--background-accent);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+  }
+}
+
+.footnote {
+  margin-top: 22px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+}

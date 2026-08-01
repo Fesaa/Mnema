@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 
 namespace Mnema.API.Content;

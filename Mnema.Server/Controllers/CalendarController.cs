@@ -20,7 +20,7 @@ public class CalendarController(ILogger<CalendarController> logger, IUnitOfWork 
     [HttpGet]
     public async Task<IActionResult> GetCalendar()
     {
-        var cacheKey = $"calendar_{UserId}";
+        const string cacheKey = "calendar";
         byte[] calendarBytes;
 
         var cachedCalendar = await cache.GetAsync(cacheKey, HttpContext.RequestAborted);
@@ -31,7 +31,7 @@ public class CalendarController(ILogger<CalendarController> logger, IUnitOfWork 
         }
         else
         {
-            var calendarString = await calendarService.CreateCalendar(UserId, HttpContext.RequestAborted);
+            var calendarString = await calendarService.CreateCalendar(HttpContext.RequestAborted);
             calendarBytes = Encoding.UTF8.GetBytes(calendarString);
 
             var cacheOptions = new DistributedCacheEntryOptions
@@ -48,18 +48,18 @@ public class CalendarController(ILogger<CalendarController> logger, IUnitOfWork 
     [HttpGet("url")]
     public async Task<ActionResult<string>> GetCalendarString()
     {
-        var authKey = await unitOfWork.AuthKeyRepository.GetAuthKeyForUser(UserId, [Roles.Calendar], HttpContext.RequestAborted);
+        var authKey = await unitOfWork.AuthKeyRepository.GetAuthKeyWithRoles([Roles.Calendar], HttpContext.RequestAborted);
         if (authKey == null)
         {
-            logger.LogWarning("No auth key found for user {UserId} with the Calendar permission creating one", UserId);
-            await authKeyService.CreateAuthKey(UserId, new AuthKeyDto
+            logger.LogWarning("No auth key found with the Calendar permission creating one");
+            await authKeyService.CreateAuthKey(new AuthKeyDto
             {
                 Name = "Calendar Key",
                 Roles = [Roles.Calendar],
                 Key = Guid.NewGuid().ToString()
-            }, User, HttpContext.RequestAborted);
+            }, HttpContext.RequestAborted);
 
-            authKey = await unitOfWork.AuthKeyRepository.GetAuthKeyForUser(UserId, [Roles.Calendar], HttpContext.RequestAborted);
+            authKey = await unitOfWork.AuthKeyRepository.GetAuthKeyWithRoles([Roles.Calendar], HttpContext.RequestAborted);
         }
 
         if (authKey == null)

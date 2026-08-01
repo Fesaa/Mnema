@@ -10,6 +10,7 @@ using Mnema.Common.Helpers;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 
 namespace Mnema.Metadata.Hardcover;
@@ -94,13 +95,9 @@ public class HardcoverMetadataService(
                 if (g.Key == null)
                     return []; // Ignore books without a positions
 
-                var featuredBook = g.FirstOrDefault(b => b.Featured);
-                if (featuredBook != null)
-                    return [featuredBook];
+                var mostPopularBooks = g.MaxBy(b => b.Book.UserReadCount);
 
-                var fallBack = g.MaxBy(b => b.Book.UserReadCount);
-
-                return fallBack == null ? [] : [fallBack];
+                return mostPopularBooks == null ? [] : [mostPopularBooks];
             })
             .ToList();
 

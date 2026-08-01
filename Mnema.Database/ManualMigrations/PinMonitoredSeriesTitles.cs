@@ -18,12 +18,11 @@ public class PinMonitoredSeriesTitles: ManualMigration
     {
         var metadataResolver = serviceProvider.GetRequiredService<IMetadataResolver>();
 
-        var preferences = await ctx.UserPreferences.ToDictionaryAsync(p => p.UserId, p => p.PinSubscriptionTitles);
-        if (preferences.All(p => !p.Value)) return;
+        var preferences = await ctx.Preferences.FirstOrDefaultAsync();
+        if (preferences is not { PinSubscriptionTitles: true }) return;
 
         var monitoredSeries = await ctx.MonitoredSeries.ToListAsync();
         foreach (var series in monitoredSeries
-                     .Where(m => preferences.TryGetValue(m.UserId, out var pin) && pin)
                      .Where(m => string.IsNullOrEmpty(m.TitleOverride)))
         {
             var metadata = series.MetadataForDownloadRequest();

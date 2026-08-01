@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
+using Mnema.Models.Enums;
 
 namespace Mnema.Models.Entities.Content;
 
@@ -21,7 +22,6 @@ public class ExternalDownload: IEntityDate, IDatabaseEntity
     public required string Title { get; set; }
     public required string BaseDir  { get; set; }
     public required Provider Provider { get; set; }
-    public required Guid UserId { get; set; }
     public required MetadataBag Metadata { get; set; }
     public bool IsErrored { get; set; }
     public DateTime CreatedUtc { get; set; }

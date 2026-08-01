@@ -19,6 +19,7 @@ export class ButtonGridComponent {
   protected readonly buttonGroupService = inject(ButtonGroupService);
 
   groups = input.required<ButtonGroup[]>();
+  toRenderGroups = computed(() => this.groups().filter(g => g.buttons.length > 0));
   mobileColumns = input<number>(1);
   mobileMode = computed(() => this.utilityService.breakPoint() < Breakpoint.Desktop );
 

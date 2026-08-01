@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Mnema.Models.Entities.Interfaces;
 
-namespace Mnema.Models.Entities.User;
+namespace Mnema.Models.Entities.Authentication;
 
 public class AuthKey: IDatabaseEntity, IEntityDate
 {
     public Guid Id { get; set; }
-
-    public required Guid UserId { get; set; }
-    public MnemaUser User { get; set; }
 
     public required string Name { get; set; } = string.Empty;
 

@@ -5,8 +5,10 @@ using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.User;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
+using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 using Mnema.Providers.Services;
 
@@ -35,18 +37,16 @@ public class MetadataServiceTest
         };
     }
 
-    private static UserPreferences CreateDefaultPreferences(
+    private static Preferences CreateDefaultPreferences(
         IList<TagMappingDto>? tagMappings = null,
         IList<AgeRatingMappingDto>? ageRatings = null,
         IList<string>? genres = null,
         IList<string>? blacklist = null,
         IList<string>? whitelist = null)
     {
-        return new UserPreferences
+        return new Preferences
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
-            User = null!,
             ImageFormat = ImageFormat.Upstream,
             CoverFallbackMethod = CoverFallbackMethod.None,
             ConvertToGenreList = genres ?? [],

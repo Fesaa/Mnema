@@ -1,4 +1,5 @@
 using System;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Entities.User;
 

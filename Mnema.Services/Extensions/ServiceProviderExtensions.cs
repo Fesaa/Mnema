@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.API.Services;
 using Mnema.Models.Entities;
 using Mnema.Services.Connections;
 using Mnema.Services.Hubs;
@@ -19,13 +21,12 @@ public static class ServiceProviderExtensions
     {
         if (!authDisabled)
         {
+            services.AddSingleton<TicketSerializer>();
             services.AddSingleton<ITicketStore, CustomTicketStore>();
-            services.AddScoped<IOpenIdConnectService, OpenIdConnectService>();
         }
 
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<IPagesService, PageService>();
-        services.AddScoped<IUserService, UserService>();
         services.AddScoped<ISearchService, SearchService>();
         services.AddScoped<IDownloadService, DownloadService>();
         services.AddScoped<IScheduled, MonitoredSeriesScheduler>();
@@ -41,6 +42,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<IProviderSettingsService, ProviderSettingsService>();
         services.AddScoped<IGroupedReleaseDetector, GroupedReleaseDetector>();
+        services.AddScoped<IPasswordService, PasswordService>();
 
         #region External Connection
 

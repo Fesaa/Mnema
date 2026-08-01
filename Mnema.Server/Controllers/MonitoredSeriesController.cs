@@ -13,6 +13,7 @@ using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
 
@@ -36,13 +37,13 @@ public class MonitoredSeriesController(
     {
         paginationParams ??= PaginationParams.Default;
 
-        return Ok(await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeriesDtosForUser(UserId, query, provider, paginationParams, HttpContext.RequestAborted));
+        return Ok(await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeriesDtosForUser(query, provider, paginationParams, HttpContext.RequestAborted));
     }
 
     [HttpGet("providers")]
     public async Task<ActionResult<List<Provider>>> InUseProviders()
     {
-        return Ok(await unitOfWork.MonitoredSeriesRepository.GetProviders(UserId, HttpContext.RequestAborted));
+        return Ok(await unitOfWork.MonitoredSeriesRepository.GetProviders(HttpContext.RequestAborted));
     }
 
     [HttpGet("{id:guid}")]
@@ -51,15 +52,13 @@ public class MonitoredSeriesController(
         var series = await unitOfWork.MonitoredSeriesRepository.GetDtoById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
         if (series == null) return NotFound();
 
-        if (series.UserId != UserId) return Forbid();
-
         return Ok(series);
     }
 
     [HttpPost("update")]
     public async Task<IActionResult> Update([FromBody] CreateOrUpdateMonitoredSeriesDto updateDto)
     {
-        await monitoredSeriesService.UpdateMonitoredSeries(UserId, updateDto, HttpContext.RequestAborted);
+        await monitoredSeriesService.UpdateMonitoredSeries(updateDto, HttpContext.RequestAborted);
 
         return Ok();
     }
@@ -67,7 +66,7 @@ public class MonitoredSeriesController(
     [HttpPost("new")]
     public async Task<IActionResult> Create([FromBody] CreateOrUpdateMonitoredSeriesDto createDto)
     {
-        await monitoredSeriesService.CreateMonitoredSeries(UserId, createDto, HttpContext.RequestAborted);
+        await monitoredSeriesService.CreateMonitoredSeries(createDto, HttpContext.RequestAborted);
 
         return Ok();
     }
@@ -77,8 +76,6 @@ public class MonitoredSeriesController(
     {
         var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
         if (monitoredSeries == null) return NotFound();
-
-        if (monitoredSeries.UserId != UserId) return Forbid();
 
         var series = await metadataResolver.ResolveSeriesAsync(monitoredSeries.Provider, monitoredSeries.MetadataForDownloadRequest(), HttpContext.RequestAborted);
 
@@ -91,9 +88,7 @@ public class MonitoredSeriesController(
         var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
         if (monitoredSeries == null) return NotFound();
 
-        if (monitoredSeries.UserId != UserId) return Forbid();
-
-        BackgroundJob.Enqueue(() => monitoredSeriesService.EnrichWithMetadata(id, CancellationToken.None));
+        BackgroundJob.Enqueue(() => monitoredSeriesService.EnrichWithMetadata(id, cancellationToken: CancellationToken.None));
 
         return Ok();
     }
@@ -103,7 +98,6 @@ public class MonitoredSeriesController(
     {
         var mSeries = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
         if (mSeries == null) return NotFound();
-        if (mSeries.UserId != UserId) return Forbid();
 
         var req = new SearchRequest
         {
@@ -120,7 +114,6 @@ public class MonitoredSeriesController(
     {
         var mSeries = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
         if (mSeries == null) return NotFound();
-        if (mSeries.UserId != UserId) return Forbid();
 
         if (mSeries.Provider != result.Provider) return BadRequest();
 
@@ -132,7 +125,6 @@ public class MonitoredSeriesController(
             TempTitle = mSeries.Title,
             Metadata = mSeries.MetadataForDownloadRequest(),
             DownloadUrl = result.DownloadUrl,
-            UserId = UserId,
             StartImmediately = true
         };
 
@@ -146,11 +138,10 @@ public class MonitoredSeriesController(
     {
         var mSeries = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
         if (mSeries == null) return NotFound();
-        if (mSeries.UserId != UserId) return Forbid();
 
         if (string.IsNullOrWhiteSpace(mSeries.ExternalId)) return BadRequest();
 
-        await monitoredSeriesService.StartDownload(UserId, id, false, HttpContext.RequestAborted);
+        await monitoredSeriesService.StartDownload(id, false, HttpContext.RequestAborted);
 
         return Ok();
     }
@@ -160,8 +151,6 @@ public class MonitoredSeriesController(
     {
         var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
         if (series == null) return NotFound();
-
-        if (series.UserId != UserId) return Forbid();
 
         unitOfWork.MonitoredSeriesRepository.Remove(series);
 
@@ -178,8 +167,6 @@ public class MonitoredSeriesController(
         var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
         if (series == null) return NotFound();
 
-        if (series.UserId != UserId) return Forbid();
-
         var chapter = series.Chapters.FirstOrDefault(c => c.Id == chapterId);
         if (chapter == null) return NotFound();
 
@@ -194,7 +181,7 @@ public class MonitoredSeriesController(
     public async Task<ActionResult<PagedList<MonitoredChapterDto>>> GetMissingChapters(
         [FromQuery] PaginationParams pagination)
     {
-        return Ok(await unitOfWork.MonitoredSeriesRepository.GetMissingChapters(UserId, pagination, HttpContext.RequestAborted));
+        return Ok(await unitOfWork.MonitoredSeriesRepository.GetMissingChapters(pagination, HttpContext.RequestAborted));
     }
 
     [HttpGet("form")]
@@ -206,6 +193,6 @@ public class MonitoredSeriesController(
     [HttpGet("metadata-form")]
     public async Task<ActionResult<FormDefinition>> GetMetadataForm([FromQuery] Provider provider)
     {
-        return Ok(await monitoredSeriesService.GetMetadataForm(UserId, provider, HttpContext.RequestAborted));
+        return Ok(await monitoredSeriesService.GetMetadataForm(provider, HttpContext.RequestAborted));
     }
 }

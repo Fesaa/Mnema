@@ -1,10 +1,11 @@
-import {inject, Injectable, signal} from '@angular/core';
+import {effect, inject, Injectable, signal} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {environment} from "../../environments/environment";
 import {Notification} from "../_models/notifications";
 import {PagedList} from "../_models/paged-list";
 import {EventType, SignalRService} from "./signal-r.service";
 import {map, tap} from "rxjs";
+import {SettingsService} from "@mnema/_services/settings.service";
 
 @Injectable({
   providedIn: 'root'
@@ -13,13 +14,18 @@ export class NotificationService {
   private baseUrl = environment.apiUrl + "notifications";
   private readonly http = inject(HttpClient);
   private readonly signalR = inject(SignalRService);
+  private readonly settingsService = inject(SettingsService);
 
   notificationsCount = signal(0);
   notificationsEnabled = signal(false);
 
   constructor() {
-    this.reload();
-    this.enabled().subscribe()
+    effect(() => {
+      if (this.settingsService.isAuthenticated()) {
+        this.reload();
+        this.enabled().subscribe();
+      }
+    });
 
     this.signalR.events$.subscribe(event => {
       if (event.type === EventType.NotificationAdd) {

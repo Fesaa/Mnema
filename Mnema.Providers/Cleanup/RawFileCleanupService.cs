@@ -13,8 +13,10 @@ using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
+using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
@@ -52,7 +54,7 @@ internal class RawFileCleanupService(
     {
         if (content == null) throw new ArgumentNullException(nameof(content));
 
-        var preferences = await unitOfWork.UserRepository.GetPreferences(request.UserId);
+        var preferences = await unitOfWork.SettingsRepository.GetPreferencesAsync();
 
         var series = await metadataResolver.ResolveSeriesAsync(request.Provider, request.Metadata);
         if (content is ExternalDownloadContent torrent)
@@ -245,7 +247,7 @@ internal class RawFileCleanupService(
 internal record CleanupContext(
     DownloadRequestDto Request,
     Series? Series,
-    UserPreferences Preferences,
+    Preferences Preferences,
     Format Format,
     ContentFormat ContentFormat,
     string Title,

@@ -12,8 +12,10 @@ using Microsoft.Extensions.Logging;
 using Mnema.Database;
 using Mnema.Database.ManualMigrations;
 using Mnema.Server.Logging;
+using NetVips;
 using Serilog;
 using Serilog.Templates;
+using Log = Serilog.Log;
 
 namespace Mnema.Server;
 
@@ -27,6 +29,8 @@ public class Program
             .MinimumLevel
             .Information()
             .CreateBootstrapLogger();
+
+        InitNetVips();
 
         try
         {
@@ -90,5 +94,14 @@ public class Program
                     .ListenAnyIP(8080,
                         listenOptions => { listenOptions.Protocols = HttpProtocols.Http1; }))
                 .UseStartup<Startup>());
+    }
+
+    /// <summary>
+    /// Ensure NetVips does not cache
+    /// </summary>
+    /// <remarks>https://github.com/kleisauke/net-vips/issues/6#issuecomment-394379299</remarks>
+    private static void InitNetVips()
+    {
+        Cache.MaxFiles = 0;
     }
 }

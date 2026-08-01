@@ -3,17 +3,13 @@
     "target": "http://localhost:8080",
     "secure": false
   },
-  "/oidc": {
-    "target": "http://localhost:8080",
-    "secure": false
-  },
-  "/logout": {
-    "target": "http://localhost:8080",
-    "secure": false
-  },
   "/ws": {
     "target": "http://localhost:8080",
     "secure": false,
     "ws": true
+  },
+  "/api-docs": {
+    "target": "http://localhost:8080",
+    "secure": false
   }
 }

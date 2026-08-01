@@ -18,10 +18,7 @@ You can use both at the same time
 | `ConnectionStrings:Redis`       |   | Connection string for the Redis cache.                                                                                                                                        |
 | `ConnectionStrings:Postgres`    |   | Connection string for the PostgreSQL database.                                                                                                                                |
 | `ConnectionStrings:Sqlite`      |   | Connection string for the Sqlite database, ensure this maps to a persistent location. Postgres takes priority. Example: `Data Source=/persistent/Mnema.db;` The ; is required | 
-| **Authentication**              |   |                                                                                                                                                                               |
-| `OpenIdConnect:Authority`       |   | The OIDC Identity Provider URL.                                                                                                                                               |
-| `OpenIdConnect:ClientId`        |   | The registered Client ID for the application.                                                                                                                                 |
-| `OpenIdConnect:Secret`          |   | The secret key for OIDC handshake.                                                                                                                                            |
+| **Authentication**              |   |                                                                                                                                                                               | |
 | `NoAuthentication`              |   | Set the `true` if you wish to disable Authentication                                                                                                                          |
 | `Authentication:Hardcover`      |   | Your hardcover ApiKey, required if you wish to use hardcover as a metadata provider                                                                                           |
 | **Storage**                     |   |                                                                                                                                                                               |
@@ -35,7 +32,7 @@ You can use both at the same time
 
 
 <warning>
-    It is advised to use OIDC to secure your application, when disabling authentication make sure Mnema is not publicly accessible
+    When disabling authentication make sure Mnema is not publicly accessible
 </warning>
 
 ---
@@ -47,6 +44,8 @@ You can use both at the same time
 
 ## Docker compose example
 
+> If you mount `/persistent`, `/media`, and `/downloads`. Mnema will start up and not lose data witout needing to configure anything else 
+
 <code-block lang="yaml" language="yaml">
 services:
   mnema:
@@ -56,37 +55,18 @@ services:
       - "8080:8080"
     environment:
       - TZ=Europe/Brussels
-      - ConnectionStrings__Postgres=Host=postgres;Database=mnema;Username=mnema_user;Password=your_secure_password
-      - OpenIdConnect__Secret=your_oidc_secret
       # - AutoMapperLicense=your_license_here
     volumes:
-      - ./data/persistent:/persistent
+      - ./data/mnema:/persistent
       - /path/to/your/media:/media
       - /path/to/your/downloads:/downloads
-     - ./appsettings.json:/Mnema/config/appsettings.json #Check in the kubernetes section for what should be in here
-    restart: unless-stopped
-
-  postgres:
-    image: postgres:17.4-alpine
-    container_name: mnema-db
-    environment:
-      - POSTGRES_DB=mnema
-      - POSTGRES_USER=mnema_user
-      - POSTGRES_PASSWORD=your_secure_password
-    volumes:
-      - ./data/postgres:/var/lib/postgresql/data
-
-  redis:
-    image: redis:8.2.2-alpine
-    container_name: mnema-redis
-    volumes:
-      - ./data/redis:/data
+     - ./appsettings.json:/Mnema/config/appsettings.json # Optional
     restart: unless-stopped
 </code-block>
 
 ## Kubernetes example
 
-I run my software in a kubernetes cluster, so this is how I run mine
+I run my software in a kubernetes cluster, so this is how I run mine. This is with Postgres & Redis
 
 <tabs>
     <tab title="ConfigMap">
@@ -108,10 +88,6 @@ data:
       },
       "ConnectionStrings": {
         "Redis": "redis-svc.common.svc.cluster.local"
-      },
-      "OpenIdConnect": {
-        "Authority": "https://sso.example.com/realms/prod",
-        "ClientId": "mnema"
       },
       "Application": {
         "BaseDir": "/media",

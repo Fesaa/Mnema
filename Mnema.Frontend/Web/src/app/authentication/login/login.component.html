@@ -1,0 +1,42 @@
+<div class="scene" *transloco="let t; prefix: 'login'">
+  <h1 class="wordmark">{{ t('brandName', { defaultValue: 'Mnema' }) }}</h1>
+
+  <div class="card">
+    <form
+      id="loginForm"
+      method="post"
+      action="/api/Auth/login"
+      novalidate
+      (submit)="onSubmit($event)"
+    >
+      <div
+        id="errorBanner"
+        class="error-banner"
+        [class.visible]="hasError"
+        role="alert"
+      >
+        <span id="errorText">{{ t('errorWrongPassword') }}</span>
+      </div>
+
+      <label class="field-label" for="password">{{ t('passwordLabel') }}</label>
+      <div class="field-row">
+        <input
+          type="password"
+          id="password"
+          name="password"
+          autocomplete="current-password"
+          autofocus
+          required
+        />
+      </div>
+
+      <input type="hidden" name="returnUrl" id="returnUrl" [value]="returnUrl" />
+
+      <button type="submit" id="submitBtn">
+        {{ t('unlockBtn') }}
+      </button>
+    </form>
+  </div>
+
+  <p class="footnote">{{ t('footnote') }}</p>
+</div>

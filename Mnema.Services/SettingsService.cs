@@ -1,18 +1,42 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
+using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
+using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.Services;
 
 internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unitOfWork) : ISettingsService
 {
+    public async Task UpdatePreferences(PreferencesDto dto, CancellationToken cancellationToken)
+    {
+        var pref = await unitOfWork.SettingsRepository.GetPreferencesAsync(cancellationToken);
+
+        pref.ImageFormat = dto.ImageFormat;
+        pref.CoverFallbackMethod = dto.CoverFallbackMethod;
+        pref.BlackListedTags = dto.BlackListedTags.DistinctBy(t => t.ToNormalized()).ToList();
+        pref.WhiteListedTags = dto.WhiteListedTags.DistinctBy(t => t.ToNormalized()).ToList();
+        pref.ConvertToGenreList = dto.ConvertToGenreList.DistinctBy(g => g.ToNormalized()).ToList();
+        pref.AgeRatingMappings = dto.AgeRatingMappings.DistinctBy(arm => arm.Tag.ToNormalized()).ToList();
+        pref.TagMappings = dto.TagMappings
+            .DistinctBy(tm => tm.DestinationTag.ToNormalized() + tm.OriginTag.ToNormalized()).ToList();
+        pref.PinSubscriptionTitles = dto.PinSubscriptionTitles;
+
+        unitOfWork.SettingsRepository.Update(pref);
+
+        await unitOfWork.CommitAsync(cancellationToken);
+    }
+
     public async Task<T> GetSettingsAsync<T>(ServerSettingKey key)
     {
         if (!ServerSettingTypeMap.KeyToType.TryGetValue(key, out var expectedType) || expectedType != typeof(T))
@@ -65,6 +89,8 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                 case ServerSettingKey.ImageConversionQuality:
                     dto.ImageConversionQuality = DeserializeSetting<int>(serverSetting);
                     break;
+                case ServerSettingKey.Password:
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
                         "Unknown server settings key");
@@ -92,6 +118,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                 ServerSettingKey.AutoDisableAfter => dto.AutoDisableProviderAfter,
                 ServerSettingKey.ImageConversionLossLess => dto.ImageConversionLossless,
                 ServerSettingKey.ImageConversionQuality => dto.ImageConversionQuality,
+                ServerSettingKey.Password => null,
                 _ => throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
                     "Unknown server settings key")
             };
@@ -119,6 +146,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             ServerSettingKey.AutoDisableAfter => int.Parse(setting.Value),
             ServerSettingKey.ImageConversionLossLess => bool.Parse(setting.Value),
             ServerSettingKey.ImageConversionQuality => int.Parse(setting.Value),
+            ServerSettingKey.Password => setting.Value,
             _ => default(T)
         };
 
@@ -146,6 +174,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             ServerSettingKey.AutoDisableAfter => setting.ToString(),
             ServerSettingKey.ImageConversionLossLess => setting.ToString(),
             ServerSettingKey.ImageConversionQuality => setting.ToString(),
+            ServerSettingKey.Password => setting.ToString(),
             _ => throw new ArgumentException($"[SerializeSetting] No converter found for key {key}")
         } ?? string.Empty;
     }
@@ -178,6 +207,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             { ServerSettingKey.AutoDisableAfter, typeof(int)},
             { ServerSettingKey.ImageConversionLossLess, typeof(bool) },
             { ServerSettingKey.ImageConversionQuality, typeof(int) },
+            { ServerSettingKey.Password, typeof(string) },
         };
     }
 }

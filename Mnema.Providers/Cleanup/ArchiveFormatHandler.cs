@@ -11,6 +11,7 @@ using Mnema.API.Content;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
+using Mnema.Models.Enums;
 using Mnema.Models.External;
 
 namespace Mnema.Providers.Cleanup;

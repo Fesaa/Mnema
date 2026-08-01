@@ -10,89 +10,89 @@ namespace Mnema.Services.Hubs;
 
 internal class MessageService(IHubContext<MessageHub> ctx) : IMessageService
 {
-    public async Task SizeUpdate(Guid userId, string contentId, string newSize)
+    public async Task SizeUpdate(string contentId, string newSize)
     {
-        await SendToUser(userId, nameof(MessageEventType.ContentSizeUpdate), new ContentSizeUpdate
+        await Send(nameof(MessageEventType.ContentSizeUpdate), new ContentSizeUpdate
         {
             ContentId = contentId,
             Size = newSize
         });
     }
 
-    public async Task ProgressUpdate(Guid userId, string contentId, ContentSpeedUpdate progressSpeedUpdate)
+    public async Task ProgressUpdate(string contentId, ContentSpeedUpdate progressSpeedUpdate)
     {
-        await SendToUser(userId, nameof(MessageEventType.ContentProgressUpdate), progressSpeedUpdate);
+        await Send(nameof(MessageEventType.ContentProgressUpdate), progressSpeedUpdate);
     }
 
-    public async Task StateUpdate(Guid userId, string contentId, ContentState state)
+    public async Task StateUpdate(string contentId, ContentState state)
     {
-        await SendToUser(userId, nameof(MessageEventType.ContentStateUpdate), new ContentStateUpdate
+        await Send(nameof(MessageEventType.ContentStateUpdate), new ContentStateUpdate
         {
             ContentId = contentId,
             ContentState = state
         });
     }
 
-    public async Task AddContent(Guid userId, DownloadInfo info)
+    public async Task AddContent(DownloadInfo info)
     {
-        await SendToUser(userId, nameof(MessageEventType.AddContent), info);
+        await Send(nameof(MessageEventType.AddContent), info);
     }
 
-    public async Task UpdateContent(Guid userId, DownloadInfo info)
+    public async Task UpdateContent(DownloadInfo info)
     {
-        await SendToUser(userId, nameof(MessageEventType.ContentInfoUpdate), info);
+        await Send(nameof(MessageEventType.ContentInfoUpdate), info);
     }
 
-    public async Task BulkContentInfoUpdate(Guid userId, DownloadInfo[] downloadInfos)
+    public async Task BulkContentInfoUpdate(DownloadInfo[] downloadInfos)
     {
-        await SendToUser(userId, nameof(MessageEventType.BulkContentInfoUpdate), downloadInfos);
+        await Send(nameof(MessageEventType.BulkContentInfoUpdate), downloadInfos);
     }
 
-    public async Task DeleteContent(Guid userId, string contentId)
+    public async Task DeleteContent(string contentId)
     {
-        await SendToUser(userId, nameof(MessageEventType.DeleteContent), new ContentUpdate
+        await Send(nameof(MessageEventType.DeleteContent), new ContentUpdate
         {
             ContentId = contentId
         });
     }
 
-    public async Task RefreshDashboard(Guid userId)
+    public async Task RefreshDashboard()
     {
-        await SendToUser(userId, nameof(MessageEventType.RefreshDashboard));
+        await Send(nameof(MessageEventType.RefreshDashboard));
     }
 
-    public async Task NotificationAdded(Guid userId, int amount)
+    public async Task NotificationAdded(int amount)
     {
-        await SendToUser(userId, nameof(MessageEventType.NotificationAdd), new
+        await Send(nameof(MessageEventType.NotificationAdd), new
         {
             Amount = amount
         });
     }
 
-    public async Task NotificationRemoved(Guid userId, int amount)
+    public async Task NotificationRemoved(int amount)
     {
-        await SendToUser(userId, nameof(MessageEventType.NotificationRead), new
+        await Send(nameof(MessageEventType.NotificationRead), new
         {
             Amount = amount
         });
     }
 
-    public async Task Notify(Guid userId, NotificationDto notification)
+    public async Task Notify(NotificationDto notification)
     {
-        await SendToUser(userId, nameof(MessageEventType.Notification), notification);
-        await SendToUser(userId, nameof(MessageEventType.NotificationAdd));
+        await Send(nameof(MessageEventType.Notification), notification);
+        await Send(nameof(MessageEventType.NotificationAdd));
     }
 
-    public async Task MetadataRefreshed(Guid userId, Guid seriesId)
+    public async Task MetadataRefreshed(Guid seriesId)
     {
-        await SendToUser(userId, nameof(MessageEventType.MetadataRefreshed), new
+        await Send(nameof(MessageEventType.MetadataRefreshed), new
         {
             SeriesId = seriesId
         });
     }
 
-    private async Task SendToUser(Guid userId, string method, object? body = null)
+    private async Task Send(string method, object? body = null)
     {
-        await ctx.Clients.User(userId.ToString()).SendAsync(method, body);
+        await ctx.Clients.All.SendAsync(method, body);
     }
 }

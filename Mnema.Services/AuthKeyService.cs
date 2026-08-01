@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -9,7 +8,7 @@ using Mnema.API;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.DTOs.User;
-using Mnema.Models.Entities.User;
+using Mnema.Models.Entities.Authentication;
 
 namespace Mnema.Services;
 
@@ -18,21 +17,15 @@ public partial class AuthKeyService(IUnitOfWork unitOfWork): IAuthKeyService
 
     private static readonly Regex AuthKeyRegex = MyRegex();
 
-    public async Task CreateAuthKey(Guid userId, AuthKeyDto dto, ClaimsPrincipal principal, CancellationToken cancellationToken)
+    public async Task CreateAuthKey(AuthKeyDto dto, CancellationToken cancellationToken)
     {
-        var roles = principal.Claims
-            .Where(c => c.Type == ClaimTypes.Role)
-            .Select(c => c.Value)
-            .ToList();
-
         if (!AuthKeyRegex.IsMatch(dto.Key))
             throw new BadRequestException("Invalid auth key");
 
         var authkey = new AuthKey
         {
-            UserId = userId,
             Name = dto.Name,
-            Roles = dto.Roles.Where(roles.Contains).ToList(),
+            Roles = dto.Roles.ToList(),
             Key = dto.Key
         };
 
@@ -40,24 +33,17 @@ public partial class AuthKeyService(IUnitOfWork unitOfWork): IAuthKeyService
         await unitOfWork.CommitAsync(cancellationToken);
     }
 
-    public async Task UpdateAuthKey(Guid id, AuthKeyDto dto, ClaimsPrincipal principal, CancellationToken cancellationToken)
+    public async Task UpdateAuthKey(AuthKeyDto dto, CancellationToken cancellationToken)
     {
-        var roles = principal.Claims
-            .Where(c => c.Type == ClaimTypes.Role)
-            .Select(c => c.Value)
-            .ToList();
-
-        var authKey = await unitOfWork.AuthKeyRepository.GetById(id, cancellationToken);
+        var authKey = await unitOfWork.AuthKeyRepository.GetById(dto.Id, cancellationToken);
         if (authKey == null) throw new NotFoundException();
-
-        if (authKey.UserId != dto.UserId) throw new UnauthorizedAccessException();
 
         if (!MyRegex().IsMatch(dto.Key))
             throw new BadRequestException("Invalid auth key");
 
         authKey.Key = dto.Key;
         authKey.Name = dto.Name;
-        authKey.Roles = dto.Roles.Where(roles.Contains).ToList();
+        authKey.Roles = dto.Roles.ToList();
 
         unitOfWork.AuthKeyRepository.Update(authKey);
         await unitOfWork.CommitAsync(cancellationToken);

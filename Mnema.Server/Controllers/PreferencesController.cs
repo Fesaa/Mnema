@@ -10,22 +10,20 @@ namespace Mnema.Server.Controllers;
 public class PreferencesController(
     ILogger<PreferencesController> logger,
     IUnitOfWork unitOfWork,
-    IUserService userService,
+    ISettingsService settingsService,
     IMapper mapper) : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<UserPreferencesDto>> GetPreferences()
+    public async Task<ActionResult<PreferencesDto>> GetPreferences()
     {
-        var pref = await unitOfWork.UserRepository.GetPreferences(UserId);
-        if (pref == null) return NotFound();
-
-        return Ok(mapper.Map<UserPreferencesDto>(pref));
+        var pref = await unitOfWork.SettingsRepository.GetPreferencesAsync(HttpContext.RequestAborted);
+        return Ok(mapper.Map<PreferencesDto>(pref));
     }
 
     [HttpPost]
-    public async Task<IActionResult> UpdatePreferences([FromBody] UserPreferencesDto dto)
+    public async Task<IActionResult> UpdatePreferences([FromBody] PreferencesDto dto)
     {
-        await userService.UpdatePreferences(UserId, dto);
+        await settingsService.UpdatePreferences(dto, HttpContext.RequestAborted);
 
         return Ok();
     }

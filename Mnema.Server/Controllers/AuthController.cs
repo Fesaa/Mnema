@@ -1,33 +1,48 @@
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Mnema.Server.Extensions;
-using Swashbuckle.AspNetCore.Annotations;
+using Mnema.API.Services;
+using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
 
-[Route("[controller]")]
-public class AuthController : Controller
+public class AuthController(IPasswordService passwordService) : BaseApiController
 {
-    [SwaggerIgnore]
-    [HttpGet("login")]
-    public IActionResult Login(string? returnUrl = null)
+    [AllowAnonymous]
+    [HttpPost("login")]
+    public async Task<IActionResult> Login()
     {
-        var properties = new AuthenticationProperties
+        var form = await Request.ReadFormAsync();
+        if (!form.TryGetValue("password", out var password))
         {
-            RedirectUri = returnUrl ?? "/"
-        };
+            return Redirect("/login?error=invalid_password");
+        }
 
-        return Challenge(properties, OpenIdConnectServiceExtensions.OpenIdConnect);
+        if (!await passwordService.VerifyHashedPassword(password.FirstOrDefault() ?? string.Empty))
+        {
+            return Redirect("/login?error=invalid_password");
+        }
+
+        var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+        identity.AddClaims(Roles.AllRoles.Select(r => new Claim(ClaimTypes.Role, r)));
+        var principal = new ClaimsPrincipal(identity);
+
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
+            new AuthenticationProperties { IsPersistent = true, });
+
+        return Redirect("/");
     }
 
-    [SwaggerIgnore]
+    [AllowAnonymous]
     [HttpGet("logout")]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
-        return SignOut(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            OpenIdConnectServiceExtensions.OpenIdConnect
-        );
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        return Redirect("/");
     }
 }

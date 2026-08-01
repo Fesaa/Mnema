@@ -7,6 +7,7 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Http;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Providers.Cleanup;
 using Mnema.Providers.Dynasty;
 using Mnema.Providers.Managers.Publication;

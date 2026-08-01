@@ -13,4 +13,5 @@ public enum ServerSettingKey
     AutoDisableAfter = 9,
     ImageConversionLossLess = 10,
     ImageConversionQuality = 11,
+    Password = 12,
 }

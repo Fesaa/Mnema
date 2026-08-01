@@ -6,8 +6,10 @@ using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.DTOs.User;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
+using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Publication;
 
@@ -25,7 +27,7 @@ public interface IMetadataService
     /// <param name="chapter"></param>
     /// <param name="note"></param>
     /// <returns></returns>
-    ComicInfo? CreateComicInfo(UserPreferences preferences, DownloadRequestDto request, string title, Series? series, Chapter? chapter, string? note = null);
+    ComicInfo? CreateComicInfo(Preferences preferences, DownloadRequestDto request, string title, Series? series, Chapter? chapter, string? note = null);
 
     /// <summary>
     ///     Processes the input tags for the given preferences and returns the (Genres, Tags)
@@ -34,7 +36,7 @@ public interface IMetadataService
     /// <param name="inputTags"></param>
     /// <param name="request"></param>
     /// <returns></returns>
-    (List<string>, List<string>) ProcessTags(UserPreferences preferences, IList<Tag> inputTags,
+    (List<string>, List<string>) ProcessTags(Preferences preferences, IList<Tag> inputTags,
         DownloadRequestDto request);
 
     /// <summary>
@@ -43,7 +45,7 @@ public interface IMetadataService
     /// <param name="preferences"></param>
     /// <param name="inputTags"></param>
     /// <returns></returns>
-    AgeRating? GetAgeRating(UserPreferences preferences, IList<Tag> inputTags);
+    AgeRating? GetAgeRating(Preferences preferences, IList<Tag> inputTags);
 
     /// <summary>
     ///     Transforms the tags, as defined by the mappings

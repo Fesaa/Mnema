@@ -16,8 +16,10 @@ using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
+using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
 
@@ -69,7 +71,7 @@ internal partial class Publication(
     /// </summary>
     private List<string> _userSelectedIds = [];
 
-    internal UserPreferences Preferences = null!;
+    internal Preferences Preferences = null!;
     internal Series? Series { get; set; }
 
     /// <summary>
@@ -174,7 +176,6 @@ internal partial class Publication(
         SpeedType = SpeedType.Images,
         Speed = Math.Floor(_speedTracker?.IntermediateSpeed() ?? 0),
         DownloadDir = DownloadDir,
-        UserId = Request.UserId,
         MonitoredSeriesId = Request.GetKey(RequestConstants.MonitoredSeriesId)
     };
 
@@ -257,7 +258,6 @@ internal partial class Publication(
             Provider = provider,
             Id = Id,
             DeleteFiles = deleteFiles,
-            UserId = Request.UserId
         };
     }
 }

@@ -16,6 +16,7 @@ using Mnema.API.Content;
 using Mnema.Metadata.Hardcover;
 using Mnema.Metadata.Mangabaka;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using Serilog;
 using Directory = System.IO.Directory;

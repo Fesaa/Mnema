@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Mnema.API;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.Database.Repositories;
 

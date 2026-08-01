@@ -12,13 +12,14 @@ using Mnema.Common.Extensions;
 using Mnema.Database.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.Database.Repositories;
 
 public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
     : AbstractNavigationalEntityRepository<MonitoredSeries, MonitoredSeriesDto, MonitoredSeriesIncludes>(ctx, mapper), IMonitoredSeriesRepository
 {
-    public Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(Guid userId, string query,
+    public Task<PagedList<MonitoredSeriesDto>> GetMonitoredSeriesDtosForUser(string query,
         Provider? provider, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
@@ -26,7 +27,6 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
 
         return ctx.MonitoredSeries
             .Includes(MonitoredSeriesIncludes.Chapters)
-            .Where(m => m.UserId == userId)
             .Where(m => m.NormalizedTitle.Contains(query))
             .WhereIf(provider.HasValue, m => m.Provider == provider)
             .ProjectTo<MonitoredSeriesDto>(mapper.ConfigurationProvider)
@@ -34,10 +34,9 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
             .AsPagedList(pagination, cancellationToken);
     }
 
-    public Task<List<Provider>> GetProviders(Guid userId, CancellationToken cancellationToken = default)
+    public Task<List<Provider>> GetProviders(CancellationToken cancellationToken = default)
     {
         return ctx.MonitoredSeries
-            .Where(s => s.UserId == userId)
             .Select(s => s.Provider)
             .Distinct()
             .ToListAsync(cancellationToken);
@@ -84,27 +83,25 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
             .ToListAsync(cancellationToken);
     }
 
-    public Task<List<MonitoredChapter>> GetUpcomingChapters(Guid userId, CancellationToken cancellationToken = default)
+    public Task<List<MonitoredChapter>> GetUpcomingChapters(CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow.Date;
         var daysSinceMonday = ((int)now.DayOfWeek + 6) % 7;
         var startOfWeek = now.AddDays(-daysSinceMonday);
 
         return ctx.MonitoredChapters
-            .Where(c => c.Series.UserId == userId)
             .Where(c => c.Status == MonitoredChapterStatus.Upcoming
                         || (c.Status == MonitoredChapterStatus.Missing && c.ReleaseDate >= startOfWeek))
             .Include(c => c.Series)
             .ToListAsync(cancellationToken);
     }
 
-    public Task<PagedList<MonitoredChapterDto>> GetMissingChapters(Guid userId, PaginationParams pagination,
+    public Task<PagedList<MonitoredChapterDto>> GetMissingChapters(PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
 
         return ctx.MonitoredChapters
-            .Where(c => c.Series.UserId == userId)
             .Where(c => c.Status == MonitoredChapterStatus.Missing ||
                         // We do the extra check for upcoming chapters, as the status isn't real time
                         // But rather only updated when the metadata is (I.e. with the hangfire task)
@@ -116,13 +113,14 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
             .AsPagedList(pagination, cancellationToken);
     }
 
-    public Task<bool> CheckDuplicateSeries(Guid userId, Guid? current, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
+    public Task<bool> CheckDuplicateSeries(Guid? current, CreateOrUpdateMonitoredSeriesDto dto,
+        CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrEmpty(dto.ExternalId))
         {
             return ctx.MonitoredSeries
                 .Where(s => current == null || s.Id != current)
-                .Where(s => s.UserId == userId && s.ExternalId == dto.ExternalId)
+                .Where(s => s.ExternalId == dto.ExternalId)
                 .AnyAsync(cancellationToken);
         }
 

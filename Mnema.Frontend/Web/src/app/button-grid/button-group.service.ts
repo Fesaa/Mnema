@@ -1,5 +1,4 @@
 import {computed, inject, Injectable, TemplateRef} from '@angular/core';
-import {AccountService} from "../_services/account.service";
 import {NavigationExtras, Router, UrlTree} from "@angular/router";
 import {Role} from "../_models/user";
 import {PageService} from "../_services/page.service";
@@ -20,7 +19,6 @@ export enum SettingsID {
   Connections = "connections",
   Releases = "releases",
   AuthKeys = "auth-keys",
-  ProviderSettings = "provider-settings"
 }
 
 export interface Button {
@@ -59,7 +57,6 @@ export interface ButtonGroup {
 export class ButtonGroupService {
 
   private readonly notificationService = inject(NotificationService);
-  private readonly accountService = inject(AccountService);
   private readonly activeDownloadsService = inject(ActiveDownloadsService);
   private readonly transloco = inject(TranslocoService);
   private readonly utilityService = inject(UtilityService);
@@ -129,7 +126,9 @@ export class ButtonGroupService {
       {
         title: translate('button-groups.settings.logout'),
         icon: 'fa fa-user-minus',
-        onClick: () => this.accountService.logout(),
+        onClick: () => {
+          window.location.href = '/api/Auth/logout';
+        },
       },
     ];
 
@@ -202,13 +201,6 @@ export class ButtonGroupService {
           navExtras: { fragment: SettingsID.AuthKeys },
           id: SettingsID.AuthKeys
         },
-        {
-          title: translate('button-groups.settings.provider-settings'),
-          icon: 'fa fa-cogs',
-          navUrl: '/settings',
-          navExtras: { fragment: SettingsID.ProviderSettings },
-          id: SettingsID.ProviderSettings
-        },
       ],
     };
   });
@@ -219,33 +211,16 @@ export class ButtonGroupService {
     this.settingsGroup(),
   ]);
 
-  anyVisible(buttons: Button[]) {
-    return buttons.some(button => this.shouldRender(button));
-  }
-
-  shouldRender(button: Button) {
-    const user = this.accountService.currentUser();
-    if (!user) return false;
-
-    if (button.requiredRoles === undefined || button.requiredRoles.length === 0) {
-      return true;
-    }
-
-    return button.requiredRoles.some(role => user.roles.includes(role));
-  }
-
   mobileMode = computed(() => this.utilityService.breakPoint() < Breakpoint.Desktop );
 
   groupedButtons(group: ButtonGroup) {
-    return (this.mobileMode() ? group.buttons.filter(btn => !btn.standAlone) : [])
-      .filter(btn => this.shouldRender(btn));
+    return (this.mobileMode() ? group.buttons.filter(btn => !btn.standAlone) : []);
   }
 
   standAloneButtons(group: ButtonGroup) {
     return (this.mobileMode()
       ? group.buttons.filter(btn => !!btn.standAlone)
-      : group.buttons)
-      .filter(btn => this.shouldRender(btn));
+      : group.buttons);
   }
 
   groupBadge(group: ButtonGroup): string | undefined {

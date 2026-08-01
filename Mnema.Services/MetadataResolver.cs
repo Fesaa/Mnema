@@ -11,6 +11,7 @@ using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 
 namespace Mnema.Services;

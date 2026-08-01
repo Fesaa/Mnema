@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.Models.DTOs.Content;
 
@@ -14,9 +15,4 @@ public sealed record StopRequestDto
 
     public bool DeleteFromDownloadClient { get; init; } = true;
 
-    [JsonIgnore]
-    public bool SaveDownload => !DeleteFiles;
-
-    [JsonIgnore]
-    public Guid UserId { get; set; }
 }

@@ -1,6 +1,6 @@
 using System;
 
-namespace Mnema.Models.Entities.Content;
+namespace Mnema.Models.Enums;
 
 public enum Provider
 {

@@ -51,7 +51,6 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
 
     public DownloadRequestDto Request => new()
     {
-        UserId = externalDownload.UserId,
         Provider = externalDownload.Provider,
         Id = externalDownload.ExternalId,
         Metadata = externalDownload.Metadata,
@@ -85,7 +84,6 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
                 SpeedType = SpeedType.Bytes,
                 Speed = torrentInfo.DownloadSpeed,
                 DownloadDir = externalDownload.BaseDir,
-                UserId = externalDownload.UserId,
                 MonitoredSeriesId = externalDownload.GetKey(RequestConstants.MonitoredSeriesId)
             };
         }

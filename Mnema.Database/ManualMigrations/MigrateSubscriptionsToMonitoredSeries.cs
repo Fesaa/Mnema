@@ -25,7 +25,6 @@ public class MigrateSubscriptionsToMonitoredSeries: ManualMigration
                 ExternalId = subscription.ContentId,
                 Provider = subscription.Provider,
                 TitleOverride = subscription.Metadata.GetKey(RequestConstants.TitleOverride) ?? string.Empty,
-                UserId = subscription.UserId,
                 ContentFormat = subscription.Metadata.GetKey(RequestConstants.ContentFormatKey),
                 Format = subscription.Metadata.GetKey(RequestConstants.FormatKey),
                 Chapters = [],

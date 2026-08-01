@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Mnema.Common;
 using Mnema.Database.Extensions;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.Authentication;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Interfaces;
-using Mnema.Models.Entities.UI;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Database;
@@ -22,8 +22,7 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
         ChangeTracker.StateChanged += OnEntityStateChanged;
     }
 
-    public DbSet<MnemaUser> Users { get; set; }
-    public DbSet<UserPreferences> UserPreferences { get; set; }
+    public DbSet<Preferences> Preferences { get; set; }
     public DbSet<Page> Pages { get; set; }
     [Obsolete("Use MonitoredSeries")]
     public DbSet<Subscription> Subscriptions { get; set; }
@@ -42,25 +41,19 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        builder.Entity<UserPreferences>()
+        builder.Entity<Preferences>()
             .PrimitiveCollection(p => p.ConvertToGenreList)
             .HasDefaultValue(new List<string>());
-        builder.Entity<UserPreferences>()
+        builder.Entity<Preferences>()
             .PrimitiveCollection(p => p.BlackListedTags)
             .HasDefaultValue(new List<string>());
-        builder.Entity<UserPreferences>()
+        builder.Entity<Preferences>()
             .PrimitiveCollection(p => p.WhiteListedTags)
             .HasDefaultValue(new List<string>());
-        builder.Entity<UserPreferences>()
+        builder.Entity<Preferences>()
             .ComplexCollection(p => p.AgeRatingMappings, b => b.ToJson());
-        builder.Entity<UserPreferences>()
+        builder.Entity<Preferences>()
             .ComplexCollection(p => p.TagMappings, b => b.ToJson());
-
-        builder.Entity<Page>()
-            .HasMany(p => p.Users);
-
-        builder.Entity<MnemaUser>()
-            .HasMany(u => u.Pages);
 
         builder.Entity<Subscription>()
             .Property(s => s.Metadata)

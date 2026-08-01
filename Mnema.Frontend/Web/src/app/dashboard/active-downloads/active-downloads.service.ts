@@ -1,4 +1,4 @@
-import {DestroyRef, inject, Injectable, signal} from '@angular/core';
+import {DestroyRef, effect, inject, Injectable, signal} from '@angular/core';
 import {ContentService} from "../../_services/content.service";
 import {EventType, SignalRService} from "../../_services/signal-r.service";
 import {ContentState, InfoStat} from "../../_models/stats";
@@ -9,6 +9,7 @@ import {
   ContentStateUpdate,
   DeleteContent
 } from "../../_models/signalr";
+import {SettingsService} from "@mnema/_services/settings.service";
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +18,7 @@ export class ActiveDownloadsService {
   private readonly contentService = inject(ContentService);
   private readonly signalR = inject(SignalRService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly settingService = inject(SettingsService);
 
   private readonly debug = false;
 
@@ -25,8 +27,6 @@ export class ActiveDownloadsService {
 
   constructor() {
     this.log('Service initialized');
-
-    this.reload();
 
     this.signalR.events$
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -68,6 +68,12 @@ export class ActiveDownloadsService {
             break;
         }
       });
+
+    effect(() => {
+      if (this.settingService.isAuthenticated()) {
+        this.reload();
+      }
+    });
   }
 
   reload() {

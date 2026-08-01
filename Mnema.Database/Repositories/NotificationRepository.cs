@@ -9,49 +9,40 @@ using Mnema.API;
 using Mnema.Common;
 using Mnema.Database.Extensions;
 using Mnema.Models.DTOs.User;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Database.Repositories;
 
-public class NotificationRepository(MnemaDataContext ctx, IMapper mapper) : INotificationRepository
+public class NotificationRepository(MnemaDataContext ctx, IMapper mapper) : AbstractEntityEntityRepository<Notification, NotificationDto>(ctx, mapper), INotificationRepository
 {
-    public Task<PagedList<NotificationDto>> GetNotificationsForUser(Guid userId, bool? read,
-        PaginationParams pagination)
+    public Task<int> MarkNotificationsAsRead(IEnumerable<Guid> ids)
     {
         return ctx.Notifications
-            .Where(n => n.UserId == userId && (read == null || n.Read == read))
-            .ProjectTo<NotificationDto>(mapper.ConfigurationProvider)
-            .OrderByDescending(n => n.CreatedUtc)
-            .AsPagedList(pagination);
-    }
-
-    public Task<int> MarkNotificationsAsRead(Guid userId, IEnumerable<Guid> ids)
-    {
-        return ctx.Notifications
-            .Where(n => n.UserId == userId && ids.Contains(n.Id))
+            .Where(n => ids.Contains(n.Id))
             .ExecuteUpdateAsync(n
                 => n.SetProperty(p => p.Read, true));
     }
 
-    public Task<int> MarkNotificationsAsUnRead(Guid userId, IEnumerable<Guid> ids)
+    public Task<int> MarkNotificationsAsUnRead(IEnumerable<Guid> ids)
     {
         return ctx.Notifications
-            .Where(n => n.UserId == userId && ids.Contains(n.Id))
+            .Where(n => ids.Contains(n.Id))
             .ExecuteUpdateAsync(n
                 => n.SetProperty(p => p.Read, false));
     }
 
-    public Task DeleteNotifications(Guid userId, IEnumerable<Guid> ids)
+    public Task DeleteNotifications(IEnumerable<Guid> ids)
     {
         return ctx.Notifications
-            .Where(n => n.UserId == userId && ids.Contains(n.Id))
+            .Where(n => ids.Contains(n.Id))
             .ExecuteDeleteAsync();
     }
 
-    public Task<int> UnReadNotifications(Guid userId)
+    public Task<int> UnReadNotifications()
     {
         return ctx.Notifications
-            .Where(n => n.UserId == userId && !n.Read)
+            .Where(n => !n.Read)
             .CountAsync();
     }
 

@@ -7,7 +7,6 @@ namespace Mnema.API;
 public interface IUnitOfWork
 {
     IPagesRepository PagesRepository { get; }
-    IUserRepository UserRepository { get; }
     ISettingsRepository SettingsRepository { get; }
     INotificationRepository NotificationRepository { get; }
     IConnectionRepository ConnectionRepository { get; }

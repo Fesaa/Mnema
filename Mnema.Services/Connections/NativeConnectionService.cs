@@ -41,7 +41,6 @@ internal class NativeConnectionService(
             Summary = $"Download for {info.Name} has started.",
             Body = info.Description,
             Colour = NotificationColour.Primary,
-            UserId = info.UserId
         });
     }
 
@@ -53,7 +52,6 @@ internal class NativeConnectionService(
             Summary = $"Download for {info.Name} has finished.",
             Body = info.Description,
             Colour = NotificationColour.Primary,
-            UserId = info.UserId
         });
     }
 
@@ -65,7 +63,6 @@ internal class NativeConnectionService(
             Summary = $"Download for {info.Name} has failed.",
             Body = ex.Message.Limit(MaxBodyLength),
             Colour = NotificationColour.Error,
-            UserId = info.UserId
         });
     }
 
@@ -77,7 +74,6 @@ internal class NativeConnectionService(
             Summary = $"The subscription for {info.Name} has downloaded everything.",
             Body = info.Description,
             Colour = NotificationColour.Primary,
-            UserId = info.UserId
         });
     }
 
@@ -89,27 +85,20 @@ internal class NativeConnectionService(
             Summary = $"Cannot automatically start download for {info.Title} as it wants to download {amount} chapters at once.",
             Body = string.Empty,
             Colour = NotificationColour.Warning,
-            UserId = info.UserId
         });
     }
 
     public override async Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
     {
-        var users = await unitOfWork.UserRepository.GetUsers();
-
-        foreach (var user in users)
+        await SendNotification(new Notification
         {
-            await SendNotification(new Notification
-            {
-                Title = client.IsFailed ? "Download client locked" : "Download client unlocked",
-                Summary = client.IsFailed
-                    ? $"Client {client.Name} is unreachable and is locked until {client.FailedAt?.AddHours(1)}"
-                    : $"Client {client.Name} is reachable again and has been unlocked",
-                Body = string.Empty,
-                Colour = client.IsFailed ? NotificationColour.Warning : NotificationColour.Primary,
-                UserId = user.Id,
-            });
-        }
+            Title = client.IsFailed ? "Download client locked" : "Download client unlocked",
+            Summary = client.IsFailed
+                ? $"Client {client.Name} is unreachable and is locked until {client.FailedAt?.AddHours(1)}"
+                : $"Client {client.Name} is reachable again and has been unlocked",
+            Body = string.Empty,
+            Colour = client.IsFailed ? NotificationColour.Warning : NotificationColour.Primary,
+        });
     }
 
     public override Task<List<FormControlDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)
@@ -122,9 +111,9 @@ internal class NativeConnectionService(
         unitOfWork.NotificationRepository.AddNotification(notification);
         await unitOfWork.CommitAsync();
 
-        await messageService.NotificationAdded(notification.UserId, 1);
+        await messageService.NotificationAdded(1);
 
         var dto = mapper.Map<NotificationDto>(notification);
-        await messageService.Notify(notification.UserId, dto);
+        await messageService.Notify(dto);
     }
 }

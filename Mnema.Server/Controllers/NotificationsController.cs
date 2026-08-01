@@ -22,36 +22,23 @@ public class NotificationsController(IUnitOfWork unitOfWork, IMessageService mes
     {
         pagination ??= PaginationParams.Default;
 
-        var notifications = await unitOfWork.NotificationRepository.GetNotificationsForUser(UserId, null, pagination);
+        var notifications = await unitOfWork.NotificationRepository.GetAllPaged(pagination, HttpContext.RequestAborted);
 
         return Ok(notifications);
-    }
-
-    [HttpGet("recent")]
-    public async Task<ActionResult<IList<NotificationDto>>> GetRecentNotifications([FromQuery] int limit)
-    {
-        var notifications = await unitOfWork.NotificationRepository.GetNotificationsForUser(UserId, false,
-            new PaginationParams
-            {
-                PageNumber = 0,
-                PageSize = limit
-            });
-
-        return Ok(notifications.Items);
     }
 
     [HttpGet("amount")]
     public async Task<ActionResult<int>> AmountOfUnread()
     {
-        return Ok(await unitOfWork.NotificationRepository.UnReadNotifications(UserId));
+        return Ok(await unitOfWork.NotificationRepository.UnReadNotifications());
     }
 
     [HttpPost("{notificationId:guid}/read")]
     public async Task<IActionResult> ReadNotification(Guid notificationId)
     {
-        var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsRead(UserId, [notificationId]);
+        var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsRead([notificationId]);
 
-        if (changes > 0) await messageService.NotificationRemoved(UserId, changes);
+        if (changes > 0) await messageService.NotificationRemoved(changes);
 
         return Ok();
     }
@@ -59,9 +46,9 @@ public class NotificationsController(IUnitOfWork unitOfWork, IMessageService mes
     [HttpPost("{notificationId:guid}/unread")]
     public async Task<IActionResult> UnReadNotification(Guid notificationId)
     {
-        var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsUnRead(UserId, [notificationId]);
+        var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsUnRead([notificationId]);
 
-        if (changes > 0) await messageService.NotificationAdded(UserId, changes);
+        if (changes > 0) await messageService.NotificationAdded(changes);
 
         return Ok();
     }
@@ -69,7 +56,7 @@ public class NotificationsController(IUnitOfWork unitOfWork, IMessageService mes
     [HttpDelete("{notificationId:guid}")]
     public async Task<IActionResult> DeleteNotification(Guid notificationId)
     {
-        await unitOfWork.NotificationRepository.DeleteNotifications(UserId, [notificationId]);
+        await unitOfWork.NotificationRepository.DeleteNotifications([notificationId]);
 
         return Ok();
     }
@@ -77,9 +64,9 @@ public class NotificationsController(IUnitOfWork unitOfWork, IMessageService mes
     [HttpPost("many/read")]
     public async Task<IActionResult> ReadMany([FromBody] Guid[] ids)
     {
-        var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsRead(UserId, ids);
+        var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsRead(ids);
 
-        if (changes > 0) await messageService.NotificationRemoved(UserId, changes);
+        if (changes > 0) await messageService.NotificationRemoved(changes);
 
         return Ok();
     }
@@ -87,9 +74,9 @@ public class NotificationsController(IUnitOfWork unitOfWork, IMessageService mes
     [HttpPost("many/unread")]
     public async Task<IActionResult> UnReadMany([FromBody] Guid[] ids)
     {
-        var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsRead(UserId, ids);
+        var changes = await unitOfWork.NotificationRepository.MarkNotificationsAsRead(ids);
 
-        if (changes > 0) await messageService.NotificationAdded(UserId, changes);
+        if (changes > 0) await messageService.NotificationAdded(changes);
 
         return Ok();
     }
@@ -97,7 +84,7 @@ public class NotificationsController(IUnitOfWork unitOfWork, IMessageService mes
     [HttpPost("many/delete")]
     public async Task<IActionResult> DeleteMany([FromBody] Guid[] ids)
     {
-        await unitOfWork.NotificationRepository.DeleteNotifications(UserId, ids);
+        await unitOfWork.NotificationRepository.DeleteNotifications(ids);
 
         return Ok();
     }

@@ -57,7 +57,7 @@ internal class MonitoredSeriesMetadataScheduler(
 
             try
             {
-                await monitoredSeriesService.EnrichWithMetadata(mSeries.Id, ct);
+                await monitoredSeriesService.EnrichWithMetadata(mSeries.Id, cancellationToken: ct);
             }
             catch (Exception ex)
             {

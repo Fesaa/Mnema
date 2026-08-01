@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
-using System.Reflection;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
@@ -13,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using Microsoft.OpenApi;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Http;
@@ -28,6 +27,7 @@ using Mnema.Server.Helpers;
 using Mnema.Server.Middleware;
 using Mnema.Services.Extensions;
 using NeoSmart.Caching.Sqlite;
+using Scalar.AspNetCore;
 using Serilog;
 
 namespace Mnema.Server;
@@ -35,7 +35,7 @@ namespace Mnema.Server;
 public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
 
-    private bool AuthDisabled => configuration.GetSection(OpenIdConnectServiceExtensions.NoAuthentication).Get<bool>();
+    private bool AuthDisabled => configuration.GetSection(AuthenticationExtensions.NoAuthentication).Get<bool>();
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -85,21 +85,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
                 .AddCachePolicy(CacheProfiles.OneDay, TimeSpan.FromDays(1))
                 .AddCachePolicy(CacheProfiles.OneWeek, TimeSpan.FromDays(7));
         });
-        services.AddSwaggerGen(c =>
-        {
-            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 
-            if (File.Exists(xmlPath)) c.IncludeXmlComments(xmlPath);
-
-            c.UseInlineDefinitionsForEnums();
-            c.SwaggerDoc("v1", new OpenApiInfo
-            {
-                Version = "0.0.1",
-                Title = "Mnema",
-                Description = "Mnema is your self-hosted go-to solution for content downloading"
-            });
-        });
+        services.AddOpenApi();
 
         services.AddResponseCompression(opts =>
         {
@@ -140,7 +127,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         services.AddMnemaDatabase(configuration);
         services.AddDatabaseServices();
         services.AddAndConfigureHangFire(configuration);
-        services.AddIdentityServices(configuration, env);
+        services.AddAuthentication(configuration);
     }
 
     public void Configure(IApplicationBuilder app, IServiceProvider serviceProvider)
@@ -157,8 +144,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         app.UseRateLimiter();
 
         app.UseRouting();
-        app.UseSwagger();
-        app.UseSwaggerUI();
         app.UseResponseCaching();
 
         if (env.IsDevelopment())
@@ -181,6 +166,17 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         });
         app.UseMiddleware<ExceptionMiddleware>();
 
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            HttpsCompression = HttpsCompressionMode.Compress,
+            OnPrepareResponse = ctx =>
+            {
+                ctx.Context.Response.Headers[HeaderNames.CacheControl] = "public,max-age=" + TimeSpan.FromHours(24);
+                ctx.Context.Response.Headers[Headers.RobotsTag] = "noindex,nofollow";
+            }
+        });
+        app.UseDefaultFiles();
+
         app.UseAuthentication();
         app.UseAuthorization();
 
@@ -191,27 +187,24 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             DefaultRecordsPerPage = 10
         });
 
-        app.UseStaticFiles(new StaticFileOptions
-        {
-            HttpsCompression = HttpsCompressionMode.Compress,
-            OnPrepareResponse = ctx =>
-            {
-                if (ctx.Context.User.Identity?.IsAuthenticated ?? false)
-                {
-                    ctx.Context.Response.Headers[HeaderNames.CacheControl] = "public,max-age=" + TimeSpan.FromHours(24);
-                    ctx.Context.Response.Headers[Headers.RobotsTag] = "noindex,nofollow";
-                }
-                else
-                {
-                    ctx.Context.Response.Redirect(
-                        $"/Auth/login?returnUrl={Uri.EscapeDataString(ctx.Context.Request.Path)}");
-                }
-            }
-        });
-        app.UseDefaultFiles();
-
         app.UseEndpoints(builder =>
             {
+                builder.MapOpenApi();
+                builder.MapScalarApiReference("/api-docs", async (options, ctx) =>
+                {
+                    if (!(ctx.User.Identity?.IsAuthenticated ?? false))
+                    {
+                        ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        await ctx.Response.CompleteAsync();
+                        return;
+                    }
+
+                    options.Agent = new ScalarAgentOptions { Disabled = true };
+                    options.Mcp = new ScalarMcpOptions { Disabled = true };
+                    options.HideClientButton = true;
+                    options.WithTitle("Mnema API Documentation");
+                });
+
                 builder.MapMnema();
                 builder.MapControllers();
                 builder.MapFallbackToController("Index", "Fallback");

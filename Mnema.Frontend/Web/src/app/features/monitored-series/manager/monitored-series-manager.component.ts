@@ -14,7 +14,6 @@ import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
 import {ProviderNamePipe} from "@mnema/_pipes/provider-name.pipe";
 import {querySignal} from "@mnema/shared/signals";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
-import {AccountService} from "@mnema/_services/account.service";
 import {Role} from "@mnema/_models/user";
 import {Clipboard} from "@angular/cdk/clipboard";
 import {CalendarService} from "@mnema/features/monitored-series/manager/calendar.service";
@@ -47,17 +46,12 @@ export class MonitoredSeriesManagerComponent implements OnInit {
   private readonly pageService = inject(PageService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  private readonly accountService = inject(AccountService);
   private readonly clipboard = inject(Clipboard);
   private readonly calendarService = inject(CalendarService);
   private readonly toastService = inject(ToastService);
 
   hasAny = signal(false);
   providers = signal<Provider[]>([]);
-
-  protected hasCalendarRole = computed(() => {
-    return this.accountService.currentUser()?.roles.includes(Role.Calendar);
-  })
 
   filterQuery = querySignal<Filter>({
     filterText: '',

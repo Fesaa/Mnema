@@ -13,6 +13,7 @@ using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
 
@@ -31,15 +32,12 @@ public class MonitoredSeriesService(
     IConnectionService connectionService
 ): IMonitoredSeriesService
 {
-    public async Task UpdateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto,
-        CancellationToken cancellationToken = default)
+    public async Task UpdateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
     {
         var series = await unitOfWork.MonitoredSeriesRepository.GetById(dto.Id, MonitoredSeriesIncludes.Chapters, cancellationToken);
         if (series == null) throw new NotFoundException();
 
-        if (series.UserId != userId) throw new ForbiddenException();
-
-        if (await unitOfWork.MonitoredSeriesRepository.CheckDuplicateSeries(userId, series.Id, dto, cancellationToken))
+        if (await unitOfWork.MonitoredSeriesRepository.CheckDuplicateSeries(series.Id, dto, cancellationToken))
         {
             throw new BadRequestException("You cannot monitor the same series twice (External Ids or Valid Titles)");
         }
@@ -63,17 +61,15 @@ public class MonitoredSeriesService(
         BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
     }
 
-    public async Task CreateMonitoredSeries(Guid userId, CreateOrUpdateMonitoredSeriesDto dto,
-        CancellationToken cancellationToken = default)
+    public async Task CreateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
     {
-        if (await unitOfWork.MonitoredSeriesRepository.CheckDuplicateSeries(userId, null, dto, cancellationToken))
+        if (await unitOfWork.MonitoredSeriesRepository.CheckDuplicateSeries(null, dto, cancellationToken))
         {
             throw new BadRequestException("You cannot monitor the same series twice (External Ids or Valid Titles)");
         }
 
         var series = new MonitoredSeries
         {
-            UserId = userId,
             Title = dto.Title,
             BaseDir = dto.BaseDir,
             Provider = dto.Provider,
@@ -93,7 +89,7 @@ public class MonitoredSeriesService(
 
         await unitOfWork.CommitAsync(cancellationToken);
 
-        var jobId = BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None, true));
+        var jobId = BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, true, CancellationToken.None));
         if (!string.IsNullOrEmpty(jobId))
             jobId = BackgroundJob.ContinueJobWith(jobId, () => connectionService.CommunicateSeriesMonitored(series.Id, CancellationToken.None));
 
@@ -101,16 +97,16 @@ public class MonitoredSeriesService(
 
         if (string.IsNullOrEmpty(jobId))
         {
-            BackgroundJob.Enqueue(() => StartDownload(userId, series.Id, true, CancellationToken.None));
+            BackgroundJob.Enqueue(() => StartDownload(series.Id, true, CancellationToken.None));
         }
         else
         {
-            BackgroundJob.ContinueJobWith(jobId, () => StartDownload(userId, series.Id, true, CancellationToken.None));
+            BackgroundJob.ContinueJobWith(jobId, () => StartDownload(series.Id, true, CancellationToken.None));
         }
     }
 
     [AutomaticRetry(Attempts = 1)]
-    public async Task StartDownload(Guid userId, Guid seriesId, bool firstDownload, CancellationToken ct = default)
+    public async Task StartDownload(Guid seriesId, bool firstDownload, CancellationToken ct = default)
     {
         var series = await unitOfWork.MonitoredSeriesRepository.GetById(seriesId, ct: ct);
         if (series == null) throw new NotFoundException();
@@ -128,7 +124,6 @@ public class MonitoredSeriesService(
             TempTitle = series.Title,
             Metadata = metadata,
             StartImmediately = true,
-            UserId = userId,
         });
     }
 
@@ -231,7 +226,7 @@ public class MonitoredSeriesService(
         };
     }
 
-    public async Task<FormDefinition> GetMetadataForm(Guid userId, Provider provider, CancellationToken ct = default)
+    public async Task<FormDefinition> GetMetadataForm(Provider provider, CancellationToken ct = default)
     {
         var excludedKeys = GetForm().Controls.Select(c => c.Key).ToHashSet();
 
@@ -251,8 +246,13 @@ public class MonitoredSeriesService(
         };
     }
 
+    public async Task EnrichWithMetadata(Guid guid, CancellationToken ct = default)
+    {
+        await EnrichWithMetadata(guid, false, ct);
+    }
+
     [AutomaticRetry(Attempts = 1)]
-    public async Task EnrichWithMetadata(Guid guid, CancellationToken ct = default, bool firstRun = false)
+    public async Task EnrichWithMetadata(Guid guid, bool firstRun = false, CancellationToken ct = default)
     {
         var mSeries = await unitOfWork.MonitoredSeriesRepository.GetById(guid, MonitoredSeriesIncludes.Chapters, ct);
         if (mSeries == null) return;
@@ -268,7 +268,7 @@ public class MonitoredSeriesService(
 
         if (firstRun)
         {
-            var pref = await unitOfWork.UserRepository.GetPreferences(mSeries.UserId);
+            var pref = await unitOfWork.SettingsRepository.GetPreferencesAsync(ct);
 
             if (pref.PinSubscriptionTitles && string.IsNullOrEmpty(mSeries.TitleOverride) && !string.IsNullOrEmpty(series.Title))
             {
@@ -340,7 +340,7 @@ public class MonitoredSeriesService(
 
         await unitOfWork.CommitAsync(ct);
 
-        await messageService.MetadataRefreshed(mSeries.UserId, mSeries.Id);
+        await messageService.MetadataRefreshed(mSeries.Id);
     }
 
     private static void PatchChapterMetadata(MonitoredChapter? mChapter, Chapter chapter)
