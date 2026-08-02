@@ -39,6 +39,8 @@ public abstract record FormFieldDefinition
 
     public bool ForceSingle { get; init; }
 
+    public bool HideText { get; init; }
+
     public abstract FormFieldType FieldType { get; }
 
     public abstract FieldValueType ValueType { get; }

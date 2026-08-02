@@ -45,6 +45,7 @@ export class SettingsItemComponent implements OnChanges {
   title = input<string>();
   tooltip = input<string>();
   labelId = input<string>();
+  hideText = input(false);
 
   editLabel = input<string>();
   canEdit = input(true);

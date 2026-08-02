@@ -17,6 +17,7 @@ export type FormControlDefinition = {
   disabled: boolean;
   forceEditMode: boolean;
   inline: boolean;
+  hideText: boolean;
 
   defaultValue: any;
   options?: FormControlOption[];

@@ -1,16 +1,18 @@
 <ng-container *transloco="let t;">
   <div>
     <div class="settings-row row g-0 d-flex align-items-center justify-content-between">
-      @if (title(); as title) {
-        <div class="col-auto setting-title edit">
-          <h4 class="section-title">
-            @if (labelId()) {
-              <label class="reset-label" [for]="labelId()">{{ title }}</label>
-            } @else {
-              {{ title }}
-            }
-          </h4>
-        </div>
+      @if (!hideText()) {
+        @if (title(); as title) {
+          <div class="col-auto setting-title edit">
+            <h4 class="section-title">
+              @if (labelId()) {
+                <label class="reset-label" [for]="labelId()">{{ title }}</label>
+              } @else {
+                {{ title }}
+              }
+            </h4>
+          </div>
+        }
       }
       @if (showEdit()) {
         <div class="col-auto">
@@ -32,8 +34,10 @@
       </span>
     }
 
-    @if (tooltip(); as subtitle) {
-      <div class="text-muted mt-2" [innerHTML]="subtitle | safeHtml"></div>
+    @if (!hideText()) {
+      @if (tooltip(); as subtitle) {
+        <div class="text-muted mt-2" [innerHTML]="subtitle | safeHtml"></div>
+      }
     }
 
     @if (shouldShowErrors()) {

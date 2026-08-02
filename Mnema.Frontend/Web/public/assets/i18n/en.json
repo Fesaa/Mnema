@@ -673,6 +673,11 @@
     "preferences": {
       "title": "Preferences",
 
+      "sync-title": "Kavita Sync",
+      "sync-description": "Import or Export your preferences to Kavita Metadata Management settings",
+      "export": "Export",
+      "import": "Import",
+
       "imageFormat-title": "Image conversion",
       "imageFormat-tooltip": "In which format should downloaded images be saved",
 

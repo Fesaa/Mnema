@@ -2,34 +2,42 @@ export type Preferences = {
   imageFormat: ImageFormat;
   coverFallbackMethod: CoverFallbackMethod,
   pinSubscriptionTitles: boolean,
-  convertToGenreList: string[],
   blackListedTags: string[],
   whiteListedTags: string[],
   ageRatingMappings: AgeRatingMap[],
-  tagMappings: TagMap[],
+  metadataFieldMappings: MetadataFieldMapping[],
 };
+
+export interface KavitaMetadataPreferences {
+  ageRatingMappings: Record<string, ComicInfoAgeRating>,
+  fieldMappings: MetadataFieldMapping[],
+  blacklist: string[],
+  whitelist: string[],
+}
+
+export enum MetadataFieldType {
+  Genre = 0,
+  Tag = 1
+}
+
+export interface MetadataFieldMapping {
+  sourceType: MetadataFieldType;
+  destinationType: MetadataFieldType;
+  sourceValue: string;
+  destinationValue: string;
+  excludeFromSource: boolean;
+}
 
 export enum ImageFormat {
   Upstream = 0,
   Webp = 1,
 }
 
-export const ImageFormats = [
-  {label: "Upstream", value: ImageFormat.Upstream},
-  {label: "Webp", value: ImageFormat.Webp}
-];
-
 export enum CoverFallbackMethod {
   CoverFallbackFirst = 0,
   CoverFallbackLast = 1,
   CoverFallbackNone = 2,
 }
-
-export const CoverFallbackMethods = [
-  {label: "First", value: CoverFallbackMethod.CoverFallbackFirst},
-  {label: "Last", value: CoverFallbackMethod.CoverFallbackLast},
-  {label: "None", value: CoverFallbackMethod.CoverFallbackNone},
-]
 
 export type TagMap = {
   originTag: string,
