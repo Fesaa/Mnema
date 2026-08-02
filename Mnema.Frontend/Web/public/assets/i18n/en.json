@@ -962,6 +962,17 @@
         "title": "Copied to clipboard",
         "summary": "Key: {{key}}"
       }
+    },
+    "provider-settings": {
+      "header": {
+        "name": "Name",
+        "edit": "Edit"
+      },
+      "edit": {
+        "title": "Edit {{provider}} Settings",
+        "close": "{{common.close}}",
+        "save": "{{common.save}}"
+      }
     }
   },
 
