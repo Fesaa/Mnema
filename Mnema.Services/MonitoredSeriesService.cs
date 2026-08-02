@@ -158,8 +158,8 @@ public class MonitoredSeriesService(
                     Validators = FormValidatorsBuilder.Required,
                 },
                 FormFieldDefinitions.EnumDropDown("provider", "provider-name-pipe", IMonitoredSeriesService.SupportedProviders, false),
-                FormFieldDefinitions.EnumMetadataDropDown(RequestConstants.FormatKey, "format-pipe", false),
-                FormFieldDefinitions.EnumMetadataDropDown(RequestConstants.ContentFormatKey, "content-format-pipe", false),
+                FormFieldDefinitions.EnumDropDown<Format>("format", "format-pipe", false),
+                FormFieldDefinitions.EnumDropDown<ContentFormat>("contentFormat", "content-format-pipe", false),
                 new TextFieldDefinition
                 {
                     Key = RequestConstants.HardcoverSeriesIdKey.Key,

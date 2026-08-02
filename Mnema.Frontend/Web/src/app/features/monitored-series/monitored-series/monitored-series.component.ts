@@ -84,7 +84,7 @@ export class MonitoredSeriesComponent {
     }
 
     m["format"] = [this.series().format + ''];
-    m["content_format"] = [this.series().contentFormat + ''];
+    m["contentFormat"] = [this.series().contentFormat + ''];
     m["monitored_series_id"] = [this.series().id];
 
     if (!!m["ignore_non_matched_volumes"]) {

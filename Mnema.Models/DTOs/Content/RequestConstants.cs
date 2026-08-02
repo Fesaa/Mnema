@@ -1,6 +1,5 @@
 using System;
 using Mnema.Common;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 
 namespace Mnema.Models.DTOs.Content;
@@ -16,7 +15,7 @@ public static class RequestConstants
     public static readonly IMetadataKey<string> ScanlationGroupKey = MetadataKeys.String("scanlation_group", string.Empty);
     public static readonly IMetadataKey<bool> SkipVolumeWithoutChapter = MetadataKeys.Bool("skip_volume_without_chapter");
     public static readonly IMetadataKey<Format> FormatKey = MetadataKeys.Enum<Format>("format", Format.Archive);
-    public static readonly IMetadataKey<ContentFormat> ContentFormatKey = MetadataKeys.Enum<ContentFormat>("content_format", ContentFormat.Manga);
+    public static readonly IMetadataKey<ContentFormat> ContentFormatKey = MetadataKeys.Enum<ContentFormat>("contentFormat", ContentFormat.Manga);
     public static readonly IMetadataKey<string?> HardcoverSeriesIdKey = MetadataKeys.OptionalString("hardcover_series_id");
     public static readonly IMetadataKey<string?> MangaBakaKey = MetadataKeys.OptionalString("manga_baka_id");
     public static readonly IMetadataKey<string?> ExternalIdKey = MetadataKeys.OptionalString("external_id");
