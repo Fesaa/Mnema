@@ -175,33 +175,29 @@ public class FormController(IProviderSettingsService providerSettingsService): B
                 FormFieldDefinitions.EnumDropDown<CoverFallbackMethod>(nameof(Preferences.CoverFallbackMethod).ToCamelCase(), "cover-fallback-method-pipe"),
                 new CommaSeparatedValuesFieldDefinition
                 {
-                    Key = nameof(Preferences.BlackListedTags).ToCamelCase(),
                     Field = nameof(Preferences.BlackListedTags).ToCamelCase(),
                 },
                 new CommaSeparatedValuesFieldDefinition
                 {
-                    Key = nameof(Preferences.WhiteListedTags).ToCamelCase(),
                     Field = nameof(Preferences.WhiteListedTags).ToCamelCase(),
                 },
                 new ArrayFieldDefinition
                 {
-                    Key = nameof(Preferences.AgeRatingMappings).ToCamelCase(),
                     Field = nameof(Preferences.AgeRatingMappings).ToCamelCase(),
                     Controls = [
-                        new TextFieldDefinition { Key = nameof(AgeRatingMappingDto.Tag).ToCamelCase(), Field = nameof(AgeRatingMappingDto.Tag).ToCamelCase(), ForceEditMode = true, Validators = FormValidatorsBuilder.Required},
+                        new TextFieldDefinition { Field = nameof(AgeRatingMappingDto.Tag).ToCamelCase(), ForceEditMode = true, Validators = FormValidatorsBuilder.Required},
                         FormFieldDefinitions.EnumDropDown<AgeRating>(nameof(AgeRatingMappingDto.AgeRating).ToCamelCase(), "age-rating-pipe")
                     ]
                 },
                 new ArrayFieldDefinition
                 {
-                    Key = nameof(Preferences.MetadataFieldMappings).ToCamelCase(),
                     Field = nameof(Preferences.MetadataFieldMappings).ToCamelCase(),
                     Controls = [
                         FormFieldDefinitions.EnumDropDown<MetadataFieldType>(nameof(MetadataFieldMappingDto.SourceType).ToCamelCase(), "metadata-field-type-pipe"),
-                        new TextFieldDefinition { Key = nameof(MetadataFieldMappingDto.SourceValue).ToCamelCase(), Field = nameof(MetadataFieldMappingDto.SourceValue).ToCamelCase(), ForceEditMode = true, Validators = FormValidatorsBuilder.Required },
+                        new TextFieldDefinition { Field = nameof(MetadataFieldMappingDto.SourceValue).ToCamelCase(), ForceEditMode = true, Validators = FormValidatorsBuilder.Required },
                         FormFieldDefinitions.EnumDropDown<MetadataFieldType>(nameof(MetadataFieldMappingDto.DestinationType).ToCamelCase(), "metadata-field-type-pipe"),
-                        new TextFieldDefinition { Key = nameof(MetadataFieldMappingDto.DestinationValue).ToCamelCase(), Field = nameof(MetadataFieldMappingDto.DestinationValue).ToCamelCase(), ForceEditMode = true, Validators = FormValidatorsBuilder.Required },
-                        new SwitchFieldDefinition { Key = nameof(MetadataFieldMappingDto.ExcludeFromSource).ToCamelCase(), Field = nameof(MetadataFieldMappingDto.ExcludeFromSource).ToCamelCase(), ForceEditMode = true, Validators = FormValidatorsBuilder.Required }
+                        new TextFieldDefinition { Field = nameof(MetadataFieldMappingDto.DestinationValue).ToCamelCase(), ForceEditMode = true, Validators = FormValidatorsBuilder.Required },
+                        new SwitchFieldDefinition { Field = nameof(MetadataFieldMappingDto.ExcludeFromSource).ToCamelCase(), ForceEditMode = true, Validators = FormValidatorsBuilder.Required }
                     ],
                 }
             ]

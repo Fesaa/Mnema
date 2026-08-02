@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Mnema.Common;
 
@@ -6,14 +7,24 @@ namespace Mnema.Models.DTOs.UI;
 public abstract record FormFieldDefinition
 {
     /// <summary>
-    /// Translation key of the field. If Field is metadata, also the key inside MetadataBag.
+    /// Translation key / identifier. Defaults to <see cref="Field"/> unless explicitly set.
     /// </summary>
-    public required string Key { get; init; }
+    /// <remarks>If Field is metadata, also the key inside MetadataBag.</remarks>
+    public string Key
+    {
+        get
+        {
+            var resolvedKey = field ?? Field;
+            if (string.Equals(resolvedKey, "metadata", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    "Key evaluated to 'metadata', which is invalid. You must explicitly set 'Key' or set a non-metadata 'Field'.");
+            }
 
-    /// <summary>
-    /// If not empty, used in place of <see cref="FormDefinition.Key"/>
-    /// </summary>
-    public string TranslationPrefix { get; init; } = string.Empty;
+            return resolvedKey;
+        }
+        init;
+    }
 
     /// <summary>
     /// Field on the value containing the value. Defaults to metadata for historical reasons.
