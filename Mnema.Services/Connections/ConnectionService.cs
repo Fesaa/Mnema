@@ -145,14 +145,7 @@ internal class ConnectionService(
                         .WithMinLength(1)
                         .Build()
                 },
-                new MultiSelectFieldDefinition<ConnectionEvent>(FieldValueType.Integer)
-                {
-                    Key = "followed-events",
-                    Field = "followedEvents",
-                    Options = service.SupportedEvents
-                        .Select(@event => new SelectOption<ConnectionEvent>(@event.ToString(), @event))
-                        .ToList()
-                },
+                FormFieldDefinitions.EnumMultiSelect("followedEvents", "external-connections-event-types-pipe", service.SupportedEvents),
                 ..controls
             ]
         };

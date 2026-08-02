@@ -134,28 +134,8 @@ public class NyaaRepository(
     public Task<List<FormFieldDefinition>> DownloadMetadata(CancellationToken cancellationToken)
     {
         return Task.FromResult<List<FormFieldDefinition>>([
-            new DropDownFieldDefinition<Format>(FieldValueType.Integer)
-            {
-                Key = RequestConstants.FormatKey.Key,
-                Options = Enum.GetValues<Format>()
-                    .Select(f => new SelectOption<Format>(f.ToString().ToLower(), f))
-                    .ToList(),
-                Validators = new FormValidatorsBuilder()
-                    .WithRequired()
-                    .Build(),
-                DefaultValue = Format.Archive,
-            },
-            new DropDownFieldDefinition<ContentFormat>(FieldValueType.Integer)
-            {
-                Key = RequestConstants.ContentFormatKey.Key,
-                Options = Enum.GetValues<ContentFormat>()
-                    .Select(f => new SelectOption<ContentFormat>(f.ToString().ToLower(), f))
-                    .ToList(),
-                Validators = new FormValidatorsBuilder()
-                    .WithRequired()
-                    .Build(),
-                DefaultValue = ContentFormat.Manga
-            },
+            FormFieldDefinitions.EnumMetadataDropDown(RequestConstants.FormatKey, "format-pipe", false),
+            FormFieldDefinitions.EnumMetadataDropDown(RequestConstants.ContentFormatKey, "content-format-pipe", false),
             new TextFieldDefinition
             {
                 Key = RequestConstants.HardcoverSeriesIdKey.Key,

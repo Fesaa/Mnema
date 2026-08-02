@@ -12,9 +12,9 @@ export class FormatPipe implements PipeTransform {
   transform(value: Format): string {
     switch (value) {
       case Format.Archive:
-        return this.transLoco.translate('format-pipe.archive');
+        return this.transLoco.translate('format-pipe.Archive');
       case Format.Epub:
-        return this.transLoco.translate('format-pipe.epub');
+        return this.transLoco.translate('format-pipe.Epub');
     }
   }
 
