@@ -166,7 +166,7 @@ internal class RawFileCleanupService(
 
         var ignoreNonMatched = context.Request.Metadata.GetKey(RequestConstants.IgnoreNonMatchedVolumes);
 
-        logger.LogDebug("Processing file {FileName} for cleanup", sourceFile);
+        logger.LogTrace("Processing file {FileName} for cleanup", sourceFile);
         var sw = Stopwatch.StartNew();
 
         var fileName = fileSystem.Path.GetFileName(sourceFile);
