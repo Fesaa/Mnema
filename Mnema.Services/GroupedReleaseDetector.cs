@@ -15,13 +15,9 @@ public class GroupedReleaseDetector: IGroupedReleaseDetector
 
     private static readonly IReadOnlyList<Regex> NyaaGroupedReleasesRegex = [
         new(
-            @"^(?:\(Partial\)\s*)?Weekly K Manga Chapter Updates - Week \d+ \d{4}(?:\s*\(Digital\))?(?:\s*\([^)]+\))?$",
-            MatchOptions, RegexTimeout),
-        new(
-            @"^Monthly Viz Manga & Shonen Jump Volumes Update - [A-Za-z]+ \d{4}(?:\s*\(Digital\))?(?:\s*\([^)]+\))?$",
-            MatchOptions, RegexTimeout),
-        new(
-            @"^(?:\(Partial\)\s*)?Weekly Manga UP! Chapter Updates - Week \d+ \d{4}(?:\s*\(Digital\))?(?:\s*\([^)]+\))?$",
+            @"^(?:\(Partial\)\s*)?(?:Weekly|Monthly)\s+.+?\s+(?:Chapter|Volume)s?\s+Updates?\s*-\s*" +
+            @"(?:Week\s+\d+(?:[+\-]\d+)*|[A-Za-z]+)\s+\d{4}" +
+            @"(?:\s*\(Digital\))?(?:\s*\([^)]+\))?$",
             MatchOptions, RegexTimeout),
     ];
 

@@ -218,6 +218,10 @@ internal class MonitoredSeriesScheduler(
         var parserService = scope.ServiceProvider.GetRequiredService<IParserService>();
         var scannerService = scope.ServiceProvider.GetRequiredService<IScannerService>();
 
+        var normalizedTitlesById = monitoredReleases.ToDictionary(
+            m => m.Id,
+            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+
         foreach (var monitoredRelease in monitoredReleases.Where(m => m.Provider == release.Provider))
         {
             // Require exact match
@@ -235,6 +239,8 @@ internal class MonitoredSeriesScheduler(
                 return monitoredRelease;
             }
 
+            var normalizedTitles = normalizedTitlesById[monitoredRelease.Id];
+
             var toParseName = release.ContentName.OrNonEmpty(release.ReleaseName);
             var parseResult = parserService.FullParse(toParseName, monitoredRelease.ContentFormat);
 
@@ -242,7 +248,7 @@ internal class MonitoredSeriesScheduler(
             {
                 var normalizedSeriesName = seriesName.ToNormalized();
 
-                return monitoredRelease.ValidTitles.Any(title => title.ToNormalized() == normalizedSeriesName);
+                return normalizedTitles.Any(title => title == normalizedSeriesName);
             });
 
             if (!hasTitleMatch)
