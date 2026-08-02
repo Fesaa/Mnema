@@ -69,7 +69,7 @@ internal class MonitoredSeriesScheduler(
         if (entities.Count == 0)
             return;
 
-        var providers = await GetProviders(entities);
+        var providers = await GetProviders(entities, cancellationToken);
 
         logger.LogTrace("Searching for recent updated for {ProviderCount} providers", providers.Count);
 
@@ -103,14 +103,14 @@ internal class MonitoredSeriesScheduler(
         );
     }
 
-    protected async Task<List<Provider>> GetProviders(List<MonitoredSeries> entities)
+    protected async Task<List<Provider>> GetProviders(List<MonitoredSeries> entities, CancellationToken cancellationToken)
     {
         var providers = entities
             .Select(m => m.Provider)
             .Distinct()
             .ToList();
 
-        var providerSettings = await unitOfWork.ProviderSettingsRepository.GetAllSettings(CancellationToken.None);
+        var providerSettings = await unitOfWork.ProviderSettingsRepository.GetAllSettings(cancellationToken);
         var enabledProviders = providerSettings.Where(ps => ps.IsEnabled).Select(ps => ps.Provider).ToList();
 
         return providers.Where(enabledProviders.Contains).ToList();
@@ -135,21 +135,21 @@ internal class MonitoredSeriesScheduler(
         var downloadService = scope.ServiceProvider.GetRequiredService<IDownloadService>();
         var connectionService = scope.ServiceProvider.GetRequiredService<IConnectionService>();
 
-        HashSet<Guid> matchedMonitoredSeries = [];
         HashSet<string> actedOnIds = [];
         HashSet<string> startedContent = [];
 
         var processedDownloads = 0;
         var failedDownloads = 0;
 
+        var normalizedTitlesById = monitoredReleases.ToDictionary(
+            m => m.Id,
+            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+
+        var remainingSeries = new List<MonitoredSeries>(monitoredReleases);
+
         foreach (var release in releases)
         {
-            // Do not start a download for the same monitored release twice
-            var validMatches = monitoredReleases
-                .Where(m => !matchedMonitoredSeries.Contains(m.Id))
-                .ToList();
-
-            var match = await FindMatch(scope, validMatches, release, cancellationToken);
+            var match = await FindMatch(scope, remainingSeries, release, normalizedTitlesById, cancellationToken);
             if (match == null) continue;
 
             try
@@ -190,8 +190,9 @@ internal class MonitoredSeriesScheduler(
                     startedContent.Add(release.ContentId);
                 }
 
-                matchedMonitoredSeries.Add(match.Id);
+                remainingSeries.Remove(match);
                 actedOnIds.Add(release.ReleaseId);
+
                 processedDownloads++;
             }
             catch (Exception e)
@@ -213,14 +214,12 @@ internal class MonitoredSeriesScheduler(
         );
     }
 
-    public static async Task<MonitoredSeries?> FindMatch(IServiceScope scope, List<MonitoredSeries> monitoredReleases, ContentRelease release, CancellationToken ct)
+    public static async Task<MonitoredSeries?> FindMatch(
+        IServiceScope scope, List<MonitoredSeries> monitoredReleases, ContentRelease release,
+        IReadOnlyDictionary<Guid, List<string>> normalizedTitlesById, CancellationToken ct)
     {
         var parserService = scope.ServiceProvider.GetRequiredService<IParserService>();
         var scannerService = scope.ServiceProvider.GetRequiredService<IScannerService>();
-
-        var normalizedTitlesById = monitoredReleases.ToDictionary(
-            m => m.Id,
-            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
 
         foreach (var monitoredRelease in monitoredReleases.Where(m => m.Provider == release.Provider))
         {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
@@ -33,7 +34,12 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
 
         var scope = CreateScope(Substitute.For<IParserService>(), Substitute.For<IScannerService>());
 
-        var match = await MonitoredSeriesScheduler.FindMatch(scope, [series], release, CancellationToken.None);
+        List<MonitoredSeries> monitoredReleases = [series];
+        var normalizedTitlesById = monitoredReleases.ToDictionary(
+            m => m.Id,
+            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+
+        var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
         Assert.Same(series, match);
     }
@@ -46,7 +52,12 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
 
         var scope = CreateScope(Substitute.For<IParserService>(), Substitute.For<IScannerService>());
 
-        var match = await MonitoredSeriesScheduler.FindMatch(scope, [series], release, CancellationToken.None);
+        List<MonitoredSeries> monitoredReleases = [series];
+        var normalizedTitlesById = monitoredReleases.ToDictionary(
+            m => m.Id,
+            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+
+        var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
         Assert.Null(match);
     }
@@ -61,7 +72,12 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
 
         var scope = CreateScope(Substitute.For<IParserService>(), Substitute.For<IScannerService>());
 
-        var match = await MonitoredSeriesScheduler.FindMatch(scope, [series], release, CancellationToken.None);
+        List<MonitoredSeries> monitoredReleases = [series];
+        var normalizedTitlesById = monitoredReleases.ToDictionary(
+            m => m.Id,
+            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+
+        var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
         Assert.Null(match);
     }
@@ -74,7 +90,12 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
 
         var scope = CreateScope(Substitute.For<IParserService>(), Substitute.For<IScannerService>());
 
-        var match = await MonitoredSeriesScheduler.FindMatch(scope, [series], release, CancellationToken.None);
+        List<MonitoredSeries> monitoredReleases = [series];
+        var normalizedTitlesById = monitoredReleases.ToDictionary(
+            m => m.Id,
+            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+
+        var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
         Assert.Null(match);
     }
@@ -109,7 +130,12 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
 
         var scope = CreateScope(parser, scanner);
 
-        var match = await MonitoredSeriesScheduler.FindMatch(scope, [series], release, CancellationToken.None);
+        List<MonitoredSeries> monitoredReleases = [series];
+        var normalizedTitlesById = monitoredReleases.ToDictionary(
+            m => m.Id,
+            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+
+        var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
         Assert.Same(series, match);
     }
@@ -129,7 +155,12 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
 
         var scope = CreateScope(parser, Substitute.For<IScannerService>());
 
-        var match = await MonitoredSeriesScheduler.FindMatch(scope, [series], release, CancellationToken.None);
+        List<MonitoredSeries> monitoredReleases = [series];
+        var normalizedTitlesById = monitoredReleases.ToDictionary(
+            m => m.Id,
+            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+
+        var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
         Assert.Null(match);
         // Should never get as far as parsing the torrent file since the title didn't match
@@ -165,7 +196,12 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
 
         var scope = CreateScope(parser, scanner);
 
-        var match = await MonitoredSeriesScheduler.FindMatch(scope, [series], release, CancellationToken.None);
+        List<MonitoredSeries> monitoredReleases = [series];
+        var normalizedTitlesById = monitoredReleases.ToDictionary(
+            m => m.Id,
+            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+
+        var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
         Assert.Null(match);
     }
@@ -205,7 +241,12 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
 
         var scope = CreateScope(parser, scanner);
 
-        var match = await MonitoredSeriesScheduler.FindMatch(scope, [series], release, CancellationToken.None);
+        List<MonitoredSeries> monitoredReleases = [series];
+        var normalizedTitlesById = monitoredReleases.ToDictionary(
+            m => m.Id,
+            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+
+        var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
         Assert.Null(match);
     }
