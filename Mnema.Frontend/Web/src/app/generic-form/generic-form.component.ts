@@ -51,6 +51,7 @@ export class GenericFormComponent<T> {
   nullable = input(false);
   double = input<boolean>(true);
   inline = input<boolean>(false);
+  inModal = input<boolean>(false);
   supplyFormGroup = input<FormGroup>();
 
   formGroupTracker = output<FormGroup>();

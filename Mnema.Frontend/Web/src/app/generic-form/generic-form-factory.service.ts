@@ -133,7 +133,7 @@ export class GenericFormFactoryService {
     return formGroup;
   }
 
-  createTypeAheadSettings(obj: any, control: FormControlDefinition): TypeaheadSettings<FormControlOption> {
+  createTypeAheadSettings(obj: any, control: FormControlDefinition, inModal: boolean): TypeaheadSettings<FormControlOption> {
     this.log(`createTypeAheadSettings called for control '${control.key}'`, { obj, controlType: control.fieldType });
 
     if (control.fieldType !== FormType.MultiSelect && control.fieldType !== FormType.MultiText) {
@@ -145,6 +145,7 @@ export class GenericFormFactoryService {
     settings.id = control.key;
     settings.multiple = true;
     settings.minCharacters = 0;
+    settings.dropdownPosition = inModal ? 'body' : 'relative';
 
     if (control.fieldType === FormType.MultiText) {
       settings.addIfNonExisting = true;

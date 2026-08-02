@@ -101,14 +101,14 @@
           >
             <ng-template #view>
               <app-type-ahead
-                [settings]="genericFormFactoryService.createTypeAheadSettings(formControl.value, control)"
+                [settings]="genericFormFactoryService.createTypeAheadSettings(formControl.value, control, inModal())"
                 (selectedData)="patchTypeAheadControlValue($event, formControl)"
               >
                 <ng-template #optionItem let-option>
-                  {{ t(control.key + '.' + option.key) }}
+                  {{ getFormOptionsTranslation(control, option) }}
                 </ng-template>
                 <ng-template #badgeItem let-item>
-                  {{ t(control.key + '.' + item.key) }}
+                  {{ getFormOptionsTranslation(control, item) }}
                 </ng-template>
               </app-type-ahead>
             </ng-template>
@@ -125,7 +125,7 @@
           >
             <ng-template #view>
               <app-type-ahead
-                [settings]="genericFormFactoryService.createTypeAheadSettings(formControl.value, control)"
+                [settings]="genericFormFactoryService.createTypeAheadSettings(formControl.value, control, inModal())"
                 (selectedData)="patchTypeAheadControlValue($event, formControl)"
               >
                 <ng-template #optionItem let-option>
@@ -155,6 +155,7 @@
                       [formDefinition]="{ key: formDefinition().key + '.' + control.key, descriptionKey: '', controls: control.controls}"
                       [initialValue]="{}"
                       [supplyFormGroup]="group"
+                      [inModal]="inModal()"
                       [inline]="control.inline"
                     >
                     </app-generic-form>
