@@ -21,6 +21,7 @@ import {filter, tap} from "rxjs";
 import {
   SettingMultiTextFieldComponent
 } from "@mnema/shared/form/setting-multi-text-field/setting-multi-text-field.component";
+import {Breakpoint, UtilityService} from "@mnema/_services/utility.service";
 
 @Component({
   selector: 'app-generic-form',
@@ -43,11 +44,13 @@ export class GenericFormComponent<T> {
   private readonly nullableFormGroupBuilder = inject(FormBuilder);
   protected readonly genericFormFactoryService = inject(GenericFormFactoryService);
   private readonly modalService = inject(ModalService);
+  protected readonly utilityService = inject(UtilityService);
 
   formDefinition = input.required<FormDefinition>();
   initialValue = input.required<T>();
   nullable = input(false);
   double = input<boolean>(true);
+  inline = input<boolean>(false);
   supplyFormGroup = input<FormGroup>();
 
   formGroupTracker = output<FormGroup>();
@@ -144,4 +147,6 @@ export class GenericFormComponent<T> {
       tap(directory => formControl.setValue(directory)),
     ).subscribe();
   }
+
+  protected readonly Breakpoint = Breakpoint;
 }

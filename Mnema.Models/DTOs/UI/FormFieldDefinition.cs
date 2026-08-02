@@ -114,6 +114,8 @@ public sealed record ArrayFieldDefinition : FormFieldDefinition
 
     public override FieldValueType ValueType => FieldValueType.String;
 
+    public bool Inline { get; init; }
+
     public required List<FormFieldDefinition> Controls { get; init; } = [];
 }
 

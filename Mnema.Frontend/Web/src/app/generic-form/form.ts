@@ -16,6 +16,7 @@ export type FormControlDefinition = {
   valueType: ValueType;
   disabled: boolean;
   forceEditMode: boolean;
+  inline: boolean;
 
   defaultValue: any;
   options?: FormControlOption[];

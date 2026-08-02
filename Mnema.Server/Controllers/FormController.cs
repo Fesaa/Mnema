@@ -192,6 +192,7 @@ public class FormController(IProviderSettingsService providerSettingsService): B
                 new ArrayFieldDefinition
                 {
                     Field = nameof(Preferences.MetadataFieldMappings).ToCamelCase(),
+                    Inline = true,
                     Controls = [
                         FormFieldDefinitions.EnumDropDown<MetadataFieldType>(nameof(MetadataFieldMappingDto.SourceType).ToCamelCase(), "metadata-field-type-pipe"),
                         new TextFieldDefinition { Field = nameof(MetadataFieldMappingDto.SourceValue).ToCamelCase(), ForceEditMode = true, Validators = FormValidatorsBuilder.Required },

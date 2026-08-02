@@ -1,11 +1,20 @@
-<form *transloco="let t; prefix: formDefinition().key" class="row">
+<form
+  *transloco="let t; prefix: formDefinition().key"
+  class="row"
+  [class.flex-nowrap]="inline() && utilityService.breakPoint() > Breakpoint.Mobile"
+>
 
   @for (control of formDefinition().controls; track control.key) {
     @let formControl = getFormControl(control);
     @let formControlName = getFormControlName(control);
     @let forceSingle = control.forceSingle || control.fieldType === FormType.Array;
 
-    <div [formGroup]="getFormGroup(control)" class="{{ (double() && !forceSingle) ? 'col-md-6' : 'col-md-12' }} col-sm-12 pt-4">
+    <div
+      [formGroup]="getFormGroup(control)"
+      [class]="inline()
+    ? 'col-auto pt-4'
+    : ((double() && !forceSingle) ? 'col-md-6' : 'col-md-12') + ' col-sm-12 pt-4'"
+    >
       @switch (control.fieldType) {
         @case (FormType.Switch) {
           <app-settings-switch
@@ -146,7 +155,9 @@
                     <app-generic-form
                       [formDefinition]="{ key: formDefinition().key + '.' + control.key, descriptionKey: '', controls: control.controls}"
                       [initialValue]="{}"
-                      [supplyFormGroup]="group">
+                      [supplyFormGroup]="group"
+                      [inline]="control.inline"
+                    >
                     </app-generic-form>
                   </div>
 
