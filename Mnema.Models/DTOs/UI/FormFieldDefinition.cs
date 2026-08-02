@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using Mnema.Common;
 
 namespace Mnema.Models.DTOs.UI;
@@ -12,6 +11,11 @@ public abstract record FormFieldDefinition
     public required string Key { get; init; }
 
     /// <summary>
+    /// If not empty, used in place of <see cref="FormDefinition.Key"/>
+    /// </summary>
+    public string TranslationPrefix { get; init; } = string.Empty;
+
+    /// <summary>
     /// Field on the value containing the value. Defaults to metadata for historical reasons.
     /// </summary>
     public string Field { get; init; } = "metadata";
@@ -21,6 +25,8 @@ public abstract record FormFieldDefinition
     public bool Advanced { get; init; }
 
     public bool Disabled { get; init; }
+
+    public bool ForceEditMode { get; init; } = false;
 
     public bool ForceSingle { get; init; }
 
@@ -97,5 +103,11 @@ public sealed record ArrayFieldDefinition : FormFieldDefinition
 
     public override FieldValueType ValueType => FieldValueType.String;
 
-    public List<FormFieldDefinition> Controls { get; init; } = [];
+    public required List<FormFieldDefinition> Controls { get; init; } = [];
+}
+
+public sealed record CommaSeparatedValuesFieldDefinition : FormFieldDefinition
+{
+    public override FormFieldType FieldType => FormFieldType.CommaSeparatedValues;
+    public override FieldValueType ValueType => FieldValueType.String;
 }

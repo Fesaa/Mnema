@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Mnema.Models.Entities.Interfaces;
 
-namespace Mnema.Models.DTOs.User;
+namespace Mnema.Models.DTOs;
 
 public class AuthKeyDto: IDatabaseEntity
 {

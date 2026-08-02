@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
 using Mnema.Common;
-using Mnema.Models.DTOs.User;
+using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
 
 namespace Mnema.Server.Controllers;

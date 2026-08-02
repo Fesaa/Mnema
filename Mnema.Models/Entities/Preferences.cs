@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Mnema.Models.DTOs.User;
+using Mnema.Models.DTOs;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Entities.User;
 
@@ -12,10 +12,13 @@ public class Preferences: IDatabaseEntity
 
     public required ImageFormat ImageFormat { get; set; }
     public required CoverFallbackMethod CoverFallbackMethod { get; set; }
-    public required IList<string> ConvertToGenreList { get; set; }
     public required IList<string> BlackListedTags { get; set; }
     public required IList<string> WhiteListedTags { get; set; }
     public required IList<AgeRatingMappingDto> AgeRatingMappings { get; set; }
+    public required IList<MetadataFieldMappingDto> MetadataFieldMappings { get; set; }
+    [Obsolete("Use MetadataFieldMappings")]
+    public required IList<string> ConvertToGenreList { get; set; }
+    [Obsolete("Use MetadataFieldMappings")]
     public required IList<TagMappingDto> TagMappings { get; set; }
     public bool PinSubscriptionTitles { get; set; }
 }

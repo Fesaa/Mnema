@@ -8,6 +8,8 @@ public sealed record SelectOption<T>(string Key, T Value)
 {
     public bool Default { get; set; }
 
+    public string TranslationPrefix { get; set; } = string.Empty;
+
     public static SelectOption<string> FromString(string value)
     {
         return new SelectOption<string>(value, value);

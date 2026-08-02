@@ -119,6 +119,7 @@ public static class Seed
             BlackListedTags = [],
             WhiteListedTags = [],
             AgeRatingMappings = [],
+            MetadataFieldMappings = [],
             TagMappings = [],
             PinSubscriptionTitles = true,
         });

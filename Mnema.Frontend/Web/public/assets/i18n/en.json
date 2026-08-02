@@ -682,30 +682,46 @@
     },
     "preferences": {
       "title": "Preferences",
-      "general-tab": "General",
-      "mappings-tab": "Mappings",
 
-      "tags-to-genre-label": "Tags to save as genre",
-      "tags-to-genre-tooltip": "Tags configured here will be saved as Genre.",
-      "tags-blacklist-label": "Tags blacklist",
-      "tags-blacklist-tooltip": "Any tags configured here will not be used as either a Genre or Tag.",
-      "tags-whitelist-label": "Tags whitelist",
-      "tags-whitelist-tooltip": "When configured, only tags in the list will be used. If none are configured all tags will be saved if the download option is enabled",
-      "age-rating-mappings-label": "Age Ratings Mappings",
-      "age-rating-mappings-tooltip": "Configure which tags and/or genre's will be used to determine the downloaded content's AgeRating. If several are present, the highest will be used.",
-      "tags-mappings-label": "Tags Mappings",
-      "tags-mappings-tooltip": "Configure how tags are transformed before being processed by anything else.",
-      "logEmptyDownloads-label": "Empty downloads notifications",
-      "logEmptyDownloads-tooltip": "Get a notification when a subscription downloads 0 items",
-      "logSubNoDownloads-label": "Log repeated empty downloads",
-      "logSubNoDownloads-tooltip": "Get a notification when a subscription downloads 0 items 5 times in a row",
-      "imageFormat-label": "Image conversion",
+      "imageFormat-title": "Image conversion",
       "imageFormat-tooltip": "In which format should downloaded images be saved",
-      "cover-fallback-method": "Cover to use as fallback",
-      "pin-subscription-titles": "Pin subscription titles",
-      "pin-subscription-titles-tooltip": "Force subscription titles to have a title override, to ensure consistency when the source updates",
+
+      "coverFallbackMethod-title": "Cover to use as fallback",
+      "coverFallbackMethod-tooltip": "Which cover should be used when the preferred cover is unavailable",
+
+      "blackListedTags-title": "Tags blacklist",
+      "blackListedTags-tooltip": "Any tags configured here will not be used as either a Genre or Tag.",
+
+      "whiteListedTags-title": "Tags whitelist",
+      "whiteListedTags-tooltip": "When configured, only tags in the list will be used. If none are configured all tags will be saved if the download option is enabled",
+
+      "ageRatingMappings-title": "Age Ratings Mappings",
+      "ageRatingMappings-tooltip": "Configure which tags and/or genres will be used to determine the downloaded content's AgeRating. If several are present, the highest will be used.",
+      "ageRatingMappings": {
+        "tag-title": "Tag",
+        "tag-tooltip": "",
+        "ageRating-title": "Age Rating",
+        "ageRating-tooltip": ""
+      },
+
+      "metadataFieldMappings-title": "Metadata Field Mappings",
+      "metadataFieldMappings-tooltip": "Configure how metadata fields are transformed before being processed by anything else.",
+      "metadataFieldMappings": {
+        "sourceType-title": "Source Type",
+        "sourceType-tooltip": "",
+        "sourceValue-title": "Source Value",
+        "sourceValue-tooltip": "",
+        "destinationType-title": "Destination Type",
+        "destinationType-tooltip": "",
+        "destinationValue-title": "Destination Value",
+        "destinationValue-tooltip": "",
+        "excludeFromSource-title": "Exclude from source",
+        "excludeFromSource-tooltip": ""
+      },
+
       "configure": "Configure",
       "save": "Save",
+
       "toasts": {
         "save": {
           "success": {
@@ -1396,6 +1412,40 @@
     "remove-from-download-client": "Remove from download client (Deletes files if last download for the entry)",
     "cancel": "{{common.cancel}}",
     "confirm": "{{common.confirm}}"
+  },
+
+  "image-format-pipe": {
+    "Upstream": "Upstream",
+    "Webp": "Webp"
+  },
+
+  "cover-fallback-method-pipe": {
+    "First": "First",
+    "Last": "Last",
+    "None": "None"
+  },
+
+  "age-rating-pipe": {
+    "Unknown": "Unknown",
+    "RatingPending": "Rating Pending",
+    "EarlyChildhood": "Early Childhood",
+    "Everyone": "Everyone",
+    "G": "G",
+    "Everyone10Plus": "Everyone 10+",
+    "PG": "PG",
+    "KidsToAdults": "Kids to Adults",
+    "Teen": "Teen",
+    "Mature15Plus": "MA15+",
+    "Mature17Plus": "Mature 17+",
+    "Mature": "M",
+    "R18Plus": "R18+",
+    "AdultsOnly": "Adults Only 18+",
+    "X18Plus": "X18+"
+  },
+
+  "metadata-field-type-pipe": {
+    "Genre": "Genre",
+    "Tag": "Tag"
   }
 
 }

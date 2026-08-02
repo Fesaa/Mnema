@@ -8,5 +8,6 @@ public enum FormFieldType
     Text = 3,
     Directory = 4,
     MultiText = 5,
-    Array,
+    Array = 6,
+    CommaSeparatedValues = 7,
 }

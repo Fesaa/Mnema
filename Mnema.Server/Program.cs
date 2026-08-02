@@ -56,6 +56,8 @@ public class Program
                 await new PinMonitoredSeriesTitles().RunAsync(services, context, logger);
 
                 await context.SeedDatabase();
+
+                await new MetadataFieldMappingsMigration().RunAsync(services, context, logger);
             }
             catch (Exception ex)
             {

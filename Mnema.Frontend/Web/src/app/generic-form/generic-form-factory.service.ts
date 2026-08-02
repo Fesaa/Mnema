@@ -14,7 +14,7 @@ export const GENERIC_METADATA_FIELD = "metadata";
 })
 export class GenericFormFactoryService {
 
-  public debug = false;
+  public debug = true;
 
   private log(message: string, data?: unknown) {
     if (!this.debug) {
@@ -394,6 +394,7 @@ export class GenericFormFactoryService {
         return this.transFormValue(value, control.valueType);
       case FormType.MultiSelect:
       case FormType.MultiText:
+      case FormType.CommaSeparatedValues:
         if (value === '' || value === null || value === undefined) {
           return [];
         }

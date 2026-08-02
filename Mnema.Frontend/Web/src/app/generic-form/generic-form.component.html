@@ -28,6 +28,8 @@
             [labelId]="control.key"
             [title]="t(control.key + '-title')"
             [tooltip]="t(control.key + '-tooltip')"
+            [showEdit]="!control.forceEditMode"
+            [isEditMode]="control.forceEditMode"
           >
             <ng-template #view>
               {{formControl.value | defaultValue}}
@@ -63,15 +65,17 @@
             [labelId]="control.key"
             [title]="t(control.key + '-title')"
             [tooltip]="t(control.key + '-tooltip')"
+            [showEdit]="!control.forceEditMode"
+            [isEditMode]="control.forceEditMode"
           >
             <ng-template #view>
               @let option = getFormOption(control, formControl.value);
-              {{ option ? t(control.key + '.' + option.key) : null | defaultValue }}
+              {{ option ? getFormOptionsTranslation(control, option) : null | defaultValue }}
             </ng-template>
             <ng-template #edit>
               <select class="form-select" [formControlName]="formControlName">
                 @for (option of control.options; track option.key) {
-                  <option [ngValue]="option.value"> {{ t(control.key + '.' + option.key) }} </option>
+                  <option [ngValue]="option.value"> {{ getFormOptionsTranslation(control, option) }} </option>
                 }
               </select>
             </ng-template>
@@ -163,6 +167,13 @@
               </button>
             </div>
           }
+        }
+        @case (FormType.CommaSeparatedValues) {
+          <app-setting-multi-text-field
+            [formControl]="formControl"
+            [title]="t(control.key + '-title')"
+            [tooltip]="t(control.key + '-tooltip')"
+          />
         }
       }
     </div>

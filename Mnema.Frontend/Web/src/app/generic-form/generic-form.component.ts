@@ -11,13 +11,16 @@ import {
 } from "@angular/forms";
 import {GENERIC_METADATA_FIELD, GenericFormFactoryService} from "./generic-form-factory.service";
 import {SettingsSwitchComponent} from "../shared/form/settings-switch/settings-switch.component";
-import {TranslocoDirective} from "@jsverse/transloco";
+import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {SettingsItemComponent} from "../shared/form/settings-item/settings-item.component";
 import {DefaultValuePipe} from "../_pipes/default-value.pipe";
 import {form} from "@angular/forms/signals";
 import {TypeaheadComponent} from "../type-ahead/typeahead.component";
 import {ModalService} from "../_services/modal.service";
 import {filter, tap} from "rxjs";
+import {
+  SettingMultiTextFieldComponent
+} from "@mnema/shared/form/setting-multi-text-field/setting-multi-text-field.component";
 
 @Component({
   selector: 'app-generic-form',
@@ -28,6 +31,7 @@ import {filter, tap} from "rxjs";
     SettingsItemComponent,
     DefaultValuePipe,
     TypeaheadComponent,
+    SettingMultiTextFieldComponent,
   ],
   templateUrl: './generic-form.component.html',
   styleUrl: './generic-form.component.scss',
@@ -114,6 +118,14 @@ export class GenericFormComponent<T> {
 
   protected getFormOption(control: FormControlDefinition, value: any) {
     return control.options?.find(option => option.value === value);
+  }
+
+  getFormOptionsTranslation(control: FormControlDefinition, option: FormControlOption) {
+    if (option.translationPrefix) {
+      return translate(`${option.translationPrefix}.${option.key}`);
+    }
+
+    return translate(`${this.formDefinition().key}.${control.key}.${option.key}`);
   }
 
   protected patchTypeAheadControlValue($event: FormControlOption[] | FormControlOption, formControl: FormControl) {

@@ -40,7 +40,7 @@ export class SettingsItemComponent implements OnChanges {
   private readonly cdRef = inject(ChangeDetectorRef);
   private readonly elementRef = inject(ElementRef);
 
-  control = input.required<AbstractControl>();
+  control = input<AbstractControl>();
 
   title = input<string>();
   tooltip = input<string>();
@@ -75,7 +75,9 @@ export class SettingsItemComponent implements OnChanges {
         filter((event: Event) => {
           if (!this.toggleOnViewClick()) return false;
           if (!this.showEdit()) return false;
-          if (this.isEditMode() && this.control().dirty && this.control().invalid) return false;
+
+          const control = this.control();
+          if (this.isEditMode() && control && control.dirty && control.invalid) return false;
 
           const mouseEvent = event as MouseEvent;
           const selection = window.getSelection();
@@ -93,7 +95,8 @@ export class SettingsItemComponent implements OnChanges {
   toggleEditMode() {
     if (!this.toggleOnViewClick()) return;
     if (!this.canEdit()) return;
-    if (this.isEditMode() && this.control().dirty && this.control().invalid) return;
+    const control = this.control();
+    if (this.isEditMode() && control && control.dirty && control.invalid) return;
 
     this.isEditMode.update(b => !b);
   }
@@ -105,7 +108,8 @@ export class SettingsItemComponent implements OnChanges {
 
       if (!this.toggleOnViewClick()) return;
       if (!this.canEdit()) return;
-      if (this.isEditMode() && this.control().dirty && this.control().invalid) return;
+      const control = this.control();
+      if (this.isEditMode() && control && control.dirty && control.invalid) return;
 
       this.isEditMode = change.currentValue;
       this.cdRef.markForCheck();

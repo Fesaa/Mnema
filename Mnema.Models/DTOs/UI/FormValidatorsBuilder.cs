@@ -58,4 +58,6 @@ public sealed class FormValidatorsBuilder : Builder<GenericBag<object>>
     {
         return _validators;
     }
+
+    public static GenericBag<object> Required => new FormValidatorsBuilder().WithRequired().Build();
 }

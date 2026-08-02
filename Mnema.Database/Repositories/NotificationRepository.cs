@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Mnema.API;
 using Mnema.Common;
 using Mnema.Database.Extensions;
-using Mnema.Models.DTOs.User;
+using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.User;
 

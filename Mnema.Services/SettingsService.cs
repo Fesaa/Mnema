@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
-using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
@@ -24,17 +23,33 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
 
         pref.ImageFormat = dto.ImageFormat;
         pref.CoverFallbackMethod = dto.CoverFallbackMethod;
-        pref.BlackListedTags = dto.BlackListedTags.DistinctBy(t => t.ToNormalized()).ToList();
-        pref.WhiteListedTags = dto.WhiteListedTags.DistinctBy(t => t.ToNormalized()).ToList();
-        pref.ConvertToGenreList = dto.ConvertToGenreList.DistinctBy(g => g.ToNormalized()).ToList();
-        pref.AgeRatingMappings = dto.AgeRatingMappings.DistinctBy(arm => arm.Tag.ToNormalized()).ToList();
-        pref.TagMappings = dto.TagMappings
-            .DistinctBy(tm => tm.DestinationTag.ToNormalized() + tm.OriginTag.ToNormalized()).ToList();
+        pref.BlackListedTags = NormalizeTags(dto.BlackListedTags);
+        pref.WhiteListedTags = NormalizeTags(dto.WhiteListedTags);
         pref.PinSubscriptionTitles = dto.PinSubscriptionTitles;
 
-        unitOfWork.SettingsRepository.Update(pref);
+        pref.AgeRatingMappings.Clear();
+        foreach (var mapping in dto.AgeRatingMappings.DistinctBy(arm => arm.Tag.ToNormalized()))
+        {
+            pref.AgeRatingMappings.Add(mapping);
+        }
+
+        pref.MetadataFieldMappings.Clear();
+        foreach (var mapping in dto.MetadataFieldMappings)
+        {
+            pref.MetadataFieldMappings.Add(mapping);
+        }
 
         await unitOfWork.CommitAsync(cancellationToken);
+        return;
+
+        List<string> NormalizeTags(IEnumerable<string>? tags)
+        {
+            return (tags ?? [])
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .DistinctBy(d => d.ToNormalized())
+                .Order()
+                .ToList();
+        }
     }
 
     public async Task<T> GetSettingsAsync<T>(ServerSettingKey key)

@@ -23,6 +23,10 @@ export class FormService {
     return this.getForm(`provider-settings?provider=${provider}`);
   }
 
+  preferencesForm() {
+    return this.getForm('preferences');
+  }
+
   private getForm(endpoint: string) {
     if (this.cache.has(endpoint)) {
       return of(this.cache.get(endpoint)!);
