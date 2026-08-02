@@ -35,8 +35,6 @@ public abstract record FormFieldDefinition
 
     public bool Advanced { get; init; }
 
-    public bool Disabled { get; init; }
-
     public bool ForceEditMode { get; init; } = false;
 
     public bool ForceSingle { get; init; }

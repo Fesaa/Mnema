@@ -176,10 +176,12 @@ public class FormController(IProviderSettingsService providerSettingsService): B
                 new CommaSeparatedValuesFieldDefinition
                 {
                     Field = nameof(Preferences.BlackListedTags).ToCamelCase(),
+                    ForceSingle = true,
                 },
                 new CommaSeparatedValuesFieldDefinition
                 {
                     Field = nameof(Preferences.WhiteListedTags).ToCamelCase(),
+                    ForceSingle = true,
                 },
                 new ArrayFieldDefinition
                 {
@@ -200,6 +202,10 @@ public class FormController(IProviderSettingsService providerSettingsService): B
                         new TextFieldDefinition { Field = nameof(MetadataFieldMappingDto.DestinationValue).ToCamelCase(), ForceEditMode = true, Validators = FormValidatorsBuilder.Required },
                         new SwitchFieldDefinition { Field = nameof(MetadataFieldMappingDto.ExcludeFromSource).ToCamelCase(), ForceEditMode = true, Validators = FormValidatorsBuilder.Required }
                     ],
+                },
+                new SwitchFieldDefinition
+                {
+                    Field = nameof(Preferences.PinSubscriptionTitles).ToCamelCase(),
                 }
             ]
         });

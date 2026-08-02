@@ -141,7 +141,6 @@
         @case (FormType.Array) {
           @if (!!control.controls) {
             <div [formArrayName]="getFormControlName(control)" class="d-flex flex-column align-items-start">
-
               <div class="col-auto setting-title edit">
                 <h4 class="section-title">
                   {{ t(control.key + '-title') }}
@@ -177,6 +176,8 @@
                 <i class="fa fa-plus me-1"></i> Add
               </button>
             </div>
+
+            <div class="setting-section-break my-2"></div>
           }
         }
         @case (FormType.CommaSeparatedValues) {

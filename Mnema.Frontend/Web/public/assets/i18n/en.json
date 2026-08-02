@@ -719,6 +719,9 @@
         "excludeFromSource-tooltip": ""
       },
 
+      "pinSubscriptionTitles-title": "Force monitor series title override",
+      "pinSubscriptionTitles-tooltip": "Force monitored series to have a title override, to ensure consistency when the source updates",
+
       "configure": "Configure",
       "save": "Save",
 
