@@ -75,12 +75,17 @@ export class PreferenceSettingsComponent implements OnInit {
   }
 
   protected export() {
+    let id = 1;
+
     const preferences = this.preferencesForm.getRawValue() as Preferences;
     const kavitaPreferences: KavitaMetadataPreferences = {
       ageRatingMappings: Object.fromEntries(
         preferences.ageRatingMappings.map(item => [item.tag, item.ageRating])
       ),
-      fieldMappings: preferences.metadataFieldMappings,
+      fieldMappings: preferences.metadataFieldMappings.map(m => ({
+        id: id++,
+        ...m,
+      })),
       blacklist: preferences.blackListedTags,
       whitelist: preferences.whiteListedTags
     }
