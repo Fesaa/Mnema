@@ -150,4 +150,27 @@ export class GenericFormComponent<T> {
   }
 
   protected readonly Breakpoint = Breakpoint;
+
+  private readonly collapseThreshold = 10;
+  private collapsedArrays = new Set<string>();
+  private hasRunInitialCollapse = new Set<string>();
+
+  isArrayCollapsed(control: FormControlDefinition): boolean {
+    if (!this.hasRunInitialCollapse.has(control.key)) {
+      this.hasRunInitialCollapse.add(control.key);
+
+      if (this.getFormArray(control).length > this.collapseThreshold) {
+        this.collapsedArrays.add(control.key);
+      }
+    }
+
+    return this.collapsedArrays.has(control.key);
+  }
+
+  toggleArrayCollapsed(control: FormControlDefinition): void {
+    this.collapsedArrays.has(control.key)
+      ? this.collapsedArrays.delete(control.key)
+      : this.collapsedArrays.add(control.key);
+  }
+
 }
