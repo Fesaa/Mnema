@@ -1,26 +1,21 @@
-import {Component, DestroyRef, inject, OnInit, signal} from '@angular/core';
-import {FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ChangeDetectorRef, Component, DestroyRef, inject, OnInit, signal} from '@angular/core';
+import {FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {PreferencesService} from '../../../../_services/preferences.service';
 import {
-  AgeRatingMap,
-  ComicInfoAgeRating,
-  ComicInfoAgeRatings,
-  CoverFallbackMethods,
-  ImageFormats,
-  Preferences,
-  TagMap
+  KavitaMetadataPreferences,
+  Preferences
 } from '../../../../_models/preferences';
-import {ToastService} from '../../../../_services/toast.service';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {debounceTime, distinctUntilChanged, filter, map, switchMap} from 'rxjs';
-import {SettingsItemComponent} from "../../../../shared/form/settings-item/settings-item.component";
-import {TagBadgeComponent} from "../../../../shared/_component/tag-badge/tag-badge.component";
+import {debounceTime, distinctUntilChanged, filter, skip, switchMap, tap} from 'rxjs';
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {CoverFallbackPipe} from "../../../../_pipes/cover-fallback.pipe";
-import {SettingsSwitchComponent} from "../../../../shared/form/settings-switch/settings-switch.component";
-import {SafeHtmlPipe} from "../../../../_pipes/safe-html-pipe";
-import {NgbNav, NgbNavContent, NgbNavItem, NgbNavLink, NgbNavOutlet} from "@ng-bootstrap/ng-bootstrap";
-import {ImageFormatPipe} from "../../../../_pipes/image-format.pipe";
+import {FormService} from "@mnema/_services/form.service";
+import {FormDefinition} from "@mnema/generic-form/form";
+import {GenericFormComponent} from "@mnema/generic-form/generic-form.component";
+import {
+  ConnectionService,
+  ConnectionType
+} from "@mnema/settings/settings/_components/external-connection-settings/connection.service";
+import {UtilityService} from "@mnema/_services/utility.service";
 
 @Component({
   selector: 'app-preference-settings',
@@ -28,17 +23,7 @@ import {ImageFormatPipe} from "../../../../_pipes/image-format.pipe";
   imports: [
     ReactiveFormsModule,
     TranslocoDirective,
-    SettingsItemComponent,
-    TagBadgeComponent,
-    CoverFallbackPipe,
-    SafeHtmlPipe,
-    NgbNav,
-    NgbNavItem,
-    NgbNavOutlet,
-    NgbNavContent,
-    NgbNavLink,
-    ImageFormatPipe,
-    SettingsSwitchComponent
+    GenericFormComponent
   ],
   templateUrl: './preference-settings.component.html',
   styleUrl: './preference-settings.component.scss'
@@ -47,118 +32,108 @@ export class PreferenceSettingsComponent implements OnInit {
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly preferencesService = inject(PreferencesService);
-  private readonly toastService = inject(ToastService);
-  private readonly fb = inject(FormBuilder);
+  private readonly formService = inject(FormService);
+  private readonly utilityService = inject(UtilityService);
 
   preferences = signal<Preferences | undefined>(undefined);
+  preferencesFormDefinition = signal<FormDefinition | undefined>(undefined);
 
   preferencesForm!: FormGroup;
-  activeId = 'general'
-
-  protected readonly CoverFallbackMethods = CoverFallbackMethods;
+  importMode = signal(false);
 
   ngOnInit(): void {
     this.preferencesService.get().subscribe((preferences: Preferences) => {
       this.preferences.set(preferences);
-
-      this.preferencesForm = this.fb.group({
-        imageFormat: new FormControl(preferences.imageFormat),
-        coverFallbackMethod: new FormControl(preferences.coverFallbackMethod),
-        pinSubscriptionTitles: new FormControl(preferences.pinSubscriptionTitles),
-        blackList: new FormControl(preferences.blackListedTags.join(',')),
-        whiteList: new FormControl(preferences.whiteListedTags.join(',')),
-        genreList: new FormControl(preferences.convertToGenreList.join(',')),
-        ageRatingMappings: new FormArray(preferences.ageRatingMappings.map(agm => this.ageRateMappingToFormGroup(agm))),
-        tagMappings: new FormArray(preferences.tagMappings.map(agm => this.tagMappingToFormGroup(agm))),
-      });
-
-      this.preferencesForm.valueChanges
-        .pipe(
-          takeUntilDestroyed(this.destroyRef),
-          debounceTime(300),
-          distinctUntilChanged(),
-          filter(() => this.preferencesForm.valid),
-          map(() => this.packData()),
-          switchMap(data => this.preferencesService.save(data)),
-        )
-        .subscribe({
-          error: err => this.toastService.genericError(err.error.message)
-        });
     });
+
+    this.formService.preferencesForm().pipe(
+      tap(d => this.preferencesFormDefinition.set(d)),
+    ).subscribe();
+
+    this.createFormGroup();
   }
 
-  get ageRatingMappingArray(): FormArray<FormGroup> {
-    return this.preferencesForm.get('ageRatingMappings') as FormArray<FormGroup>;
+  private createFormGroup() {
+    this.preferencesForm = new FormGroup({});
+    this.preferencesForm.valueChanges
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        debounceTime(300),
+        distinctUntilChanged(),
+        filter(() => this.preferencesForm.valid),
+        skip(1), // First set by generic form component
+        filter(() => !this.importMode()), // Import needs manual save
+        switchMap(() => this.preferencesService.save(this.preferencesForm.getRawValue() as Preferences)),
+      )
+      .subscribe();
   }
 
-  get tagMappingsArray(): FormArray<FormGroup> {
-    return this.preferencesForm.get('tagMappings') as FormArray<FormGroup>;
+  protected save() {
+    this.preferencesService.save(this.preferencesForm.getRawValue() as Preferences).pipe(
+      tap(() => this.importMode.set(false))
+    ).subscribe();
   }
 
-  deleteTagMapping(idx: number) {
-    this.tagMappingsArray.removeAt(idx);
-  }
-
-  addTagMapping() {
-    this.tagMappingsArray.push(this.tagMappingToFormGroup({
-      destinationTag: '',
-      originTag: ''
-    }));
-  }
-
-  private tagMappingToFormGroup(tm: TagMap) {
-    return new FormGroup({
-      originTag: new FormControl(tm.originTag, Validators.required),
-      destinationTag: new FormControl(tm.destinationTag, Validators.required),
-    })
-  }
-
-  deleteAgeRatingMapping(idx: number) {
-    this.ageRatingMappingArray.removeAt(idx);
-  }
-
-  addAgeRateMapping() {
-    this.ageRatingMappingArray.push(this.ageRateMappingToFormGroup({
-      tag: '',
-      ageRating: ComicInfoAgeRating.Pending,
-    }));
-  }
-
-  private ageRateMappingToFormGroup(agm: AgeRatingMap) {
-    return new FormGroup({
-      tag: new FormControl(agm.tag, [Validators.required]),
-      ageRating: new FormControl(agm.ageRating, [Validators.required]),
-    })
-  }
-
-  packData(): Preferences {
-    const preferences = this.preferences();
-    const formValue = this.preferencesForm.value;
-
-    return {
-      ...preferences,
-      ...formValue,
-      coverFallbackMethod: parseInt(formValue.coverFallbackMethod),
-      blackListedTags: (formValue.blackList as string)
-        .split(',').map((item: string) => item.trim())
-        .filter((t: string) => t.length > 0),
-      whiteListedTags: (formValue.whiteList as string)
-        .split(',').map((item: string) => item.trim())
-        .filter((t: string) => t.length > 0),
-      convertToGenreList: (formValue.genreList as string)
-        .split(',').map((item: string) => item.trim())
-        .filter((t: string) => t.length > 0),
-    };
-  }
-
-  breakString(s: string) {
-    if (s) {
-      return s.split(',').filter(s => s.length > 0);
+  protected export() {
+    const preferences = this.preferencesForm.getRawValue() as Preferences;
+    const kavitaPreferences: KavitaMetadataPreferences = {
+      ageRatingMappings: Object.fromEntries(
+        preferences.ageRatingMappings.map(item => [item.tag, item.ageRating])
+      ),
+      fieldMappings: preferences.metadataFieldMappings,
+      blacklist: preferences.blackListedTags,
+      whitelist: preferences.whiteListedTags
     }
 
-    return [];
+    this.utilityService.downloadObjectAsJson(kavitaPreferences, 'preferences.json');
   }
 
-  protected readonly ComicInfoAgeRatings = ComicInfoAgeRatings;
-  protected readonly ImageFormats = ImageFormats;
+  protected import() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+
+    input.onchange = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const file = target.files?.[0];
+
+      if (!file) {
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        try {
+          const kavitaPreferences: KavitaMetadataPreferences = JSON.parse(e.target?.result as string);
+
+          const importedPreferences: Preferences = {
+            ...this.preferences(),
+            ageRatingMappings: Object.entries(kavitaPreferences.ageRatingMappings ?? {}).map(
+              ([tag, ageRating]) => ({ tag, ageRating: ageRating as any })
+            ),
+            metadataFieldMappings: kavitaPreferences.fieldMappings,
+            blackListedTags: kavitaPreferences.blacklist,
+            whiteListedTags: kavitaPreferences.whitelist
+          } as Preferences;
+
+          console.log('Imported preferences:', importedPreferences);
+
+          this.importMode.set(true);
+          this.preferences.set(undefined);
+          this.createFormGroup();
+
+          setTimeout(() => {
+            this.preferences.set(importedPreferences);
+          }, 100);
+        } catch (error) {
+          console.error('Error parsing imported JSON preferences:', error);
+        }
+      };
+
+      reader.readAsText(file);
+    };
+
+    input.click();
+  }
+
 }

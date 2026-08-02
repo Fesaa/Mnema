@@ -157,9 +157,7 @@ public class ContentController(
                 {
                     Key = "dir",
                     Field = "baseDir",
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
+                    Validators = FormValidatorsBuilder.Required,
                 },
                 new SwitchFieldDefinition
                 {

@@ -6,6 +6,7 @@ export type FormDefinition = {
 }
 export type FormControlDefinition = {
   key: string;
+  translationPrefix: string;
   field: string;
   validators: { [key: string]: string[] };
   advanced: boolean;
@@ -14,6 +15,9 @@ export type FormControlDefinition = {
   fieldType: FormType;
   valueType: ValueType;
   disabled: boolean;
+  forceEditMode: boolean;
+  inline: boolean;
+  hideText: boolean;
 
   defaultValue: any;
   options?: FormControlOption[];
@@ -21,18 +25,20 @@ export type FormControlDefinition = {
 }
 export type FormControlOption = {
   key: string;
+  translationPrefix?: string;
   value: any;
   default: boolean;
 }
 
 export enum FormType {
-  Switch,
-  DropDown,
-  MultiSelect,
-  Text,
-  Directory,
-  MultiText,
-  Array,
+  Switch = 0,
+  DropDown = 1,
+  MultiSelect = 2,
+  Text = 3,
+  Directory = 4,
+  MultiText = 5,
+  Array = 6,
+  CommaSeparatedValues = 7,
 }
 
 export enum ValueType {

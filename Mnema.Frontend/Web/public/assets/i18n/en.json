@@ -137,19 +137,8 @@
     "skip_volume_without_chapter-tooltip": "{{provider-metadata.skip_volume_without_chapter-tooltip}}",
     "format-title": "{{provider-metadata.format-title}}",
     "format-tooltip": "{{provider-metadata.format-tooltip}}",
-    "format": {
-      "archive": "Archive",
-      "epub": "Epub",
-      "unsupported": "unsupported"
-    },
-    "content_format-title": "{{provider-metadata.content_format-title}}",
-    "content_format-tooltip": "{{provider-metadata.content_format-tooltip}}",
-    "content_format": {
-      "manga": "Manga",
-      "lightnovel": "Light novel",
-      "book": "Book",
-      "comic": "Comic"
-    },
+    "content-format-title": "{{provider-metadata.content_format-title}}",
+    "content-format-tooltip": "{{provider-metadata.content_format-tooltip}}",
     "hardcover_series_id-title": "{{provider-metadata.hardcover_series_id-title}}",
     "hardcover_series_id-tooltip": "{{provider-metadata.hardcover_series_id-tooltip}}",
     "manga_baka_id-title": "{{provider-metadata.manga_baka_id-title}}",
@@ -212,26 +201,27 @@
   },
 
   "provider-name-pipe": {
-    "nyaa": "Nyaa",
-    "mangadex": "Mangadex",
-    "dynasty": "Dynasty",
-    "webtoon": "Webtoon",
-    "bato": "Bato",
-    "weebdex": "Weebdex",
-    "athreascans": "Athrea Scans",
-    "kagane": "Kagane",
-    "madokami": "Madokami"
+    "Nyaa": "Nyaa",
+    "Mangadex": "Mangadex",
+    "Dynasty": "Dynasty",
+    "Webtoons": "Webtoon",
+    "Bato": "Bato",
+    "Weebdex": "Weebdex",
+    "AthreaScans": "Athrea Scans",
+    "Kagane": "Kagane",
+    "MadoKami": "Madokami",
+    "Comix": "Comix"
   },
 
   "content-format-pipe": {
-    "manga": "Manga",
-    "light-novel": "Light novel",
-    "book": "Book",
-    "comic": "Comic"
+    "Manga": "Manga",
+    "LightNovel": "Light novel",
+    "Book": "Book",
+    "Comic": "Comic"
   },
   "format-pipe": {
-    "archive": "Archive",
-    "epub": "Epub"
+    "Archive": "Archive",
+    "Epub": "Epub"
   },
 
   "confirm-modal": {
@@ -682,30 +672,54 @@
     },
     "preferences": {
       "title": "Preferences",
-      "general-tab": "General",
-      "mappings-tab": "Mappings",
 
-      "tags-to-genre-label": "Tags to save as genre",
-      "tags-to-genre-tooltip": "Tags configured here will be saved as Genre.",
-      "tags-blacklist-label": "Tags blacklist",
-      "tags-blacklist-tooltip": "Any tags configured here will not be used as either a Genre or Tag.",
-      "tags-whitelist-label": "Tags whitelist",
-      "tags-whitelist-tooltip": "When configured, only tags in the list will be used. If none are configured all tags will be saved if the download option is enabled",
-      "age-rating-mappings-label": "Age Ratings Mappings",
-      "age-rating-mappings-tooltip": "Configure which tags and/or genre's will be used to determine the downloaded content's AgeRating. If several are present, the highest will be used.",
-      "tags-mappings-label": "Tags Mappings",
-      "tags-mappings-tooltip": "Configure how tags are transformed before being processed by anything else.",
-      "logEmptyDownloads-label": "Empty downloads notifications",
-      "logEmptyDownloads-tooltip": "Get a notification when a subscription downloads 0 items",
-      "logSubNoDownloads-label": "Log repeated empty downloads",
-      "logSubNoDownloads-tooltip": "Get a notification when a subscription downloads 0 items 5 times in a row",
-      "imageFormat-label": "Image conversion",
+      "sync-title": "Kavita Sync",
+      "sync-description": "Import or Export your preferences to Kavita Metadata Management settings",
+      "export": "Export",
+      "import": "Import",
+
+      "imageFormat-title": "Image conversion",
       "imageFormat-tooltip": "In which format should downloaded images be saved",
-      "cover-fallback-method": "Cover to use as fallback",
-      "pin-subscription-titles": "Pin subscription titles",
-      "pin-subscription-titles-tooltip": "Force subscription titles to have a title override, to ensure consistency when the source updates",
+
+      "coverFallbackMethod-title": "Cover to use as fallback",
+      "coverFallbackMethod-tooltip": "Which cover should be used when the preferred cover is unavailable",
+
+      "blackListedTags-title": "Tags blacklist",
+      "blackListedTags-tooltip": "Any tags configured here will not be used as either a Genre or Tag.",
+
+      "whiteListedTags-title": "Tags whitelist",
+      "whiteListedTags-tooltip": "When configured, only tags in the list will be used. If none are configured all tags will be saved if the download option is enabled",
+
+      "ageRatingMappings-title": "Age Ratings Mappings",
+      "ageRatingMappings-tooltip": "Configure which tags and/or genres will be used to determine the downloaded content's AgeRating. If several are present, the highest will be used.",
+      "ageRatingMappings": {
+        "tag-title": "Tag",
+        "tag-tooltip": "",
+        "ageRating-title": "Age Rating",
+        "ageRating-tooltip": ""
+      },
+
+      "metadataFieldMappings-title": "Metadata Field Mappings",
+      "metadataFieldMappings-tooltip": "Configure how metadata fields are transformed before being processed by anything else.",
+      "metadataFieldMappings": {
+        "sourceType-title": "Source Type",
+        "sourceType-tooltip": "",
+        "sourceValue-title": "Source Value",
+        "sourceValue-tooltip": "",
+        "destinationType-title": "Destination Type",
+        "destinationType-tooltip": "",
+        "destinationValue-title": "Destination Value",
+        "destinationValue-tooltip": "",
+        "excludeFromSource-title": "Exclude from source",
+        "excludeFromSource-tooltip": ""
+      },
+
+      "pinSubscriptionTitles-title": "Force monitor series title override",
+      "pinSubscriptionTitles-tooltip": "Force monitored series to have a title override, to ensure consistency when the source updates",
+
       "configure": "Configure",
       "save": "Save",
+
       "toasts": {
         "save": {
           "success": {
@@ -784,20 +798,6 @@
         "title": "Nothing here yet",
         "description": "You don’t have any connections set up yet"
       },
-      "shared": {
-        "event": {
-          "DownloadStarted": "Download Started",
-          "DownloadFinished": "Download Finished",
-          "DownloadFailure": "Download Failure",
-          "SubscriptionExhausted": "Subscription Exhausted",
-          "SeriesMonitored": "Series Monitored",
-          "SeriesUnmonitored": "Series Unmonitored",
-          "TooManyForAutomatedDownload": "Too many for automated download",
-          "DownloadClientEvents": "Download client events",
-          "Exception": "Exception",
-          "GenericDownloadInfo": "Generic download info"
-        }
-      },
       "edit": {
         "select-type-title": "Pick your connection type",
         "title": "Edit Connection",
@@ -813,20 +813,8 @@
         "username-tooltip": "Optional custom username",
         "avatar-title": "Avatar URL",
         "avatar-tooltip": "Optional custom avatar",
-        "followed-events-title": "Followed Events",
-        "followed-events-tooltip": "Events to act on",
-        "followed-events": {
-          "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
-          "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
-          "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
-          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
-          "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
-          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
-          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
-          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}",
-          "Exception": "{{settings.connections.shared.event.Exception}}",
-          "GenericDownloadInfo": "{{settings.connections.shared.event.GenericDownloadInfo}}"
-        }
+        "followedEvents-title": "Followed Events",
+        "followedEvents-tooltip": "Events to act on"
       },
       "Kavita": {
         "name-title": "Name",
@@ -843,36 +831,14 @@
           "Dest-title": "Destination",
           "Dest-tooltip": "Directory mapping in Kavita to replace with"
         },
-        "followed-events-title": "Followed Events",
-        "followed-events-tooltip": "Events to act on",
-        "followed-events": {
-          "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
-          "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
-          "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
-          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
-          "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
-          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
-          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
-          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}",
-          "Exception": "{{settings.connections.shared.event.Exception}}"
-        }
+        "followedEvents-title": "Followed Events",
+        "followedEvents-tooltip": "Events to act on"
       },
       "Native": {
         "name-title": "Name",
         "name-tooltip": "Your custom name for this connection",
-        "followed-events-title": "Followed Events",
-        "followed-events-tooltip": "Events to act on",
-        "followed-events": {
-          "DownloadStarted": "{{settings.connections.shared.event.DownloadStarted}}",
-          "DownloadFinished": "{{settings.connections.shared.event.DownloadFinished}}",
-          "DownloadFailure": "{{settings.connections.shared.event.DownloadFailure}}",
-          "SubscriptionExhausted": "{{settings.connections.shared.event.SubscriptionExhausted}}",
-          "SeriesMonitored": "{{settings.connections.shared.event.SeriesMonitored}}",
-          "SeriesUnmonitored": "{{settings.connections.shared.event.SeriesUnmonitored}}",
-          "TooManyForAutomatedDownload": "{{settings.connections.shared.event.TooManyForAutomatedDownload}}",
-          "DownloadClientEvents": "{{settings.connections.shared.event.DownloadClientEvents}}",
-          "Exception": "{{settings.connections.shared.event.Exception}}"
-        }
+        "followedEvents-title": "Followed Events",
+        "followedEvents-tooltip": "Events to act on"
       }
     },
     "download-clients": {
@@ -902,11 +868,7 @@
         "username-title": "Username",
         "username-tooltip": "Username",
         "password-title": "Password",
-        "password-tooltip": "Password, leave empty if not required",
-        "type": {
-          "qbittorrent": "{{download-client-pipe.qbit-torrent}}",
-          "madokami": "Madokami"
-        }
+        "password-tooltip": "Password, leave empty if not required"
       },
       "Madokami": {
         "name-title": "Name",
@@ -916,10 +878,12 @@
         "basicAuthUsername-title": "Username",
         "basicAuthUsername-tooltip": "Required",
         "basicAuthPassword-title": "Password",
-        "basicAuthPassword-tooltip": "Required",
-        "type": {
-          "qbittorrent": "{{download-client-pipe.qbit-torrent}}",
-          "madokami": "Madokami"
+        "basicAuthPassword-tooltip": "Required"
+      },
+      "toasts": {
+        "all-in-use": {
+          "title": "No more download clients to configure",
+          "summary": "Each type can only be configured once"
         }
       }
     },
@@ -983,8 +947,9 @@
     "block_automatic_downloads-tooltip": "Always require manual confirmation for downloads for this provider"
   },
 
-  "download-client-pipe": {
-    "qbit-torrent": "qBit Torrent"
+  "download-client-type-pipe": {
+    "QBittorrent": "qBit Torrent",
+    "Madokami": "Madokami"
   },
 
   "directory-selector":{
@@ -1182,43 +1147,14 @@
     "base-dir-tooltip": "",
     "provider-title": "Provider",
     "provider-tooltip": "Which provider to use for this series. If you update this, you need to re-open the form to have it update",
-    "provider": {
-      "nyaa": "{{provider-name-pipe.nyaa}}",
-      "mangadex": "{{provider-name-pipe.mangadex}}",
-      "dynasty": "{{provider-name-pipe.dynasty}}",
-      "webtoons": "{{provider-name-pipe.webtoon}}",
-      "bato": "{{provider-name-pipe.bato}}",
-      "weebdex": "{{provider-name-pipe.weebdex}}",
-      "comix": "Comix",
-      "madokami": "{{provider-name-pipe.madokami}}",
-      "athreascans": "{{provider-name-pipe.athreascans}}",
-      "kagane": "{{provider-name-pipe.kagane}}"
-    },
     "valid-titles-title": "Valid titles",
     "valid-titles-tooltip": "Titles that parsed content can match on to be considered this series",
     "content-format-title": "Content Format",
     "content-format-tooltip": "",
-    "content-format": {
-      "manga": "Manga",
-      "lightnovel": "Light novel",
-      "book": "Book",
-      "comic": "Comic"
-    },
     "format-title": "{{provider-metadata.format-title}}",
     "format-tooltip": "{{provider-metadata.format-tooltip}}",
-    "format": {
-      "archive": "Archive",
-      "epub": "Epub",
-      "unsupported": "unsupported"
-    },
     "content_format-title": "{{provider-metadata.content_format-title}}",
     "content_format-tooltip": "{{provider-metadata.content_format-tooltip}}",
-    "content_format": {
-      "manga": "Manga",
-      "lightnovel": "Light novel",
-      "book": "Book",
-      "comic": "Comic"
-    },
     "hardcover_series_id-title": "{{provider-metadata.hardcover_series_id-title}}",
     "hardcover_series_id-tooltip": "{{provider-metadata.hardcover_series_id-tooltip}}",
     "manga_baka_id-title": "{{provider-metadata.manga_baka_id-title}}",
@@ -1396,6 +1332,53 @@
     "remove-from-download-client": "Remove from download client (Deletes files if last download for the entry)",
     "cancel": "{{common.cancel}}",
     "confirm": "{{common.confirm}}"
+  },
+
+  "image-format-pipe": {
+    "Upstream": "Upstream",
+    "Webp": "Webp"
+  },
+
+  "cover-fallback-method-pipe": {
+    "First": "First",
+    "Last": "Last",
+    "None": "None"
+  },
+
+  "age-rating-pipe": {
+    "Unknown": "Unknown",
+    "RatingPending": "Rating Pending",
+    "EarlyChildhood": "Early Childhood",
+    "Everyone": "Everyone",
+    "G": "G",
+    "Everyone10Plus": "Everyone 10+",
+    "PG": "PG",
+    "KidsToAdults": "Kids to Adults",
+    "Teen": "Teen",
+    "Mature15Plus": "MA15+",
+    "Mature17Plus": "Mature 17+",
+    "Mature": "M",
+    "R18Plus": "R18+",
+    "AdultsOnly": "Adults Only 18+",
+    "X18Plus": "X18+"
+  },
+
+  "metadata-field-type-pipe": {
+    "Genre": "Genre",
+    "Tag": "Tag"
+  },
+
+  "external-connections-event-types-pipe": {
+    "DownloadStarted": "Download Started",
+    "DownloadFinished": "Download Finished",
+    "DownloadFailure": "Download Failure",
+    "SubscriptionExhausted": "Subscription Exhausted",
+    "SeriesMonitored": "Series Monitored",
+    "SeriesUnmonitored": "Series Unmonitored",
+    "TooManyForAutomatedDownload": "Too many for automated download",
+    "DownloadClientEvents": "Download client events",
+    "Exception": "Exception",
+    "GenericDownloadInfo": "Generic download info"
   }
 
 }

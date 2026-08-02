@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using Mnema.Common;
 
 namespace Mnema.Models.DTOs.UI;
@@ -7,9 +7,24 @@ namespace Mnema.Models.DTOs.UI;
 public abstract record FormFieldDefinition
 {
     /// <summary>
-    /// Translation key of the field. If Field is metadata, also the key inside MetadataBag.
+    /// Translation key / identifier. Defaults to <see cref="Field"/> unless explicitly set.
     /// </summary>
-    public required string Key { get; init; }
+    /// <remarks>If Field is metadata, also the key inside MetadataBag.</remarks>
+    public string Key
+    {
+        get
+        {
+            var resolvedKey = field ?? Field;
+            if (string.Equals(resolvedKey, "metadata", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    "Key evaluated to 'metadata', which is invalid. You must explicitly set 'Key' or set a non-metadata 'Field'.");
+            }
+
+            return resolvedKey;
+        }
+        init;
+    }
 
     /// <summary>
     /// Field on the value containing the value. Defaults to metadata for historical reasons.
@@ -20,9 +35,11 @@ public abstract record FormFieldDefinition
 
     public bool Advanced { get; init; }
 
-    public bool Disabled { get; init; }
+    public bool ForceEditMode { get; init; } = false;
 
     public bool ForceSingle { get; init; }
+
+    public bool HideText { get; init; }
 
     public abstract FormFieldType FieldType { get; }
 
@@ -97,5 +114,13 @@ public sealed record ArrayFieldDefinition : FormFieldDefinition
 
     public override FieldValueType ValueType => FieldValueType.String;
 
-    public List<FormFieldDefinition> Controls { get; init; } = [];
+    public bool Inline { get; init; }
+
+    public required List<FormFieldDefinition> Controls { get; init; } = [];
+}
+
+public sealed record CommaSeparatedValuesFieldDefinition : FormFieldDefinition
+{
+    public override FormFieldType FieldType => FormFieldType.CommaSeparatedValues;
+    public override FieldValueType ValueType => FieldValueType.String;
 }

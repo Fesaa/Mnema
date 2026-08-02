@@ -138,9 +138,7 @@ public class MonitoredSeriesService(
                 {
                     Key = "title",
                     Field = "title",
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
+                    Validators = FormValidatorsBuilder.Required,
                 },
                 new TextFieldDefinition
                 {
@@ -157,43 +155,11 @@ public class MonitoredSeriesService(
                 {
                     Key = "base-dir",
                     Field = "baseDir",
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
+                    Validators = FormValidatorsBuilder.Required,
                 },
-                new DropDownFieldDefinition<Provider>(FieldValueType.Integer)
-                {
-                    Key = "provider",
-                    Field = "provider",
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
-                    Options = IMonitoredSeriesService.SupportedProviders
-                        .Select(provider => new SelectOption<Provider>(provider.ToString().ToLower(), provider))
-                        .ToList(),
-                },
-                new DropDownFieldDefinition<Format>(FieldValueType.Integer)
-                {
-                    Key = RequestConstants.FormatKey.Key,
-                    Field = "format",
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
-                    Options = Enum.GetValues<Format>()
-                        .Select(f => new SelectOption<Format>(f.ToString().ToLower(), f))
-                        .ToList(),
-                },
-                new DropDownFieldDefinition<ContentFormat>(FieldValueType.Integer)
-                {
-                    Key = RequestConstants.ContentFormatKey.Key,
-                    Field = "contentFormat",
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
-                    Options = Enum.GetValues<ContentFormat>()
-                        .Select(f => new SelectOption<ContentFormat>(f.ToString().ToLower(), f))
-                        .ToList(),
-                },
+                FormFieldDefinitions.EnumDropDown("provider", "provider-name-pipe", IMonitoredSeriesService.SupportedProviders, false),
+                FormFieldDefinitions.EnumMetadataDropDown(RequestConstants.FormatKey, "format-pipe", false),
+                FormFieldDefinitions.EnumMetadataDropDown(RequestConstants.ContentFormatKey, "content-format-pipe", false),
                 new TextFieldDefinition
                 {
                     Key = RequestConstants.HardcoverSeriesIdKey.Key,

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Mnema.API;
-using Mnema.Models.DTOs.User;
+using Mnema.Models.DTOs;
 using Mnema.Models.Entities.Authentication;
 
 namespace Mnema.Database.Repositories;

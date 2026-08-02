@@ -12,13 +12,13 @@ export class ContentFormatPipe implements PipeTransform {
   transform(value: ContentFormat): string {
     switch (value) {
       case ContentFormat.Manga:
-        return this.transLoco.translate('content-format-pipe.manga')
+        return this.transLoco.translate('content-format-pipe.Manga')
       case ContentFormat.LightNovel:
-        return this.transLoco.translate('content-format-pipe.light-novel')
+        return this.transLoco.translate('content-format-pipe.LightNovel')
       case ContentFormat.Book:
-        return this.transLoco.translate('content-format-pipe.book')
+        return this.transLoco.translate('content-format-pipe.Book')
       case ContentFormat.Comic:
-        return this.transLoco.translate('content-format-pipe.comic')
+        return this.transLoco.translate('content-format-pipe.Comic')
     }
   }
 

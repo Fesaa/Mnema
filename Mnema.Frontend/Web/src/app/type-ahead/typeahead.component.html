@@ -6,7 +6,8 @@
     </label>
   }
 
-  <div class="input-container" [class.focused]="hasFocus()" [class.has-selections]="hasSelections()">
+  <div class="input-container" [class.focused]="hasFocus()" [class.has-selections]="hasSelections()"
+       #triggerEl cdkOverlayOrigin #trigger="cdkOverlayOrigin">
     @if (settings().multiple && selectedItems().length > 0) {
       <div class="selected-badges">
         @for (item of selectedItems(); track trackByIdentityFn()($index, item)) {
@@ -72,8 +73,9 @@
     </div>
   </div>
 
-  @if (showDropdown()) {
-    <div class="dropdown-container" role="listbox" [attr.aria-label]="t('aria.results')">
+  <!-- Dropdown content, shared between relative and overlay rendering -->
+  <ng-template #dropdownContent>
+    <div class="dropdown-container" role="listbox" [attr.aria-label]="t('aria.results')" [class.dropdown-overlay]="useOverlay">
 
       @if (filteredOptions().length === 0 && searchControl.value && searchControl.value.length >= settings().minCharacters) {
         <div class="dropdown-item no-results">
@@ -118,5 +120,22 @@
         }
       }
     </div>
+  </ng-template>
+
+  <!-- Relative mode (default): render dropdown inline within the form -->
+  @if (!useOverlay && showDropdown()) {
+    <ng-container *ngTemplateOutlet="dropdownContent"></ng-container>
   }
+
+  <!-- Body/overlay mode: render dropdown via CDK overlay attached to the document body -->
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="trigger"
+    [cdkConnectedOverlayOpen]="useOverlay && showDropdown()"
+    [cdkConnectedOverlayWidth]="triggerWidth()"
+    [cdkConnectedOverlayPositions]="overlayPositions"
+    [cdkConnectedOverlayPush]="true"
+    [cdkConnectedOverlayScrollStrategy]="repositionScrollStrategy">
+    <ng-container *ngTemplateOutlet="dropdownContent"></ng-container>
+  </ng-template>
 </div>

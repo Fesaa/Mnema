@@ -3,7 +3,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
-using Mnema.Models.DTOs.User;
+using Mnema.Models.DTOs;
 
 namespace Mnema.Server.Controllers;
 

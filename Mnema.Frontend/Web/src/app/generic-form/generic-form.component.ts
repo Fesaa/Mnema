@@ -11,13 +11,17 @@ import {
 } from "@angular/forms";
 import {GENERIC_METADATA_FIELD, GenericFormFactoryService} from "./generic-form-factory.service";
 import {SettingsSwitchComponent} from "../shared/form/settings-switch/settings-switch.component";
-import {TranslocoDirective} from "@jsverse/transloco";
+import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {SettingsItemComponent} from "../shared/form/settings-item/settings-item.component";
 import {DefaultValuePipe} from "../_pipes/default-value.pipe";
 import {form} from "@angular/forms/signals";
 import {TypeaheadComponent} from "../type-ahead/typeahead.component";
 import {ModalService} from "../_services/modal.service";
 import {filter, tap} from "rxjs";
+import {
+  SettingMultiTextFieldComponent
+} from "@mnema/shared/form/setting-multi-text-field/setting-multi-text-field.component";
+import {Breakpoint, UtilityService} from "@mnema/_services/utility.service";
 
 @Component({
   selector: 'app-generic-form',
@@ -28,6 +32,7 @@ import {filter, tap} from "rxjs";
     SettingsItemComponent,
     DefaultValuePipe,
     TypeaheadComponent,
+    SettingMultiTextFieldComponent,
   ],
   templateUrl: './generic-form.component.html',
   styleUrl: './generic-form.component.scss',
@@ -39,11 +44,14 @@ export class GenericFormComponent<T> {
   private readonly nullableFormGroupBuilder = inject(FormBuilder);
   protected readonly genericFormFactoryService = inject(GenericFormFactoryService);
   private readonly modalService = inject(ModalService);
+  protected readonly utilityService = inject(UtilityService);
 
   formDefinition = input.required<FormDefinition>();
   initialValue = input.required<T>();
   nullable = input(false);
   double = input<boolean>(true);
+  inline = input<boolean>(false);
+  inModal = input<boolean>(false);
   supplyFormGroup = input<FormGroup>();
 
   formGroupTracker = output<FormGroup>();
@@ -116,6 +124,14 @@ export class GenericFormComponent<T> {
     return control.options?.find(option => option.value === value);
   }
 
+  getFormOptionsTranslation(control: FormControlDefinition, option: FormControlOption) {
+    if (option.translationPrefix) {
+      return translate(`${option.translationPrefix}.${option.key}`);
+    }
+
+    return translate(`${this.formDefinition().key}.${control.key}.${option.key}`);
+  }
+
   protected patchTypeAheadControlValue($event: FormControlOption[] | FormControlOption, formControl: FormControl) {
     const options = Array.isArray($event) ? $event : [$event];
     const formValue = options.map(option => option.value);
@@ -132,4 +148,29 @@ export class GenericFormComponent<T> {
       tap(directory => formControl.setValue(directory)),
     ).subscribe();
   }
+
+  protected readonly Breakpoint = Breakpoint;
+
+  private readonly collapseThreshold = 10;
+  private collapsedArrays = new Set<string>();
+  private hasRunInitialCollapse = new Set<string>();
+
+  isArrayCollapsed(control: FormControlDefinition): boolean {
+    if (!this.hasRunInitialCollapse.has(control.key)) {
+      this.hasRunInitialCollapse.add(control.key);
+
+      if (this.getFormArray(control).length > this.collapseThreshold) {
+        this.collapsedArrays.add(control.key);
+      }
+    }
+
+    return this.collapsedArrays.has(control.key);
+  }
+
+  toggleArrayCollapsed(control: FormControlDefinition): void {
+    this.collapsedArrays.has(control.key)
+      ? this.collapsedArrays.delete(control.key)
+      : this.collapsedArrays.add(control.key);
+  }
+
 }

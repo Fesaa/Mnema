@@ -1,4 +1,4 @@
-namespace Mnema.Models.DTOs.User;
+namespace Mnema.Models.DTOs;
 
 public sealed record TagMappingDto
 {

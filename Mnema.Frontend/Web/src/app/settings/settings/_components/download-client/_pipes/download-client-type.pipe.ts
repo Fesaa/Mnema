@@ -10,7 +10,7 @@ export class DownloadClientTypePipe implements PipeTransform {
   transform(value: DownloadClientType): string {
     switch (value) {
       case DownloadClientType.QBitTorrent:
-        return translate('download-client-pipe.qbit-torrent');
+        return translate('download-client-type-pipe.QBittorrent');
       case DownloadClientType.Madokami:
         return "Madokami"
     }

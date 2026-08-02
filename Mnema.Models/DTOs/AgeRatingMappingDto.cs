@@ -1,6 +1,6 @@
 using Mnema.Models.Publication;
 
-namespace Mnema.Models.DTOs.User;
+namespace Mnema.Models.DTOs;
 
 public sealed record AgeRatingMappingDto
 {

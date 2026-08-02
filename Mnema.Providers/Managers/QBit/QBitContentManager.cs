@@ -214,9 +214,7 @@ internal partial class QBitContentManager(
             new TextFieldDefinition
             {
                 Key = UsernameKey,
-                Validators = new FormValidatorsBuilder()
-                    .WithRequired()
-                    .Build()
+                Validators = FormValidatorsBuilder.Required
             },
             new TextFieldDefinition
             {

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
+using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
-using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities;
-using Mnema.Models.Entities.User;
+using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Publication;
 
@@ -69,7 +69,7 @@ internal class MetadataService : IMetadataService
 
         var allTags = series.Tags.Concat(chapter?.Tags ?? []).ToList();
 
-        var (genres, tags) = ProcessTags(preferences, allTags, request);
+        var (genres, tags) = GenerateGenreAndTagLists(preferences, allTags);
         ci.Genre = string.Join(',', genres);
         ci.Tags = string.Join(',', tags);
 
@@ -87,104 +87,133 @@ internal class MetadataService : IMetadataService
         return ci;
     }
 
-    public (List<string>, List<string>) ProcessTags(
-        Preferences preferences, IList<Tag> inputTags, DownloadRequestDto request)
+    #region Genre and Tags Mappings (Mostly Kavita copied code)
+
+    internal static (List<string> Genres, List<string> Tags) GenerateGenreAndTagLists(Preferences preferences, List<Tag> allTags, bool applyBlackAndWhiteLists = true)
     {
-        var mapToGenre = preferences.ConvertToGenreList.Select(g => g.ToNormalized()).ToList();
-        var blackListed = preferences.BlackListedTags.Select(g => g.ToNormalized()).ToList();
-        var whiteListed = preferences.WhiteListedTags.Select(g => g.ToNormalized()).ToList();
+        var genres = allTags.Where(t => t.IsMarkedAsGenre).Select(t => t.Value).Distinct().ToList();
+        var tags = allTags.Where(t => !t.IsMarkedAsGenre).Select(t => t.Value).Distinct().ToList();
 
-        var finalInputTags = MapTags(inputTags, preferences.TagMappings);
+        var processedGenres = new List<string>();
+        var processedTags = new List<string>();
 
-        var filteredGenres = finalInputTags
-            .Where(TagAllowedAsGenre)
-            .Select(t => t.Value)
-            .Distinct()
-            .ToList();
-        var filteredTags = finalInputTags
-            .Where(TagAllowedAsTag)
-            .Select(t => t.Value)
-            .Distinct()
-            .ToList();
-
-        return (filteredGenres, filteredTags);
-
-        bool TagAllowedAsGenre(Tag tag)
+        var mappings = ApplyFieldMappings(tags, MetadataFieldType.Tag, preferences.MetadataFieldMappings);
+        if (mappings.TryGetValue(MetadataFieldType.Tag, out var tagsToTags))
         {
-            var tagValue = tag.Value.ToNormalized();
-            var tagId = tag.Id.ToNormalized();
-
-            var isBlackListed = blackListed.Contains(tagValue) || blackListed.Contains(tagId);
-            if (isBlackListed) return false;
-
-            return tag.IsMarkedAsGenre || mapToGenre.Contains(tagValue) || mapToGenre.Contains(tagId);
+            processedTags.AddRange(tagsToTags);
+        }
+        if (mappings.TryGetValue(MetadataFieldType.Genre, out var tagsToGenres))
+        {
+            processedGenres.AddRange(tagsToGenres);
         }
 
-        bool TagAllowedAsTag(Tag tag)
+        mappings = ApplyFieldMappings(genres, MetadataFieldType.Genre, preferences.MetadataFieldMappings);
+        if (mappings.TryGetValue(MetadataFieldType.Tag, out var genresToTags))
         {
-            var tagValue = tag.Value.ToNormalized();
-            var tagId = tag.Id.ToNormalized();
-
-            var isBlackListed = blackListed.Contains(tagValue) || blackListed.Contains(tagId);
-            if (isBlackListed) return false;
-
-            if (TagAllowedAsGenre(tag)) return false;
-
-            if (request.GetKey(RequestConstants.IncludeNotMatchedTagsKey) && whiteListed.Count == 0) return true;
-
-            return whiteListed.Contains(tagValue) || whiteListed.Contains(tagId);
+            processedTags.AddRange(genresToTags);
         }
+        if (mappings.TryGetValue(MetadataFieldType.Genre, out var genresToGenres))
+        {
+            processedGenres.AddRange(genresToGenres);
+        }
+
+        if (applyBlackAndWhiteLists)
+        {
+            processedTags = ApplyBlackWhiteList(preferences, MetadataFieldType.Tag, processedTags);
+            processedGenres = ApplyBlackWhiteList(preferences, MetadataFieldType.Genre, processedGenres);
+        }
+
+        return (processedGenres, processedTags);
     }
 
-    public AgeRating? GetAgeRating(Preferences preferences, IList<Tag> inputTags)
+    private static Dictionary<MetadataFieldType, List<string>> ApplyFieldMappings(IEnumerable<string> values, MetadataFieldType sourceType, IList<MetadataFieldMappingDto> mappings)
+    {
+        var result = new Dictionary<MetadataFieldType, List<string>>();
+
+        foreach (var field in Enum.GetValues<MetadataFieldType>())
+        {
+            result[field] = [];
+        }
+
+        foreach (var value in values)
+        {
+            var matchingMappings = mappings.Where(m =>
+                m.SourceType == sourceType &&
+                m.SourceValue.ToNormalized().Equals(value.ToNormalized()));
+
+            var keepOriginal = true;
+
+            foreach (var mapping in matchingMappings.Where(mapping => !string.IsNullOrWhiteSpace(mapping.DestinationValue)))
+            {
+                result[mapping.DestinationType].Add(mapping.DestinationValue);
+
+                // Only keep the original tags if none of the matches want to remove it
+                keepOriginal = keepOriginal && !mapping.ExcludeFromSource;
+            }
+
+            if (keepOriginal)
+            {
+                result[sourceType].Add(value);
+            }
+        }
+
+        // Ensure distinct
+        foreach (var key in result.Keys)
+        {
+            result[key] = result[key].Distinct().ToList();
+        }
+
+        return result;
+    }
+
+    private static List<string> ApplyBlackWhiteList(Preferences preferences, MetadataFieldType fieldType, List<string> processedStrings)
+    {
+        var whiteList = preferences.WhiteListedTags.Select(t => t.ToNormalized()).ToList();
+        var blackList = preferences.BlackListedTags.Select(t => t.ToNormalized()).ToList();
+
+        return fieldType switch
+        {
+            MetadataFieldType.Genre => processedStrings.Distinct()
+                .Where(g => blackList.Count == 0 || !blackList.Contains(g.ToNormalized()))
+                .ToList(),
+            MetadataFieldType.Tag => processedStrings.Distinct()
+                .Where(g => blackList.Count == 0 || !blackList.Contains(g.ToNormalized()))
+                .Where(g => whiteList.Count == 0 || whiteList.Contains(g.ToNormalized()))
+                .ToList(),
+            _ => throw new ArgumentOutOfRangeException(nameof(fieldType), fieldType, null),
+        };
+    }
+
+    #endregion
+
+    internal static AgeRating? GetAgeRating(Preferences preferences, List<Tag> inputTags)
     {
         var ageRatingMappings = preferences.AgeRatingMappings.Select(m => m with
         {
             Tag = m.Tag.ToNormalized()
         }).ToList();
 
-        var finalInputTags = MapTags(inputTags, preferences.TagMappings);
+        var (genres, tags) = GenerateGenreAndTagLists(preferences, inputTags, false);
+        var allTags = genres.Concat(tags).ToList();
 
-        var ageRatings = finalInputTags
+        var ageRatings = allTags
             .Select(GetAgeRatingForTag)
             .WhereNotNull()
             .ToList();
 
         return ageRatings.Count == 0 ? null : ageRatings.Max();
 
-        AgeRating? GetAgeRatingForTag(Tag tag)
+        AgeRating? GetAgeRatingForTag(string tag)
         {
-            var tagValue = tag.Value.ToNormalized();
-            var tagId = tag.Id.ToNormalized();
+            var tagValue = tag.ToNormalized();
 
             var tagAgeRating = ageRatingMappings
-                .Where(mapping => mapping.Tag == tagValue || mapping.Tag == tagId)
+                .Where(mapping => mapping.Tag == tagValue)
                 .Aggregate(AgeRating.Unknown,
                     (current, mapping) => current > mapping.AgeRating ? current : mapping.AgeRating);
 
             return tagAgeRating > AgeRating.Unknown ? tagAgeRating : null;
         }
-    }
-
-    public List<Tag> MapTags(IList<Tag> tags, IList<TagMappingDto> mappings)
-    {
-        mappings = mappings.Select(m => m with
-        {
-            OriginTag = m.OriginTag.ToNormalized()
-        }).ToList();
-
-        return tags.Select(tag =>
-        {
-            var tagValue = tag.Value.ToNormalized();
-            var tagId = tag.Id.ToNormalized();
-
-            return new Tag
-            {
-                Id = mappings.FirstOrDefault(m => m.OriginTag == tagId)?.DestinationTag ?? tag.Id,
-                Value = mappings.FirstOrDefault(m => m.OriginTag == tagValue)?.DestinationTag ?? tag.Value,
-                IsMarkedAsGenre = tag.IsMarkedAsGenre
-            };
-        }).ToList();
     }
 
     private static (int?, bool) GetCount(Series? series)

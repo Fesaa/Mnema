@@ -54,6 +54,8 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
             .ComplexCollection(p => p.AgeRatingMappings, b => b.ToJson());
         builder.Entity<Preferences>()
             .ComplexCollection(p => p.TagMappings, b => b.ToJson());
+        builder.Entity<Preferences>()
+            .ComplexCollection(p => p.MetadataFieldMappings, b => b.ToJson());
 
         builder.Entity<Subscription>()
             .Property(s => s.Metadata)

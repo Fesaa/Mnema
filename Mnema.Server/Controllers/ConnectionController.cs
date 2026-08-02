@@ -24,6 +24,12 @@ public class ConnectionController(IUnitOfWork unitOfWork, IConnectionService con
             HttpContext.RequestAborted));
     }
 
+    [HttpGet("exists")]
+    public async Task<ActionResult<bool>> ConnectionExists([FromQuery] ConnectionType type)
+    {
+        return Ok(await unitOfWork.ConnectionRepository.ConnectionExistsForType(type, HttpContext.RequestAborted));
+    }
+
     [HttpGet("form")]
     public async Task<ActionResult<FormDefinition>> GetFormDefinition([FromQuery] ConnectionType type)
     {

@@ -56,6 +56,8 @@ public class Program
                 await new PinMonitoredSeriesTitles().RunAsync(services, context, logger);
 
                 await context.SeedDatabase();
+
+                await new MetadataFieldMappingsMigration().RunAsync(services, context, logger);
             }
             catch (Exception ex)
             {
@@ -102,6 +104,7 @@ public class Program
     /// <remarks>https://github.com/kleisauke/net-vips/issues/6#issuecomment-394379299</remarks>
     private static void InitNetVips()
     {
+        Cache.Max = 0;
         Cache.MaxFiles = 0;
     }
 }

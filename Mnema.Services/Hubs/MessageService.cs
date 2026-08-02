@@ -3,8 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Mnema.API;
+using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
-using Mnema.Models.DTOs.User;
 
 namespace Mnema.Services.Hubs;
 

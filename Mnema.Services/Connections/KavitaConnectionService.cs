@@ -117,17 +117,13 @@ internal class KavitaConnectionService(
                     {
                         Key = nameof(BaseDirMapping.Src),
                         Field = nameof(BaseDirMapping.Src),
-                        Validators = new FormValidatorsBuilder()
-                            .WithRequired()
-                            .Build()
+                        Validators = FormValidatorsBuilder.Required
                     },
                     new TextFieldDefinition
                     {
                         Key = nameof(BaseDirMapping.Dest),
                         Field = nameof(BaseDirMapping.Dest),
-                        Validators = new FormValidatorsBuilder()
-                            .WithRequired()
-                            .Build()
+                        Validators = FormValidatorsBuilder.Required
                     }
                 ]
             },

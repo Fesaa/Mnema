@@ -120,21 +120,9 @@ public class DownloadClientService(ILogger<DownloadClientService> logger, IUnitO
                 {
                     Key = "name",
                     Field = "name",
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
+                    Validators = FormValidatorsBuilder.Required
                 },
-                new DropDownFieldDefinition<DownloadClientType>(FieldValueType.Integer)
-                {
-                    Key = "type",
-                    Field = "type",
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .Build(),
-                    Options = freeTypes
-                        .Select(t => new SelectOption<DownloadClientType>(t.ToString().ToLower(), t))
-                        .ToList()
-                },
+                FormFieldDefinitions.EnumDropDown("type", "download-client-type-pipe", freeTypes, false),
                 ..await configurationProvider.GetFormControls(cancellationToken)
             ],
         };

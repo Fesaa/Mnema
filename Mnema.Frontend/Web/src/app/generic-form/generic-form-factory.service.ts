@@ -14,7 +14,7 @@ export const GENERIC_METADATA_FIELD = "metadata";
 })
 export class GenericFormFactoryService {
 
-  public debug = false;
+  public debug = true;
 
   private log(message: string, data?: unknown) {
     if (!this.debug) {
@@ -133,7 +133,7 @@ export class GenericFormFactoryService {
     return formGroup;
   }
 
-  createTypeAheadSettings(obj: any, control: FormControlDefinition): TypeaheadSettings<FormControlOption> {
+  createTypeAheadSettings(obj: any, control: FormControlDefinition, inModal: boolean): TypeaheadSettings<FormControlOption> {
     this.log(`createTypeAheadSettings called for control '${control.key}'`, { obj, controlType: control.fieldType });
 
     if (control.fieldType !== FormType.MultiSelect && control.fieldType !== FormType.MultiText) {
@@ -145,6 +145,7 @@ export class GenericFormFactoryService {
     settings.id = control.key;
     settings.multiple = true;
     settings.minCharacters = 0;
+    settings.dropdownPosition = inModal ? 'body' : 'relative';
 
     if (control.fieldType === FormType.MultiText) {
       settings.addIfNonExisting = true;
@@ -394,6 +395,7 @@ export class GenericFormFactoryService {
         return this.transFormValue(value, control.valueType);
       case FormType.MultiSelect:
       case FormType.MultiText:
+      case FormType.CommaSeparatedValues:
         if (value === '' || value === null || value === undefined) {
           return [];
         }

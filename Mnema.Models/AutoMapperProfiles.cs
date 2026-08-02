@@ -3,7 +3,6 @@ using AutoMapper;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
-using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Authentication;
 using Mnema.Models.Entities.Content;

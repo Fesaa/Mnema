@@ -20,6 +20,13 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {NgTemplateOutlet} from '@angular/common';
 import {TranslocoDirective} from '@jsverse/transloco';
+import {
+  CdkConnectedOverlay,
+  CdkOverlayOrigin,
+  ConnectedPosition,
+  ScrollStrategy,
+  ScrollStrategyOptions
+} from '@angular/cdk/overlay';
 
 export type SelectionCompareFn<T> = (a: T, b: T) => boolean;
 
@@ -81,6 +88,16 @@ export class TypeaheadSettings<T>  {
    * An optional, but recommended trackby identity function to help Angular render the list better
    */
   trackByIdentityFn?: (index: number, value: T) => string;
+  /**
+   * Where to render the dropdown. 'relative' (default) uses position: absolute within the form.
+   * 'body' renders via CDK overlay attached to the document body, avoiding overflow: hidden clipping.
+   */
+  dropdownPosition: 'relative' | 'body' = 'relative';
+  /**
+   * Minimum width (px) to enforce on the overlay dropdown when dropdownPosition is 'body'.
+   * Useful when the trigger element is narrower than the content that needs to be displayed.
+   */
+  overlayMinWidth?: number;
 }
 
 @Component({
@@ -88,7 +105,9 @@ export class TypeaheadSettings<T>  {
   imports: [
     ReactiveFormsModule,
     NgTemplateOutlet,
-    TranslocoDirective
+    TranslocoDirective,
+    CdkConnectedOverlay,
+    CdkOverlayOrigin
   ],
   templateUrl: './typeahead.component.html',
   styleUrl: './typeahead.component.scss',
@@ -107,6 +126,7 @@ export class TypeaheadComponent<T> implements OnInit {
   @Output() lockedChange = new EventEmitter<boolean>();
 
   @ViewChild('input') inputElem!: ElementRef<HTMLInputElement>;
+  @ViewChild('triggerEl') triggerEl!: ElementRef<HTMLDivElement>;
   @ContentChild('label') labelTemplate?: TemplateRef<any>;
   @ContentChild('optionItem') optionTemplate?: TemplateRef<any>;
   @ContentChild('badgeItem') badgeTemplate?: TemplateRef<any>;
@@ -117,6 +137,7 @@ export class TypeaheadComponent<T> implements OnInit {
   selectedItems = signal<T[]>([]);
   filteredOptions = signal<T[]>([]);
   highlightedIndex = signal(-1);
+  triggerWidth = signal(0);
   trackByIdentityFn = computed(() => {
     const settings = this.settings();
     if (settings.trackByIdentityFn) {
@@ -131,11 +152,18 @@ export class TypeaheadComponent<T> implements OnInit {
   // Subjects
   private searchSubject = new Subject<string>();
 
+  // CDK Overlay
+  protected readonly overlayPositions: ConnectedPosition[] = [
+    { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top' },
+    { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom' },
+  ];
+  protected readonly repositionScrollStrategy: ScrollStrategy = inject(ScrollStrategyOptions).reposition();
+
   // Computed signals
   showDropdown = computed(() =>
     this.hasFocus() &&
     (this.filteredOptions().length > 0 ||
-      (this.searchControl.value && this.searchControl.value.length >= this.settings().minCharacters && this.settings().addIfNonExisting))
+      (!!this.searchControl.value && this.searchControl.value.length >= this.settings().minCharacters && this.settings().addIfNonExisting))
   );
 
   hasSelections = computed(() => this.selectedItems().length > 0);
@@ -145,6 +173,10 @@ export class TypeaheadComponent<T> implements OnInit {
     !this.locked() &&
     (this.hasSelections() || (this.searchControl.value && this.searchControl.value.length > 0))
   );
+
+  get useOverlay(): boolean {
+    return this.settings().dropdownPosition === 'body';
+  }
 
   constructor() {
     effect(() => {
@@ -185,6 +217,10 @@ export class TypeaheadComponent<T> implements OnInit {
           if (settings.addIfNonExisting && this.searchControl.value) {
             const existsInResults = settings.compareFnForAdd(results, this.searchControl.value).length > 0;
             this.showAddItem.set(!existsInResults);
+          }
+
+          if (this.useOverlay) {
+            this.updateTriggerWidth();
           }
         });
     });
@@ -238,6 +274,10 @@ export class TypeaheadComponent<T> implements OnInit {
     if (!this.disabled() && !this.locked()) {
       this.hasFocus.set(true);
       this.searchSubject.next(this.searchControl.value || '');
+
+      if (this.useOverlay) {
+        this.updateTriggerWidth();
+      }
     }
   }
 
@@ -389,6 +429,15 @@ export class TypeaheadComponent<T> implements OnInit {
       return items;
     }
     return items.length > 0 ? items[0] : null;
+  }
+
+  private updateTriggerWidth(): void {
+    if (this.triggerEl && this.triggerEl.nativeElement) {
+      this.triggerWidth.set(Math.max(
+        this.triggerEl.nativeElement.getBoundingClientRect().width,
+        this.settings().overlayMinWidth ?? 0
+      ));
+    }
   }
 
   getDisplayText(item: T): string {

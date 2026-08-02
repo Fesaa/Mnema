@@ -108,28 +108,8 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
                 DefaultValue = true,
                 Advanced = true,
             },
-            new DropDownFieldDefinition<ContentFormat>(FieldValueType.Integer)
-            {
-                Key = RequestConstants.ContentFormatKey.Key,
-                Options = Enum.GetValues<ContentFormat>()
-                    .Select(f => new SelectOption<ContentFormat>(f.ToString().ToLower(), f))
-                    .ToList(),
-                DefaultValue = ContentFormat.Manga,
-                Validators = new FormValidatorsBuilder()
-                    .WithRequired()
-                    .Build()
-            },
-            new DropDownFieldDefinition<Format>(FieldValueType.Integer)
-            {
-                Key = RequestConstants.FormatKey.Key,
-                Options = Enum.GetValues<Format>()
-                    .Select(f => new SelectOption<Format>(f.ToString().ToLower(), f))
-                    .ToList(),
-                DefaultValue = Format.Archive,
-                Validators = new FormValidatorsBuilder()
-                    .WithRequired()
-                    .Build()
-            },
+            FormFieldDefinitions.EnumMetadataDropDown<Format>(RequestConstants.FormatKey, "format-pipe", false),
+            FormFieldDefinitions.EnumMetadataDropDown<ContentFormat>(RequestConstants.ContentFormatKey, "content-format-pipe", false),
             new TextFieldDefinition
             {
                 Key = RequestConstants.HardcoverSeriesIdKey.Key,
@@ -204,16 +184,12 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
             new TextFieldDefinition
             {
                 Key = BasicAuthUsername.Key ,
-                Validators = new FormValidatorsBuilder()
-                    .WithRequired()
-                    .Build()
+                Validators = FormValidatorsBuilder.Required
             },
             new TextFieldDefinition
             {
                 Key = BasicAuthPassword.Key ,
-                Validators = new FormValidatorsBuilder()
-                    .WithRequired()
-                    .Build()
+                Validators = FormValidatorsBuilder.Required
             }
         ]);
     }

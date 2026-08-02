@@ -3,6 +3,7 @@ import {HttpClient} from "@angular/common/http";
 import {environment} from "../../../../../environments/environment";
 import {PagedList} from "../../../../_models/paged-list";
 import {FormDefinition} from "../../../../generic-form/form";
+import {map} from "rxjs";
 
 export interface Connection {
   id: string;
@@ -54,6 +55,12 @@ export class ConnectionService {
 
   deleteConnection(id: string) {
     return this.httpClient.delete(this.baseUrl + `Connection/${id}`);
+  }
+
+  existsForType(type: ConnectionType) {
+    return this.httpClient.get(this.baseUrl + `Connection/exists?type=${type}`, { responseType: 'text' }).pipe(
+      map(response => response === 'true')
+    );
   }
 
 

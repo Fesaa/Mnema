@@ -545,6 +545,29 @@ namespace Mnema.Database.SqliteMigrations
                                 .HasColumnType("TEXT");
                         });
 
+                    b.ComplexCollection(typeof(List<Dictionary<string, object>>), "MetadataFieldMappings", "Mnema.Models.Entities.Preferences.MetadataFieldMappings#MetadataFieldMappingDto", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<int>("DestinationType");
+
+                            b1.Property<string>("DestinationValue")
+                                .IsRequired();
+
+                            b1.Property<bool>("ExcludeFromSource");
+
+                            b1.Property<int>("Id");
+
+                            b1.Property<int>("SourceType");
+
+                            b1.Property<string>("SourceValue")
+                                .IsRequired();
+
+                            b1
+                                .ToJson("MetadataFieldMappings")
+                                .HasColumnType("TEXT");
+                        });
+
                     b.ComplexCollection(typeof(List<Dictionary<string, object>>), "TagMappings", "Mnema.Models.Entities.Preferences.TagMappings#TagMappingDto", b1 =>
                         {
                             b1.IsRequired();

@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Mnema.API.Content;
 using Mnema.Common;
+using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
@@ -49,7 +52,13 @@ public interface IMonitoredSeriesRepository: INavigationalEntityRepository<Monit
 
 public interface IMonitoredSeriesService
 {
-    public static readonly ImmutableArray<Provider> SupportedProviders = [..Enum.GetValues<Provider>()];
+    public static readonly ImmutableArray<Provider> SupportedProviders =
+    [
+        .. typeof(Provider)
+            .GetFields()
+            .Where(f => f.IsStatic && f.GetCustomAttribute<ObsoleteAttribute>() == null)
+            .Select(f => (Provider)f.GetRawConstantValue()!)
+    ];
 
     Task UpdateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     Task CreateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);

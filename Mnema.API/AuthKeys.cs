@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.UI;
-using Mnema.Models.DTOs.User;
 using Mnema.Models.Entities.Authentication;
 
 namespace Mnema.API;

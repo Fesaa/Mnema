@@ -7,7 +7,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Common.Exceptions;
-using Mnema.Models.DTOs.User;
+using Mnema.Models.DTOs;
 using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
