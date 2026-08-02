@@ -126,41 +126,43 @@
           </app-settings-item>
         }
         @case (FormType.Array) {
-          <div [formArrayName]="getFormControlName(control)" class="d-flex flex-column align-items-start">
+          @if (!!control.controls) {
+            <div [formArrayName]="getFormControlName(control)" class="d-flex flex-column align-items-start">
 
-            <div class="col-auto setting-title edit">
-              <h4 class="section-title">
-                {{ t(control.key + '-title') }}
-              </h4>
-              <span class="text-muted">{{t(control.key + '-tooltip')}}</span>
-            </div>
-
-            @for (group of getFormArray(control).controls; track $index) {
-              <div class="array-item d-flex align-items-center gap-2 mb-3 w-100">
-                <div class="flex-grow-1">
-                  <app-generic-form
-                    [formDefinition]="{ key: formDefinition().key + '.' + control.key, descriptionKey: '', controls: control.controls}"
-                    [initialValue]="{}"
-                    [supplyFormGroup]="group">
-                  </app-generic-form>
-                </div>
-
-                <button
-                  type="button"
-                  class="btn btn-outline-danger flex-shrink-0"
-                  (click)="removeArrayItem(control, $index)">
-                  <i class="fa fa-trash me-1"></i> Delete
-                </button>
+              <div class="col-auto setting-title edit">
+                <h4 class="section-title">
+                  {{ t(control.key + '-title') }}
+                </h4>
+                <span class="text-muted">{{t(control.key + '-tooltip')}}</span>
               </div>
-            }
 
-            <button
-              type="button"
-              class="btn btn-primary mt-2 ms-0"
-              (click)="addArrayItem(control)">
-              <i class="fa fa-plus me-1"></i> Add
-            </button>
-          </div>
+              @for (group of getFormArray(control).controls; track $index) {
+                <div class="array-item d-flex align-items-center gap-2 mb-3 w-100">
+                  <div class="flex-grow-1">
+                    <app-generic-form
+                      [formDefinition]="{ key: formDefinition().key + '.' + control.key, descriptionKey: '', controls: control.controls}"
+                      [initialValue]="{}"
+                      [supplyFormGroup]="group">
+                    </app-generic-form>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger flex-shrink-0"
+                    (click)="removeArrayItem(control, $index)">
+                    <i class="fa fa-trash me-1"></i> Delete
+                  </button>
+                </div>
+              }
+
+              <button
+                type="button"
+                class="btn btn-primary mt-2 ms-0"
+                (click)="addArrayItem(control)">
+                <i class="fa fa-plus me-1"></i> Add
+              </button>
+            </div>
+          }
         }
       }
     </div>
