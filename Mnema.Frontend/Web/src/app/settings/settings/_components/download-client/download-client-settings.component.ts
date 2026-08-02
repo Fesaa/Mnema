@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, computed, EventEmitter, inject} from '@angular/core';
 import {ModalService} from "../../../../_services/modal.service";
 import {PageLoader} from "../../../../shared/_component/paginator/paginator.component";
-import {finalize, map, of, switchMap} from "rxjs";
+import {filter, finalize, map, of, switchMap} from "rxjs";
 import {GenericFormModalComponent} from "../../../../generic-form/generic-form-modal/generic-form-modal.component";
 import {DefaultModalOptions} from "../../../../_models/default-modal-options";
 import {ListSelectModalComponent} from "../../../../shared/_component/list-select-modal/list-select-modal.component";
@@ -9,6 +9,7 @@ import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {DownloadClient, DownloadClientService, DownloadClientType} from "./download-client.service";
 import {DownloadClientTypePipe} from "./_pipes/download-client-type.pipe";
 import {TableComponent} from "../../../../shared/_component/table/table.component";
+import {ToastService} from "@mnema/_services/toast.service";
 
 @Component({
   selector: 'app-download-client-settings',
@@ -25,6 +26,7 @@ export class DownloadClientSettingsComponent {
 
   private readonly downloadClientService = inject(DownloadClientService);
   private readonly modalService = inject(ModalService);
+  private readonly toastService = inject(ToastService);
 
   protected pageReloader = new EventEmitter<void>();
 
@@ -67,6 +69,11 @@ export class DownloadClientSettingsComponent {
     return this.downloadClientService.getFreeTypes().pipe(
       map(types => types.map(type =>
         ({label: typePipe.transform(type), value: type}))),
+      filter(types => {
+        if (types.length === 0)
+          this.toastService.warningLoco('settings.download-clients.toasts.all-in-use');
+        return types.length > 0;
+      }),
       switchMap(types => {
         const [modal, component] = this.modalService.open(ListSelectModalComponent<DownloadClientType>, {
           size: "lg", centered: true,

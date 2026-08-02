@@ -879,6 +879,12 @@
         "basicAuthUsername-tooltip": "Required",
         "basicAuthPassword-title": "Password",
         "basicAuthPassword-tooltip": "Required"
+      },
+      "toasts": {
+        "all-in-use": {
+          "title": "No more download clients to configure",
+          "summary": "Each type can only be configured once"
+        }
       }
     },
     "releases": {
