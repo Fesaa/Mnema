@@ -102,6 +102,7 @@ public class Program
     /// <remarks>https://github.com/kleisauke/net-vips/issues/6#issuecomment-394379299</remarks>
     private static void InitNetVips()
     {
+        Cache.Max = 0;
         Cache.MaxFiles = 0;
     }
 }
