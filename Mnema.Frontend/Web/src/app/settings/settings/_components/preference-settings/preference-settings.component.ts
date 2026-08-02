@@ -33,15 +33,12 @@ export class PreferenceSettingsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly preferencesService = inject(PreferencesService);
   private readonly formService = inject(FormService);
-  private readonly connectionService = inject(ConnectionService);
   private readonly utilityService = inject(UtilityService);
-  private readonly cdRef = inject(ChangeDetectorRef);
 
   preferences = signal<Preferences | undefined>(undefined);
   preferencesFormDefinition = signal<FormDefinition | undefined>(undefined);
 
   preferencesForm!: FormGroup;
-  hasKavitaConnection = signal(false);
   importMode = signal(false);
 
   ngOnInit(): void {
@@ -51,10 +48,6 @@ export class PreferenceSettingsComponent implements OnInit {
 
     this.formService.preferencesForm().pipe(
       tap(d => this.preferencesFormDefinition.set(d)),
-    ).subscribe();
-
-    this.connectionService.existsForType(ConnectionType.Kavita).pipe(
-      tap(exists => this.hasKavitaConnection.set(exists))
     ).subscribe();
 
     this.createFormGroup();
