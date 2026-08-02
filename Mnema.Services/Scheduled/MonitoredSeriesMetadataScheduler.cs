@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
@@ -46,6 +47,9 @@ internal class MonitoredSeriesMetadataScheduler(
         if (series.Count == 0)
             return;
 
+        var providerSettings = await unitOfWork.ProviderSettingsRepository.GetAllSettings(ct);
+        var enabledProviders = providerSettings.Where(ps => ps.IsEnabled).Select(ps => ps.Provider).ToHashSet();
+
         logger.LogDebug("{Amount} series eligible for refresh", series.Count);
 
         var sw = Stopwatch.StartNew();
@@ -53,6 +57,12 @@ internal class MonitoredSeriesMetadataScheduler(
 
         foreach (var mSeries in series)
         {
+            if (!enabledProviders.Contains(mSeries.Provider))
+            {
+                logger.LogDebug("Skipping refresh for {Title} - {Provider} as provider is disabled", mSeries.Title, mSeries.Provider);
+                continue;
+            }
+
             logger.LogDebug("Refreshing metadata for {Title} - {Provider}", mSeries.Title, mSeries.Provider);
 
             try
