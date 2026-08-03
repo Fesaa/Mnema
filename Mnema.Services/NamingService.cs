@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
 using Mnema.Common;
-using Mnema.Common.Extensions;
 using Mnema.Models.Entities;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
@@ -17,23 +16,58 @@ public class NamingService(ILogger<NamingService> logger, ApplicationConfigurati
     public StringFormatter<ChapterNameContext> ChapterFormatter { get; } = new StringFormatter<ChapterNameContext>()
         .WithVariable("Title", c => c.Title)
         .WithVariable("Volume", c => parserService.IsLooseLeafVolume(c.Chapter.VolumeMarker) ? null : c.Chapter.VolumeMarker)
-        .WithVariable("Chapter", (c, spec) =>
-        {
-            if (parserService.IsDefaultChapter(c.Chapter.ChapterMarker))
-                return null;
-
-            var number = c.Chapter.ChapterNumber();
-            if (number is null)
+        .WithVariable(
+            "Chapter",
+            (c, spec) =>
             {
-                logger.LogWarning("Failed to parse chapter number for marker {ChapterMarker}, not padding", number);
-                return null;
-            }
+                if (parserService.IsDefaultChapter(c.Chapter.ChapterMarker))
+                    return null;
 
-            return spec is not null ? c.Chapter.ChapterMarker.PadFloat(spec.Length) : c.Chapter.ChapterMarker;
-        })
+                var number = c.Chapter.ChapterNumber();
+                if (number is null)
+                {
+                    logger.LogWarning("Failed to parse chapter number for marker {ChapterMarker}, not padding", c.Chapter.ChapterMarker);
+                    return null;
+                }
+
+                if (string.IsNullOrEmpty(spec))
+                    return c.Chapter.ChapterMarker;
+
+                var width = int.Parse(spec[1..]);
+                return number.Value.ToString($"D{width}");
+            },
+            spec =>
+            {
+                if (string.IsNullOrEmpty(spec))
+                    return null;
+
+                return spec.StartsWith('#') &&
+                       spec.Length > 1 &&
+                       int.TryParse(spec[1..], out var width) &&
+                       width > 0
+                    ? null
+                    : "expected format '#<padding width>', e.g. '#3'";
+            })
+
         .WithVariable("ChapterTitle", c => c.Chapter.Title)
-        .WithVariable("Year", c => c.Chapter.ReleaseDate?.Year.ToString() ?? string.Empty)
-        .WithVariable("Date", (c, spec) => c.Chapter.ReleaseDate?.ToString(spec ?? "yyyy-MM-dd") ?? string.Empty);
+        .WithVariable(
+            "Date",
+            (c, spec) => c.Chapter.ReleaseDate?.ToString(spec ?? "yyyy-MM-dd") ?? string.Empty,
+            spec =>
+            {
+                if (string.IsNullOrEmpty(spec))
+                    return null;
+
+                try
+                {
+                    _ = DateTime.Now.ToString(spec);
+                    return null;
+                }
+                catch (FormatException)
+                {
+                    return "invalid date format string";
+                }
+            });
 
     public StringFormatter<ChapterNameContext> OneShotFormatter => ChapterFormatter;
 

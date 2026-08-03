@@ -9,26 +9,35 @@ public delegate string? FormatVariableResolver<in T>(T context, string? formatSp
 public class StringFormatter<T>
 {
 
-    private readonly Dictionary<string, FormatVariableResolver<T>> _variables = new(StringComparer.OrdinalIgnoreCase);
+    private sealed record VariableDefinition(FormatVariableResolver<T> Resolver, Func<string?, string?>? SpecValidator);
 
-    /// <summary>Register a simple variable, spec is ignored.</summary>
-    public StringFormatter<T> WithVariable(string name, Func<T, string?> resolve)
-        => WithVariable(name, (ctx, _) => resolve(ctx));
+    private readonly Dictionary<string, VariableDefinition> _variables = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>Register a variable whose value is post-processed by the format spec (e.g. padding).</summary>
-    public StringFormatter<T> WithVariable(string name, Func<T, string?> resolve, Func<string, string, string?> applySpec)
+    public StringFormatter<T> WithVariable(
+        string name,
+        Func<T, string?> resolve)
+        => WithVariable(name, (ctx, _) => resolve(ctx), null);
+
+    public StringFormatter<T> WithVariable(
+        string name,
+        Func<T, string?> resolve,
+        Func<string, string, string?> applySpec,
+        Func<string?, string?>? specValidator = null)
         => WithVariable(name, (ctx, spec) =>
         {
             var value = resolve(ctx);
+
             return spec is not null && !string.IsNullOrEmpty(value)
                 ? applySpec(value, spec)
                 : value;
-        });
+        }, specValidator);
 
-    /// <summary>Full control — resolver sees the raw spec string and decides everything itself.</summary>
-    public StringFormatter<T> WithVariable(string name, FormatVariableResolver<T> resolve)
+    public StringFormatter<T> WithVariable(
+        string name,
+        FormatVariableResolver<T> resolve,
+        Func<string?, string?>? specValidator = null)
     {
-        _variables[name] = resolve;
+        _variables[name] = new VariableDefinition(resolve, specValidator);
         return this;
     }
 
@@ -70,10 +79,10 @@ public class StringFormatter<T>
                     var name = colon >= 0 ? token[..colon] : token;
                     var spec = colon >= 0 ? token[(colon + 1)..] : null;
 
-                    if (!_variables.TryGetValue(name, out var resolver))
+                    if (!_variables.TryGetValue(name, out var variable))
                         throw new FormatException($"Unknown variable '{{{name}}}' in format \"{format}\"");
 
-                    var value = resolver(context, spec);
+                    var value = variable.Resolver(context, spec);
                     if (!string.IsNullOrEmpty(value))
                     {
                         sb.Append(value);
@@ -137,9 +146,22 @@ public class StringFormatter<T>
                     var name = colon >= 0 ? token[..colon] : token;
 
                     if (name.Length == 0)
+                    {
                         errors.Add($"Empty variable name at position {i}");
-                    else if (!_variables.ContainsKey(name))
+                    }
+                    else if (!_variables.TryGetValue(name, out var variable))
+                    {
                         errors.Add($"Unknown variable '{{{name}}}' at position {i}");
+                    }
+                    else if (colon >= 0 && variable.SpecValidator is not null)
+                    {
+                        var spec = token[(colon + 1)..];
+
+                        var specError = variable.SpecValidator(spec);
+
+                        if (specError is not null)
+                            errors.Add($"Invalid spec for '{{{name}:{spec}}}' at position {i}: {specError}");
+                    }
 
                     i = close + 1;
                     break;

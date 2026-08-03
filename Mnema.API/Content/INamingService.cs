@@ -10,7 +10,7 @@ public record ChapterNameContext(string Title, Chapter Chapter);
 
 public interface INamingService
 {
-    public const string DefaultChapterFormat = "{Title}[ Vol. {Volume}][ Ch. {Chapter:0000}]";
+    public const string DefaultChapterFormat = "{Title}[ Vol. {Volume}][ Ch. {Chapter:#4}]";
     public const string DefaultOneShotFormat = "{Title}[ {ChapterTitle}]";
 
     StringFormatter<ChapterNameContext> ChapterFormatter { get; }
