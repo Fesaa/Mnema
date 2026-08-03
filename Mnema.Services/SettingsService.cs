@@ -89,7 +89,6 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
             switch (serverSetting.Key)
             {
                 case ServerSettingKey.MaxConcurrentTorrents:
-                    dto.MaxConcurrentTorrents = DeserializeSetting<int>(serverSetting);
                     break;
                 case ServerSettingKey.MaxConcurrentImages:
                     dto.MaxConcurrentImages = DeserializeSetting<int>(serverSetting);
@@ -104,7 +103,6 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                     dto.InstallDate = DeserializeSetting<DateTime>(serverSetting);
                     break;
                 case ServerSettingKey.SubscriptionRefreshHour:
-                    dto.SubscriptionRefreshHour = DeserializeSetting<int>(serverSetting);
                     break;
                 case ServerSettingKey.LastUpdateDate:
                     dto.InstallDate = DeserializeSetting<DateTime>(serverSetting);
@@ -140,14 +138,14 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
         {
             object? value = serverSetting.Key switch
             {
-                ServerSettingKey.MaxConcurrentTorrents => dto.MaxConcurrentTorrents,
+                ServerSettingKey.MaxConcurrentTorrents => null,
                 ServerSettingKey.MaxConcurrentImages => dto.MaxConcurrentImages,
                 ServerSettingKey.InstalledVersion => null,
                 ServerSettingKey.FirstInstalledVersion => null,
                 ServerSettingKey.InstallDate => null,
-                ServerSettingKey.SubscriptionRefreshHour => dto.SubscriptionRefreshHour,
+                ServerSettingKey.SubscriptionRefreshHour => null,
                 ServerSettingKey.LastUpdateDate => null,
-                ServerSettingKey.MetadataProviderSettings => dto.MetadataProviderSettings,
+                ServerSettingKey.MetadataProviderSettings => null,
                 ServerSettingKey.AutoDisableAfter => dto.AutoDisableProviderAfter,
                 ServerSettingKey.ImageConversionLossLess => dto.ImageConversionLossless,
                 ServerSettingKey.ImageConversionQuality => dto.ImageConversionQuality,

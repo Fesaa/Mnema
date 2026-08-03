@@ -754,32 +754,14 @@
       "connections": "Connections",
       "download-clients": "Download Clients",
       "auth-keys": "Auth Keys",
-      "sub-refresh": {
-        "label": "Download subscriptions at",
-        "tooltip": "The hour at which subscriptions should run"
-      },
-      "max-images": {
-        "label": "Max Images",
-        "subTitle": "Amount of images(/chapter) downloaded at once, not shared between providers",
-        "tooltip": ""
-      },
-      "max-torrents": {
-        "label": "Max concurrent torrents",
-        "subTitle": "Amount of torrents downloading at once",
-        "tooltip": ""
-      },
-      "auto-disable-provider-after": {
-        "label": "Auto disable provider after",
-        "tooltip": "After how many consecutive failure should a provider be disabled (removed from automatic search)"
-      },
-      "image-conversion-quality": {
-        "label": "Image Conversion Quality",
-        "tooltip": "At which quality are images converted. Default: 80"
-      },
-      "image-conversion-lossless": {
-        "label": "Convert images lossless",
-        "tooltip": "Should images be converted lossless. Default: false"
-      },
+      "maxConcurrentImages-title": "Max images",
+      "maxConcurrentImages-tooltip": "Amount of images(/chapter) downloaded at once, not shared between providers",
+      "autoDisableProviderAfter-title": "Auto disable provider after",
+      "autoDisableProviderAfter-tooltip": "After how many consecutive failure should a provider be disabled (removed from automatic search)",
+      "imageConversionLossless-title": "Convert images lossless",
+      "imageConversionLossless-tooltip": "Should images be converted lossless. Default: false",
+      "imageConversionQuality-title": "Image Conversion Quality",
+      "imageConversionQuality-tooltip": "At which quality are images converted. Default: 80",
       "save": "Save",
       "toasts": {
         "save": {

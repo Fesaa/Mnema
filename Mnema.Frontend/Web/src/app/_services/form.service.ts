@@ -27,6 +27,10 @@ export class FormService {
     return this.getForm('preferences');
   }
 
+  serverSettingsForm() {
+    return this.getForm('server-settings');
+  }
+
   private getForm(endpoint: string) {
     if (this.cache.has(endpoint)) {
       return of(this.cache.get(endpoint)!);

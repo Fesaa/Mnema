@@ -23,131 +23,17 @@
 
   <div class="tab-content mt-2">
     <div class="tab-pane" [class.active]="tab === 'general'">
-      @if (settingsForm !== undefined && config() !== undefined) {
-        <form [formGroup]="settingsForm" class="w-100 px-2">
-          <div class="d-flex flex-column align-items-center gap-4">
-
-            <div class="w-100">
-
-              <div class="d-flex flex-column gap-3">
-                @if (getFormControl('maxConcurrentTorrents'); as control) {
-                  <app-settings-item
-                    [control]="control"
-                    [title]="t('max-torrents.label')"
-                    [tooltip]="t('max-torrents.subTitle')"
-                  >
-                    <ng-template #view>{{ control.value }}</ng-template>
-
-                    <ng-template #edit>
-                      <input
-                        type="number"
-                        class="form-control"
-                        formControlName="maxConcurrentTorrents"
-                      />
-                    </ng-template>
-                  </app-settings-item>
-                }
-
-                @if (getFormControl('maxConcurrentImages'); as control) {
-                  <app-settings-item
-                    [control]="control"
-                    [title]="t('max-images.label')"
-                    [tooltip]="t('max-images.subTitle')"
-                  >
-                    <ng-template #view>{{ control.value }}</ng-template>
-
-                    <ng-template #edit>
-                      <input
-                        type="number"
-                        class="form-control"
-                        formControlName="maxConcurrentImages"
-                      />
-                    </ng-template>
-                  </app-settings-item>
-                }
-
-                @if (getFormControl('autoDisableProviderAfter'); as control) {
-                  <app-settings-item
-                    [control]="control"
-                    [title]="t('auto-disable-provider-after.label')"
-                    [tooltip]="t('auto-disable-provider-after.tooltip')"
-                  >
-                    <ng-template #view>{{ control.value }}</ng-template>
-
-                    <ng-template #edit>
-                      <input
-                        type="number"
-                        class="form-control"
-                        formControlName="autoDisableProviderAfter"
-                      />
-                    </ng-template>
-                  </app-settings-item>
-                }
-
-                @if (getFormControl('imageConversionLossless'); as control) {
-                  <app-settings-switch [control]="control" [title]="t('image-conversion-lossless.label')" [tooltip]="t('image-conversion-lossless.tooltip')">
-                    <ng-template #switch>
-                      <div class="form-switch form-check">
-                        <input class="form-check-input" type="checkbox" formControlName="imageConversionLossless">
-                      </div>
-                    </ng-template>
-                  </app-settings-switch>
-                }
-
-                @if (getFormControl('imageConversionQuality'); as control) {
-                  <app-settings-item
-                    [control]="control"
-                    [title]="t('image-conversion-quality.label')"
-                    [tooltip]="t('image-conversion-quality.tooltip')"
-                  >
-                    <ng-template #view>{{ control.value }}</ng-template>
-
-                    <ng-template #edit>
-                      <input
-                        type="number"
-                        class="form-control"
-                        formControlName="imageConversionQuality"
-                      />
-                    </ng-template>
-                  </app-settings-item>
-                }
-
-
-              </div>
-            </div>
-          </div>
-        </form>
+      @if (serverSettingsFormDefinition(); as formDefinition) {
+        <app-generic-form
+          [formDefinition]="formDefinition"
+          [supplyFormGroup]="serverSettingsForm"
+          [initialValue]="settingsService.config()"
+        ></app-generic-form>
       }
     </div>
 
     <div class="tab-pane" [class.active]="tab === 'metadata-provider'">
-      @if (metadataProvidersFormDefinition(); as formDefinition) {
-        <div class="w-100 px-2">
-          <ul class="nav nav-pills mb-3">
-            @for (kv of metadataProvidersForms; track $index) {
-              @let key = kv[0];
-              <li class="nav-item" (click)="metadataProviderTab = key">
-                <a class="nav-link" [class.active]="metadataProviderTab === key">{{key}}</a>
-              </li>
-            }
-          </ul>
-
-          <div class="tab-content">
-            @for (kv of metadataProvidersForms; track $index) {
-              @let key = kv[0];
-              @let value = kv[1];
-
-              <div class="tab-pane" [class.active]="metadataProviderTab === key">
-                <app-generic-form
-                  [formDefinition]="formDefinition"
-                  [supplyFormGroup]="value"
-                  [initialValue]="config()!.metadataProviderSettings[key]"
-                />
-              </div>
-            }
-          </div>
-        </div>
-      }
+      <app-metadata-provider-settings />
     </div>
 
     <div class="tab-pane" [class.active]="tab === 'providers'">

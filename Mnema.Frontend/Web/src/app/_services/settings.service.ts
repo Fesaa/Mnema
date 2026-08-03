@@ -1,6 +1,6 @@
 import {effect, inject, Injectable, signal} from '@angular/core';
 import {environment} from "../../environments/environment";
-import {Config} from '../_models/config';
+import {Config, UpdateServerSettings} from '../_models/config';
 import {HttpClient} from "@angular/common/http";
 import {map, tap} from "rxjs";
 
@@ -42,8 +42,8 @@ export class SettingsService {
     }));
   }
 
-  updateConfig(config: Config) {
-    return this.httpClient.post(`${this.baseUrl}`, config).pipe(tap(() => {
+  updateConfig(config: UpdateServerSettings) {
+    return this.httpClient.post<Config>(`${this.baseUrl}`, config).pipe(tap(config => {
       this._config.set(config);
     }));
   }

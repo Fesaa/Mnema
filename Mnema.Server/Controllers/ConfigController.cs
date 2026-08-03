@@ -30,11 +30,12 @@ public class ConfigController(
 
     [HttpPost]
     [Authorize(Roles.ManageSettings)]
-    public async Task<IActionResult> UpdateSettings([FromBody] UpdateServerSettingsDto dto)
+    public async Task<ActionResult<ServerSettingsDto>> UpdateSettings([FromBody] UpdateServerSettingsDto dto)
     {
         await settingsService.SaveSettingsAsync(dto);
 
-        return Ok();
+        var settings = await settingsService.GetSettingsAsync();
+        return Ok(settings);
     }
 
     [HttpGet("is-setup")]

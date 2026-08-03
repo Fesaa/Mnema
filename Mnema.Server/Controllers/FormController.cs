@@ -272,4 +272,51 @@ public class FormController(IProviderSettingsService providerSettingsService): B
     });
 }
 
+    [HttpGet("server-settings")]
+    [Authorize(Roles.ManageSettings)]
+    public ActionResult<FormDefinition> GetServerSettingsForm()
+    {
+        return Ok(new FormDefinition
+        {
+            Key = "settings.server",
+            Controls = [
+                new IntegerFieldDefinition
+                {
+                    Field = nameof(UpdateServerSettingsDto.MaxConcurrentImages).ToCamelCase(),
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .WithMin(1)
+                        .WithMax(5)
+                        .Build(),
+                    ForceSingle = true,
+                },
+                new IntegerFieldDefinition
+                {
+                    Field = nameof(UpdateServerSettingsDto.AutoDisableProviderAfter).ToCamelCase(),
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .WithMin(0)
+                        .Build(),
+                    ForceSingle = true,
+                },
+                new SwitchFieldDefinition
+                {
+                    Field = nameof(UpdateServerSettingsDto.ImageConversionLossless).ToCamelCase(),
+                    Validators = FormValidatorsBuilder.Required,
+                    ForceSingle = true,
+                },
+                new IntegerFieldDefinition
+                {
+                    Field = nameof(UpdateServerSettingsDto.ImageConversionQuality).ToCamelCase(),
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .WithMin(0)
+                        .WithMax(100)
+                        .Build(),
+                    ForceSingle = true,
+                }
+            ]
+        });
+    }
+
 }

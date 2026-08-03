@@ -14,6 +14,13 @@ export type Config = {
   imageConversionQuality: number;
 }
 
+export type UpdateServerSettings = {
+  maxConcurrentImages: number;
+  autoDisableProviderAfter: number;
+  imageConversionLossless: boolean;
+  imageConversionQuality: number;
+}
+
 export interface MetadataProviderSettingsDto {
   priority: number;
   enabled: boolean;
