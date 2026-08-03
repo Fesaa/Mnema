@@ -1,8 +1,9 @@
-import {Injectable} from '@angular/core';
+import {effect, inject, Injectable} from '@angular/core';
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import {environment} from "../../environments/environment";
 import {User} from "../_models/user";
 import {ReplaySubject} from "rxjs";
+import {SettingsService} from "@mnema/_services/settings.service";
 
 export enum EventType {
   ContentInfoUpdate = "ContentInfoUpdate",
@@ -28,6 +29,9 @@ export interface Event<T> {
   providedIn: 'root'
 })
 export class SignalRService {
+
+  private readonly settingsService = inject(SettingsService);
+
   baseUrl = environment.apiUrl;
   private hubConnection!: HubConnection;
 
@@ -36,7 +40,13 @@ export class SignalRService {
   public events$ = this.eventsSource.asObservable();
 
   constructor() {
-
+    effect(() => {
+      if (this.settingsService.isAuthenticated()) {
+        this.startConnection()
+      } else {
+        this.stopConnection().catch(console.error).then(() => void 0);
+      }
+    });
   }
 
   stopConnection() {
@@ -44,11 +54,9 @@ export class SignalRService {
     return this.hubConnection.stop();
   }
 
-  startConnection(user: User) {
+  startConnection() {
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl(this.baseUrl.substring(0, this.baseUrl.length - "api/".length) + "ws", {
-        accessTokenFactory: () => user.oidcToken ?? user.token
-      })
+      .withUrl(this.baseUrl.substring(0, this.baseUrl.length - "api/".length) + "ws")
       .withAutomaticReconnect()
       .build();
 
