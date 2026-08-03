@@ -34,7 +34,7 @@ public class NamingService(ILogger<NamingService> logger, ApplicationConfigurati
                     return c.Chapter.ChapterMarker;
 
                 var width = int.Parse(spec[1..]);
-                return number.Value.ToString($"D{width}");
+                return c.Chapter.ChapterMarker.PadLeft(width, '0');
             },
             spec =>
             {

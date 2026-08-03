@@ -10,7 +10,9 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.User;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
@@ -71,6 +73,20 @@ public class PublicationLoadingTests
                 People = [],
                 Links = [],
                 Chapters = []
+            },
+            Preferences = new Preferences
+            {
+                ImageFormat = ImageFormat.Upstream,
+                CoverFallbackMethod = CoverFallbackMethod.First,
+                BlackListedTags = [],
+                WhiteListedTags = [],
+                AgeRatingMappings = [],
+                MetadataFieldMappings = [],
+                ConvertToGenreList = [],
+                TagMappings = [],
+                PinSubscriptionTitles = false,
+                ChapterFileFormat = INamingService.DefaultChapterFormat,
+                OneShotFileFormat = INamingService.DefaultOneShotFormat,
             }
         };
 
