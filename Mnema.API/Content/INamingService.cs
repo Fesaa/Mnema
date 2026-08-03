@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Mnema.Common;
+using Mnema.Common.StringFormatter;
 using Mnema.Models.Entities;
 using Mnema.Models.Publication;
 
@@ -13,8 +13,8 @@ public interface INamingService
     public const string DefaultChapterFormat = "{Title}[ Vol. {Volume}][ Ch. {Chapter:#4}]";
     public const string DefaultOneShotFormat = "{Title}[ {ChapterTitle}]";
 
-    StringFormatter<ChapterNameContext> ChapterFormatter { get; }
-    StringFormatter<ChapterNameContext> OneShotFormatter { get; }
+    IStringFormatter<ChapterNameContext> ChapterFormatter { get; }
+    IStringFormatter<ChapterNameContext> OneShotFormatter { get; }
 
     [Obsolete("Do not use for new stuff, only for MP compat")]
     string GetVolumeDirectoryName(string title, string volumeMarker);

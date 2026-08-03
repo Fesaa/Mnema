@@ -18,7 +18,7 @@ public class NamingServiceTests
         new ParserService()
     );
 
-    private readonly Preferences _preferences = new()
+    private Preferences Preferences => new()
     {
         ImageFormat = ImageFormat.Upstream,
         CoverFallbackMethod = CoverFallbackMethod.First,
@@ -47,8 +47,27 @@ public class NamingServiceTests
             ChapterMarker = chapter
         };
 
-        var result = _namingService.GetChapterFileName(_preferences, "Spice and Wolf", chpt);
+        var result = _namingService.GetChapterFileName(Preferences, "Spice and Wolf", chpt);
         Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void TestChapterTitleFormatting()
+    {
+        var chpt = new Chapter
+        {
+            Id = string.Empty,
+            Title = "The Beginning",
+            VolumeMarker = "1",
+            ChapterMarker = "2"
+        };
+
+        var pref = Preferences;
+        pref.ChapterFileFormat = "{Title}[ Vol. {Volume}][ Ch. {Chapter:#4}][ {ChapterTitle}]";
+
+        var result = _namingService.GetChapterFileName(pref, "Spice and Wolf", chpt);
+
+        Assert.Equal("Spice and Wolf Vol. 1 Ch. 0002 The Beginning", result);
     }
 
 }
