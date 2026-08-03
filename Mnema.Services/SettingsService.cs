@@ -88,9 +88,6 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
         foreach (var serverSetting in settings)
             switch (serverSetting.Key)
             {
-                case ServerSettingKey.MaxConcurrentTorrents:
-                    dto.MaxConcurrentTorrents = DeserializeSetting<int>(serverSetting);
-                    break;
                 case ServerSettingKey.MaxConcurrentImages:
                     dto.MaxConcurrentImages = DeserializeSetting<int>(serverSetting);
                     break;
@@ -103,15 +100,8 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                 case ServerSettingKey.InstallDate:
                     dto.InstallDate = DeserializeSetting<DateTime>(serverSetting);
                     break;
-                case ServerSettingKey.SubscriptionRefreshHour:
-                    dto.SubscriptionRefreshHour = DeserializeSetting<int>(serverSetting);
-                    break;
                 case ServerSettingKey.LastUpdateDate:
                     dto.InstallDate = DeserializeSetting<DateTime>(serverSetting);
-                    break;
-                case ServerSettingKey.MetadataProviderSettings:
-                    dto.MetadataProviderSettings =
-                        DeserializeSetting<Dictionary<MetadataProvider, MetadataProviderSettingsDto>>(serverSetting);
                     break;
                 case ServerSettingKey.AutoDisableAfter:
                     dto.AutoDisableProviderAfter = DeserializeSetting<int>(serverSetting);
@@ -123,6 +113,9 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
                     dto.ImageConversionQuality = DeserializeSetting<int>(serverSetting);
                     break;
                 case ServerSettingKey.Password:
+                case ServerSettingKey.MaxConcurrentTorrents:
+                case ServerSettingKey.SubscriptionRefreshHour:
+                case ServerSettingKey.MetadataProviderSettings:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
@@ -140,14 +133,14 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
         {
             object? value = serverSetting.Key switch
             {
-                ServerSettingKey.MaxConcurrentTorrents => dto.MaxConcurrentTorrents,
+                ServerSettingKey.MaxConcurrentTorrents => null,
                 ServerSettingKey.MaxConcurrentImages => dto.MaxConcurrentImages,
                 ServerSettingKey.InstalledVersion => null,
                 ServerSettingKey.FirstInstalledVersion => null,
                 ServerSettingKey.InstallDate => null,
-                ServerSettingKey.SubscriptionRefreshHour => dto.SubscriptionRefreshHour,
+                ServerSettingKey.SubscriptionRefreshHour => null,
                 ServerSettingKey.LastUpdateDate => null,
-                ServerSettingKey.MetadataProviderSettings => dto.MetadataProviderSettings,
+                ServerSettingKey.MetadataProviderSettings => null,
                 ServerSettingKey.AutoDisableAfter => dto.AutoDisableProviderAfter,
                 ServerSettingKey.ImageConversionLossLess => dto.ImageConversionLossless,
                 ServerSettingKey.ImageConversionQuality => dto.ImageConversionQuality,

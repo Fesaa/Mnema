@@ -437,6 +437,86 @@ namespace Mnema.Database.Migrations
                     b.ToTable("ManualMigrationHistory");
                 });
 
+            modelBuilder.Entity("Mnema.Models.Entities.MetadataProviderSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("ChapterCoverUrl")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ChapterPeople")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ChapterReleaseDate")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ChapterSummary")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ChapterTags")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ChapterTitle")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Chapters")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MetadataProvider")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MetadataProviderSpecific")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("{}");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("SeriesAgeRating")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SeriesCoverUrl")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SeriesLinks")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SeriesLocalizedName")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SeriesPeople")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SeriesPublicationStatus")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SeriesSummary")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SeriesTags")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SeriesTitle")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SeriesYear")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MetadataProvider")
+                        .IsUnique();
+
+                    b.ToTable("MetadataProviderSettings");
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.Notification", b =>
                 {
                     b.Property<Guid>("Id")

@@ -55,6 +55,7 @@ public class Program
                 await new MigrateSubscriptionsToMonitoredSeries().RunAsync(services, context, logger);
                 await new PinMonitoredSeriesTitles().RunAsync(services, context, logger);
                 await new SetDefaultNamingPreferences().RunAsync(services, context, logger);
+                await new MigrateMetadataProviderSettings().RunAsync(services, context, logger);
 
                 await context.SeedDatabase();
 

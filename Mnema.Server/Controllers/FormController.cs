@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
@@ -15,147 +17,104 @@ using Mnema.Models.Publication;
 
 namespace Mnema.Server.Controllers;
 
-public class FormController(IProviderSettingsService providerSettingsService): BaseApiController
+public class FormController(IProviderSettingsService providerSettingsService, IServiceScopeFactory scopeFactory): BaseApiController
 {
 
     [Authorize(Roles.ManageSettings)]
     [HttpGet("metadata-provider-settings")]
-    public ActionResult<FormDefinition> GetMetadataProviderSettings()
+    public async Task<ActionResult<FormDefinition>> GetMetadataProviderSettings([FromQuery] MetadataProvider metadataProvider)
     {
-        var form = new FormDefinition
+        using var scope = scopeFactory.CreateScope();
+        var configurationService = scope.ServiceProvider.GetKeyedService<IConfigurationProvider>(metadataProvider);
+
+        List<FormFieldDefinition> specificFormControls = [];
+        if (configurationService is not null)
+            specificFormControls = await configurationService.GetFormControls(HttpContext.RequestAborted);
+
+        return Ok(new FormDefinition
         {
-            Key = "metadata_provider_settings",
-            DescriptionKey = "metadata_provider_settings_description",
+            Key = "settings.metadata-provider",
             Controls = [
                 new IntegerFieldDefinition
                 {
-                    Key = "priority",
-                    Field = "priority",
-                    Validators = new FormValidatorsBuilder()
-                        .WithRequired()
-                        .WithMin(0)
-                        .Build()
+                    Field = nameof(MetadataProviderSettings.Priority).ToCamelCase(),
+                    Hidden = true,
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "enabled",
-                    Field = "enabled",
-                    DefaultValue = true,
-                },
-
-                new SwitchFieldDefinition
-                {
-                    Key = "series_settings_title",
-                    Field = "seriesSettings.title",
-                    DefaultValue = true,
+                    Field = nameof(MetadataProviderSettings.Enabled).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "series_settings_summary",
-                    Field = "seriesSettings.summary",
-                    DefaultValue = true,
+                    Field = nameof(MetadataProviderSettings.SeriesTitle).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "series_settings_localized_series",
-                    Field = "seriesSettings.localizedSeries",
-                    DefaultValue = true,
+                    Field = nameof(MetadataProviderSettings.SeriesAgeRating).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "series_settings_cover_url",
-                    Field = "seriesSettings.coverUrl",
-                    DefaultValue = true,
+                    Field = nameof(MetadataProviderSettings.SeriesLocalizedName).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "series_settings_publication_status",
-                    Field = "seriesSettings.publicationStatus",
-                    DefaultValue = true,
+                    Field = nameof(MetadataProviderSettings.SeriesCoverUrl).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "series_settings_year",
-                    Field = "seriesSettings.year",
-                    DefaultValue = true,
+                    Field = nameof(MetadataProviderSettings.SeriesPublicationStatus).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "series_settings_age_rating",
-                    Field = "seriesSettings.ageRating",
-                    DefaultValue = true,
+                    Field = nameof(MetadataProviderSettings.SeriesAgeRating).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "series_settings_tags",
-                    Field = "seriesSettings.tags",
-                    DefaultValue = true,
+                    Field = nameof(MetadataProviderSettings.SeriesYear).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "series_settings_people",
-                    Field = "seriesSettings.people",
-                    DefaultValue = true,
+                    Field = nameof(MetadataProviderSettings.SeriesTags).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "series_settings_links",
-                    Field = "seriesSettings.links",
-                    DefaultValue = true,
+                    Field = nameof(MetadataProviderSettings.SeriesPeople).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "series_settings_chapters",
-                    Field = "seriesSettings.chapters",
-                    DefaultValue = true,
-                },
-
-                new SwitchFieldDefinition
-                {
-                    Key = "chapter_settings_title",
-                    Field = "seriesSettings.chapterSettings.title",
-                    DefaultValue = true,
-                    Advanced = true
+                    Field = nameof(MetadataProviderSettings.SeriesLinks).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "chapter_settings_summary",
-                    Field = "seriesSettings.chapterSettings.summary",
-                    DefaultValue = true,
-                    Advanced = true
+                    Field = nameof(MetadataProviderSettings.Chapters).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "chapter_settings_cover",
-                    Field = "seriesSettings.chapterSettings.cover",
-                    DefaultValue = true,
-                    Advanced = true
+                    Field = nameof(MetadataProviderSettings.ChapterTitle).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "chapter_settings_release_date",
-                    Field = "seriesSettings.chapterSettings.releaseDate",
-                    DefaultValue = true,
-                    Advanced = true
+                    Field = nameof(MetadataProviderSettings.ChapterSummary).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "chapter_settings_people",
-                    Field = "seriesSettings.chapterSettings.people",
-                    DefaultValue = true,
-                    Advanced = true
+                    Field = nameof(MetadataProviderSettings.ChapterReleaseDate).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {
-                    Key = "chapter_settings_tags",
-                    Field = "seriesSettings.chapterSettings.tags",
-                    DefaultValue = true,
-                    Advanced = true
-                }
+                    Field = nameof(MetadataProviderSettings.ChapterPeople).ToCamelCase()
+                },
+                new SwitchFieldDefinition
+                {
+                    Field = nameof(MetadataProviderSettings.ChapterTags).ToCamelCase()
+                },
+                new SwitchFieldDefinition
+                {
+                    Field = nameof(MetadataProviderSettings.ChapterCoverUrl).ToCamelCase()
+                },
+                ..specificFormControls
             ]
-        };
-
-        return Ok(form);
+        });
     }
 
     [Authorize(Roles.ManageSettings)]
@@ -271,5 +230,52 @@ public class FormController(IProviderSettingsService providerSettingsService): B
         ],
     });
 }
+
+    [HttpGet("server-settings")]
+    [Authorize(Roles.ManageSettings)]
+    public ActionResult<FormDefinition> GetServerSettingsForm()
+    {
+        return Ok(new FormDefinition
+        {
+            Key = "settings.server",
+            Controls = [
+                new IntegerFieldDefinition
+                {
+                    Field = nameof(UpdateServerSettingsDto.MaxConcurrentImages).ToCamelCase(),
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .WithMin(1)
+                        .WithMax(5)
+                        .Build(),
+                    ForceSingle = true,
+                },
+                new IntegerFieldDefinition
+                {
+                    Field = nameof(UpdateServerSettingsDto.AutoDisableProviderAfter).ToCamelCase(),
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .WithMin(0)
+                        .Build(),
+                    ForceSingle = true,
+                },
+                new SwitchFieldDefinition
+                {
+                    Field = nameof(UpdateServerSettingsDto.ImageConversionLossless).ToCamelCase(),
+                    Validators = FormValidatorsBuilder.Required,
+                    ForceSingle = true,
+                },
+                new IntegerFieldDefinition
+                {
+                    Field = nameof(UpdateServerSettingsDto.ImageConversionQuality).ToCamelCase(),
+                    Validators = new FormValidatorsBuilder()
+                        .WithRequired()
+                        .WithMin(0)
+                        .WithMax(100)
+                        .Build(),
+                    ForceSingle = true,
+                }
+            ]
+        });
+    }
 
 }

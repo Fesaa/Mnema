@@ -4,18 +4,12 @@ import {NavService} from '../../_services/nav.service';
 import {PreferenceSettingsComponent} from "./_components/preference-settings/preference-settings.component";
 import {PagesSettingsComponent} from "./_components/pages-settings/pages-settings.component";
 import {ServerSettingsComponent} from "./_components/server-settings/server-settings.component";
-import {ConnectionSettingsComponent} from "./_components/external-connection-settings/connection-settings.component";
 import {
   Button,
   ButtonGroupService,
   SettingsID
 } from "../../button-grid/button-group.service";
-import {DownloadClientSettingsComponent} from "./_components/download-client/download-client-settings.component";
 import {ReleaseBrowserComponent} from "@mnema/settings/settings/_components/release-browser/release-browser.component";
-import {AuthKeysComponent} from "@mnema/settings/settings/_components/auth-keys/auth-keys.component";
-import {
-  ProviderSettingsComponent
-} from "@mnema/settings/settings/_components/provider-settings/provider-settings.component";
 
 @Component({
   selector: 'app-settings',
@@ -24,11 +18,7 @@ import {
     PreferenceSettingsComponent,
     PagesSettingsComponent,
     ServerSettingsComponent,
-    ConnectionSettingsComponent,
-    DownloadClientSettingsComponent,
     ReleaseBrowserComponent,
-    AuthKeysComponent,
-
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss']

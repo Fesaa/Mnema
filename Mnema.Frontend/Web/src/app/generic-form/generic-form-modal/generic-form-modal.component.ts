@@ -26,7 +26,7 @@ export class GenericFormModalComponent<T> {
   formDefinition = model.required<FormDefinition>();
   nullable = model(false);
   initialValue = model.required<T>();
-  double = model.required<boolean>();
+  double = model<boolean>(true);
   title = model<string>();
 
   formGroup = signal<FormGroup | null>(null);

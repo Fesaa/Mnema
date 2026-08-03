@@ -11,23 +11,23 @@ export class ConnectionEventPipe implements PipeTransform {
   transform(event: ConnectionEvent): string {
     switch (event) {
       case ConnectionEvent.TooManyForAutomatedDownload:
-        return translate('settings.connections.shared.event.TooManyForAutomatedDownload');
+        return translate('external-connections-event-types-pipe.TooManyForAutomatedDownload');
       case ConnectionEvent.DownloadClientEvents:
-        return translate('settings.connections.shared.event.DownloadClientEvents');
+        return translate('external-connections-event-types-pipe.DownloadClientEvents');
       case ConnectionEvent.GenericDownloadInfo:
-        return translate('settings.connections.shared.event.GenericDownloadInfo');
+        return translate('external-connections-event-types-pipe.GenericDownloadInfo');
       case ConnectionEvent.SubscriptionExhausted:
-        return translate('settings.connections.shared.event.SubscriptionExhausted');
+        return translate('external-connections-event-types-pipe.SubscriptionExhausted');
       case ConnectionEvent.SeriesMonitored:
-        return translate('settings.connections.shared.event.SeriesMonitored');
+        return translate('external-connections-event-types-pipe.SeriesMonitored');
       case ConnectionEvent.SeriesUnmonitored:
-        return translate('settings.connections.shared.event.SeriesUnmonitored');
+        return translate('external-connections-event-types-pipe.SeriesUnmonitored');
       case ConnectionEvent.DownloadStarted:
-        return translate('settings.connections.shared.event.DownloadStarted');
+        return translate('external-connections-event-types-pipe.DownloadStarted');
       case ConnectionEvent.DownloadFinished:
-        return translate('settings.connections.shared.event.DownloadFinished');
+        return translate('external-connections-event-types-pipe.DownloadFinished');
       case ConnectionEvent.DownloadFailure:
-        return translate('settings.connections.shared.event.DownloadFailure');
+        return translate('external-connections-event-types-pipe.DownloadFailure');
       default:
         return 'Unknown';
     }

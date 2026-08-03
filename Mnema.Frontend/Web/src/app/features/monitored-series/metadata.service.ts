@@ -7,8 +7,10 @@ import {Series} from "../../page/_components/series-info/_types";
 export enum MetadataProvider {
   Hardcover = 0,
   Mangabaka = 1,
-  Upstream = 2,
+  Upstream = 3,
 }
+
+export const MetadataProviders = [MetadataProvider.Hardcover, MetadataProvider.Mangabaka, MetadataProvider.Upstream];
 
 export interface MetadataSearchResult extends Series {
   monitoredSeriesId: string[];

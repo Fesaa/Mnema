@@ -1,18 +1,20 @@
 <div class="mx-4 mx-md-5 mb-5" *transloco="let t; prefix: 'monitored-series'">
   <div class="mb-4">
-    <form [formGroup]="filterForm" class="d-flex gap-2">
-      <input class="form-control flex-grow-1" type="text" [placeholder]="t('filter')" formControlName="filterText">
+    <form [formGroup]="filterForm" class="d-flex flex-column flex-md-row gap-2">
+      <input class="form-control flex-grow-1" [placeholder]="t('filter')" formControlName="filterText">
 
-      <select class="form-select w-auto" formControlName="provider">
-        <option [ngValue]="null">All</option>
-        @for (provider of providers(); track provider) {
-          <option [ngValue]="provider">{{ provider | providerName }}</option>
-        }
-      </select>
+      <div class="d-flex gap-2">
+        <select class="form-select provider-select" formControlName="provider">
+          <option [ngValue]="null">All</option>
+          @for (provider of providers(); track provider) {
+            <option [ngValue]="provider">{{ provider | providerName }}</option>
+          }
+        </select>
 
-      <button type="button" class="btn btn-icon btn-secondary" [ngbTooltip]="t('calendar.tooltip')" (click)="copyCalendarLink()">
-        <i class="fa fa-calendar"></i>
-      </button>
+        <button type="button" class="btn btn-icon btn-secondary" [ngbTooltip]="t('calendar.tooltip')" (click)="copyCalendarLink()">
+          <i class="fa fa-calendar"></i>
+        </button>
+      </div>
     </form>
 
   </div>

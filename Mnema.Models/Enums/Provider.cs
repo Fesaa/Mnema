@@ -38,5 +38,7 @@ public enum MetadataProvider
     /// Metadata from <see cref="Provider"/>
     /// </summary>
     /// <remarks>The typo is intentional at this point, or I need to write a migration....</remarks>
+    [Obsolete("Upstream is a typo, use Upstream instead")]
     Upsteam = 2,
+    Upstream = 3,
 }

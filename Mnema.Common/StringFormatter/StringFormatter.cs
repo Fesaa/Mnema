@@ -2,43 +2,38 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Mnema.Common;
+namespace Mnema.Common.StringFormatter;
+
+public interface IStringFormatter<in T>
+{
+    string Apply(string format, T context);
+    IReadOnlyList<string> Validate(string format);
+    bool IsValid(string format);
+}
 
 public delegate string? FormatVariableResolver<in T>(T context, string? formatSpec);
 
-public class StringFormatter<T>
+public class StringFormatter<T>: IStringFormatter<T>
 {
 
-    private sealed record VariableDefinition(FormatVariableResolver<T> Resolver, Func<string?, string?>? SpecValidator);
+    private readonly Dictionary<string, IVariableDefinition<T>> _variables = new(StringComparer.OrdinalIgnoreCase);
 
-    private readonly Dictionary<string, VariableDefinition> _variables = new(StringComparer.OrdinalIgnoreCase);
+    public StringFormatter<T> WithVariable(string name, IVariableDefinition<T> variable)
+    {
+        _variables[name] = variable;
+        return this;
+    }
 
-    public StringFormatter<T> WithVariable(
-        string name,
-        Func<T, string?> resolve)
-        => WithVariable(name, (ctx, _) => resolve(ctx), null);
+    public StringFormatter<T> WithVariable(string name, Func<T, string?> resolve)
+        => WithVariable(name, (ctx, _) => resolve(ctx));
 
-    public StringFormatter<T> WithVariable(
-        string name,
-        Func<T, string?> resolve,
-        Func<string, string, string?> applySpec,
-        Func<string?, string?>? specValidator = null)
-        => WithVariable(name, (ctx, spec) =>
-        {
-            var value = resolve(ctx);
-
-            return spec is not null && !string.IsNullOrEmpty(value)
-                ? applySpec(value, spec)
-                : value;
-        }, specValidator);
-
-    public StringFormatter<T> WithVariable(
-        string name,
-        FormatVariableResolver<T> resolve,
+    private StringFormatter<T> WithVariable(string name, FormatVariableResolver<T> resolve,
         Func<string?, string?>? specValidator = null)
     {
-        _variables[name] = new VariableDefinition(resolve, specValidator);
-        return this;
+        return WithVariable(name, new VariableDefinitionBuilder<T>()
+            .WithResolver(resolve)
+            .WithSpecValidator(specValidator)
+            .Build());
     }
 
     public string Apply(string format, T context) => Render(format, 0, out _, context).Text;
@@ -82,7 +77,7 @@ public class StringFormatter<T>
                     if (!_variables.TryGetValue(name, out var variable))
                         throw new FormatException($"Unknown variable '{{{name}}}' in format \"{format}\"");
 
-                    var value = variable.Resolver(context, spec);
+                    var value = variable.Resolve(context, spec);
                     if (!string.IsNullOrEmpty(value))
                     {
                         sb.Append(value);
@@ -153,7 +148,7 @@ public class StringFormatter<T>
                     {
                         errors.Add($"Unknown variable '{{{name}}}' at position {i}");
                     }
-                    else if (colon >= 0 && variable.SpecValidator is not null)
+                    else if (colon >= 0)
                     {
                         var spec = token[(colon + 1)..];
 
