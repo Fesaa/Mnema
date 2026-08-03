@@ -18,6 +18,7 @@ export type FormControlDefinition = {
   forceEditMode: boolean;
   inline: boolean;
   hideText: boolean;
+  wikiLink?: string;
 
   defaultValue: any;
   options?: FormControlOption[];

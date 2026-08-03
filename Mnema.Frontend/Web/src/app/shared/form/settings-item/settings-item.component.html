@@ -27,11 +27,45 @@
     </div>
 
     @if (isEditMode()) {
-      <ng-container [ngTemplateOutlet]="valueEditRef"></ng-container>
+      <div class="d-flex align-items-center w-100">
+        <div class="flex-grow-1">
+          <ng-container [ngTemplateOutlet]="valueEditRef"></ng-container>
+        </div>
+
+        @if (wikiLink(); as link) {
+          <a class="ms-auto ps-2"
+             [href]="link"
+             target="_blank"
+             rel="noopener noreferrer"
+             aria-label="Open documentation"
+             [ngbTooltip]="t('common.wiki')"
+          >
+            <i class="fas fa-circle-question"></i>
+          </a>
+        }
+      </div>
     } @else {
-      <span class="view-value" [ngClass]="{'non-selectable': (!canEdit() || !showEdit())}" (click)="toggleEditMode()">
-        <ng-container [ngTemplateOutlet]="valueViewRef"></ng-container>
-      </span>
+      <div class="d-flex align-items-center w-100">
+        <div class="flex-grow-1">
+          <span class="view-value"
+                [ngClass]="{'non-selectable': (!canEdit() || !showEdit())}"
+                (click)="toggleEditMode()">
+            <ng-container [ngTemplateOutlet]="valueViewRef"></ng-container>
+          </span>
+        </div>
+
+        @if (wikiLink(); as link) {
+          <a class="ms-auto ps-2"
+             [href]="link"
+             target="_blank"
+             rel="noopener noreferrer"
+             aria-label="Open documentation"
+             [ngbTooltip]="t('common.wiki')"
+          >
+            <i class="fas fa-circle-question"></i>
+          </a>
+        }
+      </div>
     }
 
     @if (!hideText()) {

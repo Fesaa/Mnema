@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
+using Mnema.Models;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
@@ -182,6 +183,7 @@ public class FormController(IProviderSettingsService providerSettingsService): B
                     .WithRequired()
                     .WithServerSideValidation("Preferences/valid-chapter-format")
                     .Build(),
+                WikiLink = WikiLinks.NamingFormatDocumentation,
             },
             new TextFieldDefinition
             {
@@ -192,6 +194,7 @@ public class FormController(IProviderSettingsService providerSettingsService): B
                     .WithRequired()
                     .WithServerSideValidation("Preferences/valid-one-shot-format")
                     .Build(),
+                WikiLink = WikiLinks.NamingFormatDocumentation,
             },
             FormFieldDefinitions.EnumDropDown<ImageFormat>(
                 nameof(Preferences.ImageFormat).ToCamelCase(),

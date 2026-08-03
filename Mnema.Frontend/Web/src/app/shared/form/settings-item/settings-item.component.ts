@@ -21,6 +21,7 @@ import {TranslocoDirective} from '@jsverse/transloco';
 import {NgClass, NgTemplateOutlet} from '@angular/common';
 import {SafeHtmlPipe} from '../../../_pipes/safe-html-pipe';
 import {filter, fromEvent, tap} from 'rxjs';
+import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   selector: 'app-settings-item',
@@ -29,6 +30,7 @@ import {filter, fromEvent, tap} from 'rxjs';
     NgTemplateOutlet,
     NgClass,
     SafeHtmlPipe,
+    NgbTooltip,
 
   ],
   templateUrl: './settings-item.component.html',
@@ -51,6 +53,7 @@ export class SettingsItemComponent implements OnChanges {
   canEdit = input(true);
   showEdit = input(true);
   isEditMode = model(false);
+  wikiLink = input<string>();
 
   toggleOnViewClick = input(true);
 
