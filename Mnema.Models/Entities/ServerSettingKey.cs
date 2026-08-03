@@ -13,6 +13,7 @@ public enum ServerSettingKey
     [Obsolete("RSS sync is every 15m")]
     SubscriptionRefreshHour = 6,
     LastUpdateDate = 7,
+    [Obsolete("Use the entity")]
     MetadataProviderSettings = 8,
     AutoDisableAfter = 9,
     ImageConversionLossLess = 10,

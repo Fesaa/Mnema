@@ -30,5 +30,6 @@ public class AutoMapperProfiles : Profile
             .ForMember(dest => dest.SeriesTitle, opt
                 => opt.MapFrom(src => src.Series.Title));
         CreateMap<AuthKey, AuthKeyDto>();
+        CreateMap<MetadataProviderSettings, MetadataProviderSettingsV2Dto>();
     }
 }

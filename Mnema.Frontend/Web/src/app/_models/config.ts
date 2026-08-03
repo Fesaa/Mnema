@@ -1,14 +1,11 @@
-import {MetadataProvider} from "@mnema/features/monitored-series/metadata.service";
 
 export type Config = {
-  maxConcurrentTorrents: number;
   maxConcurrentImages: number;
   subscriptionRefreshHour: number;
   version: string;
   firstInstalledVersion: string;
   installDate: Date;
   lastUpdateDate: Date;
-  metadataProviderSettings: Record<keyof typeof MetadataProvider, MetadataProviderSettingsDto>;
   autoDisableProviderAfter: number;
   imageConversionLossless: boolean;
   imageConversionQuality: number;
@@ -19,33 +16,4 @@ export type UpdateServerSettings = {
   autoDisableProviderAfter: number;
   imageConversionLossless: boolean;
   imageConversionQuality: number;
-}
-
-export interface MetadataProviderSettingsDto {
-  priority: number;
-  enabled: boolean;
-  seriesSettings: SeriesMetadataSettingsDto;
-}
-
-export interface SeriesMetadataSettingsDto {
-  title: boolean;
-  summary: boolean;
-  localizedSeries: boolean;
-  coverUrl: boolean;
-  publicationStatus: boolean;
-  year: boolean;
-  ageRating: boolean;
-  tags: boolean;
-  people: boolean;
-  links: boolean;
-  chapters: boolean;
-  chapterSettings: ChapterMetadataSettingsDto;
-}
-
-export interface ChapterMetadataSettingsDto {
-  title: boolean;
-  summary: boolean;
-  cover: boolean;
-  releaseDate: boolean;
-  people: boolean;
 }

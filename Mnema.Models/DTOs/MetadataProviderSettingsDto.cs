@@ -1,11 +1,15 @@
+using System;
+
 namespace Mnema.Models.DTOs;
 
+[Obsolete]
 public sealed record MetadataProviderSettingsDto(
     int Priority,
     bool Enabled,
     SeriesMetadataSettingsDto SeriesSettings
 );
 
+[Obsolete]
 public sealed record SeriesMetadataSettingsDto(
     bool Title,
     bool Summary,
@@ -21,6 +25,7 @@ public sealed record SeriesMetadataSettingsDto(
     ChapterMetadataSettingsDto ChapterSettings
 );
 
+[Obsolete]
 public sealed record ChapterMetadataSettingsDto(
     bool Title,
     bool Summary,

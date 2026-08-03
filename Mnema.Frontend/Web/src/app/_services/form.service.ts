@@ -4,6 +4,7 @@ import {environment} from "@env/environment";
 import {FormDefinition} from "@mnema/generic-form/form";
 import {of, tap} from "rxjs";
 import {Provider} from "@mnema/_models/page";
+import {MetadataProvider} from "@mnema/features/monitored-series/metadata.service";
 
 @Injectable({
   providedIn: 'root',
@@ -15,8 +16,8 @@ export class FormService {
 
   private cache = new Map<string, FormDefinition>();
 
-  getMetadataProviderSettingsForm() {
-    return this.getForm('metadata-provider-settings');
+  getMetadataProviderSettingsForm(metadataProvider: MetadataProvider) {
+    return this.getForm('metadata-provider-settings?metadataProvider' + metadataProvider);
   }
 
   getProviderSettingsForm(provider: Provider) {

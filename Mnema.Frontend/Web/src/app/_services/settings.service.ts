@@ -3,6 +3,8 @@ import {environment} from "../../environments/environment";
 import {Config, UpdateServerSettings} from '../_models/config';
 import {HttpClient} from "@angular/common/http";
 import {map, tap} from "rxjs";
+import {MetadataProvider} from "@mnema/features/monitored-series/metadata.service";
+import {MetadataProviderSettings} from "@mnema/_models/metadata-provider-settings";
 
 @Injectable({
   providedIn: 'root'
@@ -46,5 +48,21 @@ export class SettingsService {
     return this.httpClient.post<Config>(`${this.baseUrl}`, config).pipe(tap(config => {
       this._config.set(config);
     }));
+  }
+
+  getMetadataSettings(metadataProvider: MetadataProvider) {
+    return this.httpClient.get<MetadataProviderSettings>(this.baseUrl + 'metadata-provider-settings?metadataProvider=' + metadataProvider);
+  }
+
+  saveMetadataSettings(settings: MetadataProviderSettings) {
+    return this.httpClient.post(this.baseUrl + 'metadata-provider-settings?metadataProvider', settings);
+  }
+
+  sortMetadataProviders(metadataProviders: MetadataProvider[]) {
+    return this.httpClient.post(this.baseUrl + 'sort-metadata-providers', metadataProviders);
+  }
+
+  getMetadataProviderOrder() {
+    return this.httpClient.get<MetadataProvider[]>(this.baseUrl + 'metadata-provider-order');
   }
 }

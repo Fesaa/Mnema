@@ -8,31 +8,15 @@ import {
   OnInit,
   signal
 } from '@angular/core';
-import {Config, MetadataProviderSettingsDto, UpdateServerSettings} from '../../../../_models/config';
-import {FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
-import {ToastService} from "../../../../_services/toast.service";
+import {UpdateServerSettings} from '../../../../_models/config';
+import {FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {SettingsService} from "../../../../_services/settings.service";
-import {SettingsItemComponent} from "../../../../shared/form/settings-item/settings-item.component";
-import {takeUntilDestroyed, toObservable} from "@angular/core/rxjs-interop";
-import {
-  combineLatestWith,
-  debounceTime,
-  distinctUntilChanged,
-  filter,
-  map,
-  merge,
-  mergeWith, skip,
-  switchMap,
-  take,
-  tap
-} from "rxjs";
+import {debounceTime, distinctUntilChanged, filter, skip, switchMap, tap} from "rxjs";
 import {FormDefinition} from "@mnema/generic-form/form";
 import {FormService} from "@mnema/_services/form.service";
 import {GenericFormComponent} from "@mnema/generic-form/generic-form.component";
 import {MetadataProvider} from "@mnema/features/monitored-series/metadata.service";
-import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factory.service";
-import {SettingsSwitchComponent} from "@mnema/shared/form/settings-switch/settings-switch.component";
 import {
   ProviderSettingsComponent
 } from "@mnema/settings/settings/_components/provider-settings/provider-settings.component";
@@ -43,18 +27,14 @@ import {
   DownloadClientSettingsComponent
 } from "@mnema/settings/settings/_components/download-client/download-client-settings.component";
 import {AuthKeysComponent} from "@mnema/settings/settings/_components/auth-keys/auth-keys.component";
-import {
-  MetadataProviderSettingsComponent
-} from "@mnema/settings/settings/_components/metadata-provider-settings/metadata-provider-settings.component";
+import {MetadataProviderSettingsComponent} from "@mnema/settings/settings/_components/metadata-provider-settings/metadata-provider-settings.component";
 
 @Component({
   selector: 'app-server-settings',
   imports: [
     ReactiveFormsModule,
     TranslocoDirective,
-    SettingsItemComponent,
     GenericFormComponent,
-    SettingsSwitchComponent,
     ProviderSettingsComponent,
     ConnectionSettingsComponent,
     DownloadClientSettingsComponent,

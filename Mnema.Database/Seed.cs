@@ -52,27 +52,38 @@ public static class Seed
 
     private static async Task SeedMetadataProviderSettings(MnemaDataContext ctx)
     {
-        var setting = await ctx.ServerSettings.SingleAsync(s => s.Key == ServerSettingKey.MetadataProviderSettings);
+        var providers = Enum.GetValues<MetadataProvider>().Where(p => p != MetadataProvider.Upsteam);
+        var existing = await ctx.MetadataProviderSettings.Select(s => s.MetadataProvider).ToListAsync();
+        var maxPriority = await ctx.MetadataProviderSettings
+            .OrderByDescending(s => s.Priority)
+            .Select(s => s.Priority)
+            .FirstOrDefaultAsync();
 
-        var settings = JsonSerializer.Deserialize<Dictionary<MetadataProvider, MetadataProviderSettingsDto>>(setting.Value);
-        if (settings == null)
-            return;
-
-        var highestPriority = settings.Values.Count > 0 ? settings.Values.Max(s => s.Priority) + 1 : 0;
-
-        foreach (var metadataProvider in Enum.GetValues<MetadataProvider>())
+        foreach (var metadataProvider in providers.Where(p => !existing.Contains(p)))
         {
-            if (settings.ContainsKey(metadataProvider))
-                continue;
-
-            settings[metadataProvider] = new MetadataProviderSettingsDto(highestPriority++, true,
-                new SeriesMetadataSettingsDto(
-                    true, true, true, true, true, true, true, true, true,
-                    true, true, new ChapterMetadataSettingsDto(true, true, true, true, true, true)
-                ));
+            ctx.MetadataProviderSettings.Add(new MetadataProviderSettings
+            {
+                MetadataProvider = metadataProvider,
+                Priority = maxPriority++,
+                Enabled = true,
+                SeriesTitle = true,
+                SeriesSummary = true,
+                SeriesLocalizedName = true,
+                SeriesCoverUrl = true,
+                SeriesPublicationStatus = true,
+                SeriesYear = true,
+                SeriesTags = true,
+                SeriesPeople = true,
+                SeriesLinks = true,
+                Chapters = true,
+                ChapterTitle = true,
+                ChapterSummary = true,
+                ChapterReleaseDate = true,
+                ChapterPeople = true,
+                ChapterTags = true,
+                MetadataProviderSpecific = new MetadataBag()
+            });
         }
-
-        setting.Value = JsonSerializer.Serialize(settings);
 
         await ctx.SaveChangesAsync();
     }

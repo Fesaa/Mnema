@@ -8,20 +8,19 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Extensions;
-using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
-using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities;
 using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 
 namespace Mnema.Services;
 
 public class MetadataResolver(
-    ISettingsService settingsService,
     IParserService parserService,
     [FromKeyedServices(key: MetadataProvider.Hardcover)] IMetadataProviderService hardcoverMetadataProvider,
     [FromKeyedServices(key: MetadataProvider.Mangabaka)] IMetadataProviderService mangabakaMetadataProvider,
-    IServiceProvider serviceProvider
+    IServiceProvider serviceProvider,
+    IUnitOfWork unitOfWork
     ): IMetadataResolver
 {
     public async Task<Series?> ResolveSeriesAsync(Provider provider, MetadataBag metadata,
@@ -48,7 +47,7 @@ public class MetadataResolver(
             var repo = serviceProvider.GetKeyedService<IRepository>(provider);
             if (repo != null)
             {
-                series[MetadataProvider.Upsteam] = await repo.SeriesInfo(new DownloadRequestDto
+                series[MetadataProvider.Upstream] = await repo.SeriesInfo(new DownloadRequestDto
                 {
                     Provider = provider,
                     Id = externalId,
@@ -59,7 +58,7 @@ public class MetadataResolver(
             }
         }
 
-        var settings = await settingsService.GetSettingsAsync();
+        var settings = await unitOfWork.MetadataProviderSettingsRepository.GetAll(cancellationToken);
 
         var mergedSeries = MergeSeries(series, settings, metadata);
         if (mergedSeries == null || !metadata.GetKey(MetadataResolverOptions.EnrichWithCovers))
@@ -82,7 +81,7 @@ public class MetadataResolver(
         return mergedSeries;
     }
 
-    private static Series? MergeSeries(Dictionary<MetadataProvider, Series?> series, ServerSettingsDto settings, MetadataBag metadata)
+    private static Series? MergeSeries(Dictionary<MetadataProvider, Series?> series, List<MetadataProviderSettings> settings, MetadataBag metadata)
     {
         if (series.All(kv => kv.Value == null))
             return null;
@@ -101,52 +100,52 @@ public class MetadataResolver(
 
         var mergedIntoUpstream = metadata.GetKey(MetadataResolverOptions.MergeIntoUpstream);
 
-        if (mergedIntoUpstream && series.TryGetValue(MetadataProvider.Upsteam, out var upstreamSeries))
+        if (mergedIntoUpstream && series.TryGetValue(MetadataProvider.Upstream, out var upstreamSeries))
         {
             mergedSeries = upstreamSeries;
         }
 
-        var sorted = settings.MetadataProviderSettings
-            .Where(kv => kv.Value.Enabled)
-            .Where(kv => !(mergedIntoUpstream && kv.Key == MetadataProvider.Upsteam))
-            .OrderBy(kv => kv.Value.Priority);
+        var sorted = settings
+            .Where(s => s.Enabled)
+            .Where(s => !(mergedIntoUpstream && s.MetadataProvider == MetadataProvider.Upstream))
+            .OrderBy(s => s.Priority);
 
-        foreach (var (metadataProvider, setting) in sorted)
+        foreach (var setting in sorted)
         {
-            if (!series.TryGetValue(metadataProvider, out var seriesEntity) || seriesEntity == null)
+            if (!series.TryGetValue(setting.MetadataProvider, out var seriesEntity) || seriesEntity == null)
             {
                 continue;
             }
 
-            Merge(metadataProvider, mergedSeries, seriesEntity, setting.SeriesSettings);
+            Merge(setting, mergedSeries!, seriesEntity);
         }
 
         return mergedSeries;
     }
 
-    private static void Merge(MetadataProvider provider, Series into, Series from, SeriesMetadataSettingsDto settings)
+    private static void Merge(MetadataProviderSettings settings, Series into, Series from)
     {
         if (string.IsNullOrEmpty(into.Id) && !string.IsNullOrEmpty(from.Id))
         {
             into.Id = from.Id;
         }
 
-        if (settings.Title && string.IsNullOrEmpty(into.Title))
+        if (settings.SeriesTitle && string.IsNullOrEmpty(into.Title))
         {
             into.Title = from.Title;
         }
 
-        if (settings.Summary && string.IsNullOrEmpty(into.Summary))
+        if (settings.SeriesSummary && string.IsNullOrEmpty(into.Summary))
         {
             into.Summary = from.Summary;
         }
 
-        if (settings.LocalizedSeries && string.IsNullOrEmpty(into.LocalizedSeries))
+        if (settings.SeriesLocalizedName && string.IsNullOrEmpty(into.LocalizedSeries))
         {
             into.LocalizedSeries = from.LocalizedSeries;
         }
 
-        if (settings.CoverUrl && string.IsNullOrEmpty(into.CoverUrl))
+        if (settings.SeriesCoverUrl && string.IsNullOrEmpty(into.CoverUrl))
         {
             into.CoverUrl = from.CoverUrl;
         }
@@ -160,26 +159,24 @@ public class MetadataResolver(
             into.Links.Add(from.RefUrl);
         }
 
-
-
-        if (settings.PublicationStatus && into.Status == PublicationStatus.Unknown)
+        if (settings.SeriesPublicationStatus && into.Status == PublicationStatus.Unknown)
         {
             into.Status = from.Status;
             into.HighestVolumeNumber ??= from.HighestVolumeNumber;
             into.HighestChapterNumber ??= from.HighestChapterNumber;
         }
 
-        if (settings.Year && into.Year == null)
+        if (settings.SeriesYear && into.Year == null)
         {
             into.Year = from.Year;
         }
 
-        if (settings.AgeRating && into.AgeRating == null || into.AgeRating == AgeRating.Unknown)
+        if (settings.SeriesAgeRating && into.AgeRating == null || into.AgeRating == AgeRating.Unknown)
         {
             into.AgeRating = from.AgeRating;
         }
 
-        if (settings.Tags)
+        if (settings.SeriesTags)
         {
             into.Tags = into.Tags
                 .Concat(from.Tags)
@@ -187,14 +184,14 @@ public class MetadataResolver(
                 .ToList();
         }
 
-        if (settings.People)
+        if (settings.SeriesPeople)
         {
             into.People = into.People.Concat(from.People)
                 .DistinctBy(p => p.Name.ToNormalized())
                 .ToList();
         }
 
-        if (settings.Links)
+        if (settings.SeriesLinks)
         {
             into.Links = into.Links.Concat(from.Links)
                 .Distinct()
@@ -213,7 +210,7 @@ public class MetadataResolver(
 
                 if (match != null)
                 {
-                    MergeChapter(match, fromChapter, settings.ChapterSettings);
+                    MergeChapter(match, fromChapter, settings);
                     continue;
                 }
 
@@ -228,13 +225,13 @@ public class MetadataResolver(
                     TranslationGroups = []
                 };
 
-                MergeChapter(match, fromChapter, settings.ChapterSettings);
+                MergeChapter(match, fromChapter, settings);
                 into.Chapters.Add(match);
             }
         }
     }
 
-    private static void MergeChapter(Chapter into, Chapter from, ChapterMetadataSettingsDto settings)
+    private static void MergeChapter(Chapter into, Chapter from, MetadataProviderSettings settings)
     {
 
         if (string.IsNullOrEmpty(into.Id))
@@ -242,27 +239,27 @@ public class MetadataResolver(
             into.Id = from.Id;
         }
 
-        if (settings.Title && string.IsNullOrEmpty(into.Title))
+        if (settings.ChapterTitle && string.IsNullOrEmpty(into.Title))
         {
             into.Title = from.Title;
         }
 
-        if (settings.Summary && string.IsNullOrEmpty(into.Summary))
+        if (settings.ChapterSummary && string.IsNullOrEmpty(into.Summary))
         {
             into.Summary = from.Summary;
         }
 
-        if (settings.Cover && string.IsNullOrEmpty(into.CoverUrl))
+        if (settings.ChapterCoverUrl && string.IsNullOrEmpty(into.CoverUrl))
         {
             into.CoverUrl = from.CoverUrl;
         }
 
-        if (settings.ReleaseDate && into.ReleaseDate == null)
+        if (settings.ChapterReleaseDate && into.ReleaseDate == null)
         {
             into.ReleaseDate = from.ReleaseDate;
         }
 
-        if (settings.People)
+        if (settings.ChapterPeople)
         {
             into.People = into.People.Concat(from.People)
                 .DistinctBy(p => p.Name)
@@ -274,7 +271,7 @@ public class MetadataResolver(
                 .ToList();
         }
 
-        if (settings.Tags)
+        if (settings.ChapterTags)
         {
             into.Tags = into.Tags.Concat(from.Tags)
                 .DistinctBy(t => t.Value.ToNormalized())

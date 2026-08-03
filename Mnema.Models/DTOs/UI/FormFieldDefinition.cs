@@ -41,6 +41,8 @@ public abstract record FormFieldDefinition
 
     public bool HideText { get; init; }
 
+    public bool Hidden { get; init; }
+
     public string? WikiLink { get; init; } = null;
 
     public abstract FormFieldType FieldType { get; }

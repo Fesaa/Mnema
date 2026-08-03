@@ -11,7 +11,6 @@ public class ServerSettingsDto
     public string FirstInstalledVersion { get; set; }
     public DateTime InstallDate { get; set; }
     public DateTime LastUpdateDate { get; set; }
-    public Dictionary<MetadataProvider, MetadataProviderSettingsDto> MetadataProviderSettings { get; set; }
     public int AutoDisableProviderAfter { get; set; }
     public bool ImageConversionLossless { get; set; }
     public int ImageConversionQuality { get; set; }

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -7,8 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Services;
+using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
+using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using Mnema.Server.Middleware;
 
@@ -36,6 +40,80 @@ public class ConfigController(
 
         var settings = await settingsService.GetSettingsAsync();
         return Ok(settings);
+    }
+
+    [Authorize(Roles.ManageSettings)]
+    [HttpGet("metadata-provider-settings")]
+    public async Task<ActionResult<MetadataProviderSettingsV2Dto>> GetMetadataProviderSettings(
+        [FromQuery] MetadataProvider metadataProvider)
+    {
+        var settings = await unitOfWork.MetadataProviderSettingsRepository.GetMetadataProviderSettingsDto(metadataProvider, HttpContext.RequestAborted);
+
+        return Ok(settings);
+    }
+
+    [Authorize(Roles.ManageSettings)]
+    [HttpPost("metadata-provider-settings")]
+    public async Task<ActionResult> UpdateMetadataProviderSettings([FromBody] MetadataProviderSettingsV2Dto dto)
+    {
+        var settings = await unitOfWork.MetadataProviderSettingsRepository.GetMetadataProviderSettings(dto.MetadataProvider, HttpContext.RequestAborted);
+
+        settings.Enabled = dto.Enabled;
+
+        settings.SeriesTitle = dto.SeriesTitle;
+        settings.SeriesSummary = dto.SeriesSummary;
+        settings.SeriesLocalizedName = dto.SeriesLocalizedName;
+        settings.SeriesCoverUrl = dto.SeriesCoverUrl;
+        settings.SeriesPublicationStatus = dto.SeriesPublicationStatus;
+        settings.SeriesAgeRating = dto.SeriesAgeRating;
+        settings.SeriesYear = dto.SeriesYear;
+        settings.SeriesTags = dto.SeriesTags;
+        settings.SeriesPeople = dto.SeriesPeople;
+        settings.SeriesLinks = dto.SeriesLinks;
+
+        settings.Chapters = dto.Chapters;
+        settings.ChapterTitle = dto.ChapterTitle;
+        settings.ChapterSummary = dto.ChapterSummary;
+        settings.ChapterReleaseDate = dto.ChapterReleaseDate;
+        settings.ChapterPeople = dto.ChapterPeople;
+        settings.ChapterTags = dto.ChapterTags;
+        settings.ChapterCoverUrl = dto.ChapterCoverUrl;
+
+        settings.MetadataProviderSpecific = dto.MetadataProviderSpecific;
+
+        await unitOfWork.CommitAsync(HttpContext.RequestAborted);
+
+        return Ok();
+    }
+
+    [Authorize(Roles.ManageSettings)]
+    [HttpPost("sort-metadata-providers")]
+    public async Task<ActionResult> SortMetadataProviders([FromBody] MetadataProvider[] metadataProviders)
+    {
+        var allSettings = await unitOfWork.MetadataProviderSettingsRepository.GetAll();
+
+        foreach (var setting in allSettings)
+        {
+            var index = metadataProviders.IndexOf(setting.MetadataProvider);
+            if (index != -1)
+            {
+                setting.Priority = index;
+                continue;
+            }
+
+            throw new BadRequestException("Not all providers are present");
+        }
+
+        await unitOfWork.CommitAsync(HttpContext.RequestAborted);
+
+        return Ok();
+    }
+
+    [Authorize(Roles.ManageSettings)]
+    [HttpGet("metadata-provider-order")]
+    public async Task<ActionResult<List<MetadataProvider>>> GetMetadataProviderOrder()
+    {
+        return Ok(await unitOfWork.MetadataProviderSettingsRepository.GetOrder(HttpContext.RequestAborted));
     }
 
     [HttpGet("is-setup")]
