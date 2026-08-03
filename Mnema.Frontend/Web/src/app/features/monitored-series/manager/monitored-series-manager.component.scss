@@ -101,3 +101,14 @@ app-paginator {
     }
   }
 }
+
+.provider-select {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .provider-select {
+    width: auto;
+    min-width: 14rem;
+  }
+}
