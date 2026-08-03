@@ -20,5 +20,7 @@ public class Preferences: IDatabaseEntity
     public required IList<string> ConvertToGenreList { get; set; }
     [Obsolete("Use MetadataFieldMappings")]
     public required IList<TagMappingDto> TagMappings { get; set; }
-    public bool PinSubscriptionTitles { get; set; }
+    public required bool PinSubscriptionTitles { get; set; }
+    public required string ChapterFileFormat { get; set; }
+    public required string OneShotFileFormat { get; set; }
 }

@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
+using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.UI;
@@ -172,6 +173,26 @@ public class FormController(IProviderSettingsService providerSettingsService): B
         Key = "settings.preferences",
         Controls =
         [
+            new TextFieldDefinition
+            {
+                Field = nameof(Preferences.ChapterFileFormat).ToCamelCase(),
+                DefaultValue = INamingService.DefaultChapterFormat,
+                ForceSingle = true,
+                Validators = new FormValidatorsBuilder()
+                    .WithRequired()
+                    .WithServerSideValidation("Preferences/valid-chapter-format")
+                    .Build(),
+            },
+            new TextFieldDefinition
+            {
+                Field = nameof(Preferences.OneShotFileFormat).ToCamelCase(),
+                DefaultValue = INamingService.DefaultOneShotFormat,
+                ForceSingle = true,
+                Validators = new FormValidatorsBuilder()
+                    .WithRequired()
+                    .WithServerSideValidation("Preferences/valid-one-shot-format")
+                    .Build(),
+            },
             FormFieldDefinitions.EnumDropDown<ImageFormat>(
                 nameof(Preferences.ImageFormat).ToCamelCase(),
                 "image-format-pipe"),

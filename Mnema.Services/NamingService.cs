@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Common.Extensions;
+using Mnema.Models.Entities;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
 
@@ -12,55 +14,57 @@ namespace Mnema.Services;
 
 public class NamingService(ILogger<NamingService> logger, ApplicationConfiguration configuration, IParserService parserService) : INamingService
 {
+    public StringFormatter<ChapterNameContext> ChapterFormatter { get; } = new StringFormatter<ChapterNameContext>()
+        .WithVariable("Title", c => c.Title)
+        .WithVariable("Volume", c => parserService.IsLooseLeafVolume(c.Chapter.VolumeMarker) ? null : c.Chapter.VolumeMarker)
+        .WithVariable("Chapter", (c, spec) =>
+        {
+            if (parserService.IsDefaultChapter(c.Chapter.ChapterMarker))
+                return null;
+
+            var number = c.Chapter.ChapterNumber();
+            if (number is null)
+            {
+                logger.LogWarning("Failed to parse chapter number for marker {ChapterMarker}, not padding", number);
+                return null;
+            }
+
+            return spec is not null ? c.Chapter.ChapterMarker.PadFloat(spec.Length) : c.Chapter.ChapterMarker;
+        })
+        .WithVariable("ChapterTitle", c => c.Chapter.Title)
+        .WithVariable("Year", c => c.Chapter.ReleaseDate?.Year.ToString() ?? string.Empty)
+        .WithVariable("Date", (c, spec) => c.Chapter.ReleaseDate?.ToString(spec ?? "yyyy-MM-dd") ?? string.Empty);
+
+    public StringFormatter<ChapterNameContext> OneShotFormatter => ChapterFormatter;
+
     public string GetVolumeDirectoryName(string title, string volumeMarker)
         => $"{title} Vol. {volumeMarker}";
 
     public string GetChapterFilePath(string baseDir, string title, string fileName)
         => Path.Join(configuration.DownloadDir, baseDir, title, fileName);
 
-    public string GetChapterFileName(string title, Chapter chapter)
-        => GetChapterFileName(title, chapter.VolumeMarker, chapter.ChapterMarker, chapter.ChapterNumber(),
-            chapter.IsOneShot, chapter.Title, []);
-
-    public string GetChapterFileName(
-        string title,
-        string? volumeMarker,
-        string chapterMarker,
-        float? chapterNumber,
-        bool isOneShot,
-        string? chapterTitle,
-        IReadOnlyCollection<string> existingPaths)
+    public string GetChapterFileName(Preferences preferences, string title, Chapter chapter,
+        IReadOnlyCollection<string>? existingPaths = null)
     {
-        return isOneShot
-            ? GetOneShotFileName(title, chapterTitle, existingPaths)
-            : GetDefaultFileName(title, volumeMarker, chapterMarker, chapterNumber);
-    }
+        var ctx = new ChapterNameContext(title, chapter);
 
-    private string GetDefaultFileName(string title, string? volumeMarker, string chapterMarker, float? chapterNumber)
-    {
-        var fileName = title;
-
-        if (!string.IsNullOrEmpty(volumeMarker) && !parserService.IsLooseLeafVolume(volumeMarker))
-            fileName += $" Vol. {volumeMarker}";
-
-        if (string.IsNullOrEmpty(chapterMarker) || parserService.IsDefaultChapter(chapterMarker))
-            return fileName;
-
-        if (chapterNumber == null)
+        var format = chapter.IsOneShot ? preferences.OneShotFileFormat : preferences.ChapterFileFormat;
+        if (string.IsNullOrEmpty(format) || !ChapterFormatter.IsValid(format))
         {
-            logger.LogWarning("Failed to parse chapter number for marker {ChapterMarker}, not padding", chapterMarker);
-            return $"{fileName} Ch. {chapterMarker}";
+            logger.LogWarning("Empty or invalid ");
+            format = chapter.IsOneShot ? INamingService.DefaultOneShotFormat : INamingService.DefaultChapterFormat;
         }
 
-        return $"{fileName} Ch. {chapterMarker.PadFloat(4)}";
+        var fileName = ChapterFormatter.Apply(format, ctx);
+
+        return chapter.IsOneShot ? EnsureUnique(fileName, chapter.Title, existingPaths ?? []) : fileName;
     }
 
-    private string GetOneShotFileName(string title, string? chapterTitle, IReadOnlyCollection<string> existingPaths)
+    private string EnsureUnique(string fileName, string title, IReadOnlyCollection<string> existingPaths)
     {
-        var fileName = $"{title} {chapterTitle}".Trim();
-
         var idx = 0;
         var finalFileName = fileName;
+
         while (existingPaths.Contains(finalFileName))
         {
             finalFileName = $"{fileName} ({idx})";

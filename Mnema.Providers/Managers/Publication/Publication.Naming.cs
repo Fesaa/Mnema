@@ -15,18 +15,8 @@ internal partial class Publication
         => _namingService.GetVolumeDirectoryName(Title, chapter.VolumeMarker);
 
     private string ChapterPath(Chapter chapter)
-        => _namingService.GetChapterFilePath(
-            Request.BaseDir,
-            Title,
-            ChapterFileName(chapter));
+        => _namingService.GetChapterFilePath(Request.BaseDir, Title, ChapterFileName(chapter));
 
     private string ChapterFileName(Chapter chapter)
-        => _namingService.GetChapterFileName(
-            Title,
-            chapter.VolumeMarker,
-            chapter.ChapterMarker,
-            chapter.ChapterNumber(),
-            chapter.IsOneShot,
-            chapter.Title,
-            DownloadedPaths.AsReadOnly());
+        => _namingService.GetChapterFileName(Preferences, Title, chapter, DownloadedPaths.AsReadOnly());
 }

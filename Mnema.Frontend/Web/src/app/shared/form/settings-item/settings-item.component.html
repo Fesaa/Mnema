@@ -43,9 +43,17 @@
     @if (shouldShowErrors()) {
       <div class="mt-2">
         @for (error of errors; track error.key) {
-          <div class="text-danger small">
-            {{ t('input.errors.' + error.key, error.value) }}
-          </div>
+          @if (isArray(error.value)) {
+            @for (item of error.value; track item) {
+              <div class="text-danger small">
+                {{ item }}
+              </div>
+            }
+          } @else {
+            <div class="text-danger small">
+              {{ t('input.errors.' + error.key, error.value) }}
+            </div>
+          }
         }
       </div>
     }

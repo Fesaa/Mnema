@@ -17,7 +17,7 @@ public class ProviderSettingsRepository(MnemaDataContext ctx, IMapper mapper): I
     {
         return ctx.ProviderSettings
             .Where(ps => ps.Provider == provider)
-            .FirstAsync(ct);
+            .SingleAsync(ct);
     }
 
     public Task<List<ProviderSettings>> GetAllSettings(CancellationToken ct)

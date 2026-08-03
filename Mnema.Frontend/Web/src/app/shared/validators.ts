@@ -1,4 +1,7 @@
-import {AbstractControl, ValidatorFn} from "@angular/forms";
+import {AbstractControl, AsyncValidatorFn, ValidationErrors, ValidatorFn} from "@angular/forms";
+import {HttpClient} from "@angular/common/http";
+import {environment} from "@env/environment";
+import {switchMap, timer} from "rxjs";
 
 
 export class MnemaValidators {
@@ -28,6 +31,22 @@ export class MnemaValidators {
     }
 
     return null;
+  }
+
+  static serverSideValidation(
+    httpClient: HttpClient,
+    urlPath: string
+  ): AsyncValidatorFn {
+    return (control: AbstractControl) => {
+      return timer(200).pipe(
+        switchMap(() =>
+          httpClient.post<ValidationErrors | null>(
+            environment.apiUrl + urlPath,
+            { formValue: control.value }
+          )
+        )
+      );
+    };
   }
 
 }

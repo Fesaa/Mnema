@@ -10,6 +10,7 @@ import {
   DeleteContent
 } from "../../_models/signalr";
 import {SettingsService} from "@mnema/_services/settings.service";
+import {environment} from "@env/environment";
 
 @Injectable({
   providedIn: 'root',
@@ -203,7 +204,7 @@ export class ActiveDownloadsService {
   }
 
   private log(message: string, data?: unknown) {
-    if (!this.debug) {
+    if (!this.debug || environment.production) {
       return;
     }
 

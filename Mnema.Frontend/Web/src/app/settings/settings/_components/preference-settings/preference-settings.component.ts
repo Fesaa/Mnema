@@ -55,14 +55,12 @@ export class PreferenceSettingsComponent implements OnInit {
 
   private createFormGroup() {
     this.preferencesForm = new FormGroup({});
-    this.preferencesForm.valueChanges
+    this.preferencesForm.statusChanges
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         debounceTime(300),
-        distinctUntilChanged(),
-        filter(() => this.preferencesForm.valid),
-        skip(1), // First set by generic form component
         filter(() => !this.importMode()), // Import needs manual save
+        filter(() => this.preferencesForm.valid),
         switchMap(() => this.preferencesService.save(this.preferencesForm.getRawValue() as Preferences)),
       )
       .subscribe();

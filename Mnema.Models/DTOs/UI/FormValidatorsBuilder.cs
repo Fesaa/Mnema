@@ -54,6 +54,12 @@ public sealed class FormValidatorsBuilder : Builder<GenericBag<object>>
         return this;
     }
 
+    public FormValidatorsBuilder WithServerSideValidation(string urlPath)
+    {
+        _validators.SetValue("serverSideValidation", urlPath);
+        return this;
+    }
+
     public override GenericBag<object> Build()
     {
         return _validators;

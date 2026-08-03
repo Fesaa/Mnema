@@ -7,6 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
+using Mnema.API.Content;
+using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
@@ -15,7 +17,7 @@ using Mnema.Models.Enums;
 
 namespace Mnema.Services;
 
-internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unitOfWork) : ISettingsService
+internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unitOfWork, INamingService namingService) : ISettingsService
 {
     public async Task UpdatePreferences(PreferencesDto dto, CancellationToken cancellationToken)
     {
@@ -37,6 +39,22 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
         foreach (var mapping in dto.MetadataFieldMappings)
         {
             pref.MetadataFieldMappings.Add(mapping);
+        }
+
+        if (pref.ChapterFileFormat != dto.ChapterFileFormat)
+        {
+            if (!namingService.ChapterFormatter.IsValid(dto.ChapterFileFormat))
+                throw new BadRequestException("Invalid chapter file format");
+
+            pref.ChapterFileFormat = dto.ChapterFileFormat;
+        }
+
+        if (pref.OneShotFileFormat != dto.OneShotFileFormat)
+        {
+            if (!namingService.OneShotFormatter.IsValid(dto.OneShotFileFormat))
+                throw new BadRequestException("Invalid one shot file format");
+
+            pref.OneShotFileFormat = dto.OneShotFileFormat;
         }
 
         await unitOfWork.CommitAsync(cancellationToken);

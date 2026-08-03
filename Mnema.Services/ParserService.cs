@@ -1339,7 +1339,7 @@ public partial class ParserService: IParserService
         return AsinRegex.Match(asin).Success;
     }
 
-    public T? FindMatch<T>(List<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers
+    public T? FindMatch<T>(IList<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers
     {
         // If both markers are missing, no match can be made
         if (string.IsNullOrEmpty(item.VolumeMarker) && string.IsNullOrEmpty(item.ChapterMarker))

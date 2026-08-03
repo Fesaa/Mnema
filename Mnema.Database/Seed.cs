@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
@@ -51,7 +52,7 @@ public static class Seed
 
     private static async Task SeedMetadataProviderSettings(MnemaDataContext ctx)
     {
-        var setting = await ctx.ServerSettings.FirstAsync(s => s.Key == ServerSettingKey.MetadataProviderSettings);
+        var setting = await ctx.ServerSettings.SingleAsync(s => s.Key == ServerSettingKey.MetadataProviderSettings);
 
         var settings = JsonSerializer.Deserialize<Dictionary<MetadataProvider, MetadataProviderSettingsDto>>(setting.Value);
         if (settings == null)
@@ -122,6 +123,8 @@ public static class Seed
             MetadataFieldMappings = [],
             TagMappings = [],
             PinSubscriptionTitles = true,
+            ChapterFileFormat = INamingService.DefaultChapterFormat,
+            OneShotFileFormat = INamingService.DefaultOneShotFormat,
         });
 
         await ctx.SaveChangesAsync();

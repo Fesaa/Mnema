@@ -30,7 +30,7 @@ public class SettingsRepository(MnemaDataContext ctx, IMapper mapper) : ISetting
     {
         return await ctx.ServerSettings
             .Where(x => x.Key == key)
-            .FirstAsync();
+            .SingleAsync();
     }
 
     public async Task<IList<ServerSetting>> GetSettingsAsync()
@@ -40,6 +40,6 @@ public class SettingsRepository(MnemaDataContext ctx, IMapper mapper) : ISetting
 
     public Task<Preferences> GetPreferencesAsync(CancellationToken ct = default)
     {
-        return ctx.Preferences.FirstAsync(cancellationToken: ct);
+        return ctx.Preferences.SingleAsync(cancellationToken: ct);
     }
 }

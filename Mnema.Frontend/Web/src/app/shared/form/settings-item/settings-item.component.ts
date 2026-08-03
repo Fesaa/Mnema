@@ -155,5 +155,9 @@ export class SettingsItemComponent implements OnChanges {
     );
   }
 
+  isArray(value: unknown): value is unknown[] {
+    return Array.isArray(value);
+  }
+
 
 }

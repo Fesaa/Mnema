@@ -678,6 +678,11 @@
       "export": "Export",
       "import": "Import",
 
+      "chapterFileFormat-title": "Chapter file format",
+      "chapterFileFormat-tooltip": "",
+      "oneShotFileFormat-title": "One shot file format",
+      "oneShotFileFormat-tooltip": "",
+
       "imageFormat-title": "Image conversion",
       "imageFormat-tooltip": "In which format should downloaded images be saved",
 
