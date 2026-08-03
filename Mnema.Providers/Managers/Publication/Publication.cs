@@ -29,7 +29,7 @@ internal partial class Publication(
     IServiceScope scope,
     Provider provider,
     DownloadRequestDto request
-) : IPublication
+) : IPublication, IAsyncDisposable
 {
     private readonly ApplicationConfiguration _configuration =
         scope.ServiceProvider.GetRequiredService<ApplicationConfiguration>();
@@ -259,5 +259,23 @@ internal partial class Publication(
             Id = Id,
             DeleteFiles = deleteFiles,
         };
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _limiter.DisposeAsync();
+        await CastAndDispose(_tokenSource);
+        if (_ioTask != null) await CastAndDispose(_ioTask);
+        await CastAndDispose(scope);
+
+        return;
+
+        static async ValueTask CastAndDispose(IDisposable resource)
+        {
+            if (resource is IAsyncDisposable resourceAsyncDisposable)
+                await resourceAsyncDisposable.DisposeAsync();
+            else
+                resource.Dispose();
+        }
     }
 }

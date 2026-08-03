@@ -96,6 +96,7 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         }
         catch
         {
+            await publication.DisposeAsync();
             _content.TryRemove(publication.Id, out _);
             await messageService.DeleteContent(publication.Id);
             throw;
@@ -297,11 +298,11 @@ internal partial class PublicationManager : IPublicationManager, IAsyncDisposabl
         }
     }
 
-    private Managers.Publication.Publication CreatePublication(DownloadRequestDto request)
+    private Publication CreatePublication(DownloadRequestDto request)
     {
         var scope = _scopeFactory.CreateScope();
 
-        var publication = new Managers.Publication.Publication(scope, request.Provider, request);
+        var publication = new Publication(scope, request.Provider, request);
 
         return publication;
     }

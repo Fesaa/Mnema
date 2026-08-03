@@ -139,8 +139,6 @@ internal partial class Publication
 
     private async Task ProcessDownloads()
     {
-        var sw = Stopwatch.StartNew();
-
         foreach (var chapterId in QueuedChapters)
         {
             if (_tokenSource.Token.IsCancellationRequested) break;
@@ -155,9 +153,6 @@ internal partial class Publication
             await DownloadChapter(chapter);
             await _messageService.UpdateContent(DownloadInfo);
         }
-
-        _logger.LogDebug("[{Title}/{Id}] All content has been downloaded in {Elapsed}ms, waiting for I/O to complete",
-            Title, Id, sw.ElapsedMilliseconds);
     }
 
     private async Task DownloadChapter(Chapter chapter)
@@ -194,7 +189,7 @@ internal partial class Publication
 
         var urlChannel = BuildUrlChannel(urls);
 
-        var pendingIo = new SemaphoreSlim(0);
+        using var pendingIo = new SemaphoreSlim(0);
         var expectedCount = urls.Count;
 
         await Task.WhenAll(Enumerable.Range(0, _settings.MaxConcurrentImages)
