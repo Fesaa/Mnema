@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,9 +70,12 @@ internal class MonitoredSeriesScheduler(
         if (entities.Count == 0)
             return;
 
+        var sw = Stopwatch.StartNew();
+
         var providers = await GetProviders(entities, cancellationToken);
 
-        logger.LogTrace("Searching for recent updated for {ProviderCount} providers", providers.Count);
+        logger.LogDebug("Searching for recent updated for {ProviderCount} providers across {MonitoredSeries} monitored series",
+            providers.Count, entities.Count);
 
         var releases = await searchService.SearchReleases(providers, cancellationToken);
         if (releases.Count == 0)
@@ -95,11 +99,12 @@ internal class MonitoredSeriesScheduler(
         }
 
         logger.LogInformation(
-            "Found {TotalReleases} releases, {NewReleases} have not been processed. Started {StartedDownloads} downloads, {FailedDownloads} downloads failed",
+            "Found {TotalReleases} releases, {NewReleases} have not been processed. Started {StartedDownloads} downloads, {FailedDownloads} downloads failed. Ran for {Seconds}s",
             releases.Count,
             newReleases.Count,
             result.StartedDownloads,
-            result.FailedDownloads
+            result.FailedDownloads,
+            sw.Elapsed.TotalSeconds
         );
     }
 

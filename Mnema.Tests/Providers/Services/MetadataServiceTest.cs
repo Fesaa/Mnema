@@ -55,7 +55,9 @@ public class MetadataServiceTest
             AgeRatingMappings = ageRatings ?? [],
             TagMappings = tagMappings ?? [],
             MetadataFieldMappings = [],
-            PinSubscriptionTitles = false
+            PinSubscriptionTitles = false,
+            ChapterFileFormat = string.Empty,
+            OneShotFileFormat = string.Empty
         };
     }
 

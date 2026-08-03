@@ -38,7 +38,8 @@
     "dismiss": "Dismiss",
     "selected": "Selected",
     "clear": "Clear",
-    "filter": "Filter"
+    "filter": "Filter",
+    "wiki": "Visit the Wiki for more information"
   },
 
   "button-groups": {
@@ -677,6 +678,11 @@
       "sync-description": "Import or Export your preferences to Kavita Metadata Management settings",
       "export": "Export",
       "import": "Import",
+
+      "chapterFileFormat-title": "Chapter file format",
+      "chapterFileFormat-tooltip": "",
+      "oneShotFileFormat-title": "One shot file format",
+      "oneShotFileFormat-tooltip": "",
 
       "imageFormat-title": "Image conversion",
       "imageFormat-tooltip": "In which format should downloaded images be saved",

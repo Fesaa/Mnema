@@ -166,19 +166,30 @@ internal class RawFileCleanupService(
 
         var ignoreNonMatched = context.Request.Metadata.GetKey(RequestConstants.IgnoreNonMatchedVolumes);
 
-        logger.LogDebug("Processing file {FileName} for cleanup", sourceFile);
+        logger.LogTrace("Processing file {FileName} for cleanup", sourceFile);
         var sw = Stopwatch.StartNew();
 
         var fileName = fileSystem.Path.GetFileName(sourceFile);
-        var resolution = metadataResolver.ResolveChapter(fileName, context.Series, context.ContentFormat);
-        if (resolution.ChapterEntity == null && ignoreNonMatched && context.Series?.Chapters.Count > 0)
+
+        var parseResult = parserService.FullParse(fileName, context.ContentFormat);
+        var chapter = parserService.FindMatch(context.Series?.Chapters ?? [], parseResult);
+
+        if (chapter == null && ignoreNonMatched && context.Series?.Chapters.Count > 0)
         {
             logger.LogDebug("[{Title}/{Id}] Skipping file {FileName} as it could not be matched",
                 context.Title, context.Series?.Id, fileName);
             return;
         }
 
-        var chapterFileName = BuildChapterFileName(context.Title, resolution);
+        chapter ??= new Chapter
+        {
+            Id = string.Empty,
+            Title = string.Empty,
+            VolumeMarker = parseResult.VolumeMarker,
+            ChapterMarker = parseResult.ChapterMarker,
+        };
+
+        var chapterFileName = namingService.GetChapterFileName(context.Preferences, context.Title, chapter);
         var destPath = fileSystem.Path.Join(context.DestinationDirectory, chapterFileName + context.Format.FileExt());
 
         var comicInfo = metadataService.CreateComicInfo(
@@ -186,35 +197,14 @@ internal class RawFileCleanupService(
             context.Request,
             context.Title,
             context.Series,
-            resolution.ChapterEntity
+            chapter
         );
 
-        if (string.IsNullOrEmpty(comicInfo?.Volume) && !string.IsNullOrEmpty(resolution.Volume))
-            comicInfo?.Volume = resolution.Volume;
-
-        if (string.IsNullOrEmpty(comicInfo?.Number) && !string.IsNullOrEmpty(resolution.Chapter))
-            comicInfo?.Number = resolution.Chapter;
-
-        var coverUrl = resolution.ChapterEntity?.CoverUrl ?? context.Series?.CoverUrl;
+        var coverUrl = chapter.CoverUrl.OrNonEmpty(context.Series?.CoverUrl);
 
         await HandleFormatAsync(context, sourceFile, destPath, coverUrl, comicInfo);
 
         logger.LogDebug("Finished processing file {FileName} for cleanup in {Seconds}s", sourceFile, sw.Elapsed.TotalSeconds);
-    }
-
-    private string BuildChapterFileName(string title, ChapterResolutionResult resolution)
-    {
-        var isUnnumbered = string.IsNullOrEmpty(resolution.Chapter) && string.IsNullOrEmpty(resolution.Volume);
-
-        return namingService.GetChapterFileName(
-            title,
-            resolution.Volume,
-            resolution.Chapter ?? string.Empty,
-            resolution.Chapter.AsFloat(),
-            isUnnumbered,
-            resolution.ChapterEntity?.Title,
-            []
-        );
     }
 
     private async Task HandleFormatAsync(

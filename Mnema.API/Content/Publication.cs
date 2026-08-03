@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Mnema.Models.DTOs.Content;
@@ -11,7 +12,7 @@ public interface IPublicationManager : IContentManager
     Task MoveToDownloadQueue(string id);
 }
 
-public interface IPublication : IContent
+public interface IPublication : IContent, IAsyncDisposable
 {
     Task Cancel();
     Task Cleanup();

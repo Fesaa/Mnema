@@ -22,6 +22,7 @@
             [labelId]="control.key"
             [title]="t(control.key + '-title')"
             [tooltip]="t(control.key + '-tooltip')"
+            [wikiLink]="control.wikiLink"
           >
             <ng-template #switch>
               <div class="form-switch form-check">
@@ -40,6 +41,7 @@
             [showEdit]="!control.forceEditMode"
             [isEditMode]="control.forceEditMode"
             [hideText]="control.hideText"
+            [wikiLink]="control.wikiLink"
           >
             <ng-template #view>
               {{formControl.value | defaultValue}}
@@ -56,6 +58,7 @@
             [title]="t(control.key + '-title')"
             [tooltip]="t(control.key + '-tooltip')"
             [hideText]="control.hideText"
+            [wikiLink]="control.wikiLink"
           >
             <ng-template #view>
               <div class="d-flex align-items-center">
@@ -79,6 +82,7 @@
             [showEdit]="!control.forceEditMode"
             [isEditMode]="control.forceEditMode"
             [hideText]="control.hideText"
+            [wikiLink]="control.wikiLink"
           >
             <ng-template #view>
               @let option = getFormOption(control, formControl.value);
@@ -102,6 +106,7 @@
             [canEdit]="false"
             [showEdit]="false"
             [hideText]="control.hideText"
+            [wikiLink]="control.wikiLink"
           >
             <ng-template #view>
               <app-type-ahead
@@ -127,6 +132,7 @@
             [canEdit]="false"
             [showEdit]="false"
             [hideText]="control.hideText"
+            [wikiLink]="control.wikiLink"
           >
             <ng-template #view>
               <app-type-ahead
@@ -204,6 +210,7 @@
             [formControl]="formControl"
             [title]="t(control.key + '-title')"
             [tooltip]="t(control.key + '-tooltip')"
+            [wikiLink]="control.wikiLink"
           />
         }
       }

@@ -29,7 +29,7 @@ public interface IParserService
     ParseResult FullParse(string input, ContentFormat type);
     Format ParseFormat(string filePath);
 
-    T? FindMatch<T>(List<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers;
+    T? FindMatch<T>(IList<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers;
 }
 
 public record NumberRange(string Value, float MinNumber, float MaxNumber);

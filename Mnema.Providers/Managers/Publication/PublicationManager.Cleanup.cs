@@ -48,6 +48,7 @@ internal partial class PublicationManager
         finally
         {
             await messageService.DeleteContent(publication.Id);
+            await publication.DisposeAsync();
         }
     }
 

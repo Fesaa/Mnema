@@ -14,7 +14,7 @@ public class MetadataFieldMappingsMigration: ManualMigration
     protected override string MigrationName => nameof(MetadataFieldMappingsMigration);
     protected override async Task ExecuteAsync(IServiceProvider serviceProvider, MnemaDataContext ctx, ILogger logger)
     {
-        var preferences = await ctx.Preferences.FirstAsync();
+        var preferences = await ctx.Preferences.SingleAsync();
 
         preferences.MetadataFieldMappings = preferences.TagMappings
             .SelectMany(tm => new List<MetadataFieldMappingDto>()

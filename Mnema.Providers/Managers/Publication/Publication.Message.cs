@@ -83,7 +83,7 @@ internal partial class Publication
             {
                 SubContentId = chapter.Id,
                 Selected = WillBeDownloaded(chapter),
-                Label = (_namingService.GetChapterFileName(Title, chapter) + " " + chapter.Title).Trim()
+                Label = (_namingService.GetChapterFileName(Preferences, Title, chapter) + " " + chapter.Title).Trim()
             }).ToList();
         }
 

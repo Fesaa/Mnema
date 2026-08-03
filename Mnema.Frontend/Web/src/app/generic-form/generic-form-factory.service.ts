@@ -1,9 +1,20 @@
-import {Injectable} from '@angular/core';
-import {FormArray, FormBuilder, FormGroup, NonNullableFormBuilder, ValidatorFn, Validators} from "@angular/forms";
+import {inject, Injectable} from '@angular/core';
+import {
+  AsyncValidatorFn,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  NonNullableFormBuilder,
+  ValidatorFn,
+  Validators
+} from "@angular/forms";
 import {FormControlDefinition, FormControlOption, FormType, ValueType} from "./form";
 import {TypeaheadSettings} from "../type-ahead/typeahead.component";
 import {of} from "rxjs";
 import {MnemaValidators} from "../shared/validators";
+import {environment} from "@env/environment";
+import {LoggingService, LogLevel} from "@mnema/_services/logging-service";
+import {HttpClient} from "@angular/common/http";
 
 export type GenericBag = { [key: string]: any[] };
 
@@ -12,21 +23,12 @@ export const GENERIC_METADATA_FIELD = "metadata";
 @Injectable({
   providedIn: 'root',
 })
-export class GenericFormFactoryService {
+export class GenericFormFactoryService extends LoggingService {
 
-  public debug = true;
+  private readonly httpClient = inject(HttpClient);
 
-  private log(message: string, data?: unknown) {
-    if (!this.debug) {
-      return;
-    }
-
-    if (data !== undefined) {
-      console.debug(`[GenericFormFactoryService] ${message}`, data);
-    } else {
-      console.debug(`[GenericFormFactoryService] ${message}`);
-    }
-  }
+  override name: string = 'GenericFormFactoryService';
+  override logLevel: LogLevel = LogLevel.INFO;
 
   createArrayItem(
     control: FormControlDefinition,
@@ -95,14 +97,15 @@ export class GenericFormFactoryService {
         );
       } else {
         const initVal = this.initialValue(obj, control);
-        const controlValidators = this.validators(control.validators);
+        const [validators, asyncValidators] = this.validators(control.validators);
         this.log(`Adding FormControl for field '${control.field}'`, { initialValue: initVal });
 
         formGroup.addControl(
           control.field,
           fb.control(
             initVal,
-            controlValidators,
+            validators,
+            asyncValidators,
           )
         );
       }
@@ -288,9 +291,11 @@ export class GenericFormFactoryService {
 
       this.log(`Creating metadata FormControl for key '${control.key}'`, { initialValue, transformedValue });
 
+      const [validators, asyncValidators] = this.validators(control.validators);
       const formControl = fb.control(
         transformedValue,
-        this.validators(control.validators),
+        validators,
+        asyncValidators,
       );
 
       group.addControl(control.key, formControl);
@@ -314,45 +319,53 @@ export class GenericFormFactoryService {
     }
   }
 
-  validators(data: GenericBag): ValidatorFn[] {
+  validators(data: GenericBag): [ValidatorFn[], AsyncValidatorFn[]]{
     const validators: ValidatorFn[] = [];
+    const asyncValidators: AsyncValidatorFn[] = [];
 
     for (let key in data) {
       const args = data[key];
-      const validator = this.validator(key, args);
-      if (validator) {
-        validators.push(validator);
+      const [validator, isAsync] = this.validator(key, args);
+      if (!validator) {
+        this.warn(`No validator found matching key '${key}'`);
+        continue;
+      }
+
+      if (isAsync) {
+        asyncValidators.push(validator);
       } else {
-        this.log(`No validator found matching key '${key}'`);
+        validators.push(validator);
       }
     }
 
     this.log(`Built ${validators.length} validator(s)`, { data });
-    return validators;
+    return [validators, asyncValidators];
   }
 
-  validator(key: string, args: any[]): ValidatorFn | null {
+  validator(key: string, args: any[]): [ValidatorFn | null, false] | [AsyncValidatorFn | null, true] {
     this.log(`Evaluating validator '${key}'`, { args });
     switch (key) {
       case "required":
-        return Validators.required;
+        return [Validators.required, false];
       case "minLength":
-        return Validators.minLength(args[0]);
+        return [Validators.minLength(args[0]), false];
       case "maxLength":
-        return Validators.maxLength(args[0]);
+        return [Validators.maxLength(args[0]), false];
       case "min":
-        return Validators.min(args[0]);
+        return [Validators.min(args[0]), false];
       case "max":
-        return Validators.max(args[0]);
+        return [Validators.max(args[0]), false];
       case "pattern":
-        return Validators.pattern(args[0]);
+        return [Validators.pattern(args[0]), false];
       case "startsWith":
-        return MnemaValidators.startsWith(args[0]);
+        return [MnemaValidators.startsWith(args[0]), false];
       case 'isUrl':
-        return MnemaValidators.isUrl;
+        return [MnemaValidators.isUrl, false];
+      case 'serverSideValidation':
+        return [MnemaValidators.serverSideValidation(this.httpClient, args[0]), true];
     }
 
-    return null;
+    return [null, false];
   }
 
   initialValue(obj: any, control: FormControlDefinition) {

@@ -128,12 +128,14 @@ internal partial class Publication
             return false;
         }
 
+        #pragma warning disable CS0618
         // Chapter is present as a download (backwards compat with Media-Provider's old behavior)
         if (GetContentByFileName(VolumeDir(chapter) + format.FileExt()) != null)
         {
             _logger.LogTrace("Ignoring chapter {ChapterId} as it's already downloaded", chapter.Id);
             return false;
         }
+        #pragma warning restore CS0618
 
         var content = GetContentByName(ChapterFileName(chapter));
         if (content == null)

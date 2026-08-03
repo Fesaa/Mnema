@@ -23,6 +23,7 @@ export class SettingsSwitchComponent {
   title = input<string>();
   tooltip = input<string>();
   labelId = input<string>();
+  wikiLink = input<string>();
 
   canEdit = input(true);
 

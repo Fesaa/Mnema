@@ -11,6 +11,7 @@
     <toc-element topic="First-Start-Up.md"/>
     <toc-element topic="Settings.md">
         <toc-element topic="Preferences.md"/>
+        <toc-element topic="Naming.md"/>
         <toc-element topic="Pages.md"/>
         <toc-element topic="Server.md"/>
         <toc-element topic="Connections.md"/>

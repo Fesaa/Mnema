@@ -158,7 +158,7 @@ public partial class QBitContentManagerTest
 
         await QBitContentManager.SaveExternalDownloadRecord(unitOfWork, CreateDownloadRequestDto(), string.Empty, [], [], CancellationToken.None);
 
-        var ed = await ctx.ExternalDownloads.FirstAsync();
+        var ed = await ctx.ExternalDownloads.SingleAsync();
 
         Assert.Equal(ed.Metadata.GetKey(RequestConstants.ExternalDownloadId), ed.Id);
     }
