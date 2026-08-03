@@ -18,27 +18,9 @@
     }
   }
 
-  @defer (when selected() === SettingsID.Connections; prefetch on idle) {
-    @if (selected() === SettingsID.Connections && canSee(SettingsID.Connections)) {
-      <app-external-connection-settings />
-    }
-  }
-
-  @defer (when selected() === SettingsID.DownloadClients; prefetch on idle) {
-    @if (selected() === SettingsID.DownloadClients && canSee(SettingsID.DownloadClients)) {
-      <app-download-client-settings />
-    }
-  }
-
   @defer (when selected() === SettingsID.Releases; prefetch on idle) {
     @if (selected() === SettingsID.Releases && canSee(SettingsID.Releases)) {
       <app-release-browser />
-    }
-  }
-
-  @defer (when selected() === SettingsID.AuthKeys; prefetch on idle) {
-    @if (selected() === SettingsID.AuthKeys && canSee(SettingsID.AuthKeys)) {
-      <app-auth-keys />
     }
   }
 

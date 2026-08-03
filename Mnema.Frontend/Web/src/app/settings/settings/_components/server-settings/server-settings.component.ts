@@ -16,6 +16,13 @@ import {SettingsSwitchComponent} from "@mnema/shared/form/settings-switch/settin
 import {
   ProviderSettingsComponent
 } from "@mnema/settings/settings/_components/provider-settings/provider-settings.component";
+import {
+  ConnectionSettingsComponent
+} from "@mnema/settings/settings/_components/external-connection-settings/connection-settings.component";
+import {
+  DownloadClientSettingsComponent
+} from "@mnema/settings/settings/_components/download-client/download-client-settings.component";
+import {AuthKeysComponent} from "@mnema/settings/settings/_components/auth-keys/auth-keys.component";
 
 @Component({
   selector: 'app-server-settings',
@@ -25,7 +32,10 @@ import {
     SettingsItemComponent,
     GenericFormComponent,
     SettingsSwitchComponent,
-    ProviderSettingsComponent
+    ProviderSettingsComponent,
+    ConnectionSettingsComponent,
+    DownloadClientSettingsComponent,
+    AuthKeysComponent
   ],
   templateUrl: './server-settings.component.html',
   styleUrl: './server-settings.component.scss',
@@ -56,7 +66,7 @@ export class ServerSettingsComponent {
   metadataProvidersFormDefinition = signal<FormDefinition | null>(null);
   metadataProvidersForms = new Map<keyof typeof MetadataProvider, FormGroup>();
 
-  tab: 'general' | 'metadata-provider' | 'providers' = 'general';
+  tab: 'general' | 'metadata-provider' | 'providers' | 'connections' | 'download-clients' | 'auth-keys' = 'general';
   metadataProviderTab: keyof typeof MetadataProvider = 'Hardcover';
 
   constructor() {

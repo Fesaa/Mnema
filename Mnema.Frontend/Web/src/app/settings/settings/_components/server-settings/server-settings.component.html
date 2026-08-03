@@ -10,6 +10,15 @@
     <li class="nav-item" (click)="tab = 'providers'">
       <a class="nav-link" [class.active]="tab === 'providers'">{{t('providers')}}</a>
     </li>
+    <li class="nav-item" (click)="tab = 'connections'">
+      <a class="nav-link" [class.active]="tab === 'connections'">{{t('connections')}}</a>
+    </li>
+    <li class="nav-item" (click)="tab = 'download-clients'">
+      <a class="nav-link" [class.active]="tab === 'download-clients'">{{t('download-clients')}}</a>
+    </li>
+    <li class="nav-item" (click)="tab = 'auth-keys'">
+      <a class="nav-link" [class.active]="tab === 'auth-keys'">{{t('auth-keys')}}</a>
+    </li>
   </ul>
 
   <div class="tab-content mt-2">
@@ -143,6 +152,18 @@
 
     <div class="tab-pane" [class.active]="tab === 'providers'">
       <app-provider-settings />
+    </div>
+
+    <div class="tab-pane" [class.active]="tab === 'connections'">
+      <app-external-connection-settings />
+    </div>
+
+    <div class="tab-pane" [class.active]="tab === 'download-clients'">
+      <app-download-client-settings />
+    </div>
+
+    <div class="tab-pane" [class.active]="tab === 'auth-keys'">
+      <app-auth-keys />
     </div>
 
   </div>

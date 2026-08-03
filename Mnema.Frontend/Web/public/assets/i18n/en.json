@@ -751,6 +751,9 @@
       "general": "General",
       "metadata-provider": "Metadata Providers",
       "providers": "Providers",
+      "connections": "Connections",
+      "download-clients": "Download Clients",
+      "auth-keys": "Auth Keys",
       "sub-refresh": {
         "label": "Download subscriptions at",
         "tooltip": "The hour at which subscriptions should run"

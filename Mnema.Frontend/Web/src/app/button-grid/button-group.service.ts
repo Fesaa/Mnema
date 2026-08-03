@@ -15,10 +15,7 @@ export enum SettingsID {
   Server = "server",
   Preferences = "preferences",
   Pages = "pages",
-  DownloadClients = "download_clients",
-  Connections = "connections",
   Releases = "releases",
-  AuthKeys = "auth-keys",
 }
 
 export interface Button {
@@ -174,32 +171,11 @@ export class ButtonGroupService {
           id: SettingsID.Server
         },
         {
-          title: translate('button-groups.settings.connections'),
-          icon: 'fa fa-signal',
-          navUrl: '/settings',
-          navExtras: { fragment: SettingsID.Connections },
-          id: SettingsID.Connections
-        },
-        {
-          title: translate('button-groups.settings.download-clients'),
-          icon: 'fa-solid fa-cloud-arrow-down',
-          navUrl: '/settings',
-          navExtras: { fragment: SettingsID.DownloadClients },
-          id: SettingsID.DownloadClients
-        },
-        {
           title: translate('button-groups.settings.releases'),
           icon: 'fa fa-box-open',
           navUrl: '/settings',
           navExtras: { fragment: SettingsID.Releases },
           id: SettingsID.Releases
-        },
-        {
-          title: translate('button-groups.settings.auth-keys'),
-          icon: 'fa fa-key',
-          navUrl: '/settings',
-          navExtras: { fragment: SettingsID.AuthKeys },
-          id: SettingsID.AuthKeys
         },
       ],
     };
