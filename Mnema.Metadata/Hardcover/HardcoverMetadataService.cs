@@ -170,9 +170,9 @@ public class HardcoverMetadataService(
 
     public static string ParseChapterTitle(string title, float? position)
     {
-        var chapterTitle = CleanTitle(title);
-        if (position == null) return chapterTitle;
+        if (position == null) return string.Empty;
 
+        var chapterTitle = CleanTitle(title);
         var subtitle = string.Empty;
 
         var volumePositionMarker = $"Vol. {position}";
@@ -185,7 +185,7 @@ public class HardcoverMetadataService(
             subtitle = chapterTitle[subtitleStartIndex..].Trim(':', ' ');
         }
 
-        return string.IsNullOrEmpty(subtitle) ? chapterTitle : subtitle;
+        return subtitle;
     }
 
     private static readonly GraphQlQueryLoader QueryLoader =
