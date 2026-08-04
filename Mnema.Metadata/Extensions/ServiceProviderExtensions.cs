@@ -20,6 +20,7 @@ using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using Serilog;
 using Directory = System.IO.Directory;
+using IConfigurationProvider = Mnema.API.IConfigurationProvider;
 
 namespace Mnema.Metadata.Extensions;
 
@@ -78,6 +79,7 @@ public static class ServiceProviderExtensions
         {
             services.AddScoped<IScheduled, MangabakaScheduler>();
             services.AddKeyedScoped<IMetadataProviderService, MangabakaMetadataService>(MetadataProvider.Mangabaka);
+            services.AddKeyedScoped<IConfigurationProvider, MangaBakaMetadataConfiguration>(MetadataProvider.Mangabaka);
 
             var connectionString = $"Data Source={Path.Join(configuration.PersistentStorage, MangabakaScheduler.DatabaseName)}";
             services.AddDbContextPool<MangabakaDbContext>(options =>

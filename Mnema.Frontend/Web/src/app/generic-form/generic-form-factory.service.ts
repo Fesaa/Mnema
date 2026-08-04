@@ -403,6 +403,7 @@ export class GenericFormFactoryService extends LoggingService {
   private transFormValueForFormType(value: any, control: FormControlDefinition) {
     switch (control.fieldType) {
       case FormType.Switch:
+      case FormType.CheckBox:
         return this.transFormValue(value, ValueType.Boolean);
       case FormType.DropDown:
         return this.transFormValue(value, control.valueType);

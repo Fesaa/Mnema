@@ -1,0 +1,13 @@
+<ng-container *transloco="let t">
+  @if (wikiLink(); as link) {
+    <a class="ms-auto ps-2"
+       [href]="link"
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Open documentation"
+       [ngbTooltip]="t('common.wiki')"
+    >
+      <i class="fas fa-circle-question"></i>
+    </a>
+  }
+</ng-container>

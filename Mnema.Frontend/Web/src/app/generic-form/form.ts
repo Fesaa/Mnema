@@ -19,6 +19,7 @@ export type FormControlDefinition = {
   inline: boolean;
   hideText: boolean;
   wikiLink?: string;
+  hidden: boolean;
 
   defaultValue: any;
   options?: FormControlOption[];
@@ -40,6 +41,7 @@ export enum FormType {
   MultiText = 5,
   Array = 6,
   CommaSeparatedValues = 7,
+  CheckBox = 8,
 }
 
 export enum ValueType {

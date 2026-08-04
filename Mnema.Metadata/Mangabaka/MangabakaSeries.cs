@@ -1,5 +1,6 @@
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Mnema.Models.Entities;
 
 namespace Mnema.Metadata.Mangabaka;
 
@@ -103,6 +104,27 @@ internal class MangabakaTagV2
 
     [JsonPropertyName("content_rating")]
     public MangabakaContentRating ContentRating { get; set; }
+}
+
+internal class MangabakaLinkV2
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+    [JsonPropertyName("url")]
+    public string Url { get; set; } = string.Empty;
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = string.Empty;
+
+    [JsonPropertyName("language")]
+    public string Language { get; set; } = string.Empty;
+
+    [JsonPropertyName("name_display")]
+    public string DisplayName { get; set; } = string.Empty;
 }
 
 [Table("series", Schema = "main")]
@@ -229,6 +251,9 @@ internal class MangabakaSeries
     [Column("links")]
     public List<string>? Links { get; set; }
 
+    [Column("links_v2")]
+    public List<MangabakaLinkV2>? LinksV2 { get; set; }
+
     [Column("publishers")]
     public List<MangabakaPublisher>? Publishers { get; set; }
 
@@ -259,21 +284,28 @@ internal class MangabakaSeries
     [Column("source_manga_updates_id")]
     public string? SourceMangaUpdatesId { get; set; }
 
-    public List<string> CollectLinks()
+    public List<string> CollectLinks(MetadataProviderSettings settings)
     {
-        var links = Links ?? [];
+        var filters = settings.GetKey(MangaBakaMetadataConfiguration.LinkFilters);
 
-        if (SourceAnilistId != null)
+        var links = (LinksV2 ?? [])
+            .Where(link => LinkFilter.IsAllowed(link, filters))
+            .Select(link => link.Url)
+            .ToList();
+
+        if (SourceAnilistId != null && LinkFilter.IsHostnameAllowed("anilist.co", filters))
         {
             links.Add($"https://anilist.co/manga/{SourceAnilistId}");
         }
 
-        if (!string.IsNullOrEmpty(SourceMyAnimeListId))
+        if (!string.IsNullOrEmpty(SourceMyAnimeListId) &&
+            LinkFilter.IsHostnameAllowed("myanimelist.net", filters))
         {
             links.Add($"https://myanimelist.net/manga/{SourceMyAnimeListId}");
         }
 
-        if (!string.IsNullOrEmpty(SourceMangaUpdatesId))
+        if (!string.IsNullOrEmpty(SourceMangaUpdatesId) &&
+            LinkFilter.IsHostnameAllowed("www.mangaupdates.com", filters))
         {
             links.Add($"https://www.mangaupdates.com/series/{SourceMangaUpdatesId}");
         }

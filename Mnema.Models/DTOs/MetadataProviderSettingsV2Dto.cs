@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Enums;
@@ -49,5 +50,6 @@ public class MetadataProviderSettingsV2Dto: IDatabaseEntity
 
     public bool ChapterCoverUrl { get; set; }
 
+    [JsonPropertyName("metadata")]
     public MetadataBag MetadataProviderSpecific { get; set; }
 }

@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Lucene.Net.Analysis;
-using Lucene.Net.Analysis.En;
 using Lucene.Net.Analysis.TokenAttributes;
 using Lucene.Net.Index;
 using Lucene.Net.QueryParsers.Classic;
@@ -14,15 +13,17 @@ using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
+using Mnema.Common.StringFormatter;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.External;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 
 namespace Mnema.Metadata.Mangabaka;
 
-internal partial class MangabakaMetadataService(
+internal class MangabakaMetadataService(
     ILogger<MangabakaMetadataService> logger,
     IUnitOfWork unitOfWork,
     MangabakaDbContext ctx,
@@ -31,8 +32,8 @@ internal partial class MangabakaMetadataService(
     IDistributedCache cache
 ): IMetadataProviderService
 {
-
-    private static readonly HashSet<string> StopWords = [..EnglishAnalyzer.DefaultStopSet];
+    private static readonly IStringFormatter<string> LanguageFormatter = new StringFormatter<string>()
+        .WithVariable("SL", s => s);
 
     private HttpClient HttpClient => httpClientFactory.CreateClient(nameof(MetadataProvider.Mangabaka));
 
@@ -76,9 +77,11 @@ internal partial class MangabakaMetadataService(
                 .GroupBy(s => s.MangaBakaId)
                 .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList());
 
+            var metadataPreferences = await unitOfWork.MetadataProviderSettingsRepository.GetMetadataProviderSettings(MetadataProvider.Mangabaka, cancellationToken);
+
             var sortedResults = seriesData
                 .OrderByDescending(s => results[s.Id])
-                .Select(s => ConvertToSeries(s, monitoredSeriesById))
+                .Select(s => ConvertToSeries(s, monitoredSeriesById, metadataPreferences))
                 .ToList();
 
             return new PagedList<MetadataSearchResult>(sortedResults, totalHits, paginationParams.PageNumber, paginationParams.PageSize);
@@ -158,6 +161,7 @@ internal partial class MangabakaMetadataService(
         if (!int.TryParse(externalId, out var seriesId))
             return null;
 
+        var metadataPreferences = await unitOfWork.MetadataProviderSettingsRepository.GetMetadataProviderSettings(MetadataProvider.Mangabaka, ct);
 
         var series = await ctx.Series.FirstOrDefaultAsync(s => s.Id == seriesId, ct);
 
@@ -166,7 +170,7 @@ internal partial class MangabakaMetadataService(
             .GroupBy(s => s.MangaBakaId)
             .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList()) : [];
 
-        return series == null ? null : ConvertToSeries(series, monitoredSeriesById);
+        return series == null ? null : ConvertToSeries(series, monitoredSeriesById, metadataPreferences);
     }
 
     public async Task<List<Cover>> GetCovers(string externalId, CancellationToken cancellationToken)
@@ -230,7 +234,7 @@ internal partial class MangabakaMetadataService(
         }).WhereNotNull().ToList();
     }
 
-    private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, List<Guid>> monitoredSeriesIds)
+    private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, List<Guid>> monitoredSeriesIds, MetadataProviderSettings settings)
     {
         var publishers = series.Publishers?
             .Where(p => p.Type == MangabakaPublisher.Original || p.Type == MangabakaPublisher.English)
@@ -261,7 +265,7 @@ internal partial class MangabakaMetadataService(
                 .ToList() ?? [],
             AgeRating = FromMangaBakaContentRating(contentRating),
             People = publishers.Concat(writers).Concat(artists).ToList(),
-            Links = series.CollectLinks(),
+            Links = series.CollectLinks(settings),
             CoverUrl = series.CoverX350X3,
             Year = series.StartDate?.Year,
             HighestVolumeNumber = series.Status.HasFinalCount() ? series.FinalVolume.AsFloat() : null,

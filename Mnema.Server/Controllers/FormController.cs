@@ -50,7 +50,7 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.SeriesAgeRating).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.SeriesSummary).ToCamelCase()
                 },
                 new SwitchFieldDefinition
                 {

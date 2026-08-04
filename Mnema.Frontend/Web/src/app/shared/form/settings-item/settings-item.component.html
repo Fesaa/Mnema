@@ -32,17 +32,7 @@
           <ng-container [ngTemplateOutlet]="valueEditRef"></ng-container>
         </div>
 
-        @if (wikiLink(); as link) {
-          <a class="ms-auto ps-2"
-             [href]="link"
-             target="_blank"
-             rel="noopener noreferrer"
-             aria-label="Open documentation"
-             [ngbTooltip]="t('common.wiki')"
-          >
-            <i class="fas fa-circle-question"></i>
-          </a>
-        }
+        <app-wiki-link [wikiLink]="wikiLink()" />
       </div>
     } @else {
       <div class="d-flex align-items-center w-100">
@@ -54,17 +44,7 @@
           </span>
         </div>
 
-        @if (wikiLink(); as link) {
-          <a class="ms-auto ps-2"
-             [href]="link"
-             target="_blank"
-             rel="noopener noreferrer"
-             aria-label="Open documentation"
-             [ngbTooltip]="t('common.wiki')"
-          >
-            <i class="fas fa-circle-question"></i>
-          </a>
-        }
+        <app-wiki-link [wikiLink]="wikiLink()" />
       </div>
     }
 

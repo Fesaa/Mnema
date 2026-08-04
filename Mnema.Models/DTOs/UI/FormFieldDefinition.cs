@@ -91,6 +91,13 @@ public sealed record SwitchFieldDefinition : FormFieldDefinition
     public bool DefaultValue { get; init; }
 }
 
+public sealed record CheckBoxFieldDefinition : FormFieldDefinition
+{
+    public override FormFieldType FieldType => FormFieldType.CheckBox;
+    public override FieldValueType ValueType => FieldValueType.Boolean;
+    public bool DefaultValue { get; init; }
+}
+
 public abstract record SelectFieldDefinition<T> : FormFieldDefinition
 {
     public List<SelectOption<T>> Options { get; init; } = [];

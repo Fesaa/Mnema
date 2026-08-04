@@ -22,6 +22,7 @@ import {NgClass, NgTemplateOutlet} from '@angular/common';
 import {SafeHtmlPipe} from '../../../_pipes/safe-html-pipe';
 import {filter, fromEvent, tap} from 'rxjs';
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
+import {WikiLinkComponent} from "@mnema/shared/_component/wiki-link/wiki-link.component";
 
 @Component({
   selector: 'app-settings-item',
@@ -31,6 +32,7 @@ import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
     NgClass,
     SafeHtmlPipe,
     NgbTooltip,
+    WikiLinkComponent,
 
   ],
   templateUrl: './settings-item.component.html',
