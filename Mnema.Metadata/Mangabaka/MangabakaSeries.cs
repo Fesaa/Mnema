@@ -1,5 +1,6 @@
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Mnema.Common.Extensions;
 using Mnema.Models.Entities;
 
 namespace Mnema.Metadata.Mangabaka;
@@ -56,6 +57,8 @@ public class MangabakaTitle
 
     [JsonPropertyName("is_primary")]
     public bool IsPrimary { get; set;}
+
+    public bool IsNative => Traits.Contains("native", StringComparer.InvariantCultureIgnoreCase);
 }
 
 internal enum MangabakaTagWeight
@@ -284,32 +287,5 @@ internal class MangabakaSeries
     [Column("source_manga_updates_id")]
     public string? SourceMangaUpdatesId { get; set; }
 
-    public List<string> CollectLinks(MetadataProviderSettings settings)
-    {
-        var filters = settings.GetKey(MangaBakaMetadataConfiguration.LinkFilters);
-
-        var links = (LinksV2 ?? [])
-            .Where(link => LinkFilter.IsAllowed(link, filters))
-            .Select(link => link.Url)
-            .ToList();
-
-        if (SourceAnilistId != null && LinkFilter.IsHostnameAllowed("anilist.co", filters))
-        {
-            links.Add($"https://anilist.co/manga/{SourceAnilistId}");
-        }
-
-        if (!string.IsNullOrEmpty(SourceMyAnimeListId) &&
-            LinkFilter.IsHostnameAllowed("myanimelist.net", filters))
-        {
-            links.Add($"https://myanimelist.net/manga/{SourceMyAnimeListId}");
-        }
-
-        if (!string.IsNullOrEmpty(SourceMangaUpdatesId) &&
-            LinkFilter.IsHostnameAllowed("www.mangaupdates.com", filters))
-        {
-            links.Add($"https://www.mangaupdates.com/series/{SourceMangaUpdatesId}");
-        }
-
-        return links;
-    }
+    public string? NativeLanguage => Titles?.FirstOrDefault(t => t.IsNative)?.Language.RemoveSuffix("-latn");
 }

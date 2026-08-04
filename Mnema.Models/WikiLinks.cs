@@ -1,9 +1,15 @@
+using System;
+
 namespace Mnema.Models;
 
 public static class WikiLinks
 {
-    public const string WikiBase = "https://fesaa.github.io/Mnema/";
-    public const string NamingFormatDocumentation = WikiBase + "naming";
-    public const string MetadataProviders = WikiBase + "metadata-providers";
-    public const string MetadataProvidersMangaBaka = MetadataProviders + "#mangabaka";
+
+    private static readonly bool IsDev =
+        Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.Equals("Development") == true;
+
+    public static readonly string WikiBase = IsDev ? "http://localhost:63343/Docs/preview/" : "https://mnema.gitbook.io/mnema/";
+    public static readonly string NamingFormatDocumentation = WikiBase + "naming.html";
+    public static readonly string ServerSettings = WikiBase + "server.html";
+    public static readonly string MetadataProvidersMangaBaka = ServerSettings + "#mangabaka";
 }

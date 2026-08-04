@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.API.Metadata;
 using Mnema.Metadata.Hardcover;
 using Mnema.Metadata.Mangabaka;
 using Mnema.Models.Entities.Content;
@@ -78,7 +79,9 @@ public static class ServiceProviderExtensions
         private IServiceCollection AddMangabakaServices(IConfiguration cfg, ApplicationConfiguration configuration)
         {
             services.AddScoped<IScheduled, MangabakaScheduler>();
-            services.AddKeyedScoped<IMetadataProviderService, MangabakaMetadataService>(MetadataProvider.Mangabaka);
+            services.AddScoped<IMangabakaMetadataService, MangabakaMetadataService>();
+            services.AddKeyedScoped<IMetadataProviderService>(MetadataProvider.Mangabaka,
+                (s, _) => s.GetRequiredService<IMangabakaMetadataService>());
             services.AddKeyedScoped<IConfigurationProvider, MangaBakaMetadataConfiguration>(MetadataProvider.Mangabaka);
 
             var connectionString = $"Data Source={Path.Join(configuration.PersistentStorage, MangabakaScheduler.DatabaseName)}";

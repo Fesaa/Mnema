@@ -1,25 +1,30 @@
 using Mnema.API;
 using Mnema.Common;
+using Mnema.Common.Extensions;
 using Mnema.Models;
 using Mnema.Models.DTOs.UI;
 
 namespace Mnema.Metadata.Mangabaka;
 
-internal enum LinkFilterMode
+public enum LinkFilterMode
 {
     Include,
     Exclude,
 }
 
-internal enum LinkFilterType
+public enum LinkFilterType
 {
     Hostname,
     Language,
 }
 
-internal record LinkFilter(LinkFilterMode Mode, LinkFilterType Type, string Value)
+public record LinkFilter(LinkFilterMode Mode, LinkFilterType Type, string Value)
 {
-    public bool Matches(MangabakaLinkV2 link)
+    public LinkFilterMode Mode { get; set; } = Mode;
+    public LinkFilterType Type { get; set; } = Type;
+    public string Value { get; set; } = Value;
+
+    internal bool Matches(MangabakaLinkV2 link)
     {
         return Type switch
         {
@@ -43,9 +48,11 @@ internal record LinkFilter(LinkFilterMode Mode, LinkFilterType Type, string Valu
 
     internal static bool IsHostnameAllowed(string hostname, IEnumerable<LinkFilter> filters)
     {
+        hostname = hostname.RemovePrefix("www");
+
         var matching = filters
             .Where(f => f.Type == LinkFilterType.Hostname)
-            .Where(f => f.Value == hostname)
+            .Where(f => f.Value.Equals(hostname, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         if (matching.Any(f => f.Mode == LinkFilterMode.Include))
@@ -58,19 +65,19 @@ internal record LinkFilter(LinkFilterMode Mode, LinkFilterType Type, string Valu
 internal class MangaBakaMetadataConfiguration: IConfigurationProvider
 {
     internal static readonly IMetadataKey<List<LinkFilter>> LinkFilters = MetadataKeys.JsonArray<LinkFilter>(nameof(LinkFilters));
-    internal static readonly IMetadataKey<string> SeriesNameLanguagePriority = MetadataKeys.String(nameof(SeriesNameLanguagePriority));
-    internal static readonly IMetadataKey<string> LocalizedSeriesNameLanguagePriority = MetadataKeys.String(nameof(LocalizedSeriesNameLanguagePriority));
+    internal static readonly IMetadataKey<IEnumerable<string>> SeriesNameLanguagePriority = MetadataKeys.Strings(nameof(SeriesNameLanguagePriority));
+    internal static readonly IMetadataKey<IEnumerable<string>> LocalizedSeriesNameLanguagePriority = MetadataKeys.Strings(nameof(LocalizedSeriesNameLanguagePriority));
 
     public Task<List<FormFieldDefinition>> GetFormControls(CancellationToken cancellationToken)
     {
         return Task.FromResult(new List<FormFieldDefinition>
         {
-            new TextFieldDefinition
+            new CommaSeparatedValuesFieldDefinition
             {
                 Key = SeriesNameLanguagePriority.Key,
                 ForceSingle = true,
             },
-            new TextFieldDefinition
+            new CommaSeparatedValuesFieldDefinition
             {
                 Key = LocalizedSeriesNameLanguagePriority.Key,
                 ForceSingle = true,
@@ -94,7 +101,10 @@ internal class MangaBakaMetadataConfiguration: IConfigurationProvider
                     new TextFieldDefinition
                     {
                         Field = nameof(LinkFilter.Value),
-                        Validators = FormValidatorsBuilder.Required,
+                        Validators = new FormValidatorsBuilder()
+                            .WithRequired()
+                            .WithServerSideValidation("Settings/validate-link-filter")
+                            .Build(),
                         HideText = true,
                         ForceEditMode = true,
                     },

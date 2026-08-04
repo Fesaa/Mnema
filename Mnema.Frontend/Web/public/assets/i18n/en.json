@@ -997,11 +997,11 @@
       "chapterTags-tooltip": "Fetch chapter-specific tags",
 
       "SeriesNameLanguagePriority-title": "Series name language",
-      "SeriesNameLanguagePriority-tooltip": "Determines the order in which series names are prioritized. Separate languages with a comma. I.e. ja,ja-Latn,fr. Use {SL} for the series language.",
+      "SeriesNameLanguagePriority-tooltip": "Determines the order in which series names are prioritized. Separate languages with a comma. I.e. ja,ja-Latn,fr. Use {Native} for the series language.",
       "LocalizedSeriesNameLanguagePriority-title": "Localized series name language",
-      "LocalizedSeriesNameLanguagePriority-tooltip": "Determines the order in which localized series names are prioritized. Separate languages with a comma. I.e. ja,ja-Latn,fr. Use {SL} for the series language.",
+      "LocalizedSeriesNameLanguagePriority-tooltip": "Determines the order in which localized series names are prioritized. Separate languages with a comma. I.e. ja,ja-Latn,fr. Use {Native} for the series language.",
       "LinkFilters-title": "Web link filters",
-      "LinkFilters-tooltip": "Filter out weblinks based on hostname or language.",
+      "LinkFilters-tooltip": "Filter out weblinks based on hostname or language. Use {Native} for the series language.",
       "LinkFilters": {
         "Include-title": "Include",
         "Include-tooltip": ""
