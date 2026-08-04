@@ -84,7 +84,7 @@ public static class StringExtensions
 
     extension(string s)
     {
-        public string RemovePrefix(string other, StringComparison comparison = StringComparison.InvariantCultureIgnoreCase)
+        public string RemovePrefix(string other, StringComparison comparison = StringComparison.CurrentCulture)
         {
             if (string.IsNullOrEmpty(other) || s.Length < other.Length) return s;
 
@@ -93,7 +93,7 @@ public static class StringExtensions
             return s[other.Length..];
         }
 
-        public string RemoveSuffix(string other, StringComparison comparison = StringComparison.InvariantCultureIgnoreCase)
+        public string RemoveSuffix(string other, StringComparison comparison = StringComparison.CurrentCulture)
         {
             if (string.IsNullOrEmpty(other) || s.Length < other.Length) return s;
 

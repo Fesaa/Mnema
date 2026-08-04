@@ -287,5 +287,5 @@ internal class MangabakaSeries
     [Column("source_manga_updates_id")]
     public string? SourceMangaUpdatesId { get; set; }
 
-    public string? NativeLanguage => Titles?.FirstOrDefault(t => t.IsNative)?.Language.RemoveSuffix("-latn");
+    public string? NativeLanguage => Titles?.FirstOrDefault(t => t.IsNative)?.Language.RemoveSuffix("-latn", StringComparison.OrdinalIgnoreCase);
 }
