@@ -32,9 +32,6 @@ internal class MangabakaMetadataService(
     IDistributedCache cache
 ): IMetadataProviderService
 {
-    private static readonly IStringFormatter<string> LanguageFormatter = new StringFormatter<string>()
-        .WithVariable("SL", s => s);
-
     private HttpClient HttpClient => httpClientFactory.CreateClient(nameof(MetadataProvider.Mangabaka));
 
     public async Task<PagedList<MetadataSearchResult>> Search(MetadataSearchDto search, PaginationParams paginationParams,
@@ -254,8 +251,8 @@ internal class MangabakaMetadataService(
         {
             Id = series.Id.ToString(),
             MonitoredSeriesId = monitoredSeriesIds.GetValueOrDefault(series.Id.ToString()) ?? [],
-            Title = series.Titles.FindBestTitle(),
-            LocalizedSeries = series.Titles.FindBestNativeTitle(),
+            Title = FindTitleByPriority(series.Titles, settings.GetKey(MangaBakaMetadataConfiguration.SeriesNameLanguagePriority)),
+            LocalizedSeries = FindTitleByPriority(series.Titles, settings.GetKey(MangaBakaMetadataConfiguration.LocalizedSeriesNameLanguagePriority), true),
             Summary = series.Description ?? string.Empty,
             Status = FromMangabakaPublicationStatus(series.Status),
             RefUrl = $"https://mangabaka.org/{series.Id}",
@@ -272,6 +269,46 @@ internal class MangabakaMetadataService(
             HighestChapterNumber = series.Status.HasFinalCount() ? series.FinalChapter.AsFloat() : null,
             Chapters = []
         };
+    }
+
+    private static readonly IStringFormatter<string> NativeLanguagePlaceholder = new StringFormatter<string>()
+        .WithVariable("SL", s => s);
+
+    /// <summary>
+    /// Resolves the title based on a comma-separated language priority list.
+    /// Example setting string: "en, {SL}, ja-latn, fr"
+    /// </summary>
+    public static string FindTitleByPriority(List<MangabakaTitle>? titles, string? prioritySetting, bool isLocalized = false)
+    {
+        if (titles == null) return string.Empty;
+        if (titles.Count == 0) return string.Empty;
+
+        if (string.IsNullOrWhiteSpace(prioritySetting))
+        {
+            return titles.FindBestTitle();
+        }
+
+        var priorities = prioritySetting.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var nativeLanguage = titles.FirstOrDefault(t => t.Traits.Contains("native"))
+            ?.Language.RemoveSuffix("-latn");
+        if (nativeLanguage != null)
+            priorities = priorities.Select(p => NativeLanguagePlaceholder.Apply(p, nativeLanguage)).ToArray();
+
+        foreach (var priority in priorities)
+        {
+            var matchingTitle = titles
+                .Where(t => string.Equals(t.Language, priority, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(t => t.IsPrimary)
+                .FirstOrDefault();
+
+            if (matchingTitle != null)
+            {
+                return matchingTitle.Title;
+            }
+        }
+
+        return isLocalized ? titles.FindBestNativeTitle() : titles.FindBestTitle();
     }
 
     private static PublicationStatus FromMangabakaPublicationStatus(MangabakaPublicationStatus publicationStatus)
