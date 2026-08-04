@@ -67,6 +67,7 @@ internal class MangaBakaMetadataConfiguration: IConfigurationProvider
     internal static readonly IMetadataKey<List<LinkFilter>> LinkFilters = MetadataKeys.JsonArray<LinkFilter>(nameof(LinkFilters));
     internal static readonly IMetadataKey<IEnumerable<string>> SeriesNameLanguagePriority = MetadataKeys.Strings(nameof(SeriesNameLanguagePriority));
     internal static readonly IMetadataKey<IEnumerable<string>> LocalizedSeriesNameLanguagePriority = MetadataKeys.Strings(nameof(LocalizedSeriesNameLanguagePriority));
+    internal static readonly IMetadataKey<MangabakaTagWeight> MinimumTagWeight = MetadataKeys.Enum<MangabakaTagWeight>(nameof(MinimumTagWeight), MangabakaTagWeight.Recurrent);
 
     public Task<List<FormFieldDefinition>> GetFormControls(CancellationToken cancellationToken)
     {
@@ -81,6 +82,10 @@ internal class MangaBakaMetadataConfiguration: IConfigurationProvider
             {
                 Key = LocalizedSeriesNameLanguagePriority.Key,
                 ForceSingle = true,
+            },
+            FormFieldDefinitions.EnumMetadataDropDown(MinimumTagWeight, "minimum-tag-weight-pipe") with
+            {
+                DefaultValue = MangabakaTagWeight.Recurrent
             },
             new ArrayFieldDefinition
             {

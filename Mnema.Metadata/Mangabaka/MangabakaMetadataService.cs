@@ -258,7 +258,7 @@ internal class MangabakaMetadataService(
             Status = FromMangabakaPublicationStatus(series.Status),
             RefUrl = $"https://mangabaka.org/{series.Id}",
             Tags = series.TagsV2?
-                .Where(t => t.Weight < MangabakaTagWeight.Recurrent) // Should we make this a preference?
+                .Where(t => t.Weight < settings.GetKey(MangaBakaMetadataConfiguration.MinimumTagWeight))
                 .Select(t => new Tag(t.Name, t.IsGenre))
                 .ToList() ?? [],
             AgeRating = FromMangaBakaContentRating(contentRating),
