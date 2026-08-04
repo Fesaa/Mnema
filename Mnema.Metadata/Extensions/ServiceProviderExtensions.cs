@@ -14,6 +14,7 @@ using Microsoft.Net.Http.Headers;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.API.Metadata;
+using Mnema.Common;
 using Mnema.Metadata.Hardcover;
 using Mnema.Metadata.Mangabaka;
 using Mnema.Models.Entities.Content;
@@ -53,7 +54,7 @@ public static class ServiceProviderExtensions
             {
                 client.BaseAddress = new Uri(HardcoverGraphQlEndpoint);
                 client.Timeout = TimeSpan.FromSeconds(30);
-                client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
+                client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, BuildInfo.AppIdentifier);
                 client.DefaultRequestHeaders.Add(HeaderNames.Authorization, $"Bearer {hardCoverToken}");
             });
             services.AddKeyedSingleton<IGraphQLClient>(MetadataProvider.Hardcover,(s, _) =>
@@ -121,7 +122,7 @@ public static class ServiceProviderExtensions
             {
                 client.BaseAddress = new Uri("https://api.mangabaka.org");
                 client.Timeout = TimeSpan.FromSeconds(30);
-                client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
+                client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, BuildInfo.AppIdentifier);
             });
 
             return services;
