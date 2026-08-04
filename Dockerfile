@@ -39,13 +39,15 @@ RUN dotnet publish Mnema.Server/Mnema.Server.csproj -c Release -o /Mnema/publish
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libkrb5-3 \
+    && apt-get install -y --no-install-recommends libkrb5-3 libgssapi-krb5-2 libjemalloc2 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /Mnema
 
 COPY --from=npm-stage /Mnema/dist/web/browser/ /Mnema/wwwroot
 COPY --from=dotnet-stage /Mnema/publish /Mnema
+
+ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 
 EXPOSE 8080
 

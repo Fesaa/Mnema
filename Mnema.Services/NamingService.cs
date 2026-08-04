@@ -81,6 +81,9 @@ internal class ChapterMarkerStringResolver(ILogger<NamingService> logger, IParse
         if (parserService.IsDefaultChapter(ctx.Chapter.ChapterMarker))
             return null;
 
+        if (string.IsNullOrEmpty(ctx.Chapter.ChapterMarker))
+            return null;
+
         var number = ctx.Chapter.ChapterNumber();
         if (number is null)
         {
