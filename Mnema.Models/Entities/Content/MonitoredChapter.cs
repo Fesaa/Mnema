@@ -36,6 +36,25 @@ public class MonitoredChapter: IEntityDate, IDatabaseEntity, IHasPositionMarkers
 
     public string VolumeMarker => Volume;
     public string ChapterMarker => Chapter;
+
+    public Chapter AsChapter() => new()
+    {
+        Id = ExternalId,
+        Title = Title,
+        FileName = FilePath ?? string.Empty,
+        Summary = Summary,
+        VolumeMarker = VolumeMarker,
+        ChapterMarker = ChapterMarker,
+        SortOrder = SortOrder,
+        CoverUrl = CoverUrl,
+        CoverFileFormat = null,
+        RefUrl = RefUrl,
+        Isbn = string.Empty,
+        ReleaseDate = ReleaseDate,
+        Tags = [],
+        People = [],
+        TranslationGroups = []
+    };
 }
 
 public enum MonitoredChapterStatus
