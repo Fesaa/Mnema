@@ -1,5 +1,7 @@
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Mnema.Common.Extensions;
+using Mnema.Models.Entities;
 
 namespace Mnema.Metadata.Mangabaka;
 
@@ -55,6 +57,8 @@ public class MangabakaTitle
 
     [JsonPropertyName("is_primary")]
     public bool IsPrimary { get; set;}
+
+    public bool IsNative => Traits.Contains("native", StringComparer.InvariantCultureIgnoreCase);
 }
 
 internal enum MangabakaTagWeight
@@ -103,6 +107,27 @@ internal class MangabakaTagV2
 
     [JsonPropertyName("content_rating")]
     public MangabakaContentRating ContentRating { get; set; }
+}
+
+internal class MangabakaLinkV2
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+    [JsonPropertyName("url")]
+    public string Url { get; set; } = string.Empty;
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = string.Empty;
+
+    [JsonPropertyName("language")]
+    public string Language { get; set; } = string.Empty;
+
+    [JsonPropertyName("name_display")]
+    public string DisplayName { get; set; } = string.Empty;
 }
 
 [Table("series", Schema = "main")]
@@ -229,6 +254,9 @@ internal class MangabakaSeries
     [Column("links")]
     public List<string>? Links { get; set; }
 
+    [Column("links_v2")]
+    public List<MangabakaLinkV2>? LinksV2 { get; set; }
+
     [Column("publishers")]
     public List<MangabakaPublisher>? Publishers { get; set; }
 
@@ -259,25 +287,5 @@ internal class MangabakaSeries
     [Column("source_manga_updates_id")]
     public string? SourceMangaUpdatesId { get; set; }
 
-    public List<string> CollectLinks()
-    {
-        var links = Links ?? [];
-
-        if (SourceAnilistId != null)
-        {
-            links.Add($"https://anilist.co/manga/{SourceAnilistId}");
-        }
-
-        if (!string.IsNullOrEmpty(SourceMyAnimeListId))
-        {
-            links.Add($"https://myanimelist.net/manga/{SourceMyAnimeListId}");
-        }
-
-        if (!string.IsNullOrEmpty(SourceMangaUpdatesId))
-        {
-            links.Add($"https://www.mangaupdates.com/series/{SourceMangaUpdatesId}");
-        }
-
-        return links;
-    }
+    public string? NativeLanguage => Titles?.FirstOrDefault(t => t.IsNative)?.Language.RemoveSuffix("-latn", StringComparison.OrdinalIgnoreCase);
 }

@@ -10,4 +10,5 @@ public enum FormFieldType
     MultiText = 5,
     Array = 6,
     CommaSeparatedValues = 7,
+    CheckBox = 8,
 }

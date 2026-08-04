@@ -22,7 +22,7 @@ public static class MangabakaUtils
             if (titles == null) return string.Empty;
 
             var nativeTitles = titles
-                .Where(t => t.Traits.Contains("native"))
+                .Where(t => t.IsNative)
                 .ToList();
             if (nativeTitles.Count == 1) return nativeTitles[0].Title;
 
@@ -35,7 +35,7 @@ public static class MangabakaUtils
 
             var officialTitle = titles
                 .OrderByDescending(t => t.IsPrimary)
-                .FirstOrDefault(t => t.Traits.Contains("official") && !t.Traits.Contains("native"));
+                .FirstOrDefault(t => t.Traits.Contains("official") && !t.IsNative);
             if (officialTitle != null) return officialTitle.Title;
 
             return titles

@@ -51,4 +51,9 @@ public class MetadataProviderSettings: IDatabaseEntity
     public bool ChapterCoverUrl { get; set; }
 
     public MetadataBag MetadataProviderSpecific { get; set; }
+
+    public T GetKey<T>(IMetadataKey<T> key)
+    {
+        return MetadataProviderSpecific.GetKey(key);
+    }
 }

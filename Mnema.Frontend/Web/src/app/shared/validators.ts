@@ -42,7 +42,10 @@ export class MnemaValidators {
         switchMap(() =>
           httpClient.post<ValidationErrors | null>(
             environment.apiUrl + urlPath,
-            { formValue: control.value }
+            {
+              formValue: control.value,
+              siblingValues: control.parent?.value ?? null,
+            }
           )
         )
       );

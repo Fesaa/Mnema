@@ -4,13 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
+using Mnema.API.Metadata;
 using Mnema.API.Services;
 using Mnema.Common.Exceptions;
+using Mnema.Metadata.Mangabaka;
 using Mnema.Models.DTOs;
+using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
@@ -18,10 +20,11 @@ using Mnema.Server.Middleware;
 
 namespace Mnema.Server.Controllers;
 
-public class ConfigController(
-    ILogger<ConfigController> logger, ISettingsService settingsService,
+public class SettingsController(
+    ILogger<SettingsController> logger, ISettingsService settingsService,
     IUnitOfWork unitOfWork, IPasswordService passwordService,
-    IAuthenticationSchemeProvider authenticationSchemeProvider
+    IAuthenticationSchemeProvider authenticationSchemeProvider,
+    IMangabakaMetadataService mangabakaMetadataService
     ) : BaseApiController
 {
     [HttpGet]
@@ -84,6 +87,23 @@ public class ConfigController(
         await unitOfWork.CommitAsync(HttpContext.RequestAborted);
 
         return Ok();
+    }
+
+    [HttpPost("validate-link-filter")]
+    public ActionResult IsLinkFilterValueValid([FromBody] FormFieldValidationRequestDto<string, LinkFilter> validationRequest)
+    {
+        if (validationRequest.GroupValue?.Type == LinkFilterType.Language)
+        {
+            var errors = mangabakaMetadataService.NativeLanguageFormatter.Validate(validationRequest.FormValue);
+            if (errors.Count == 0) return Ok(null);
+
+            return Ok(new
+            {
+                invalidFormat = errors
+            });
+        }
+
+        return Ok(null);
     }
 
     [Authorize(Roles.ManageSettings)]

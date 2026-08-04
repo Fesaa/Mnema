@@ -17,7 +17,7 @@ export class FormService {
   private cache = new Map<string, FormDefinition>();
 
   getMetadataProviderSettingsForm(metadataProvider: MetadataProvider) {
-    return this.getForm('metadata-provider-settings?metadataProvider' + metadataProvider);
+    return this.getForm('metadata-provider-settings?metadataProvider=' + metadataProvider);
   }
 
   getProviderSettingsForm(provider: Provider) {

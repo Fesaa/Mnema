@@ -22,6 +22,8 @@ import {
   SettingMultiTextFieldComponent
 } from "@mnema/shared/form/setting-multi-text-field/setting-multi-text-field.component";
 import {Breakpoint, UtilityService} from "@mnema/_services/utility.service";
+import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
+import {WikiLinkComponent} from "@mnema/shared/_component/wiki-link/wiki-link.component";
 
 @Component({
   selector: 'app-generic-form',
@@ -33,6 +35,8 @@ import {Breakpoint, UtilityService} from "@mnema/_services/utility.service";
     DefaultValuePipe,
     TypeaheadComponent,
     SettingMultiTextFieldComponent,
+    NgbTooltip,
+    WikiLinkComponent,
   ],
   templateUrl: './generic-form.component.html',
   styleUrl: './generic-form.component.scss',
@@ -55,6 +59,8 @@ export class GenericFormComponent<T> {
   supplyFormGroup = input<FormGroup>();
 
   formGroupTracker = output<FormGroup>();
+
+  protected toShowControl = computed(() => this.formDefinition().controls.filter(c => !c.hidden));
 
   protected formGroupBuilder = computed(() =>
     this.nullable() ? this.nullableFormGroupBuilder : this.nonNullableFormGroupBuilder);
@@ -151,7 +157,7 @@ export class GenericFormComponent<T> {
 
   protected readonly Breakpoint = Breakpoint;
 
-  private readonly collapseThreshold = 10;
+  private readonly collapseThreshold = 5;
   private collapsedArrays = new Set<string>();
   private hasRunInitialCollapse = new Set<string>();
 

@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Lucene.Net.Analysis;
-using Lucene.Net.Analysis.En;
 using Lucene.Net.Analysis.TokenAttributes;
 using Lucene.Net.Index;
 using Lucene.Net.QueryParsers.Classic;
@@ -11,29 +10,29 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.API.Metadata;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
+using Mnema.Common.StringFormatter;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.External;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 
 namespace Mnema.Metadata.Mangabaka;
 
-internal partial class MangabakaMetadataService(
+internal class MangabakaMetadataService(
     ILogger<MangabakaMetadataService> logger,
     IUnitOfWork unitOfWork,
     MangabakaDbContext ctx,
     [FromKeyedServices(key: MetadataProvider.Mangabaka)] SearcherManager searcherManager,
     IHttpClientFactory httpClientFactory,
     IDistributedCache cache
-): IMetadataProviderService
+): IMangabakaMetadataService
 {
-
-    private static readonly HashSet<string> StopWords = [..EnglishAnalyzer.DefaultStopSet];
-
     private HttpClient HttpClient => httpClientFactory.CreateClient(nameof(MetadataProvider.Mangabaka));
 
     public async Task<PagedList<MetadataSearchResult>> Search(MetadataSearchDto search, PaginationParams paginationParams,
@@ -76,9 +75,11 @@ internal partial class MangabakaMetadataService(
                 .GroupBy(s => s.MangaBakaId)
                 .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList());
 
+            var metadataPreferences = await unitOfWork.MetadataProviderSettingsRepository.GetMetadataProviderSettings(MetadataProvider.Mangabaka, cancellationToken);
+
             var sortedResults = seriesData
                 .OrderByDescending(s => results[s.Id])
-                .Select(s => ConvertToSeries(s, monitoredSeriesById))
+                .Select(s => ConvertToSeries(s, monitoredSeriesById, metadataPreferences))
                 .ToList();
 
             return new PagedList<MetadataSearchResult>(sortedResults, totalHits, paginationParams.PageNumber, paginationParams.PageSize);
@@ -158,6 +159,7 @@ internal partial class MangabakaMetadataService(
         if (!int.TryParse(externalId, out var seriesId))
             return null;
 
+        var metadataPreferences = await unitOfWork.MetadataProviderSettingsRepository.GetMetadataProviderSettings(MetadataProvider.Mangabaka, ct);
 
         var series = await ctx.Series.FirstOrDefaultAsync(s => s.Id == seriesId, ct);
 
@@ -166,7 +168,7 @@ internal partial class MangabakaMetadataService(
             .GroupBy(s => s.MangaBakaId)
             .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList()) : [];
 
-        return series == null ? null : ConvertToSeries(series, monitoredSeriesById);
+        return series == null ? null : ConvertToSeries(series, monitoredSeriesById, metadataPreferences);
     }
 
     public async Task<List<Cover>> GetCovers(string externalId, CancellationToken cancellationToken)
@@ -230,7 +232,7 @@ internal partial class MangabakaMetadataService(
         }).WhereNotNull().ToList();
     }
 
-    private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, List<Guid>> monitoredSeriesIds)
+    private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, List<Guid>> monitoredSeriesIds, MetadataProviderSettings settings)
     {
         var publishers = series.Publishers?
             .Where(p => p.Type == MangabakaPublisher.Original || p.Type == MangabakaPublisher.English)
@@ -250,24 +252,99 @@ internal partial class MangabakaMetadataService(
         {
             Id = series.Id.ToString(),
             MonitoredSeriesId = monitoredSeriesIds.GetValueOrDefault(series.Id.ToString()) ?? [],
-            Title = series.Titles.FindBestTitle(),
-            LocalizedSeries = series.Titles.FindBestNativeTitle(),
+            Title = FindTitleByPriority(series, settings.GetKey(MangaBakaMetadataConfiguration.SeriesNameLanguagePriority).ToList()),
+            LocalizedSeries = FindTitleByPriority(series, settings.GetKey(MangaBakaMetadataConfiguration.LocalizedSeriesNameLanguagePriority).ToList(), true),
             Summary = series.Description ?? string.Empty,
             Status = FromMangabakaPublicationStatus(series.Status),
             RefUrl = $"https://mangabaka.org/{series.Id}",
             Tags = series.TagsV2?
-                .Where(t => t.Weight < MangabakaTagWeight.Recurrent) // Should we make this a preference?
+                .Where(t => t.Weight < settings.GetKey(MangaBakaMetadataConfiguration.MinimumTagWeight))
                 .Select(t => new Tag(t.Name, t.IsGenre))
                 .ToList() ?? [],
             AgeRating = FromMangaBakaContentRating(contentRating),
             People = publishers.Concat(writers).Concat(artists).ToList(),
-            Links = series.CollectLinks(),
+            Links = CollectLinks(series, settings),
             CoverUrl = series.CoverX350X3,
             Year = series.StartDate?.Year,
             HighestVolumeNumber = series.Status.HasFinalCount() ? series.FinalVolume.AsFloat() : null,
             HighestChapterNumber = series.Status.HasFinalCount() ? series.FinalChapter.AsFloat() : null,
             Chapters = []
         };
+    }
+
+    public IStringFormatter<string> NativeLanguageFormatter { get; } = NativeLanguagePlaceholder;
+
+    private static readonly StringFormatter<string> NativeLanguagePlaceholder = new StringFormatter<string>()
+        .WithVariable("Native", s => s);
+
+    private static List<string> CollectLinks(MangabakaSeries series, MetadataProviderSettings settings)
+    {
+        var filters = settings.GetKey(MangaBakaMetadataConfiguration.LinkFilters);
+
+        var nativeLanguage = series.NativeLanguage;
+        if (!string.IsNullOrEmpty(nativeLanguage))
+        {
+            foreach (var linkFilter in filters.Where(f => f.Type == LinkFilterType.Language))
+                linkFilter.Value = NativeLanguagePlaceholder.Apply(linkFilter.Value, nativeLanguage);
+        }
+
+        var links = (series.LinksV2 ?? [])
+            .Where(link => LinkFilter.IsAllowed(link, filters))
+            .Select(link => link.Url)
+            .ToList();
+
+        if (series.SourceAnilistId != null && LinkFilter.IsHostnameAllowed("anilist.co", filters))
+        {
+            links.Add($"https://anilist.co/manga/{series.SourceAnilistId}");
+        }
+
+        if (!string.IsNullOrEmpty(series.SourceMyAnimeListId) &&
+            LinkFilter.IsHostnameAllowed("myanimelist.net", filters))
+        {
+            links.Add($"https://myanimelist.net/manga/{series.SourceMyAnimeListId}");
+        }
+
+        if (!string.IsNullOrEmpty(series.SourceMangaUpdatesId) &&
+            LinkFilter.IsHostnameAllowed("www.mangaupdates.com", filters))
+        {
+            links.Add($"https://www.mangaupdates.com/series/{series.SourceMangaUpdatesId}");
+        }
+
+        return links;
+    }
+
+    /// <summary>
+    /// Resolves the title based on a comma-separated language priority list.
+    /// Example setting string: "en, {SL}, ja-latn, fr"
+    /// </summary>
+    public static string FindTitleByPriority(MangabakaSeries series, List<string> priorities, bool isLocalized = false)
+    {
+        var titles = series.Titles;
+        if (titles == null || titles.Count == 0) return string.Empty;
+
+        if (priorities.Count == 0)
+        {
+            return isLocalized ? titles.FindBestNativeTitle() : titles.FindBestTitle();
+        }
+
+        var nativeLanguage = series.NativeLanguage;
+        if (!string.IsNullOrEmpty(nativeLanguage))
+            priorities = priorities.Select(p => NativeLanguagePlaceholder.Apply(p, nativeLanguage)).ToList();
+
+        foreach (var priority in priorities)
+        {
+            var matchingTitle = titles
+                .Where(t => string.Equals(t.Language, priority, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(t => t.IsPrimary)
+                .FirstOrDefault();
+
+            if (matchingTitle != null)
+            {
+                return matchingTitle.Title;
+            }
+        }
+
+        return isLocalized ? titles.FindBestNativeTitle() : titles.FindBestTitle();
     }
 
     private static PublicationStatus FromMangabakaPublicationStatus(MangabakaPublicationStatus publicationStatus)

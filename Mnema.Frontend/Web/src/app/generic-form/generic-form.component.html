@@ -4,7 +4,7 @@
   [class.flex-nowrap]="inline() && utilityService.breakPoint() > Breakpoint.Mobile"
 >
 
-  @for (control of formDefinition().controls; track control.key) {
+  @for (control of toShowControl(); track control.key) {
     @let formControl = getFormControl(control);
     @let formControlName = getFormControlName(control);
     @let forceSingle = control.forceSingle || control.fieldType === FormType.Array;
@@ -12,7 +12,7 @@
     <div
       [formGroup]="getFormGroup(control)"
       [class]="inline()
-    ? 'col-auto pt-4'
+    ? 'col pt-4'
     : ((double() && !forceSingle) ? 'col-md-6' : 'col-md-12') + ' col-sm-12 pt-4'"
     >
       @switch (control.fieldType) {
@@ -31,6 +31,27 @@
             </ng-template>
 
           </app-settings-switch>
+        }
+        @case (FormType.CheckBox) {
+          <app-settings-item
+            [control]="formControl"
+            [title]=""
+            [canEdit]="false"
+            [showEdit]="false"
+            [isEditMode]="true"
+            [wikiLink]="control.wikiLink"
+          >
+
+            <ng-template #edit>
+              <div class="form-check d-flex align-items-center gap-2 mb-0 flex-grow-1">
+                <input class="form-check-input" type="checkbox" [id]="formControlName" [formControlName]="formControlName">
+                <label class="form-check-label text-truncate" [for]="formControlName">
+                  {{ t(control.key + '-title') }}
+                </label>
+              </div>
+            </ng-template>
+
+          </app-settings-item>
         }
         @case (FormType.Text) {
           <app-settings-item
@@ -159,10 +180,14 @@
                 (click)="toggleArrayCollapsed(control)"
               >
                 <i class="fa me-2" [class.fa-chevron-right]="isCollapsed" [class.fa-chevron-down]="!isCollapsed"></i>
-                <div>
-                  <h4 class="section-title mb-0">
-                    {{ t(control.key + '-title') }}
-                    <span class="text-muted">({{ getFormArray(control).length }})</span>
+                <div class="flex-grow-1">
+                  <h4 class="section-title mb-0 d-flex align-items-center">
+                    <span class="flex-grow-1">
+                      {{ t(control.key + '-title') }}
+                      <span class="text-muted">({{ getFormArray(control).length }})</span>
+                    </span>
+
+                    <app-wiki-link [wikiLink]="control.wikiLink" />
                   </h4>
                   <span class="text-muted">{{t(control.key + '-tooltip')}}</span>
                 </div>

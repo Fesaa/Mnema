@@ -84,20 +84,20 @@ public static class StringExtensions
 
     extension(string s)
     {
-        public string RemovePrefix(string other)
+        public string RemovePrefix(string other, StringComparison comparison = StringComparison.CurrentCulture)
         {
             if (string.IsNullOrEmpty(other) || s.Length < other.Length) return s;
 
-            if (!s.StartsWith(other)) return s;
+            if (!s.StartsWith(other, comparison)) return s;
 
             return s[other.Length..];
         }
 
-        public string RemoveSuffix(string other)
+        public string RemoveSuffix(string other, StringComparison comparison = StringComparison.CurrentCulture)
         {
             if (string.IsNullOrEmpty(other) || s.Length < other.Length) return s;
 
-            if (!s.EndsWith(other)) return s;
+            if (!s.EndsWith(other, comparison)) return s;
 
             return s[..^other.Length];
         }

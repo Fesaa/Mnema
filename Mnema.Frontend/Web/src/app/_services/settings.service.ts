@@ -13,7 +13,7 @@ export class SettingsService {
 
   private readonly httpClient = inject(HttpClient);
 
-  baseUrl = environment.apiUrl + 'config/';
+  baseUrl = environment.apiUrl + 'Settings/';
 
   private _config = signal<Config | undefined>(undefined);
   public config = this._config.asReadonly();

@@ -994,7 +994,20 @@
       "chapterPeople-tooltip": "Fetch chapter-specific contributor information (translators, editors, etc.)",
 
       "chapterTags-title": "Chapter Tags",
-      "chapterTags-tooltip": "Fetch chapter-specific tags"
+      "chapterTags-tooltip": "Fetch chapter-specific tags",
+
+      "SeriesNameLanguagePriority-title": "Series name language",
+      "SeriesNameLanguagePriority-tooltip": "Determines the order in which series names are prioritized. Separate languages with a comma. I.e. ja,ja-Latn,fr. Use {Native} for the series language.",
+      "LocalizedSeriesNameLanguagePriority-title": "Localized series name language",
+      "LocalizedSeriesNameLanguagePriority-tooltip": "Determines the order in which localized series names are prioritized. Separate languages with a comma. I.e. ja,ja-Latn,fr. Use {Native} for the series language.",
+      "MinimumTagWeight-title": "Minimum Tag Weight",
+      "MinimumTagWeight-tooltip": "The minimum weight a tag must have to be included. Defaults to Recurrent",
+      "LinkFilters-title": "Web link filters",
+      "LinkFilters-tooltip": "Filter out weblinks based on hostname or language. Use {Native} for the series language.",
+      "LinkFilters": {
+        "Include-title": "Include",
+        "Include-tooltip": ""
+      }
     }
   },
 
@@ -1003,6 +1016,16 @@
     "disabled-tooltip": "Stop this provider from being used for monitored series (Skip search)",
     "block_automatic_downloads-title": "Block Automatic Downloads",
     "block_automatic_downloads-tooltip": "Always require manual confirmation for downloads for this provider"
+  },
+
+  "link-filter-mode-pipe": {
+    "Include": "Include",
+    "Exclude": "Exclude"
+  },
+
+  "link-filter-type-pipe": {
+    "Hostname": "Hostname",
+    "Language": "Language"
   },
 
   "download-client-type-pipe": {
@@ -1373,6 +1396,14 @@
     "DownloadClientEvents": "Download client events",
     "Exception": "Exception",
     "GenericDownloadInfo": "Generic download info"
+  },
+
+  "minimum-tag-weight-pipe": {
+    "Core": "Core",
+    "Defining": "Defining",
+    "Recurrent": "Recurrent",
+    "Incidental": "Incidental",
+    "Unweighted": "Unweighted"
   }
 
 }
