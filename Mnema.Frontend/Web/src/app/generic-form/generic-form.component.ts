@@ -157,7 +157,7 @@ export class GenericFormComponent<T> {
 
   protected readonly Breakpoint = Breakpoint;
 
-  private readonly collapseThreshold = 10;
+  private readonly collapseThreshold = 5;
   private collapsedArrays = new Set<string>();
   private hasRunInitialCollapse = new Set<string>();
 
