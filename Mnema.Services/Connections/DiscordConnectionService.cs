@@ -58,7 +58,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.ImageUrl))
             embed.WithImageUrl(info.ImageUrl);
 
-        return SendMessage(connection, [embed.Build()]);
+        return SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
     }
 
     public override Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
@@ -77,7 +77,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.ImageUrl))
             embed.WithImageUrl(info.ImageUrl);
 
-        return SendMessage(connection, [embed.Build()]);
+        return SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
     }
 
     public override Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
@@ -115,7 +115,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.ImageUrl))
             embed.WithImageUrl(info.ImageUrl);
 
-        return SendMessage(connection, [embed.Build()]);
+        return SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
     }
 
     public override Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
