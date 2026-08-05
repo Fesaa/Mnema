@@ -91,6 +91,7 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
     {
         var providerSettings = await unitOfWork.ProviderSettingsRepository.GetSettingsForProvider(provider, cancellationToken);
 
+        providerSettings.Settings.SetKey(ProviderSettings.Disable, false);
         providerSettings.Settings.SetKey(ProviderSettings.ConsecutiveFailures, 0);
         unitOfWork.ProviderSettingsRepository.Update(providerSettings);
 
