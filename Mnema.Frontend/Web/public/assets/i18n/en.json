@@ -1392,7 +1392,8 @@
     "TooManyForAutomatedDownload": "Too many for automated download",
     "DownloadClientEvents": "Download client events",
     "Exception": "Exception",
-    "GenericDownloadInfo": "Generic download info"
+    "GenericDownloadInfo": "Generic download info",
+    "ProviderSettingEvents": "Provider Settings events"
   },
 
   "minimum-tag-weight-pipe": {

@@ -69,4 +69,9 @@ public enum ConnectionEvent
     /// Generic download information
     /// </summary>
     GenericDownloadInfo = 9,
+
+    /// <summary>
+    /// Provider gets automatically enabled or disabled
+    /// </summary>
+    ProviderSettingEvents = 10,
 }
