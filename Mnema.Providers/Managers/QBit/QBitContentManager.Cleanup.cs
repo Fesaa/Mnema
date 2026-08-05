@@ -65,7 +65,7 @@ internal partial class QBitContentManager
                 await unitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id, ct);
             }
 
-            logger.LogInformation("[{Title}/{Id}] Cleaned up in {Elapsed}ms",  externalDownload.Title, externalDownload.ExternalId, sw.ElapsedMilliseconds);
+            logger.LogInformation("[{Title}/{Id}] Cleaned up in {Elapsed}",  externalDownload.Title, externalDownload.ExternalId, sw.Elapsed.ToReadableString());
         }
 
         _cleanupTorrents.TryRemove(torrentInfo.Hash, out _);

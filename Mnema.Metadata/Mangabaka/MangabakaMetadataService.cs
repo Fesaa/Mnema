@@ -54,8 +54,8 @@ internal class MangabakaMetadataService(
             var hitsToFetch = (paginationParams.PageNumber + 1) * paginationParams.PageSize;
             var topDocs = searcher.Search(query, hitsToFetch);
 
-            logger.LogDebug("Search for {@SearchOptions} - {Query} took {Elapsed}ms, found {Total} items - {@Pagination}",
-                search, query, sw.ElapsedMilliseconds, topDocs.TotalHits, paginationParams);
+            logger.LogDebug("Search for {@SearchOptions} - {Query} took {Elapsed}, found {Total} items - {@Pagination}",
+                search, query, sw.Elapsed.ToReadableString(), topDocs.TotalHits, paginationParams);
 
             var scoreDocs = topDocs.ScoreDocs;
             var totalHits = topDocs.TotalHits;

@@ -150,8 +150,8 @@ internal partial class Publication(
             }
         }
 
-        _logger.LogDebug("[{Title}/{Id}] Cleanup finished in {Elapsed}ms, removed {Deleted} old files, added {New} new files",
-            Title, Id, sw.ElapsedMilliseconds, ToRemovePaths.Count, DownloadedPaths.Count);
+        _logger.LogDebug("[{Title}/{Id}] Cleanup finished in {Elapsed}, removed {Deleted} old files, added {New} new files",
+            Title, Id, sw.Elapsed.ToReadableString(), ToRemovePaths.Count, DownloadedPaths.Count);
 
         _connectionService.CommunicateDownloadFinished(DownloadInfo);
     }

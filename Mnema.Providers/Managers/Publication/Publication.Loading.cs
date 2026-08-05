@@ -83,8 +83,8 @@ internal partial class Publication
         State = Request.StartImmediately ? ContentState.Ready : ContentState.Waiting;
         await _messageService.UpdateContent(DownloadInfo);
 
-        _logger.LogDebug("[{Title}/{Id}] Loading metadata, {ToDownload}/{Total} chapters in {Elapsed}ms",
-            Title, Id, QueuedChapters.Count, Series!.Chapters.Count, sw.ElapsedMilliseconds);
+        _logger.LogDebug("[{Title}/{Id}] Loading metadata, {ToDownload}/{Total} chapters in {Elapsed}",
+            Title, Id, QueuedChapters.Count, Series!.Chapters.Count, sw.Elapsed.ToReadableString());
     }
 
     internal void FilterAlreadyDownloadedContent(CancellationToken cancellationToken)
@@ -106,7 +106,7 @@ internal partial class Publication
             .ToHashSet();
 
         if (sw.Elapsed.Seconds > 5)
-            _logger.LogWarning("[{Title}/{Id}] Checking for existing content took a long time: {Elapsed}s", Title, Id, sw.Elapsed.Seconds);
+            _logger.LogWarning("[{Title}/{Id}] Checking for existing content took a long time: {Elapsed}", Title, Id, sw.Elapsed.ToReadableString());
     }
 
     private bool ShouldDownloadChapter(Chapter chapter, Format format)
@@ -179,7 +179,7 @@ internal partial class Publication
 
         if (string.IsNullOrWhiteSpace(Series.Title)) throw new MnemaException("No series title is set");
 
-        _logger.LogDebug("[{Title}/{Id}] Successfully loaded series information with {Chapters} chapters in {Elapsed}ms",
-            Title, Id, Series.Chapters.Count, sw.ElapsedMilliseconds);
+        _logger.LogDebug("[{Title}/{Id}] Successfully loaded series information with {Chapters} chapters in {Elapsed}",
+            Title, Id, Series.Chapters.Count, sw.Elapsed.ToReadableString());
     }
 }

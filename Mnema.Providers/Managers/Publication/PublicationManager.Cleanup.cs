@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 
 namespace Mnema.Providers.Managers.Publication;
@@ -73,7 +74,7 @@ internal partial class PublicationManager
 
         _fileSystem.Directory.Delete(directory, true);
 
-        _logger.LogDebug("Finished removing files in {Directory} in {Elapsed}ms", directory, sw.ElapsedMilliseconds);
+        _logger.LogDebug("Finished removing files in {Directory} in {Elapsed}", directory, sw.Elapsed.ToReadableString());
 
         return Task.CompletedTask;
     }
