@@ -109,7 +109,7 @@ internal class MangabakaTagV2
     public MangabakaContentRating ContentRating { get; set; }
 }
 
-internal class MangabakaLinkV2
+internal class MangabakaLinkV2: ILinkInfo
 {
     [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;

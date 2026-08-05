@@ -12,6 +12,12 @@ using Mnema.Models.Publication;
 
 namespace Mnema.Providers.Services;
 
+internal class StringLinkInfoImplementation(string url) : ILinkInfo
+{
+    public string Url => url;
+    public string Language => string.Empty;
+}
+
 internal class MetadataService : IMetadataService
 {
     public ComicInfo? CreateComicInfo(Preferences preferences, DownloadRequestDto request, string title, Series? series,
@@ -65,7 +71,7 @@ internal class MetadataService : IMetadataService
             allLinks.Add(chapter.RefUrl);
         }
 
-        ci.Web = string.Join(',', allLinks.Distinct());
+        ci.Web = CollectLinks(preferences, allLinks);
 
         var allTags = series.Tags.Concat(chapter?.Tags ?? []).ToList();
 
@@ -85,6 +91,16 @@ internal class MetadataService : IMetadataService
         ci.Finished = finished;
 
         return ci;
+    }
+
+    internal static string CollectLinks(Preferences preferences, List<string> links)
+    {
+        var filters = preferences.LinkFilters.Where(f => f.Type == LinkFilterType.Hostname).ToList();
+
+        return string.Join(',', links
+            .Select(l => new StringLinkInfoImplementation(l))
+            .Where(l => LinkFilter.IsAllowed(l, filters))
+        );
     }
 
     #region Genre and Tags Mappings (Mostly Kavita copied code)

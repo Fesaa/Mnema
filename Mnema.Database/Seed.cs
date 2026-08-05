@@ -136,6 +136,7 @@ public static class Seed
             PinSubscriptionTitles = true,
             ChapterFileFormat = INamingService.DefaultChapterFormat,
             OneShotFileFormat = INamingService.DefaultOneShotFormat,
+            LinkFilters = [],
         });
 
         await ctx.SaveChangesAsync();

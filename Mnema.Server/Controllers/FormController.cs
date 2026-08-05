@@ -161,6 +161,10 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
             FormFieldDefinitions.EnumDropDown<CoverFallbackMethod>(
                 nameof(Preferences.CoverFallbackMethod).ToCamelCase(),
                 "cover-fallback-method-pipe"),
+            new SwitchFieldDefinition
+            {
+                Field = nameof(Preferences.PinSubscriptionTitles).ToCamelCase(),
+            },
             new CommaSeparatedValuesFieldDefinition
             {
                 Field = nameof(Preferences.BlackListedTags).ToCamelCase(),
@@ -223,9 +227,33 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
                     },
                 ],
             },
-            new SwitchFieldDefinition
+            new ArrayFieldDefinition
             {
-                Field = nameof(Preferences.PinSubscriptionTitles).ToCamelCase(),
+                Field = nameof(Preferences.LinkFilters).ToCamelCase(),
+                Inline = true,
+                WikiLink = WikiLinks.MetadataProvidersMangaBaka,
+                Controls = [
+                    FormFieldDefinitions.EnumDropDown<LinkFilterMode>(nameof(LinkFilter.Mode).ToCamelCase(), "link-filter-mode-pipe") with
+                    {
+                        ForceEditMode = true,
+                        HideText = true,
+                    },
+                    FormFieldDefinitions.EnumDropDown<LinkFilterType>(nameof(LinkFilter.Type).ToCamelCase(), "link-filter-type-pipe") with
+                    {
+                        ForceEditMode = true,
+                        HideText = true,
+                    },
+                    new TextFieldDefinition
+                    {
+                        Field = nameof(LinkFilter.Value).ToCamelCase(),
+                        Validators = new FormValidatorsBuilder()
+                            .WithRequired()
+                            .WithServerSideValidation("Settings/validate-link-filter")
+                            .Build(),
+                        HideText = true,
+                        ForceEditMode = true,
+                    },
+                ]
             },
         ],
     });

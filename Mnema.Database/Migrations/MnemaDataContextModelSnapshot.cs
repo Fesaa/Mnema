@@ -18,7 +18,7 @@ namespace Mnema.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -639,6 +639,22 @@ namespace Mnema.Database.Migrations
 
                             b1
                                 .ToJson("AgeRatingMappings")
+                                .HasColumnType("jsonb");
+                        });
+
+                    b.ComplexCollection(typeof(List<Dictionary<string, object>>), "LinkFilters", "Mnema.Models.Entities.Preferences.LinkFilters#LinkFilter", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<int>("Mode");
+
+                            b1.Property<int>("Type");
+
+                            b1.Property<string>("Value")
+                                .IsRequired();
+
+                            b1
+                                .ToJson("LinkFilters")
                                 .HasColumnType("jsonb");
                         });
 

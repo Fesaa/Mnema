@@ -1,4 +1,6 @@
 using Mnema.Metadata.Mangabaka;
+using Mnema.Models.Entities;
+using Mnema.Models.Enums;
 
 namespace Mnema.Tests.Metadata.MangaBakaTests;
 

@@ -21,7 +21,6 @@ import {TranslocoDirective} from '@jsverse/transloco';
 import {NgClass, NgTemplateOutlet} from '@angular/common';
 import {SafeHtmlPipe} from '../../../_pipes/safe-html-pipe';
 import {filter, fromEvent, tap} from 'rxjs';
-import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {WikiLinkComponent} from "@mnema/shared/_component/wiki-link/wiki-link.component";
 
 @Component({
@@ -31,7 +30,6 @@ import {WikiLinkComponent} from "@mnema/shared/_component/wiki-link/wiki-link.co
     NgTemplateOutlet,
     NgClass,
     SafeHtmlPipe,
-    NgbTooltip,
     WikiLinkComponent,
 
   ],

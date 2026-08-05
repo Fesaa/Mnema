@@ -75,11 +75,12 @@ internal class MangabakaMetadataService(
                 .GroupBy(s => s.MangaBakaId)
                 .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList());
 
+            var preferences = await unitOfWork.SettingsRepository.GetPreferencesAsync(cancellationToken);
             var metadataPreferences = await unitOfWork.MetadataProviderSettingsRepository.GetMetadataProviderSettings(MetadataProvider.Mangabaka, cancellationToken);
 
             var sortedResults = seriesData
                 .OrderByDescending(s => results[s.Id])
-                .Select(s => ConvertToSeries(s, monitoredSeriesById, metadataPreferences))
+                .Select(s => ConvertToSeries(s, monitoredSeriesById, metadataPreferences, preferences))
                 .ToList();
 
             return new PagedList<MetadataSearchResult>(sortedResults, totalHits, paginationParams.PageNumber, paginationParams.PageSize);
@@ -159,6 +160,7 @@ internal class MangabakaMetadataService(
         if (!int.TryParse(externalId, out var seriesId))
             return null;
 
+        var preferences = await unitOfWork.SettingsRepository.GetPreferencesAsync(ct);
         var metadataPreferences = await unitOfWork.MetadataProviderSettingsRepository.GetMetadataProviderSettings(MetadataProvider.Mangabaka, ct);
 
         var series = await ctx.Series.FirstOrDefaultAsync(s => s.Id == seriesId, ct);
@@ -168,7 +170,7 @@ internal class MangabakaMetadataService(
             .GroupBy(s => s.MangaBakaId)
             .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList()) : [];
 
-        return series == null ? null : ConvertToSeries(series, monitoredSeriesById, metadataPreferences);
+        return series == null ? null : ConvertToSeries(series, monitoredSeriesById, metadataPreferences, preferences);
     }
 
     public async Task<List<Cover>> GetCovers(string externalId, CancellationToken cancellationToken)
@@ -232,7 +234,7 @@ internal class MangabakaMetadataService(
         }).WhereNotNull().ToList();
     }
 
-    private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, List<Guid>> monitoredSeriesIds, MetadataProviderSettings settings)
+    private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, List<Guid>> monitoredSeriesIds, MetadataProviderSettings settings, Preferences preferences)
     {
         var publishers = series.Publishers?
             .Where(p => p.Type == MangabakaPublisher.Original || p.Type == MangabakaPublisher.English)
@@ -263,7 +265,7 @@ internal class MangabakaMetadataService(
                 .ToList() ?? [],
             AgeRating = FromMangaBakaContentRating(contentRating),
             People = publishers.Concat(writers).Concat(artists).ToList(),
-            Links = CollectLinks(series, settings),
+            Links = CollectLinks(series, settings, preferences),
             CoverUrl = series.CoverX350X3,
             Year = series.StartDate?.Year,
             HighestVolumeNumber = series.Status.HasFinalCount() ? series.FinalVolume.AsFloat() : null,
@@ -277,9 +279,9 @@ internal class MangabakaMetadataService(
     private static readonly StringFormatter<string> NativeLanguagePlaceholder = new StringFormatter<string>()
         .WithVariable("Native", s => s);
 
-    private static List<string> CollectLinks(MangabakaSeries series, MetadataProviderSettings settings)
+    private static List<string> CollectLinks(MangabakaSeries series, MetadataProviderSettings settings, Preferences preferences)
     {
-        var filters = settings.GetKey(MangaBakaMetadataConfiguration.LinkFilters);
+        var filters = preferences.LinkFilters;
 
         var nativeLanguage = series.NativeLanguage;
         if (!string.IsNullOrEmpty(nativeLanguage))
