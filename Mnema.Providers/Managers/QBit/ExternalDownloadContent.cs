@@ -66,6 +66,8 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
             var totalSize = externalDownload.TotalFileSize.AsHumanReadableSize();
             var downloadedSize = externalDownload.SelectedFileSize.AsHumanReadableSize();
 
+            Func<int, string> toFileSuffix = count => count == 1 ? $"({count} File)" : $"({count} Files)";
+
             return new DownloadInfo
             {
                 Provider = externalDownload.Provider,
@@ -76,8 +78,8 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
                 ImageUrl = Series?.CoverUrl,
                 RefUrl = Series?.RefUrl,
                 ReDownloadSize = string.Empty,
-                Size = $"{downloadedSize} ({externalDownload.Files.Count(f => f.Selected)} Files)",
-                TotalSize = $"{totalSize} ({externalDownload.Files.Count} Files)",
+                Size = $"{downloadedSize} {toFileSuffix(externalDownload.Files.Count(f => f.Selected))}",
+                TotalSize = $"{totalSize} {toFileSuffix(externalDownload.Files.Count)}",
                 Downloading = State == ContentState.Downloading,
                 Progress = Math.Floor(torrentInfo.Progress * 100),
                 Estimated = State == ContentState.Downloading ? torrentInfo.EstimatedTime?.TotalSeconds ?? 0 : 0,
