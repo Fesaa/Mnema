@@ -16,7 +16,7 @@ namespace Mnema.Database.Migrations
                 table: "Preferences",
                 type: "jsonb",
                 nullable: false,
-                defaultValue: "{}");
+                defaultValue: "[]");
 
             migrationBuilder.AlterColumn<List<string>>(
                 name: "Roles",
