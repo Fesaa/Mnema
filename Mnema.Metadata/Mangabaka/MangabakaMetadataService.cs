@@ -317,7 +317,7 @@ internal class MangabakaMetadataService(
 
     /// <summary>
     /// Resolves the title based on a comma-separated language priority list.
-    /// Example setting string: "en, {SL}, ja-latn, fr"
+    /// Example setting string: "en, {Native}, ja-latn, fr"
     /// </summary>
     public static string FindTitleByPriority(MangabakaSeries series, List<string> priorities, bool isLocalized = false)
     {
