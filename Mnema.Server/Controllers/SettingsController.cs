@@ -106,6 +106,24 @@ public class SettingsController(
         return Ok(null);
     }
 
+    [HttpPost("validate-language-format")]
+    public ActionResult IsLanguageFormatValid([FromBody] FormFieldValidationRequestDto<List<string>> validationRequest)
+    {
+        foreach (var language in validationRequest.FormValue)
+        {
+            var errors = mangabakaMetadataService.NativeLanguageFormatter.Validate(language);
+            if (errors.Count > 0)
+            {
+                return Ok(new
+                {
+                    invalidFormat = errors
+                });
+            }
+        }
+
+        return Ok(null);
+    }
+
     [Authorize(Roles.ManageSettings)]
     [HttpPost("sort-metadata-providers")]
     public async Task<ActionResult> SortMetadataProviders([FromBody] MetadataProvider[] metadataProviders)

@@ -21,11 +21,17 @@ internal class MangaBakaMetadataConfiguration: IConfigurationProvider
             {
                 Key = SeriesNameLanguagePriority.Key,
                 ForceSingle = true,
+                Validators = new FormValidatorsBuilder()
+                    .WithServerSideValidation("Settings/validate-language-format")
+                    .Build()
             },
             new CommaSeparatedValuesFieldDefinition
             {
                 Key = LocalizedSeriesNameLanguagePriority.Key,
                 ForceSingle = true,
+                Validators = new FormValidatorsBuilder()
+                    .WithServerSideValidation("Settings/validate-language-format")
+                    .Build()
             },
             FormFieldDefinitions.EnumMetadataDropDown(MinimumTagWeight, "minimum-tag-weight-pipe") with
             {
