@@ -57,7 +57,8 @@ public class MetadataServiceTest
             MetadataFieldMappings = [],
             PinSubscriptionTitles = false,
             ChapterFileFormat = string.Empty,
-            OneShotFileFormat = string.Empty
+            OneShotFileFormat = string.Empty,
+            LinkFilters = [],
         };
     }
 

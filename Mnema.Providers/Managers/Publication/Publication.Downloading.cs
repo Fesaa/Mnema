@@ -128,8 +128,7 @@ internal partial class Publication
 
         await ProcessDownloads();
 
-        _logger.LogInformation("[{Title}/{Id}] Downloaded all chapters in {Elapsed}ms",
-            Title, Id, sw.ElapsedMilliseconds);
+        _logger.LogInformation("[{Title}/{Id}] Downloaded all chapters in {Elapsed}", Title, Id, sw.Elapsed.ToReadableString());
 
         State = ContentState.Cleanup;
         await _messageService.StateUpdate(Id, ContentState.Cleanup);
@@ -206,8 +205,7 @@ internal partial class Publication
                 await pendingIo.WaitAsync(_tokenSource.Token);
         }
 
-        _logger.LogTrace("[{Title}/{Id}] Finished downloading chapter {Chapter} in {Elapsed}ms",
-            Title, Id, chapter.ChapterMarker, sw.ElapsedMilliseconds);
+        _logger.LogTrace("[{Title}/{Id}] Finished downloading chapter {Chapter} in {Elapsed}", Title, Id, chapter.ChapterMarker, sw.Elapsed.ToReadableString());
 
         if (urls.Count < 5) await Task.Delay(TimeSpan.FromSeconds(1));
 

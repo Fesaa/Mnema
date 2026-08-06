@@ -99,12 +99,12 @@ internal class MonitoredSeriesScheduler(
         }
 
         logger.LogInformation(
-            "Found {TotalReleases} releases, {NewReleases} have not been processed. Started {StartedDownloads} downloads, {FailedDownloads} downloads failed. Ran for {Seconds}s",
+            "Found {TotalReleases} releases, {NewReleases} have not been processed. Started {StartedDownloads} downloads, {FailedDownloads} downloads failed. Ran for {Elapsed}",
             releases.Count,
             newReleases.Count,
             result.StartedDownloads,
             result.FailedDownloads,
-            sw.Elapsed.TotalSeconds
+            sw.Elapsed.ToReadableString()
         );
     }
 

@@ -8,6 +8,7 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.API;
 
@@ -23,6 +24,7 @@ public interface IConnectionService
     void CommunicateTooManyForAutomatedDownload(MonitoredSeries info, int amount);
     void CommunicateDownloadClientEvent(DownloadClient client);
     void CommunicateException(string message, Exception ex);
+    void CommunicateProviderEnabledSwitch(Provider provider);
 
     Task UpdateConnection(ConnectionDto connection, CancellationToken cancellationToken);
     Task<FormDefinition> GetForm(ConnectionType type, CancellationToken cancellationToken);
@@ -42,6 +44,7 @@ public interface IConnectionHandlerService
     Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries info, int amount);
     Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client);
     Task CommunicateException(Connection connection, string message, Exception ex);
+    Task CommunicateProviderEnabledSwitch(Connection connection, Provider provider);
 
     /// <summary>
     ///     Returns the form for configuration this specific external service

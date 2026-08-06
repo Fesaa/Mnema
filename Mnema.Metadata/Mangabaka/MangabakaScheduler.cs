@@ -19,6 +19,7 @@ using Lucene.Net.Store;
 using Lucene.Net.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Mnema.Common.Extensions;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Directory = System.IO.Directory;
@@ -132,7 +133,7 @@ public class MangabakaScheduler(
                 File.Delete(tempPath);
         }
 
-        logger.LogDebug("Downloaded database {DbPath} in {Elapsed}s", dbPath, sw.Elapsed.TotalSeconds);
+        logger.LogDebug("Downloaded database {DbPath} in {Elapsed}", dbPath, sw.Elapsed.ToReadableString());
 
         await ReIndexLucene(ct);
     }
@@ -182,7 +183,7 @@ public class MangabakaScheduler(
 
         searchManager.MaybeRefresh();
 
-        logger.LogDebug("Reindexing {Index} in {Elapsed}s", LuceneIndexName, sw.Elapsed.TotalSeconds);
+        logger.LogDebug("Reindexing {Index} in {Elapsed}", LuceneIndexName, sw.Elapsed.ToReadableString());
     }
 
     private static async IAsyncEnumerable<MangabakaIndexerSeries> BatchedSeries(MangabakaDbContext ctx,

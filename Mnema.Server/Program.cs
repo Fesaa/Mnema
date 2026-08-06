@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Mnema.Common;
 using Mnema.Database;
 using Mnema.Database.ManualMigrations;
 using Mnema.Server.Logging;
@@ -30,6 +31,7 @@ public class Program
             .Information()
             .CreateBootstrapLogger();
 
+        PrintStartUp();
         InitNetVips();
 
         try
@@ -60,6 +62,7 @@ public class Program
                 await new MigrateMetadataProviderSettings().RunAsync(services, context, logger);
                 await new SetDefaultNamingPreferences().RunAsync(services, context, logger);
                 await new MetadataFieldMappingsMigration().RunAsync(services, context, logger);
+                await new MigrateLinkPreferences().RunAsync(services, context, logger);
             }
             catch (Exception ex)
             {
@@ -108,5 +111,13 @@ public class Program
     {
         Cache.Max = 0;
         Cache.MaxFiles = 0;
+    }
+
+    private static void PrintStartUp()
+    {
+        Console.WriteLine($"  {BuildInfo.AppName} v{BuildInfo.InformationalVersion}");
+        Console.WriteLine($"  Runtime:  {BuildInfo.FrameworkDescription}");
+        Console.WriteLine($"  OS:       {System.Runtime.InteropServices.RuntimeInformation.OSDescription}");
+        Console.WriteLine();
     }
 }

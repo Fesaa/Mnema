@@ -7,6 +7,7 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 
 namespace Mnema.Services.Connections;
 
@@ -59,6 +60,11 @@ public abstract class AbstractConnectionHandlerService: IConnectionHandlerServic
     }
 
     public virtual Task CommunicateException(Connection connection, string message, Exception ex)
+    {
+        throw new NotImplementedException();
+    }
+
+    public virtual Task CommunicateProviderEnabledSwitch(Connection connection, Provider provider)
     {
         throw new NotImplementedException();
     }

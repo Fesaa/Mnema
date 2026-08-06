@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Mnema.Common;
 using Mnema.Database;
 using Mnema.Models.Internal;
 using Mnema.Server.Middleware;
@@ -20,7 +21,7 @@ public static class AuthenticationExtensions
     {
         services.AddDataProtection()
             .PersistKeysToDbContext<MnemaDataContext>()
-            .SetApplicationName("Mnema");
+            .SetApplicationName(BuildInfo.AppName);
 
         services.AddAuthorizationBuilder()
             .AddPolicy(Roles.Subscriptions)

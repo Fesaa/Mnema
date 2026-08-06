@@ -87,6 +87,7 @@ public class PublicationLoadingTests
                 PinSubscriptionTitles = false,
                 ChapterFileFormat = INamingService.DefaultChapterFormat,
                 OneShotFileFormat = INamingService.DefaultOneShotFormat,
+                LinkFilters = [],
             }
         };
 

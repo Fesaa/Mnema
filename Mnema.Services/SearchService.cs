@@ -73,6 +73,7 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
                     providerSettings.Settings.SetKey(ProviderSettings.Disable, true);
                     errorMessage += $" for {disableAfter} consecutive failures, disabling provider";
 
+                    connectionService.CommunicateProviderEnabledSwitch(provider);
                     BackgroundJob.Schedule(() => EnableProvider(provider, CancellationToken.None), TimeSpan.FromHours(2));
                 }
 
@@ -91,10 +92,13 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
     {
         var providerSettings = await unitOfWork.ProviderSettingsRepository.GetSettingsForProvider(provider, cancellationToken);
 
+        providerSettings.Settings.SetKey(ProviderSettings.Disable, false);
         providerSettings.Settings.SetKey(ProviderSettings.ConsecutiveFailures, 0);
         unitOfWork.ProviderSettingsRepository.Update(providerSettings);
 
         await unitOfWork.CommitAsync(cancellationToken);
+
+        connectionService.CommunicateProviderEnabledSwitch(provider);
     }
 
     private async Task<IList<ContentRelease>> GetRecentlyUpdated(Provider provider, IContentRepository repository,

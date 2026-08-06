@@ -720,6 +720,9 @@
         "excludeFromSource-tooltip": ""
       },
 
+      "linkFilters-title": "Web link filters",
+      "linkFilters-tooltip": "Filter out weblinks based on hostname or language. Use {Native} for the series language.",
+
       "pinSubscriptionTitles-title": "Force monitor series title override",
       "pinSubscriptionTitles-tooltip": "Force monitored series to have a title override, to ensure consistency when the source updates",
 
@@ -1001,13 +1004,7 @@
       "LocalizedSeriesNameLanguagePriority-title": "Localized series name language",
       "LocalizedSeriesNameLanguagePriority-tooltip": "Determines the order in which localized series names are prioritized. Separate languages with a comma. I.e. ja,ja-Latn,fr. Use {Native} for the series language.",
       "MinimumTagWeight-title": "Minimum Tag Weight",
-      "MinimumTagWeight-tooltip": "The minimum weight a tag must have to be included. Defaults to Recurrent",
-      "LinkFilters-title": "Web link filters",
-      "LinkFilters-tooltip": "Filter out weblinks based on hostname or language. Use {Native} for the series language.",
-      "LinkFilters": {
-        "Include-title": "Include",
-        "Include-tooltip": ""
-      }
+      "MinimumTagWeight-tooltip": "The minimum weight a tag must have to be included. Defaults to Recurrent"
     }
   },
 
@@ -1395,7 +1392,8 @@
     "TooManyForAutomatedDownload": "Too many for automated download",
     "DownloadClientEvents": "Download client events",
     "Exception": "Exception",
-    "GenericDownloadInfo": "Generic download info"
+    "GenericDownloadInfo": "Generic download info",
+    "ProviderSettingEvents": "Provider Settings events"
   },
 
   "minimum-tag-weight-pipe": {

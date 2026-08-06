@@ -107,19 +107,19 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
             services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = redisConnectionString;
-                options.InstanceName = "Mnema";
+                options.InstanceName = BuildInfo.AppName;
             });
             services.AddStackExchangeRedisOutputCache(options =>
             {
                 options.Configuration = redisConnectionString;
-                options.InstanceName = "Mnema/output-cache";
+                options.InstanceName = $"{BuildInfo.AppName}/output-cache";
             });
         }
         else
         {
             services.AddSqliteCache(options =>
             {
-                options.CachePath = Path.Join(appConfig.PersistentStorage, "Mnema.Cache.db");
+                options.CachePath = Path.Join(appConfig.PersistentStorage, $"{BuildInfo.AppName}.Cache.db");
             });
         }
 

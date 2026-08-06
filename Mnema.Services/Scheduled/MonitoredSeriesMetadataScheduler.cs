@@ -7,6 +7,7 @@ using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
+using Mnema.Common.Extensions;
 
 namespace Mnema.Services.Scheduled;
 
@@ -80,8 +81,8 @@ internal class MonitoredSeriesMetadataScheduler(
             await Task.Delay(TimeSpan.FromMilliseconds(FetchDelay), ct);
         }
 
-        logger.LogInformation("Refreshed metadata for {Amount} series in {Elapsed}ms",
-            series.Count, sw.Elapsed.TotalMilliseconds - FetchDelay * series.Count);
+        logger.LogInformation("Refreshed metadata for {Amount} series in {Elapsed}",
+            series.Count, TimeSpan.FromMilliseconds(sw.Elapsed.TotalMilliseconds - FetchDelay * series.Count).ToReadableString());
 
         if (failures > 0)
             logger.LogWarning("Failed to refresh metadata for {Amount} series", failures);

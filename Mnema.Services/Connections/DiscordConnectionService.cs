@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Webhook;
 using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 
 namespace Mnema.Services.Connections;
@@ -19,7 +21,8 @@ namespace Mnema.Services.Connections;
 internal class DiscordConnectionService(
     ILogger<DiscordConnectionService> logger,
     HttpClient httpClient,
-    ApplicationConfiguration applicationConfiguration
+    ApplicationConfiguration applicationConfiguration,
+    IUnitOfWork unitOfWork
 ) : AbstractConnectionHandlerService
 {
     private static readonly IMetadataKey<string?> WebhookKey = MetadataKeys.OptionalString("webhook");
@@ -40,6 +43,7 @@ internal class DiscordConnectionService(
         ConnectionEvent.DownloadClientEvents,
         ConnectionEvent.Exception,
         ConnectionEvent.GenericDownloadInfo,
+        ConnectionEvent.ProviderSettingEvents,
     ];
 
     public override Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
@@ -47,7 +51,7 @@ internal class DiscordConnectionService(
         var embed = new EmbedBuilder()
             .WithTitle("Download Started")
             .WithDescription($"**{info.Name}**\n\n{info.Description}".Limit(MaxDescriptionLength))
-            .WithColor(0x3498db) // Blue
+            .WithColor(Color.Blue) // Blue
             .WithTimestamp(DateTime.UtcNow)
             .WithFields(BuildDefaultEmbedFields(info))
             .WithFooter(new EmbedFooterBuilder().WithText($"ID: {info.Id}"));
@@ -58,7 +62,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.ImageUrl))
             embed.WithImageUrl(info.ImageUrl);
 
-        return SendMessage(connection, [embed.Build()]);
+        return SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
     }
 
     public override Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
@@ -66,7 +70,7 @@ internal class DiscordConnectionService(
         var embed = new EmbedBuilder()
             .WithTitle("Download Complete")
             .WithDescription($"**{info.Name}**\n\n{info.Description}".Limit(MaxDescriptionLength))
-            .WithColor(0x2ecc71) // Green
+            .WithColor(Color.Green)
             .WithTimestamp(DateTime.UtcNow)
             .WithFields(BuildDefaultEmbedFields(info))
             .WithFooter(new EmbedFooterBuilder().WithText($"ID: {info.Id}"));
@@ -77,7 +81,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.ImageUrl))
             embed.WithImageUrl(info.ImageUrl);
 
-        return SendMessage(connection, [embed.Build()]);
+        return SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
     }
 
     public override Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
@@ -85,7 +89,7 @@ internal class DiscordConnectionService(
         var embed = new EmbedBuilder()
             .WithTitle("Series fully downloaded")
             .WithDescription($"**{info.Name}**\n\n{info.Description}".Limit(MaxDescriptionLength))
-            .WithColor(0xf1c40f) // Yellow
+            .WithColor(Color.Gold)
             .WithTimestamp(DateTime.UtcNow)
             .WithFields(BuildDefaultEmbedFields(info))
             .WithFooter(new EmbedFooterBuilder().WithText($"ID: {info.Id}"));
@@ -104,7 +108,7 @@ internal class DiscordConnectionService(
         var embed = new EmbedBuilder()
             .WithTitle(title)
             .WithDescription(description.Limit(MaxDescriptionLength))
-            .WithColor(0x3498db)
+            .WithColor(Color.Blue)
             .WithTimestamp(DateTime.UtcNow)
             .WithFields(BuildDefaultEmbedFields(info))
             .WithFooter(new EmbedFooterBuilder().WithText($"ID: {info.Id}"));
@@ -115,7 +119,7 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.ImageUrl))
             embed.WithImageUrl(info.ImageUrl);
 
-        return SendMessage(connection, [embed.Build()]);
+        return SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
     }
 
     public override Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
@@ -123,7 +127,7 @@ internal class DiscordConnectionService(
         var embed = new EmbedBuilder()
             .WithTitle("Series monitored")
             .WithDescription($"**{series.Title}**\n\n{series.Summary}".Limit(MaxDescriptionLength))
-            .WithColor(0x1F8B4C)
+            .WithColor(Color.DarkGreen)
             .WithTimestamp(DateTime.UtcNow)
             .WithFooter(new EmbedFooterBuilder().WithText($"ID: {series.Id}"));
 
@@ -141,7 +145,7 @@ internal class DiscordConnectionService(
         var embed = new EmbedBuilder()
             .WithTitle("Series unmonitored")
             .WithDescription($"**{series.Title}**\n\n{series.Summary}".Limit(MaxDescriptionLength))
-            .WithColor(0xED4245)
+            .WithColor(Color.Red)
             .WithTimestamp(DateTime.UtcNow)
             .WithFooter(new EmbedFooterBuilder().WithText($"ID: {series.Id}"));
 
@@ -160,7 +164,7 @@ internal class DiscordConnectionService(
             .WithTitle("Manual intervention required")
             .WithDescription(
                 $"Cannot automatically start download for {series.Title} as it wants to download {amount} chapters at once.")
-            .WithColor(0xE67E22)
+            .WithColor(Color.Orange)
             .WithTimestamp(DateTime.UtcNow)
             .WithFooter(new EmbedFooterBuilder().WithText($"ID: {series.Id}"));
 
@@ -183,7 +187,7 @@ internal class DiscordConnectionService(
 
     public override Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
     {
-        var colour = client.IsFailed ? (uint)0xe74c3c : 0x2ecc71;
+        var colour = client.IsFailed ? Color.Red : Color.Green;
 
         var embed = new EmbedBuilder()
             .WithTitle(client.IsFailed ? "Download client locked" : "Download client unlocked")
@@ -261,7 +265,7 @@ internal class DiscordConnectionService(
         var embed = new EmbedBuilder()
             .WithTitle("Download Failed")
             .WithDescription($"**{info.Name}**\n\n{ex.StackTrace}".Limit(MaxDescriptionLength))
-            .WithColor(0xe74c3c) // Red
+            .WithColor(Color.Red)
             .WithTimestamp(DateTime.UtcNow)
             .WithFields(
                 new EmbedFieldBuilder()
@@ -288,7 +292,7 @@ internal class DiscordConnectionService(
         var embed = new EmbedBuilder()
             .WithTitle("An exception occurred!")
             .WithDescription($"**{message}**\n\n{ex.StackTrace}".Limit(MaxDescriptionLength))
-            .WithColor(0xe74c3c) // Red
+            .WithColor(Color.Red)
             .WithTimestamp(DateTime.UtcNow)
             .WithFields(
                 new EmbedFieldBuilder()
@@ -306,6 +310,37 @@ internal class DiscordConnectionService(
             .Build();
 
         return SendMessage(connection, [embed]);
+    }
+
+    public override async Task CommunicateProviderEnabledSwitch(Connection connection, Provider provider)
+    {
+        var providerMetadata = await unitOfWork.ProviderSettingsRepository.GetSettingsForProvider(provider, CancellationToken.None);
+        var modifier = providerMetadata.IsEnabled ? "Enabled" : "Disabled";
+
+        var embed = new EmbedBuilder()
+            .WithTitle($"{provider.ToString()} {modifier}")
+            .WithColor(providerMetadata.IsEnabled ? Color.Green : Color.Red)
+            .WithTimestamp(DateTime.UtcNow);
+
+        if (providerMetadata.IsEnabled)
+        {
+            embed =embed.WithDescription($"Provider {provider.ToString()} is now enabled");
+        }
+        else
+        {
+            embed = embed.WithDescription($"Provider {provider.ToString()} is now disabled")
+                .WithFields(new EmbedFieldBuilder()
+                    .WithIsInline(true)
+                    .WithValue("Until")
+                    .WithValue(DateTime.UtcNow.AddHours(2).ToString("dd/MM/yyyy HH:mm:ss")));
+        }
+
+        await SendMessage(connection, [embed.Build()], new ComponentBuilder()
+            .WithButton(new ButtonBuilder()
+                .WithLabel("Open Settings")
+                .WithUrl($"{applicationConfiguration.Host}/settings#server")
+                .WithStyle(ButtonStyle.Link))
+            .Build());
     }
 
     public override Task<List<FormFieldDefinition>> GetConfigurationFormControls(CancellationToken cancellationToken)

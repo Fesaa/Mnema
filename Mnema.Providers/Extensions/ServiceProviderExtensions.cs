@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Common.Http;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
@@ -88,7 +89,7 @@ public static class ServiceProviderExtensions
             {
                 client.BaseAddress = new Uri("https://www.webtoons.com");
                 client.Timeout = TimeSpan.FromSeconds(30);
-                client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Mnema");
+                client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, BuildInfo.AppIdentifier);
                 client.DefaultRequestHeaders.Add(HeaderNames.Referer, "https://www.webtoons.com/");
             });
 
@@ -168,7 +169,7 @@ public static class ServiceProviderExtensions
         {
             client.BaseAddress = new Uri(uri);
             client.Timeout = TimeSpan.FromSeconds(30);
-            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, userAgent ?? "Mnema");
+            client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, userAgent ?? BuildInfo.AppIdentifier);
         };
     }
 }

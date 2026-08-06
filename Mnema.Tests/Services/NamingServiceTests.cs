@@ -30,7 +30,8 @@ public class NamingServiceTests
         TagMappings = [],
         PinSubscriptionTitles = false,
         ChapterFileFormat = string.Empty,
-        OneShotFileFormat = string.Empty
+        OneShotFileFormat = string.Empty,
+        LinkFilters = [],
     };
 
     [Theory]

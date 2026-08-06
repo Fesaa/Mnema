@@ -38,8 +38,11 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          build-args: |
+            SOURCE_REVISION_ID=${{ github.sha }}
           file: ./Dockerfile
           push: true
           tags: |
             ghcr.io/fesaa/mnema:latest
             ghcr.io/fesaa/mnema:${{ steps.get-version.outputs.assembly-version }}
+          labels: ${{ steps.meta.outputs.labels }}

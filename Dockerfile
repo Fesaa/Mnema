@@ -34,7 +34,9 @@ COPY Mnema.Providers/. Mnema.Providers/
 COPY Mnema.Services/. Mnema.Services/
 COPY Mnema.Metadata/. Mnema.Metadata/
 
-RUN dotnet publish Mnema.Server/Mnema.Server.csproj -c Release -o /Mnema/publish
+RUN dotnet publish Mnema.Server/Mnema.Server.csproj -c Release -o /Mnema/publish \
+                 /p:SourceRevisionId=$SOURCE_REVISION_ID \
+                 /p:IncludeSourceRevisionInInformationalVersion=true
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 
