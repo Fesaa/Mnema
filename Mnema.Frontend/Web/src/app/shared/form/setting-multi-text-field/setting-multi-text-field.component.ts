@@ -1,5 +1,11 @@
 import {ChangeDetectionStrategy, Component, computed, effect, forwardRef, input, signal} from '@angular/core';
-import {ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule} from "@angular/forms";
+import {
+  AbstractControl,
+  ControlValueAccessor,
+  FormsModule,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule
+} from "@angular/forms";
 import {DefaultValuePipe} from "@mnema/_pipes/default-value.pipe";
 import {TagBadgeComponent} from "@mnema/shared/_component/tag-badge/tag-badge.component";
 import {SettingsItemComponent} from "@mnema/shared/form/settings-item/settings-item.component";
@@ -32,6 +38,7 @@ import {SettingsItemComponent} from "@mnema/shared/form/settings-item/settings-i
   ]
 })
 export class SettingMultiTextFieldComponent<T> implements ControlValueAccessor {
+  control = input<AbstractControl>();
   /**
    * Convertor, required if your type is not a string
    * @default trimmed string value
