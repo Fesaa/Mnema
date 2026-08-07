@@ -1,4 +1,6 @@
+using Mnema.Common;
 using Mnema.Metadata.Hardcover;
+using Mnema.Models.Entities;
 
 namespace Mnema.Tests.Metadata.Hardcover;
 
@@ -10,7 +12,10 @@ public class HardcoverParsingTests
     [InlineData("Buying a Classmate Once a Week, Vol. 1 (Light Novel): Our Time Together and the Five-Thousand-Yen Excuse", 1.0f, "Our Time Together and the Five-Thousand-Yen Excuse")]
     public void TestChapterSubtitleParsing(string chapterTitle, float? position, string expectedTitle)
     {
-        Assert.Equal(expectedTitle, HardcoverMetadataService.ParseChapterTitle(chapterTitle, position));
+        Assert.Equal(expectedTitle, HardcoverMetadataService.ParseChapterTitle(new MetadataProviderSettings()
+        {
+            MetadataProviderSpecific = new MetadataBag()
+        }, chapterTitle, position));
     }
 
 }

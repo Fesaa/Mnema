@@ -826,7 +826,9 @@
           "Dest-tooltip": "Directory mapping in Kavita to replace with"
         },
         "followedEvents-title": "Followed Events",
-        "followedEvents-tooltip": "Events to act on"
+        "followedEvents-tooltip": "Events to act on",
+        "AbortOnNoSeriesMatch-title": "Abort on no series match",
+        "AbortOnNoSeriesMatch-tooltip": "Should a library scan be started if Kavita can't map to a series"
       },
       "Native": {
         "name-title": "Name",

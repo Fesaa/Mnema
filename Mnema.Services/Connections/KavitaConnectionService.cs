@@ -40,6 +40,7 @@ internal class KavitaConnectionService(
     private static readonly IMetadataKey<string> ApiKey = MetadataKeys.String("api-key");
     private static readonly IMetadataKey<string> UrlKey = MetadataKeys.String("url");
     private static readonly IMetadataKey<List<BaseDirMapping>> BaseDirMappings = MetadataKeys.JsonArray<BaseDirMapping>("basedir-mappings");
+    private static readonly IMetadataKey<bool> AbortOnNoSeriesMatch = MetadataKeys.Bool(nameof(AbortOnNoSeriesMatch), true);
 
     public override List<ConnectionEvent> SupportedEvents { get; } = [ConnectionEvent.DownloadFinished];
 
@@ -71,11 +72,13 @@ internal class KavitaConnectionService(
             return;
         }
 
+        logger.LogDebug("Sending ScanFolder request for {BaseDir} for connection {ConnectId}", baseDir, connection.Id);
+
         var dto = new ScanFolderDto
         {
             ApiKey = authKey,
             FolderPath = baseDir,
-            AbortOnNoSeriesMatch = true
+            AbortOnNoSeriesMatch = connection.Metadata.GetKey(AbortOnNoSeriesMatch)
         };
 
         var json = JsonSerializer.Serialize(dto);
@@ -100,6 +103,10 @@ internal class KavitaConnectionService(
                     .WithMinLength(8)
                     .WithMaxLength(32)
                     .Build()
+            },
+            new SwitchFieldDefinition
+            {
+                Key = AbortOnNoSeriesMatch.Key,
             },
             new TextFieldDefinition
             {
