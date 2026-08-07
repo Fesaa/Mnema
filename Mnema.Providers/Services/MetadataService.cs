@@ -100,6 +100,7 @@ internal class MetadataService : IMetadataService
         return string.Join(',', links
             .Select(l => new StringLinkInfoImplementation(l))
             .Where(l => LinkFilter.IsAllowed(l, filters))
+            .Select(l => l.Url)
         );
     }
 
