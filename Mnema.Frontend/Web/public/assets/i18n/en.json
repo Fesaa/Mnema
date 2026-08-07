@@ -1004,7 +1004,10 @@
       "LocalizedSeriesNameLanguagePriority-title": "Localized series name language",
       "LocalizedSeriesNameLanguagePriority-tooltip": "Determines the order in which localized series names are prioritized. Separate languages with a comma. I.e. ja,ja-Latn,fr. Use {Native} for the series language.",
       "MinimumTagWeight-title": "Minimum Tag Weight",
-      "MinimumTagWeight-tooltip": "The minimum weight a tag must have to be included. Defaults to Recurrent"
+      "MinimumTagWeight-tooltip": "The minimum weight a tag must have to be included. Defaults to Recurrent",
+
+      "OnlyUseSubtitleAsChapterTitle-title": "Only use subtitle as chapter title",
+      "OnlyUseSubtitleAsChapterTitle-tooltip": "If enabled, will not fallback to book title as chapter title (I.e; SeriesName Vol. X)"
     }
   },
 

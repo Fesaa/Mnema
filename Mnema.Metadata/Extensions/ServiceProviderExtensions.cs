@@ -40,6 +40,8 @@ public static class ServiceProviderExtensions
 
         private IServiceCollection AddHardcoverServices(IConfiguration cfg, ApplicationConfiguration configuration)
         {
+            services.AddKeyedScoped<IConfigurationProvider, HardcoverMetadataConfiguration>(MetadataProvider.Hardcover);
+
             var hardCoverToken = cfg.GetSection("Authentication").GetValue<string>("Hardcover");
             if (string.IsNullOrEmpty(hardCoverToken))
             {

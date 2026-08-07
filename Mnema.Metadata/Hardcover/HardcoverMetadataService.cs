@@ -9,6 +9,7 @@ using Mnema.Common.Exceptions;
 using Mnema.Common.Helpers;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.External;
+using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Publication;
@@ -53,8 +54,10 @@ public class HardcoverMetadataService(
             .GroupBy(s => s.HardcoverId)
             .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList());
 
+        var settings = await unitOfWork.MetadataProviderSettingsRepository.GetMetadataProviderSettings(MetadataProvider.Hardcover, cancellationToken);
+
         var series = seriesResponse.Data.Series
-            .Select(s => ConvertFromHardcoverSeries(s, monitoredSeriesById));
+            .Select(s => ConvertFromHardcoverSeries(settings, s, monitoredSeriesById));
 
         return new PagedList<MetadataSearchResult>(series,response.Data.Series.Results.Found, response.Data.Series.Page - 1, response.Data.Series.PageSize);
     }
@@ -78,7 +81,9 @@ public class HardcoverMetadataService(
             .GroupBy(s => s.HardcoverId)
             .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList());
 
-        return ConvertFromHardcoverSeries(series, monitoredSeriesById);
+        var settings = await unitOfWork.MetadataProviderSettingsRepository.GetMetadataProviderSettings(MetadataProvider.Hardcover, cancellationToken);
+
+        return ConvertFromHardcoverSeries(settings, series, monitoredSeriesById);
     }
 
     public Task<List<Cover>> GetCovers(string externalId, CancellationToken cancellationToken)
@@ -86,7 +91,7 @@ public class HardcoverMetadataService(
         return Task.FromResult<List<Cover>>([]);
     }
 
-    private static MetadataSearchResult ConvertFromHardcoverSeries(HardcoverSeries series,
+    private static MetadataSearchResult ConvertFromHardcoverSeries(MetadataProviderSettings settings, HardcoverSeries series,
         Dictionary<string, List<Guid>> monitoredSeriesIds)
     {
         var realBooks = series.BookSeries.GroupBy(b => b.Position)
@@ -113,7 +118,7 @@ public class HardcoverMetadataService(
             return new Chapter
             {
                 Id = book.Id.ToString(),
-                Title = ParseChapterTitle(book.Title, b.Position ?? 0),
+                Title = ParseChapterTitle(settings, book.Title, b.Position ?? 0),
                 Summary = book.Description ?? string.Empty,
                 CoverUrl = book.Image?.Url,
                 RefUrl = $"{HardcoverBaseUrl}/id/book/{book.Id}",
@@ -168,7 +173,7 @@ public class HardcoverMetadataService(
             .Trim();
     }
 
-    public static string ParseChapterTitle(string title, float? position)
+    public static string ParseChapterTitle(MetadataProviderSettings settings, string title, float? position)
     {
         if (position == null) return string.Empty;
 
@@ -185,7 +190,12 @@ public class HardcoverMetadataService(
             subtitle = chapterTitle[subtitleStartIndex..].Trim(':', ' ');
         }
 
-        return subtitle;
+        if (settings.GetKey(HardcoverMetadataConfiguration.OnlyUseSubtitleAsChapterTitle))
+        {
+            return subtitle;
+        }
+
+        return string.IsNullOrEmpty(subtitle) ? chapterTitle : subtitle;
     }
 
     private static readonly GraphQlQueryLoader QueryLoader =
