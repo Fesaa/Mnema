@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using Mnema.API.Content;
 using Mnema.Common;
@@ -66,8 +67,6 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
             var totalSize = externalDownload.TotalFileSize.AsHumanReadableSize();
             var downloadedSize = externalDownload.SelectedFileSize.AsHumanReadableSize();
 
-            Func<int, string> toFileSuffix = count => count == 1 ? $"({count} File)" : $"({count} Files)";
-
             return new DownloadInfo
             {
                 Provider = externalDownload.Provider,
@@ -78,16 +77,18 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
                 ImageUrl = Series?.CoverUrl,
                 RefUrl = Series?.RefUrl,
                 ReDownloadSize = string.Empty,
-                Size = $"{downloadedSize} {toFileSuffix(externalDownload.Files.Count(f => f.Selected))}",
-                TotalSize = $"{totalSize} {toFileSuffix(externalDownload.Files.Count)}",
+                Size = $"{downloadedSize} {ToFileSuffix(externalDownload.Files.Count(f => f.Selected))}",
+                TotalSize = $"{totalSize} {ToFileSuffix(externalDownload.Files.Count)}",
                 Downloading = State == ContentState.Downloading,
                 Progress = Math.Floor(torrentInfo.Progress * 100),
                 Estimated = State == ContentState.Downloading ? torrentInfo.EstimatedTime?.TotalSeconds ?? 0 : 0,
                 SpeedType = SpeedType.Bytes,
                 Speed = torrentInfo.DownloadSpeed,
-                DownloadDir = externalDownload.BaseDir,
+                DownloadDir = Series != null ? Path.Join(Request.BaseDir, Title) : Request.BaseDir,
                 MonitoredSeriesId = externalDownload.GetKey(RequestConstants.MonitoredSeriesId)
             };
+
+            string ToFileSuffix(int count) => count == 1 ? $"({count} File)" : $"({count} Files)";
         }
     }
 }
