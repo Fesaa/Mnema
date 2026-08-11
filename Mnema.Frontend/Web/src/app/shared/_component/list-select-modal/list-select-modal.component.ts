@@ -51,7 +51,8 @@ export class ListSelectModalComponent<T> {
   description = model<string | null>(null);
   selectedText = model(translate('common.selected'));
   invalidSelectionWarning = model<string | null>(null);
-  hiddenTranslationKey = model('list-select-modal.hidden')
+  hiddenTranslationKey = model('list-select-modal.hidden');
+  disableHover = model(false);
 
   inputItems = model.required<ListSelectionItem<T>[]>();
   preSelectedItems = model<T[]>([]);

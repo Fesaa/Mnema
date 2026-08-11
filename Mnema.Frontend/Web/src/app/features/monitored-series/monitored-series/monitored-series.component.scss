@@ -240,3 +240,23 @@
   height: 16px;
   width: 16px;
 }
+
+.search-preview-wrap {
+  position: relative;
+  width: 100%;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+  padding: 5px;
+
+  &.is-selected {
+    border-color: var(--secondary-color);
+    background-color: color-mix(in srgb, var(--secondary-color) 10%, transparent);
+  }
+
+  &:hover:not(.is-selected) {
+    border-color: var(--primary-color-lighter,);
+    background-color: color-mix(in srgb, var(--primary-color-lighter) 10%, transparent);
+  }
+
+}

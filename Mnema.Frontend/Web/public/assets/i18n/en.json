@@ -39,7 +39,8 @@
     "selected": "Selected",
     "clear": "Clear",
     "filter": "Filter",
-    "wiki": "Visit the Wiki for more information"
+    "wiki": "Visit the Wiki for more information",
+    "source": "Source"
   },
 
   "button-groups": {

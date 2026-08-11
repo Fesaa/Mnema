@@ -192,3 +192,28 @@
     </div>
   }
 </div>
+
+<ng-template #searchInfoPreview let-item let-selectedItems="selectedItems">
+  <div class="d-flex gap-2 align-items-center" *transloco="let t;">
+    <img [src]="item.value.coverUrl" [alt]="item.label" style="width: 40px; height: 64px;">
+
+    <div class="d-flex flex-column gap-1">
+      <div class="fw-bold">
+        {{item.label | sentenceCase}}
+      </div>
+      <span class="text-muted">
+        {{item.value.summary}}
+      </span>
+      @if (item.url) {
+        <a [href]="item.url" rel="noreferrer nofollow noopener" target="_blank">
+          <i class="fa fa-external-link-alt"></i>
+          <span class="ms-2">{{t('common.source')}}</span>
+        </a>
+      }
+    </div>
+
+    @if (selectedItems && selectedItems.includes(item)) {
+      <span class="pill p-1 ms-1">{{t('common.selected')}}</span>
+    }
+  </div>
+</ng-template>
