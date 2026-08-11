@@ -9,6 +9,7 @@ using Mnema.Models.Entities;
 using Mnema.Models.Entities.Authentication;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Interfaces;
+using Mnema.Models.Entities.Scanner;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Database;
@@ -39,6 +40,9 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<ProviderSettings> ProviderSettings { get; set; }
     public DbSet<ExternalDownload> ExternalDownloads { get; set; }
     public DbSet<MetadataProviderSettings> MetadataProviderSettings { get; set; }
+    public DbSet<ImportScan> ImportScans { get; set; }
+    public DbSet<DirectoryImportResult> DirectoryImportResults { get; set; }
+    public DbSet<ImportError> ImportErrors { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -123,6 +127,16 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
             .HasJsonConversion(new MetadataBag())
             .HasColumnType("TEXT")
             .HasDefaultValue(new MetadataBag());
+
+        builder.Entity<DirectoryImportResult>()
+            .PrimitiveCollection(p => p.Files)
+            .HasDefaultValue(new List<string>());
+
+        builder.Entity<DirectoryImportResult>()
+            .HasOne(x => x.MonitoredSeries)
+            .WithMany()
+            .HasForeignKey(x => x.MonitoredSeriesId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 
     private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)

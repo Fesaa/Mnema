@@ -1,0 +1,27 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Mnema.Common;
+using Mnema.Models.DTOs.Scanner;
+using Mnema.Models.Entities.Scanner;
+
+namespace Mnema.API.Repositories;
+
+[Flags]
+public enum ImportScanIncludes
+{
+    None = 0,
+    DirectoryImports = 1 << 0,
+    ImportErrors = 1 << 1,
+}
+
+public interface IImportScanRepository : INavigationalEntityRepository<ImportScan, ImportScanDto, ImportScanIncludes>
+{
+    Task<PagedList<ImportScanShallowDto>> GetShallowScansPaged(PaginationParams paginationParams, CancellationToken cancellationToken);
+
+    Task<bool> HasNonFinishedScan(string root, CancellationToken cancellationToken);
+
+    Task<HashSet<string>> GetAlreadyLinkedDirectoriesForRoot(string root, CancellationToken cancellationToken);
+
+}

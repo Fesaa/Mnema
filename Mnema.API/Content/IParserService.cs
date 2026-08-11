@@ -24,6 +24,7 @@ public interface IParserService
     bool IsLooseLeafVolume(string? volumeNumber);
     bool IsCoverImage(string filename);
     bool IsImage(string filePath);
+    bool IsSupportedFile(string filePath);
     float MinNumberFromRange(string range);
     float MaxNumberFromRange(string range);
     ParseResult FullParse(string input, ContentFormat type);

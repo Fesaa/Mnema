@@ -19,6 +19,7 @@ public interface IUnitOfWork
     IProviderSettingsRepository ProviderSettingsRepository { get; }
     IExternalDownloadRepository ExternalDownloadRepository { get; }
     IMetadataProviderSettingsRepository MetadataProviderSettingsRepository { get; }
+    IImportScanRepository ImportScanRepository { get; }
 
     Task<bool> CommitAsync(CancellationToken cancellationToken = default);
     bool HasChanges();

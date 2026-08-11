@@ -49,11 +49,8 @@ public partial class ParserService: IParserService
     private const string ImageFileExtensions = @"(\.png|\.jpeg|\.jpg|\.webp|\.gif|\.avif)"; // Don't forget to update CoverChooser
     private const string ArchiveFileExtensions = @"\.cbz|\.zip|\.rar|\.cbr|\.tar.gz|\.7zip|\.7z|\.cb7|\.cbt";
     private const string EpubFileExtension = @"\.epub";
-    private const string PdfFileExtension = @"\.pdf";
-    private const string BookFileExtensions = EpubFileExtension + "|" + PdfFileExtension;
+    private const string BookFileExtensions = EpubFileExtension;
     private const string XmlRegexExtensions = @"\.xml";
-    public const string MacOsMetadataFileStartsWith = @"._";
-    public const string FontFileExtensions = @"\.[woff2|ttf|otf|woff]";
 
     private const string SupportedExtensions =
         ArchiveFileExtensions + "|" + ImageFileExtensions + "|" + BookFileExtensions;
@@ -1020,6 +1017,11 @@ public partial class ParserService: IParserService
     public bool IsImage(string filePath)
     {
         return !filePath.StartsWith('.') && ImageRegex.IsMatch(Path.GetExtension(filePath));
+    }
+
+    public bool IsSupportedFile(string filePath)
+    {
+        return SupportedExtensionsRegex().IsMatch(filePath);
     }
 
     public bool IsXml(string filePath)

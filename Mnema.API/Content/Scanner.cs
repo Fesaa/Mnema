@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Mnema.Models.Entities.Content;
+using Hangfire;
+using Mnema.API.External;
 using Mnema.Models.Enums;
 
 namespace Mnema.API.Content;
@@ -12,6 +13,10 @@ public interface IScannerService
         CancellationToken cancellationToken);
 
     Task<ParsedTorrentInfo> ParseTorrentFile(string remoteUrl, CancellationToken cancellationToken);
+
+    [Queue(HangfireQueue.ImportScanQueue)]
+    [DisableConcurrentExecution(timeoutInSeconds: 60 * 60 * 60)]
+    Task ScanRoot(string path, CancellationToken cancellationToken);
 }
 
 public sealed record ParsedTorrentInfo(string Size, List<TorrentFile> Files);

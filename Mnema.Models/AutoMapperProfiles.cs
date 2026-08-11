@@ -2,10 +2,12 @@ using System.Linq;
 using AutoMapper;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.DTOs.Scanner;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Authentication;
 using Mnema.Models.Entities.Content;
+using Mnema.Models.Entities.Scanner;
 using Mnema.Models.Entities.User;
 
 namespace Mnema.Models;
@@ -31,5 +33,11 @@ public class AutoMapperProfiles : Profile
                 => opt.MapFrom(src => src.Series.Title));
         CreateMap<AuthKey, AuthKeyDto>();
         CreateMap<MetadataProviderSettings, MetadataProviderSettingsV2Dto>();
+        CreateMap<ImportScan, ImportScanDto>();
+        CreateMap<DirectoryImportResult, DirectoryImportResultDto>();
+        CreateMap<ImportError, ImportErrorDto>();
+        CreateMap<ImportScan, ImportScanShallowDto>()
+            .ForMember(d => d.DirectoryImportResultCount, o => o.MapFrom(s => s.DirectoryImportResults.Count))
+            .ForMember(d => d.ImportErrorCount, o => o.MapFrom(s => s.ImportErrors.Count));
     }
 }
