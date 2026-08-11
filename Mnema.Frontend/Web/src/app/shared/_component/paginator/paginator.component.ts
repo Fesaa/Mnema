@@ -30,7 +30,6 @@ export type PageLoader<T> = (pageNumber: number, pageSize: number) => Observable
     LoadingSpinnerComponent,
   ],
   templateUrl: './paginator.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './paginator.component.scss'
 })
 export class PaginatorComponent<T> implements OnInit {

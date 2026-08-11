@@ -11,7 +11,6 @@ import {RouterLink} from "@angular/router";
   standalone: true,
   imports: [CommonModule, BadgeComponent, RouterLink],
   templateUrl: './button-grid.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./button-grid.component.scss']
 })
 export class ButtonGridComponent {

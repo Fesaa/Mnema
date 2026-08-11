@@ -37,7 +37,6 @@ type Filter = {
   ],
   templateUrl: './monitored-series-manager.component.html',
   styleUrl: './monitored-series-manager.component.scss',
-  changeDetection: ChangeDetectionStrategy.Eager,
   animations: [dropAnimation]
 })
 export class MonitoredSeriesManagerComponent implements OnInit {

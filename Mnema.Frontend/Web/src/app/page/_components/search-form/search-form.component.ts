@@ -13,7 +13,6 @@ import {FormControlDefinition, FormControlOption, FormType} from "@mnema/generic
   standalone: true,
   imports: [ReactiveFormsModule, TranslocoDirective, TypeaheadComponent],
   templateUrl: './search-form.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./search-form.component.scss']
 })
 export class SearchFormComponent {

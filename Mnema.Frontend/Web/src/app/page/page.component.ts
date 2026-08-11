@@ -26,7 +26,6 @@ import {LoadingSpinnerComponent} from "../shared/_component/loading-spinner/load
   ],
   templateUrl: './page.component.html',
   styleUrl: './page.component.scss',
-  changeDetection: ChangeDetectionStrategy.Eager,
   animations: [fadeOut]
 })
 export class PageComponent implements OnInit {

@@ -18,7 +18,6 @@ import {RetoastService} from "ngx-retoast";
   selector: 'app-root',
   imports: [RouterOutlet, NavHeaderComponent, TranslocoDirective],
   templateUrl: './app.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit {

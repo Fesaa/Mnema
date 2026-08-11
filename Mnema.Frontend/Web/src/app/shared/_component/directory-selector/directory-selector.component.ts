@@ -18,7 +18,6 @@ import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
     TitleCasePipe
   ],
   templateUrl: './directory-selector.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './directory-selector.component.scss'
 })
 export class DirectorySelectorComponent implements OnInit {

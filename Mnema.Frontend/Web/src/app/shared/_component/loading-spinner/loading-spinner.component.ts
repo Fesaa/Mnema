@@ -9,7 +9,6 @@ type SpinnerColour = 'primary' | 'secondary' | 'white';
   standalone: true,
   imports: [],
   templateUrl: './loading-spinner.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./loading-spinner.component.scss']
 })
 export class LoadingSpinnerComponent {

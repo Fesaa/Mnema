@@ -29,7 +29,6 @@ import {Router} from "@angular/router";
   ],
   templateUrl: './search-result.component.html',
   styleUrl: './search-result.component.scss',
-  changeDetection: ChangeDetectionStrategy.Eager,
   animations: [bounceIn200ms, dropAnimation]
 })
 export class SearchResultComponent implements OnInit{

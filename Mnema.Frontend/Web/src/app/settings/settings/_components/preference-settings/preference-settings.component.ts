@@ -26,7 +26,6 @@ import {UtilityService} from "@mnema/_services/utility.service";
     GenericFormComponent
   ],
   templateUrl: './preference-settings.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './preference-settings.component.scss'
 })
 export class PreferenceSettingsComponent implements OnInit {

@@ -30,7 +30,6 @@ import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
   ],
   templateUrl: './pages-settings.component.html',
   styleUrl: './pages-settings.component.scss',
-  changeDetection: ChangeDetectionStrategy.Eager,
   animations: [dropAnimation]
 })
 export class PagesSettingsComponent {

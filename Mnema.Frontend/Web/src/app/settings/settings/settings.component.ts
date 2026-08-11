@@ -21,7 +21,6 @@ import {ReleaseBrowserComponent} from "@mnema/settings/settings/_components/rele
     ReleaseBrowserComponent,
   ],
   templateUrl: './settings.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./settings.component.scss']
 })
 export class SettingsComponent {

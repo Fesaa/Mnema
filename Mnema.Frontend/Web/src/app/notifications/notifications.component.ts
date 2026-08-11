@@ -24,7 +24,6 @@ import {Tracker} from "../shared/data-structures/tracker";
     ReactiveFormsModule,
   ],
   templateUrl: './notifications.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './notifications.component.scss'
 })
 export class NotificationsComponent implements OnInit {

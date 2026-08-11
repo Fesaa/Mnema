@@ -25,7 +25,6 @@ interface Option {
   ],
   templateUrl: './suggestion-dashboard.component.html',
   styleUrl: './suggestion-dashboard.component.scss',
-  changeDetection: ChangeDetectionStrategy.Eager,
   animations: [dropAnimation]
 })
 export class SuggestionDashboardComponent {
