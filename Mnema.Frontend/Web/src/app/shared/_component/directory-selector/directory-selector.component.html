@@ -20,7 +20,7 @@
       }
 
       <div class="d-flex flex-column mb-3" style="max-height: 20rem; overflow-y: auto;">
-        @if (currentRoot !== root) {
+        @if (currentRoot() !== root) {
           <div class="directory-item d-flex align-items-center p-2 mb-2 bg-light border rounded">
             <i class="fa fa-folder me-2 text-secondary"></i>
             <span
@@ -85,7 +85,7 @@
             type="button"
             class="btn btn-outline-primary btn-sm px-3"
             (click)="createNew()"
-            [disabled]="!newDirName.trim()"
+            [disabled]="!newDirName().trim()"
             [attr.aria-label]="'Create new directory: ' + newDirName"
           >
             <i class="fa fa-plus"></i>

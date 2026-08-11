@@ -1,4 +1,14 @@
-import {Component, EventEmitter, HostListener, inject, Input, OnInit, Output, ChangeDetectionStrategy} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  inject,
+  Input,
+  OnInit,
+  Output,
+  ChangeDetectionStrategy,
+  signal
+} from '@angular/core';
 import {catchError, of, ReplaySubject, tap} from "rxjs";
 import {DirEntry} from "../../../_models/io";
 import {Stack} from "../../data-structures/stack";
@@ -38,12 +48,12 @@ export class DirectorySelectorComponent implements OnInit {
 
   @Output() resultDir = new EventEmitter<string | undefined>();
 
-  currentRoot = '';
-  entries: DirEntry[] = [];
+  currentRoot = signal('');
+  entries = signal<DirEntry[]>([]);
   routeStack: Stack<string> = new Stack<string>();
 
-  query: string = '';
-  newDirName: string = '';
+  query= signal('');
+  newDirName= signal('');
   private result = new ReplaySubject<string | undefined>(1)
 
   constructor(private ioService: IoService,
@@ -53,7 +63,7 @@ export class DirectorySelectorComponent implements OnInit {
   }
 
   getEntries() {
-    return this.entries.filter(entry => this.normalize(entry.name).includes(this.query));
+    return this.entries().filter(entry => this.normalize(entry.name).includes(this.query()));
   }
 
   selectNode(entry: DirEntry) {
@@ -61,10 +71,10 @@ export class DirectorySelectorComponent implements OnInit {
       return;
     }
 
-    this.currentRoot = entry.name;
+    this.currentRoot.set(entry.name);
     this.routeStack.push(entry.name);
     this.loadChildren(this.routeStack.items.join('/')).pipe(
-      tap(() => this.query = ''),
+      tap(() => this.query.set('')),
     ).subscribe();
   }
 
@@ -76,7 +86,7 @@ export class DirectorySelectorComponent implements OnInit {
     this.routeStack.pop();
     const nextRoot = this.routeStack.peek();
     if (nextRoot) {
-      this.currentRoot = nextRoot;
+      this.currentRoot.set(nextRoot);
     }
     this.loadChildren(this.routeStack.items.join('/')).subscribe();
   }
@@ -87,19 +97,19 @@ export class DirectorySelectorComponent implements OnInit {
 
   onFilterChange(event: Event) {
     const inputElement = event.target as HTMLInputElement;
-    this.query = this.normalize(inputElement.value);
+    this.query.set(this.normalize(inputElement.value));
   }
 
   onNewDirNameChange(event: Event) {
     const inputElement = event.target as HTMLInputElement;
-    this.newDirName = inputElement.value;
+    this.newDirName.set(inputElement.value);
   }
 
   createNew() {
-    this.ioService.create(this.routeStack.items.join('/'), this.newDirName).subscribe({
+    this.ioService.create(this.routeStack.items.join('/'), this.newDirName()).subscribe({
       next: () => {
         this.toastService.successLoco("directory-selector.toasts.create.success", {}, {name: this.newDirName})
-        this.newDirName = '';
+        this.newDirName.set('');
         this.loadChildren(this.routeStack.items.join('/')).subscribe();
       },
       error: (err) => {
@@ -148,7 +158,7 @@ export class DirectorySelectorComponent implements OnInit {
   private loadChildren(dir: string) {
     return this.ioService.ls(dir, this.showFiles).pipe(
       tap(entries => {
-        this.entries = entries || [];
+        this.entries.set(entries);
       }),
       catchError(err => {
         this.routeStack.pop();
@@ -158,7 +168,7 @@ export class DirectorySelectorComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.currentRoot = this.root;
+    this.currentRoot.set(this.root);
     this.routeStack.push(this.root);
     this.loadChildren(this.root).subscribe();
     this.isMobile = window.innerWidth < 768;
