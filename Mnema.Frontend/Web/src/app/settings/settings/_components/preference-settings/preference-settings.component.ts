@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, DestroyRef, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, inject, OnInit, signal, ChangeDetectionStrategy} from '@angular/core';
 import {FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {PreferencesService} from '../../../../_services/preferences.service';
 import {

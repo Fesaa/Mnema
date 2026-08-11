@@ -1,10 +1,9 @@
-import {Component, DestroyRef, HostListener, inject, OnInit} from '@angular/core';
+import {Component, DestroyRef, HostListener, inject, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {NavigationEnd, Router, RouterOutlet} from '@angular/router';
 import {NavHeaderComponent} from "./nav-header/nav-header.component";
 import {Title} from "@angular/platform-browser";
 import {Event, EventType, SignalRService} from "./_services/signal-r.service";
 import {Notification, NotificationColour} from "./_models/notifications";
-import {ToastrService} from "ngx-toastr";
 import {Breakpoint, UtilityService} from "./_services/utility.service";
 import {translate, TranslocoDirective, TranslocoService} from "@jsverse/transloco";
 import {takeUntilDestroyed, toSignal} from "@angular/core/rxjs-interop";
@@ -12,6 +11,8 @@ import {filter, map, tap} from "rxjs";
 import {ActiveDownloadsService} from "./dashboard/active-downloads/active-downloads.service";
 import {NotificationService} from "./_services/notification.service";
 import {NavService} from "@mnema/_services/nav.service";
+import {ToastService} from "@mnema/_services/toast.service";
+import {RetoastService} from "ngx-retoast";
 
 @Component({
   selector: 'app-root',
@@ -21,7 +22,7 @@ import {NavService} from "@mnema/_services/nav.service";
 })
 export class AppComponent implements OnInit {
 
-  private readonly toastr = inject(ToastrService);
+  private readonly toastr = inject(RetoastService);
   private readonly titleService = inject(Title);
   private readonly signalR = inject(SignalRService);
   protected readonly utilityService = inject(UtilityService);

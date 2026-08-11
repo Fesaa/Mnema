@@ -1,4 +1,4 @@
-import {Component, computed, inject} from '@angular/core';
+import {Component, computed, inject, ChangeDetectionStrategy} from '@angular/core';
 import {PageService} from "../../../_services/page.service";
 import {RouterLink} from "@angular/router";
 import {dropAnimation} from "../../../_animations/drop-animation";

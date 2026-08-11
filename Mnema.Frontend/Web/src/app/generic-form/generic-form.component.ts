@@ -22,7 +22,6 @@ import {
   SettingMultiTextFieldComponent
 } from "@mnema/shared/form/setting-multi-text-field/setting-multi-text-field.component";
 import {Breakpoint, UtilityService} from "@mnema/_services/utility.service";
-import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {WikiLinkComponent} from "@mnema/shared/_component/wiki-link/wiki-link.component";
 
 @Component({
@@ -35,7 +34,6 @@ import {WikiLinkComponent} from "@mnema/shared/_component/wiki-link/wiki-link.co
     DefaultValuePipe,
     TypeaheadComponent,
     SettingMultiTextFieldComponent,
-    NgbTooltip,
     WikiLinkComponent,
   ],
   templateUrl: './generic-form.component.html',

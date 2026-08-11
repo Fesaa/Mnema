@@ -198,6 +198,8 @@ public class MetadataResolver(
                 .ToList();
         }
 
+        into.ContentFormat ??= from.ContentFormat;
+
         if (settings.Chapters)
         {
             foreach (var fromChapter in from.Chapters)

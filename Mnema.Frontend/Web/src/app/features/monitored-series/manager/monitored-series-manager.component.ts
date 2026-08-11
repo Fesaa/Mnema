@@ -1,4 +1,4 @@
-import {Component, computed, effect, EventEmitter, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, effect, EventEmitter, inject, OnInit, signal, ChangeDetectionStrategy} from '@angular/core';
 import {NavService} from "@mnema/_services/nav.service";
 import {MonitoredChapterStatus, MonitoredSeries, MonitoredSeriesService} from "../monitored-series.service";
 import {PageService} from "@mnema/_services/page.service";

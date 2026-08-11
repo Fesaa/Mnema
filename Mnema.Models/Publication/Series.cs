@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Mnema.Models.Enums;
 
 namespace Mnema.Models.Publication;
 
@@ -27,4 +28,10 @@ public record Series
     public required IList<string> Links { get; set; }
 
     public required IList<Chapter> Chapters { get; set; }
+
+    /// <summary>
+    /// The format of the content
+    /// </summary>
+    /// <remarks>This is only set by <see cref="MetadataProvider.Mangabaka"/></remarks>
+    public ContentFormat? ContentFormat { get; set; }
 }

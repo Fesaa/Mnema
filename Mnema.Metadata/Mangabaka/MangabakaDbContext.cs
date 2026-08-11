@@ -77,6 +77,13 @@ internal class MangabakaDbContext(DbContextOptions<MangabakaDbContext> options):
             );
 
         modelBuilder.Entity<MangabakaSeries>()
+            .Property(e => e.Type)
+            .HasConversion(
+                v => v.GetEnumMemberValue(),
+                v => v.ParseEnumMemberValue<MangabakaType>()
+            );
+
+        modelBuilder.Entity<MangabakaSeries>()
             .Property(s => s.TagsV2)
             .HasColumnType("TEXT")
             .HasConversion(

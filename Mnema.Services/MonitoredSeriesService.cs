@@ -289,6 +289,23 @@ public class MonitoredSeriesService(
             mSeries.Chapters.Add(mChapter);
         }
 
+        if (series.ContentFormat is not null)
+        {
+            switch (series.ContentFormat)
+            {
+                case ContentFormat.Comic:
+                case ContentFormat.Manga:
+                    mSeries.ContentFormat = ContentFormat.Manga;
+                    mSeries.Format = Format.Archive;
+                    break;
+                case ContentFormat.LightNovel:
+                case ContentFormat.Book:
+                    mSeries.ContentFormat = ContentFormat.Book;
+                    mSeries.Format = Format.Epub;
+                break;
+            }
+        }
+
         mSeries.LastDataRefreshUtc = DateTime.UtcNow;
 
         await unitOfWork.CommitAsync(ct);

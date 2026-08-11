@@ -1,4 +1,4 @@
-import {Component, computed, effect, inject, signal} from '@angular/core';
+import {Component, computed, effect, inject, signal, ChangeDetectionStrategy} from '@angular/core';
 import {Page, Provider} from "../../../../_models/page";
 import {PageService} from "../../../../_services/page.service";
 import {RouterLink} from "@angular/router";

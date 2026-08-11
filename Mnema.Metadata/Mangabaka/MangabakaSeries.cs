@@ -75,6 +75,22 @@ internal enum MangabakaTagWeight
     Unweighted
 }
 
+internal enum MangabakaType
+{
+    [EnumMember(Value = "manhwa")]
+    Manhwa,
+    [EnumMember(Value = "manga")]
+    Manga,
+    [EnumMember(Value = "manhua")]
+    Manhua,
+    [EnumMember(Value = "other")]
+    Other,
+    [EnumMember(Value = "oel")]
+    Oel,
+    [EnumMember(Value = "novel")]
+    Novel
+}
+
 internal enum MangabakaContentRating
 {
     [EnumMember(Value = "safe")]
@@ -237,7 +253,7 @@ internal class MangabakaSeries
     public MangabakaContentRating? ContentRating { get; set; }
 
     [Column("type")]
-    public string? Type { get; set; }
+    public MangabakaType Type { get; set; }
 
     [Column("rating")]
     public float? Rating { get; set; }

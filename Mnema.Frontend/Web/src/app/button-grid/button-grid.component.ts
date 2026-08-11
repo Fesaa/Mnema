@@ -1,4 +1,4 @@
-import {Component, computed, inject, input, TemplateRef, viewChild} from '@angular/core';
+import {Component, computed, inject, input, TemplateRef, viewChild, ChangeDetectionStrategy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Breakpoint, UtilityService} from "../_services/utility.service";
 import {Button, ButtonGroup, ButtonGroupService} from "./button-group.service";

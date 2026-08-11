@@ -1,4 +1,13 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, signal} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  linkedSignal,
+  signal, TemplateRef,
+  viewChild
+} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {
@@ -37,11 +46,15 @@ import {
 } from "@mnema/features/monitored-series/metadata.service";
 import {PagedList} from "@mnema/_models/paged-list";
 import {SubscriptionExternalUrlPipe} from "@mnema/_pipes/subscription-external-url.pipe";
+import {
+  CompactSeriesInfoComponent
+} from "@mnema/features/monitored-series/_components/compact-series-info/compact-series-info.component";
+import {SentenceCasePipe} from "@mnema/_pipes/sentence-case.pipe";
 
 @Component({
   selector: 'app-monitored-series',
   standalone: true,
-  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe],
+  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe, SentenceCasePipe],
   templateUrl: './monitored-series.component.html',
   styleUrl: './monitored-series.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -60,6 +73,8 @@ export class MonitoredSeriesComponent {
   private readonly pageService = inject(PageService);
   private readonly router = inject(Router);
   private readonly data = toSignal(this.route.data);
+
+  searchInfoTemplate = viewChild.required<TemplateRef<any>>('searchInfoPreview');
 
   protected series = linkedSignal(() => this.data()!['series'] as MonitoredSeries);
   protected provider = computed(() => this.series().provider);
@@ -222,7 +237,10 @@ export class MonitoredSeriesComponent {
       question: this.transLoco.translate('monitored-series-detail.confirm-delete', {name: this.series().title})
     }, true).pipe(
       switchMap(() => this.monitoredSeriesService.delete(this.series().id)),
-      tap(() => this.router.navigateByUrl('monitored-series')),
+      tap(() => {
+        this.toastR.errorLoco('monitored-series-detail.deleted', {name: this.series().title});
+        this.router.navigateByUrl('monitored-series').catch(console.error);
+      }),
     ).subscribe();
   }
 
@@ -244,7 +262,11 @@ export class MonitoredSeriesComponent {
   }
 
   protected searchHardcover() {
-    const title = this.series().titleOverride ?? this.series().titleOverride;
+    let title = this.series().titleOverride;
+    if (!title) {
+      title = this.series().title;
+    }
+
     this.metadataService.search(MetadataProvider.Hardcover, title, 0, 20).pipe(
       switchMap(results => this.promptForChoice(results)),
       map(sr => sr.id),
@@ -260,7 +282,11 @@ export class MonitoredSeriesComponent {
   }
 
   protected searchMangabaka() {
-    const title = this.series().titleOverride ?? this.series().titleOverride;
+    let title = this.series().titleOverride;
+    if (!title) {
+      title = this.series().title;
+    }
+
     this.metadataService.search(MetadataProvider.Mangabaka, title, 0, 20).pipe(
       switchMap(results => this.promptForChoice(results)),
       map(sr => sr.id),
@@ -289,6 +315,8 @@ export class MonitoredSeriesComponent {
     component.inputItems.set(results.items.map(sr => ({label: sr.title, value: sr, url: sr.refUrl ?? undefined})));
     component.itemsBeforeVirtual.set(8);
     component.requireConfirmation.set(true);
+    component.itemTemplate.set(this.searchInfoTemplate());
+    component.disableHover.set(true);
 
     return this.modalService.onClose$<MetadataSearchResult>(modal, true);
   }

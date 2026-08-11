@@ -1,4 +1,4 @@
-import {Component, computed, effect, inject, linkedSignal, signal} from '@angular/core';
+import {Component, computed, effect, inject, linkedSignal, signal, ChangeDetectionStrategy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NavService} from '../../_services/nav.service';
 import {PreferenceSettingsComponent} from "./_components/preference-settings/preference-settings.component";

@@ -270,7 +270,13 @@ internal class MangabakaMetadataService(
             Year = series.StartDate?.Year,
             HighestVolumeNumber = series.Status.HasFinalCount() ? series.FinalVolume.AsFloat() : null,
             HighestChapterNumber = series.Status.HasFinalCount() ? series.FinalChapter.AsFloat() : null,
-            Chapters = []
+            Chapters = [],
+            ContentFormat = series.Type switch
+            {
+                MangabakaType.Manga or MangabakaType.Manhua or MangabakaType.Manhwa => ContentFormat.Manga,
+                MangabakaType.Novel => ContentFormat.LightNovel,
+                _ => null
+            }
         };
     }
 

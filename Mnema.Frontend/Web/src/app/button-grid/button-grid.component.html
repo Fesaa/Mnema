@@ -90,9 +90,9 @@
             <a
               class="grid-button"
               [routerLink]="[button.navUrl]"
-              [queryParams]="button.navExtras?.queryParams"
-              [fragment]="button.navExtras?.fragment"
-              [state]="button.navExtras?.state"
+              [queryParams]="$safeNavigationMigration(button.navExtras?.queryParams)"
+              [fragment]="$safeNavigationMigration(button.navExtras?.fragment)"
+              [state]="$safeNavigationMigration(button.navExtras?.state)"
             >
               <ng-container *ngTemplateOutlet="buttonTemplate; context: { $implicit: button }"></ng-container>
             </a>

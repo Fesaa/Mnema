@@ -115,7 +115,7 @@ public class Program
 
     private static void PrintStartUp()
     {
-        Console.WriteLine($"  {BuildInfo.AppName} v{BuildInfo.InformationalVersion}");
+        Console.WriteLine($"  {BuildInfo.AppName} v{BuildInfo.Version}");
         Console.WriteLine($"  Runtime:  {BuildInfo.FrameworkDescription}");
         Console.WriteLine($"  OS:       {System.Runtime.InteropServices.RuntimeInformation.OSDescription}");
         Console.WriteLine();
