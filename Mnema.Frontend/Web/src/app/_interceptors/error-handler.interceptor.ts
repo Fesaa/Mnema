@@ -1,10 +1,10 @@
 import {HttpInterceptorFn} from '@angular/common/http';
 import {catchError} from "rxjs";
 import {inject} from "@angular/core";
-import {ToastrService} from "ngx-toastr";
+import {RetoastService} from "ngx-retoast";
 
 export const errorHandlerInterceptor: HttpInterceptorFn = (req, next) => {
-  const toastr = inject(ToastrService);
+  const toastr = inject(RetoastService);
 
   return next(req).pipe(
     catchError(err => {

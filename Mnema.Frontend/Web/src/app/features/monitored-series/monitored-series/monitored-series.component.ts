@@ -54,7 +54,7 @@ import {SentenceCasePipe} from "@mnema/_pipes/sentence-case.pipe";
 @Component({
   selector: 'app-monitored-series',
   standalone: true,
-  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe, CompactSeriesInfoComponent, SentenceCasePipe],
+  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe, SentenceCasePipe],
   templateUrl: './monitored-series.component.html',
   styleUrl: './monitored-series.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -237,7 +237,10 @@ export class MonitoredSeriesComponent {
       question: this.transLoco.translate('monitored-series-detail.confirm-delete', {name: this.series().title})
     }, true).pipe(
       switchMap(() => this.monitoredSeriesService.delete(this.series().id)),
-      tap(() => this.router.navigateByUrl('monitored-series')),
+      tap(() => {
+        this.toastR.errorLoco('monitored-series-detail.deleted', {name: this.series().title});
+        this.router.navigateByUrl('monitored-series').catch(console.error);
+      }),
     ).subscribe();
   }
 

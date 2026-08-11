@@ -1,4 +1,4 @@
-import {Component, computed, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, inject, OnInit, signal, ChangeDetectionStrategy} from '@angular/core';
 import {NavService} from "../_services/nav.service";
 import {PageService} from "../_services/page.service";
 import {Page, Provider} from "../_models/page";
@@ -26,6 +26,7 @@ import {LoadingSpinnerComponent} from "../shared/_component/loading-spinner/load
   ],
   templateUrl: './page.component.html',
   styleUrl: './page.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   animations: [fadeOut]
 })
 export class PageComponent implements OnInit {

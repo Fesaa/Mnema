@@ -1,4 +1,4 @@
-import {Component, computed, EventEmitter, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, EventEmitter, inject, OnInit, signal, ChangeDetectionStrategy} from '@angular/core';
 import {NotificationService} from "../_services/notification.service";
 import {Notification} from "../_models/notifications";
 import {ToastService} from "../_services/toast.service";
@@ -24,6 +24,7 @@ import {Tracker} from "../shared/data-structures/tracker";
     ReactiveFormsModule,
   ],
   templateUrl: './notifications.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './notifications.component.scss'
 })
 export class NotificationsComponent implements OnInit {

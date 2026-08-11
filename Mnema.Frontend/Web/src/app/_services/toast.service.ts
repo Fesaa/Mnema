@@ -1,6 +1,6 @@
 import {inject, Injectable} from '@angular/core';
 import {TranslocoService} from "@jsverse/transloco";
-import {ToastrService} from "ngx-toastr";
+import {RetoastService} from "ngx-retoast";
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +8,7 @@ import {ToastrService} from "ngx-toastr";
 export class ToastService {
 
   private readonly loco = inject(TranslocoService);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastr = inject(RetoastService);
 
 
   infoLoco(key: string, titleValues?: any, summaryValues?: any) {

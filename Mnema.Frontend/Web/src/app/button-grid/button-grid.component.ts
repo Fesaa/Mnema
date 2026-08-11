@@ -1,4 +1,4 @@
-import {Component, computed, inject, input, TemplateRef, viewChild} from '@angular/core';
+import {Component, computed, inject, input, TemplateRef, viewChild, ChangeDetectionStrategy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Breakpoint, UtilityService} from "../_services/utility.service";
 import {Button, ButtonGroup, ButtonGroupService} from "./button-group.service";
@@ -11,6 +11,7 @@ import {RouterLink} from "@angular/router";
   standalone: true,
   imports: [CommonModule, BadgeComponent, RouterLink],
   templateUrl: './button-grid.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./button-grid.component.scss']
 })
 export class ButtonGridComponent {

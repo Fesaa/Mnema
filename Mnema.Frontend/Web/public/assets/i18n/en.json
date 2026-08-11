@@ -1337,6 +1337,10 @@
     "no-results": {
       "title": "No results found",
       "summary": ""
+    },
+    "deleted": {
+      "title": "Deleted {{name}}",
+      "summary": ""
     }
   },
 

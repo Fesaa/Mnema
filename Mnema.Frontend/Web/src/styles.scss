@@ -10,8 +10,7 @@
 @import 'bootstrap/scss/functions';
 @import 'bootstrap/scss/variables';
 @import 'bootstrap/scss/mixins';
-@import 'ngx-toastr/toastr';
-@import 'ngx-toastr/toastr-bs5-alert';
+@import 'ngx-retoast/retoast.css';
 
 body {
   font-family: 'Spectral', serif;

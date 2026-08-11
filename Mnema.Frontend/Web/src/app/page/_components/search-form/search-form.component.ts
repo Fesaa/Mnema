@@ -1,4 +1,4 @@
-import {Component, computed, effect, input, output, signal, untracked, viewChild} from '@angular/core';
+import {Component, computed, effect, input, output, signal, untracked, viewChild, ChangeDetectionStrategy} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 
 import {MetadataBag, SearchRequest} from "@mnema/_models/search";
@@ -13,6 +13,7 @@ import {FormControlDefinition, FormControlOption, FormType} from "@mnema/generic
   standalone: true,
   imports: [ReactiveFormsModule, TranslocoDirective, TypeaheadComponent],
   templateUrl: './search-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./search-form.component.scss']
 })
 export class SearchFormComponent {

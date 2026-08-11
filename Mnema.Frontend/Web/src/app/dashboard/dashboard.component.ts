@@ -1,4 +1,4 @@
-import {Component, inject, OnDestroy} from '@angular/core';
+import {Component, inject, OnDestroy, ChangeDetectionStrategy} from '@angular/core';
 import {TranslocoDirective} from "@jsverse/transloco";
 import {ButtonGridComponent} from "../button-grid/button-grid.component";
 import {ButtonGroupService} from "../button-grid/button-group.service";
@@ -11,6 +11,7 @@ import {NavService} from "../_services/nav.service";
     ButtonGridComponent
   ],
   templateUrl: './dashboard.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnDestroy {

@@ -41,9 +41,9 @@
                   <a
                     class="nav-link sub-link"
                     [routerLink]="[btn.navUrl]"
-                    [queryParams]="btn.navExtras?.queryParams"
-                    [fragment]="btn.navExtras?.fragment"
-                    [state]="btn.navExtras?.state"
+                    [queryParams]="$safeNavigationMigration(btn.navExtras?.queryParams)"
+                    [fragment]="$safeNavigationMigration(btn.navExtras?.fragment)"
+                    [state]="$safeNavigationMigration(btn.navExtras?.state)"
                     routerLinkActive="active"
                     [class.settings]="group.key === ButtonGroupKey.Settings"
                     [routerLinkActiveOptions]="{ exact: true }"

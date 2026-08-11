@@ -9,7 +9,7 @@ import {
 import {provideRouter} from '@angular/router';
 
 import {routes} from './app.routes';
-import {provideHttpClient, withInterceptors} from "@angular/common/http";
+import {provideHttpClient, withInterceptors, withXhr} from "@angular/common/http";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {APP_BASE_HREF, CommonModule, PlatformLocation} from "@angular/common";
 import {ContentTitlePipe} from "./_pipes/content-title.pipe";
@@ -20,11 +20,11 @@ import {provideTransloco} from "@jsverse/transloco";
 import {TranslocoLoaderImpl} from "./_services/transloco-loader";
 import {NavService} from "./_services/nav.service";
 import {catchError, filter, firstValueFrom, of, switchMap, tap} from "rxjs";
-import {provideToastr} from "ngx-toastr";
 import {PageService} from "./_services/page.service";
 import {RolePipe} from "./_pipes/role.pipe";
 import {errorHandlerInterceptor} from "./_interceptors/error-handler.interceptor";
 import {SettingsService} from "@mnema/_services/settings.service";
+import {provideRetoast} from "ngx-retoast";
 
 function getBaseHref(platformLocation: PlatformLocation): string {
   return platformLocation.getBaseHrefFromDOM();
@@ -57,9 +57,13 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({eventCoalescing: true}),
     provideRouter(routes),
 
-    provideHttpClient(withInterceptors([errorHandlerInterceptor])),
+    provideHttpClient(withXhr(), withInterceptors([errorHandlerInterceptor])),
 
-    provideToastr(),
+    provideRetoast({
+      positionClass: 'toast-bottom-right',
+      preventDuplicates: true,
+      duration: 5000
+    }),
     provideTransloco({
       config: {
         availableLangs: ['en'],
