@@ -1,0 +1,129 @@
+<ng-container *transloco="let t; prefix: 'import-scans-list'">
+
+  <h1>{{t('title')}}</h1>
+  <span class="text-muted my-2">{{t('description')}}</span>
+
+  <app-table
+    [pageLoader]="pageLoader"
+    [reloader]="reloader"
+    [trackByIdFunc]="trackById"
+  >
+
+    <ng-template #header>
+      <tr>
+        <th class="table-header-cell">{{ t('directory') }}</th>
+        <th class="table-header-cell">{{ t('status') }}</th>
+        <th class="table-header-cell">{{ t('info') }}</th>
+        <th class="table-header-cell">{{ t('actions') }}</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #cell let-scan>
+      <td class="table-cell">{{ scan.rootDir }}</td>
+      <td class="table-cell">{{ scan.status | importScanStatus }}</td>
+      <td class="table-cell">
+        <div class="d-flex flex-column gap-1 small">
+          <div class="d-flex align-items-center gap-1">
+            <i class="fa fa-play-circle text-muted"></i>
+            <span>{{ scan.startedUtc | utcToLocalTime }}</span>
+          </div>
+
+          <div class="d-flex align-items-center gap-1">
+            <i class="fa fa-check-circle text-muted"></i>
+            <span>{{ scan.finishedUtc | utcToLocalTime }}</span>
+          </div>
+
+          <div class="d-flex align-items-center gap-3">
+            <span class="d-flex align-items-center gap-1">
+              <i class="fa fa-folder text-muted"></i>
+              <span>{{ scan.directoryImportResultCount }}</span>
+            </span>
+
+            <span class="d-flex align-items-center gap-1">
+              <i class="fa fa-exclamation-triangle text-muted"></i>
+              <span>{{ scan.importErrorCount }}</span>
+            </span>
+          </div>
+        </div>
+      </td>
+      <td class="table-cell">
+        <div class="d-flex align-items-center gap-2">
+          <a [routerLink]="'/import-scans/' + scan.id">
+            <i class="fa fa-pencil"></i>
+          </a>
+          <button (click)="delete(scan.id)" class="btn btn-small btn-danger">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    </ng-template>
+
+    <ng-template #empty>
+
+    </ng-template>
+
+    <ng-template #mobile let-scan>
+      <div class="card mb-2 shadow-sm">
+        <div class="card-body p-3 position-relative">
+
+          <div class="position-absolute top-0 end-0 p-2 d-flex gap-1">
+            <a
+              [routerLink]="'/import-scans/' + scan.id"
+              aria-label="Edit"
+              class="btn btn-sm"
+            >
+              <i class="fa fa-pencil"></i>
+            </a>
+
+            <button
+              (click)="delete(scan.id)"
+              aria-label="Delete"
+              class="btn btn-sm btn-danger"
+              type="button"
+            >
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+
+          <div class="pe-5 mb-2">
+            <div class="small text-muted">{{t('directory')}}</div>
+            <div class="fw-semibold text-break">
+              {{ scan.rootDir }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <span class="badge bg-secondary">{{ scan.status | importScanStatus }}</span>
+          </div>
+
+          <div class="d-flex flex-column gap-2 small">
+
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa fa-play-circle text-muted"></i>
+              <span>{{ scan.startedUtc | utcToLocalTime }}</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa fa-check-circle text-muted"></i>
+              <span>{{ scan.finishedUtc | utcToLocalTime }}</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-4">
+              <span class="d-flex align-items-center gap-1">
+                <i class="fa fa-folder text-muted"></i>
+                {{ scan.directoryImportResultCount }}
+              </span>
+
+              <span class="d-flex align-items-center gap-1">
+                <i class="fa fa-exclamation-triangle text-muted"></i>
+                {{ scan.importErrorCount }}
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </ng-template>
+
+  </app-table>
+</ng-container>

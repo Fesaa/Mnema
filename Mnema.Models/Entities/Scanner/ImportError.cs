@@ -8,6 +8,9 @@ public class ImportError: IDatabaseEntity, IEntityDate
 {
     public Guid Id { get; set; }
 
+    public Guid ImportScanId { get; set; }
+    public ImportScan ImportScan { get; set; }
+
     public required string Path { get; set; }
     public required string Message { get; set; }
     public string? StackTrace { get; set; }

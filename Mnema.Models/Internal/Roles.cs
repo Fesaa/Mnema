@@ -39,6 +39,8 @@ public static class Roles
     /// </summary>
     public const string ManageExternalConnections = nameof(ManageExternalConnections);
 
+    public const string ImportScans = nameof(ImportScans);
+
     public static ImmutableArray<string> AllRoles =
     [
         ManagePages,
@@ -47,6 +49,7 @@ public static class Roles
         HangFire,
         CreateDirectory,
         ManageExternalConnections,
-        Calendar
+        Calendar,
+        ImportScans
     ];
 }

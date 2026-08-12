@@ -12,7 +12,7 @@ using Mnema.Database;
 namespace Mnema.Database.SqliteMigrations
 {
     [DbContext(typeof(SqliteMnemaDataContext))]
-    [Migration("20260811230117_SqliteAddImportScan")]
+    [Migration("20260812123740_SqliteAddImportScan")]
     partial class SqliteAddImportScan
     {
         /// <inheritdoc />
@@ -773,7 +773,7 @@ namespace Mnema.Database.SqliteMigrations
                     b.Property<DateTime>("CreatedUtc")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("ImportScanId")
+                    b.Property<Guid>("ImportScanId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("LastModifiedUtc")
@@ -872,9 +872,13 @@ namespace Mnema.Database.SqliteMigrations
 
             modelBuilder.Entity("Mnema.Models.Entities.Scanner.ImportError", b =>
                 {
-                    b.HasOne("Mnema.Models.Entities.Scanner.ImportScan", null)
+                    b.HasOne("Mnema.Models.Entities.Scanner.ImportScan", "ImportScan")
                         .WithMany("ImportErrors")
-                        .HasForeignKey("ImportScanId");
+                        .HasForeignKey("ImportScanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ImportScan");
                 });
 
             modelBuilder.Entity("Mnema.Models.Entities.Content.MonitoredSeries", b =>

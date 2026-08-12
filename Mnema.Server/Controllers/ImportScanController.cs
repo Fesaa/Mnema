@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
@@ -9,9 +10,11 @@ using Mnema.API.Content;
 using Mnema.API.Repositories;
 using Mnema.Common;
 using Mnema.Models.DTOs.Scanner;
+using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
 
+[Authorize(Roles.ImportScans)]
 public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfWork unitOfWork): BaseApiController
 {
 
@@ -28,7 +31,7 @@ public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfW
         return Ok();
     }
 
-    [HttpGet("shallow-paged")]
+    [HttpGet("paged")]
     public async Task<PagedList<ImportScanShallowDto>> GetShallowPaged([FromQuery] PaginationParams paginationParams)
     {
         return await unitOfWork.ImportScanRepository.GetShallowScansPaged(paginationParams, HttpContext.RequestAborted);
@@ -42,6 +45,14 @@ public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfW
         if (scan == null) return NotFound();
 
         return Ok(scan);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await unitOfWork.ImportScanRepository.DeleteById(id);
+
+        return Ok();
     }
 
 }

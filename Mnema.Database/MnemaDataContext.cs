@@ -137,6 +137,16 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
             .WithMany()
             .HasForeignKey(x => x.MonitoredSeriesId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<ImportScan>()
+            .HasMany(x => x.DirectoryImportResults)
+            .WithOne(x => x.ImportScan)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<ImportScan>()
+            .HasMany(x => x.ImportErrors)
+            .WithOne(x => x.ImportScan)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)

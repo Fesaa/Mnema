@@ -67,12 +67,12 @@ namespace Mnema.Database.SqliteMigrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ImportScanId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Path = table.Column<string>(type: "TEXT", nullable: false),
                     Message = table.Column<string>(type: "TEXT", nullable: false),
                     StackTrace = table.Column<string>(type: "TEXT", nullable: true),
                     CreatedUtc = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    LastModifiedUtc = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ImportScanId = table.Column<Guid>(type: "TEXT", nullable: true)
+                    LastModifiedUtc = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -81,7 +81,8 @@ namespace Mnema.Database.SqliteMigrations
                         name: "FK_ImportErrors_ImportScans_ImportScanId",
                         column: x => x.ImportScanId,
                         principalTable: "ImportScans",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(

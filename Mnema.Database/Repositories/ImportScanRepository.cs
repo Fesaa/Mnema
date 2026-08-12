@@ -35,7 +35,7 @@ public class ImportScanRepository(MnemaDataContext ctx, IMapper mapper) : Abstra
     {
         return ctx.ImportScans
             .ProjectTo<ImportScanShallowDto>(mapper.ConfigurationProvider)
-            .OrderBy(x => x.Id)
+            .OrderByDescending(x => x.CreatedUtc)
             .AsPagedList(paginationParams, cancellationToken);
     }
 

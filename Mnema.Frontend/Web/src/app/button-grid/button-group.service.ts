@@ -121,6 +121,11 @@ export class ButtonGroupService {
           ? `${this.notificationService.notificationsCount()}` : undefined,
       },
       {
+        title: translate('button-groups.actions.import-scans'),
+        icon: 'fa fa-file-import',
+        navUrl: '/import-scans',
+      },
+      {
         title: translate('button-groups.settings.logout'),
         icon: 'fa fa-user-minus',
         onClick: () => {

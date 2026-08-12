@@ -30,6 +30,10 @@ export const routes: Routes = [
         path: '',
         loadChildren: () => import('./_routes/extra.routes').then(m => m.routes)
       },
+      {
+        path: 'import-scans',
+        loadChildren: () => import('./features/import-scans/import-scans.routes').then(m => m.routes)
+      }
     ]
   },
   {
