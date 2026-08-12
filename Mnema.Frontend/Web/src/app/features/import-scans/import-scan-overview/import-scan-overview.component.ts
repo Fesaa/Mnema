@@ -1,5 +1,10 @@
-import {Component, effect, inject, input, signal} from '@angular/core';
-import {DirectoryImportResult, ImportError, ImportScan} from "@mnema/features/import-scans/models";
+import {Component, effect, EventEmitter, inject, input, signal} from '@angular/core';
+import {
+  DirectoryImportResult,
+  DirectoryImportStatus,
+  ImportError,
+  ImportScan
+} from "@mnema/features/import-scans/models";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {ImportScanService} from "@mnema/features/import-scans/import-scan.service";
 import {PaginatorComponent} from "@mnema/shared/_component/paginator/paginator.component";
@@ -34,7 +39,9 @@ export class ImportScanOverviewComponent {
 
     return this.importScanService.getErrorsPaged(this.scan().id, pageNumber, pageSize);
   }
+  reloader = new EventEmitter<void>();
 
+  currentItems = signal<(DirectoryImportResult | ImportError)[]>([]);
   selectedItem = signal<DirectoryImportResult | ImportError | null>(null);
 
   constructor() {
@@ -48,4 +55,17 @@ export class ImportScanOverviewComponent {
     this.selectedItem.set(item);
   }
 
+  handleDirectoryImportResult(status: DirectoryImportStatus) {
+    this.reloader.emit();
+    this.selectedItem.set(null);
+  }
+
+  setCurrentItems(items: (DirectoryImportResult | ImportError)[]) {
+    this.currentItems.set(items);
+    if (this.selectedItem() === null && items.length > 0) {
+      this.selectItem(items[0]);
+    }
+  }
+
+  protected readonly DirectoryImportStatus = DirectoryImportStatus;
 }

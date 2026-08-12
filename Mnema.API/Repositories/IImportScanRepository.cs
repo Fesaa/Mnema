@@ -27,4 +27,8 @@ public interface IImportScanRepository : INavigationalEntityRepository<ImportSca
 
     Task<HashSet<string>> GetAlreadyLinkedDirectoriesForRoot(string root, CancellationToken cancellationToken);
 
+    Task<int> GetMaxQueuePosition(Guid scanId, CancellationToken cancellationToken);
+    Task<DirectoryImportResult?> GetDirectoryImportResult(Guid id, CancellationToken cancellationToken);
+    Task<ImportError?> GetImportError(Guid id, CancellationToken cancellationToken);
+
 }

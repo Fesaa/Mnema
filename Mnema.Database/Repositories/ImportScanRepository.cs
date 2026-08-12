@@ -44,9 +44,9 @@ public class ImportScanRepository(MnemaDataContext ctx, IMapper mapper) : Abstra
     public Task<PagedList<DirectoryImportResultDto>> GetDirectoryImportsPaged(Guid scanId, PaginationParams paginationParams, CancellationToken cancellationToken)
     {
         return ctx.DirectoryImportResults
-            .Where(d => d.ImportScanId == scanId && d.Status == DirectoryImportStatus.Queued)
+            .Where(d => d.ImportScanId == scanId)
             .ProjectTo<DirectoryImportResultDto>(mapper.ConfigurationProvider)
-            .OrderByDescending(x => x.CreatedUtc)
+            .OrderBy(x => x.QueuePosition)
             .AsPagedList(paginationParams, cancellationToken);
     }
 
@@ -62,7 +62,7 @@ public class ImportScanRepository(MnemaDataContext ctx, IMapper mapper) : Abstra
     public Task<bool> HasNonFinishedScan(string root, CancellationToken cancellationToken)
     {
         return ctx.ImportScans
-            .Where(s => s.RootDir == root)
+            .Where(s => s.RootDir == root && s.Status != ImportScanStatus.Finished)
             .AnyAsync(cancellationToken);
     }
 
@@ -73,5 +73,22 @@ public class ImportScanRepository(MnemaDataContext ctx, IMapper mapper) : Abstra
             .Where(d => d.MonitoredSeriesId != null)
             .Select(d => d.Directory)
             .ToHashSetAsync(cancellationToken);
+    }
+
+    public Task<int> GetMaxQueuePosition(Guid scanId, CancellationToken cancellationToken)
+    {
+        return ctx.DirectoryImportResults
+            .Where(d => d.ImportScanId == scanId && d.Status == DirectoryImportStatus.Queued)
+            .MaxAsync(d => d.QueuePosition, cancellationToken);
+    }
+
+    public Task<DirectoryImportResult?> GetDirectoryImportResult(Guid id, CancellationToken cancellationToken)
+    {
+        return ctx.DirectoryImportResults.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+
+    public Task<ImportError?> GetImportError(Guid id, CancellationToken cancellationToken)
+    {
+        return ctx.ImportErrors.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 }

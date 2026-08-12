@@ -2,3 +2,14 @@
 .item-card.active {
   background-color: var(--surface-hover);
 }
+
+.item-card.rejected {
+  background-color: var(--error-color);
+  opacity: 0.75;
+}
+
+
+#items {
+  height: 60vh;
+  overflow-y: auto;
+}

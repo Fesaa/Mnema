@@ -118,6 +118,17 @@
     "select-item": "Select an item to get started"
   },
 
+  "directory-import-scan-result-overview": {
+    "reject": "Reject",
+    "skip": "Skip",
+    "auto-accept": "Auto Accept",
+    "accept": "Accept",
+    "files": "Files",
+    "metadata-providers": "Metadata Providers",
+    "link-hardcover": "Link Hardcover",
+    "link-mangabaka": "Link MangaBaka"
+  },
+
   "download-modal": {
     "title": "Download {{name}}",
     "close": "{{common.close}}",

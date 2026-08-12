@@ -34,4 +34,16 @@ export class ImportScanService {
     return this.httpClient.delete(this.apiUrl + `/${id}`);
   }
 
+  rejectDirectoryImportResult(id: string) {
+    return this.httpClient.post(this.apiUrl + `/${id}/reject`, {});
+  }
+
+  skipDirectoryImportResult(id: string) {
+    return this.httpClient.post(this.apiUrl + `/${id}/skip`, {});
+  }
+
+  autoAcceptDirectoryImportResult(id: string) {
+    return this.httpClient.post(this.apiUrl + `/${id}/auto-accept`, {});
+  }
+
 }

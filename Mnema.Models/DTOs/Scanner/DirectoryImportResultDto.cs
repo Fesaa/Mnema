@@ -15,6 +15,7 @@ public class DirectoryImportResultDto: IDatabaseEntity
 
     public Guid ImportScanId { get; set; }
     public Guid? MonitoredSeriesId { get; set; }
+    public int QueuePosition { get; set; }
 
     public required string ParsedSeriesName { get; set; }
     public required int ParsedHardcoverId { get; set; }

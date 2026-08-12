@@ -311,7 +311,8 @@ public class ScannerService(
             ParsedSeriesName = onDiskContent.SeriesName,
             ParsedHardcoverId = ExternalIdParser.GetHardcoverSeriesId(onDiskContent.ComicInfo?.Web),
             ParsedMangaBakaId = ExternalIdParser.GetMangaBakaId(onDiskContent.ComicInfo?.Web),
-            Files = files,
+            Files = files.Select(f => f.RemovePrefix(configuration.BaseDir)).ToList(),
+            QueuePosition = scan.DirectoryImportResults.Count,
         });
     }
 

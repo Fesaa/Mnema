@@ -10,6 +10,7 @@ using Mnema.API.Content;
 using Mnema.API.Repositories;
 using Mnema.Common;
 using Mnema.Models.DTOs.Scanner;
+using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;
@@ -68,5 +69,44 @@ public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfW
 
         return Ok();
     }
+
+    [HttpPost("{id:guid}/reject")]
+    public async Task<IActionResult> Reject(Guid id)
+    {
+        var result = await unitOfWork.ImportScanRepository.GetDirectoryImportResult(id, HttpContext.RequestAborted);
+        if (result == null) return NotFound();
+
+        var max = await unitOfWork.ImportScanRepository.GetMaxQueuePosition(result.ImportScanId,
+            HttpContext.RequestAborted);
+
+        result.Status = DirectoryImportStatus.Rejected;
+        result.QueuePosition = max + 1;
+        await unitOfWork.CommitAsync();
+
+        return Ok();
+    }
+
+    [HttpPost("{id:guid}/skip")]
+    public async Task<IActionResult> Skip(Guid id)
+    {
+        var result = await unitOfWork.ImportScanRepository.GetDirectoryImportResult(id, HttpContext.RequestAborted);
+        if (result == null) return NotFound();
+
+        var max = await unitOfWork.ImportScanRepository.GetMaxQueuePosition(result.ImportScanId,
+            HttpContext.RequestAborted);
+
+        result.QueuePosition = max + 1;
+        await unitOfWork.CommitAsync();
+
+        return Ok();
+    }
+
+    [HttpPost("{id:guid}/auto-accept")]
+    public async Task<IActionResult> AutoAccept(Guid id)
+    {
+        return Ok();
+    }
+
+
 
 }

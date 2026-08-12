@@ -35,29 +35,42 @@
       <app-paginator
         [pageLoader]="pageLoader"
         [noResultsKey]="null"
+        [simplePagination]="true"
+        [reloader]="reloader"
+        (currentItems)="setCurrentItems($event)"
       >
 
         <ng-template let-items #items>
 
-          @for (item of items; track item.id) {
-
-            @if (mode() === 'errors') {
-
-            } @else if (mode() === 'directories') {
-              <div class="card p-2 mb-2 item-card clickable"
-                   (click)="selectItem(item)"
-                   [class.active]="selectedItem()?.id == item.id">
-                <span class="text-muted">
-                  <i class="fa fa-folder"></i>
-                  @if (item.parsedSeriesName) {
-                    {{item.parsedSeriesName}}
-                  } @else {
-                    {{item.directory}}
-                  }
-                </span>
-              </div>
+          <div id="items">
+            @for (item of items; track item.id) {
+              @if (mode() === 'errors') {
+                <div class="card p-2 mb-2 item-card clickable"
+                     (click)="selectItem(item)"
+                     [class.active]="selectedItem()?.id == item.id">
+                  <span class="text-muted">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    {{item.message}}
+                  </span>
+                </div>
+              } @else if (mode() === 'directories') {
+                <div class="card p-2 mb-2 item-card clickable"
+                     (click)="selectItem(item)"
+                     [class.active]="selectedItem()?.id == item.id"
+                     [class.rejected]="item.status === DirectoryImportStatus.Rejected"
+                >
+                  <span class="text-muted">
+                    <i class="fa fa-folder"></i>
+                    @if (item.parsedSeriesName) {
+                      {{item.parsedSeriesName}}
+                    } @else {
+                      {{item.directory}}
+                    }
+                  </span>
+                </div>
+              }
             }
-          }
+          </div>
 
         </ng-template>
 
@@ -73,7 +86,7 @@
     <div class="col-9">
       @if (selectedItem(); as item) {
         @if (mode() === 'directories') {
-          <app-directory-import-scan-result-overview [result]="$any(item)" />
+          <app-directory-import-scan-result-overview [result]="$any(item)" (decisionResult)="handleDirectoryImportResult($event)" />
         }
       } @else {
         <div class="alert alert-info" role="alert">
