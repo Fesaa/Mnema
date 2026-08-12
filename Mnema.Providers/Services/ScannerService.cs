@@ -203,7 +203,7 @@ public class ScannerService(
 
         var importScan = new ImportScan
         {
-            RootDir = fileSystem.Path.Join(configuration.BaseDir, path),
+            RootDir = path,
             Status = ImportScanStatus.Started,
             DirectoryImportResults = [],
             ImportErrors = [],
@@ -215,7 +215,7 @@ public class ScannerService(
 
         try
         {
-            await ScanDirectory(importScan, importScan.RootDir, toSkip, cancellationToken);
+            await ScanDirectory(importScan, fileSystem.Path.Join(configuration.BaseDir, path), toSkip, cancellationToken);
             importScan.Status = ImportScanStatus.Finished;
         }
         catch (Exception ex)
@@ -235,7 +235,7 @@ public class ScannerService(
         if (!fileSystem.Directory.Exists(path))
         {
             logger.LogWarning("Directory {Path} does not exist, cannot process scan further", path);
-            scan.ImportErrors.Add(ImportError.UnknownDirectory(path));
+            scan.ImportErrors.Add(ImportError.UnknownDirectory(path.RemovePrefix(configuration.BaseDir)));
             return;
         }
 
@@ -254,7 +254,7 @@ public class ScannerService(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to process directory {Path}", directory);
-                scan.ImportErrors.Add(ImportError.FromException(directory, ex));
+                scan.ImportErrors.Add(ImportError.FromException(directory.RemovePrefix(configuration.BaseDir), ex));
             }
 
             if (idx++ % 5 == 0)
@@ -283,7 +283,7 @@ public class ScannerService(
         if (extensions.Count > 1)
         {
             logger.LogWarning("Directory {Path} contains files with different extensions: {Extensions}", path, extensions);
-            scan.ImportErrors.Add(ImportError.MixedContentFormats(path, extensions));
+            scan.ImportErrors.Add(ImportError.MixedContentFormats(path.RemovePrefix(configuration.BaseDir), extensions));
             return;
         }
 
@@ -291,7 +291,7 @@ public class ScannerService(
         if (contentFormat is null)
         {
             logger.LogWarning("Directory {Path} contains files with unknown content format: {Extension}", path, extensions[0]);
-            scan.ImportErrors.Add(ImportError.FailedToParseContentFormat(path, files[0].RemovePrefix(path)));
+            scan.ImportErrors.Add(ImportError.FailedToParseContentFormat(path.RemovePrefix(configuration.BaseDir), files[0].RemovePrefix(path)));
             return;
         }
 
@@ -299,14 +299,14 @@ public class ScannerService(
         if (string.IsNullOrEmpty(onDiskContent.SeriesName))
         {
             logger.LogWarning("Directory {Path} contains files with unknown series name: {Extension}", path, extensions[0]);
-            scan.ImportErrors.Add(ImportError.FailedToParseSeries(path, files[0].RemovePrefix(path)));
+            scan.ImportErrors.Add(ImportError.FailedToParseSeries(path.RemovePrefix(configuration.BaseDir), files[0].RemovePrefix(path)));
             return;
         }
 
         logger.LogDebug("Adding directory {Path} to scan. Series: {SeriesName}", path, onDiskContent.SeriesName);
         scan.DirectoryImportResults.Add(new DirectoryImportResult
         {
-            Directory = path,
+            Directory = path.RemovePrefix(configuration.BaseDir),
             Status = DirectoryImportStatus.Queued,
             ParsedSeriesName = onDiskContent.SeriesName,
             ParsedHardcoverId = ExternalIdParser.GetHardcoverSeriesId(onDiskContent.ComicInfo?.Web),

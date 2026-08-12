@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -10,6 +11,7 @@ using Mnema.Common;
 using Mnema.Database.Extensions;
 using Mnema.Models.DTOs.Scanner;
 using Mnema.Models.Entities.Scanner;
+using Mnema.Models.Enums;
 
 namespace Mnema.Database.Repositories;
 
@@ -35,6 +37,24 @@ public class ImportScanRepository(MnemaDataContext ctx, IMapper mapper) : Abstra
     {
         return ctx.ImportScans
             .ProjectTo<ImportScanShallowDto>(mapper.ConfigurationProvider)
+            .OrderByDescending(x => x.CreatedUtc)
+            .AsPagedList(paginationParams, cancellationToken);
+    }
+
+    public Task<PagedList<DirectoryImportResultDto>> GetDirectoryImportsPaged(Guid scanId, PaginationParams paginationParams, CancellationToken cancellationToken)
+    {
+        return ctx.DirectoryImportResults
+            .Where(d => d.ImportScanId == scanId && d.Status == DirectoryImportStatus.Queued)
+            .ProjectTo<DirectoryImportResultDto>(mapper.ConfigurationProvider)
+            .OrderByDescending(x => x.CreatedUtc)
+            .AsPagedList(paginationParams, cancellationToken);
+    }
+
+    public Task<PagedList<ImportErrorDto>> GetImportErrorsPaged(Guid scanId, PaginationParams paginationParams, CancellationToken cancellationToken)
+    {
+        return ctx.ImportErrors
+            .Where(e => e.ImportScanId == scanId)
+            .ProjectTo<ImportErrorDto>(mapper.ConfigurationProvider)
             .OrderByDescending(x => x.CreatedUtc)
             .AsPagedList(paginationParams, cancellationToken);
     }

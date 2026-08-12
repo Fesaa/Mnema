@@ -3,6 +3,7 @@ import {ImportScansListComponent} from "@mnema/features/import-scans/import-scan
 import {
   ImportScanOverviewComponent
 } from "@mnema/features/import-scans/import-scan-overview/import-scan-overview.component";
+import {importScanResolver} from "@mnema/features/import-scans/import-scan.resolver";
 
 
 export const routes: Routes = [
@@ -13,5 +14,8 @@ export const routes: Routes = [
   {
     path: ':id',
     component: ImportScanOverviewComponent,
+    resolve: {
+      scan: importScanResolver
+    }
   }
 ]

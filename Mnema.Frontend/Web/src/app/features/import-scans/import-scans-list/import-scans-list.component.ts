@@ -1,7 +1,7 @@
 import {Component, EventEmitter, inject} from '@angular/core';
 import {ImportScanService} from "@mnema/features/import-scans/import-scan.service";
 import {TableComponent} from "@mnema/shared/_component/table/table.component";
-import {ShallowImportScan} from "@mnema/features/import-scans/models";
+import {ImportScan} from "@mnema/features/import-scans/models";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {ImportScanStatusPipe} from "@mnema/features/import-scans/import-scan-status.pipe";
 import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
@@ -32,7 +32,7 @@ export class ImportScansListComponent {
 
   reloader = new EventEmitter<void>();
 
-  trackById(index: number, item: ShallowImportScan): string {
+  trackById(index: number, item: ImportScan): string {
     return item.id;
   }
 

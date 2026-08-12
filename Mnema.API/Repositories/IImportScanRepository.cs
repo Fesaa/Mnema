@@ -20,6 +20,9 @@ public interface IImportScanRepository : INavigationalEntityRepository<ImportSca
 {
     Task<PagedList<ImportScanShallowDto>> GetShallowScansPaged(PaginationParams paginationParams, CancellationToken cancellationToken);
 
+    Task<PagedList<DirectoryImportResultDto>> GetDirectoryImportsPaged(Guid scanId, PaginationParams paginationParams, CancellationToken cancellationToken);
+    Task<PagedList<ImportErrorDto>> GetImportErrorsPaged(Guid scanId, PaginationParams paginationParams, CancellationToken cancellationToken);
+
     Task<bool> HasNonFinishedScan(string root, CancellationToken cancellationToken);
 
     Task<HashSet<string>> GetAlreadyLinkedDirectoriesForRoot(string root, CancellationToken cancellationToken);

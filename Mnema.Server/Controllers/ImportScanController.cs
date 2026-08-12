@@ -47,6 +47,20 @@ public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfW
         return Ok(scan);
     }
 
+    [HttpGet("{id:guid}/directories")]
+    public async Task<PagedList<DirectoryImportResultDto>> GetDirectoryImports(Guid id,
+        [FromQuery] PaginationParams paginationParams)
+    {
+        return await unitOfWork.ImportScanRepository.GetDirectoryImportsPaged(id, paginationParams, HttpContext.RequestAborted);
+    }
+
+    [HttpGet("{id:guid}/errors")]
+    public async Task<PagedList<ImportErrorDto>> GetErrors(Guid id,
+        [FromQuery] PaginationParams paginationParams)
+    {
+        return await unitOfWork.ImportScanRepository.GetImportErrorsPaged(id, paginationParams, HttpContext.RequestAborted);
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {

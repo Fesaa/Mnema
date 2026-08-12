@@ -1,18 +1,10 @@
 
-export interface FullImportScan extends ImportScan{
-  importScan: ImportScan;
-  directories: DirectoryImportResult[];
-  errors: ImportError[];
-}
-
-export interface ShallowImportScan extends ImportScan {
-  directoryImportResultCount: number;
-  importErrorCount: number;
-}
 
 export interface ImportScan {
   id: string;
   rootDir: string;
+  directoryImportResultCount: number;
+  importErrorCount: number;
   status: ImportScanStatus;
   startedUtc: string;
   finishedUtc?: string;

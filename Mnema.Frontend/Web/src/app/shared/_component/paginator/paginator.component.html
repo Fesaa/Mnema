@@ -3,11 +3,19 @@
 }
 
 @if (!loading() || !hideOnLoading()) {
-  @if (itemsTemplate) {
-    <ng-container [ngTemplateOutlet]="itemsTemplate" [ngTemplateOutletContext]="{$implicit: items()}">
-    </ng-container>
+
+  @if (items().length === 0) {
+    @if (emptyTemplate(); as tmpl) {
+      <ng-container [ngTemplateOutlet]="tmpl">
+      </ng-container>
+    }
   } @else {
-    <ng-content></ng-content>
+    @if (itemsTemplate) {
+      <ng-container [ngTemplateOutlet]="itemsTemplate" [ngTemplateOutletContext]="{$implicit: items()}">
+      </ng-container>
+    } @else {
+      <ng-content></ng-content>
+    }
   }
 }
 

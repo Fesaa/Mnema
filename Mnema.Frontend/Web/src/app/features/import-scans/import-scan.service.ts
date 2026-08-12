@@ -1,7 +1,7 @@
 import {inject, Service} from '@angular/core';
 import {environment} from "@env/environment";
 import {HttpClient} from "@angular/common/http";
-import {FullImportScan, ShallowImportScan, StartScanRequest} from "@mnema/features/import-scans/models";
+import {DirectoryImportResult, ImportError, ImportScan, StartScanRequest} from "@mnema/features/import-scans/models";
 import {PagedList} from "@mnema/_models/paged-list";
 
 @Service()
@@ -15,11 +15,19 @@ export class ImportScanService {
   }
 
   getPagedScans(pageNumber: number, pageSize: number) {
-    return this.httpClient.get<PagedList<ShallowImportScan>>(this.apiUrl + `/paged?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+    return this.httpClient.get<PagedList<ImportScan>>(this.apiUrl + `/paged?pageNumber=${pageNumber}&pageSize=${pageSize}`);
   }
 
   getById(id: string) {
-    return this.httpClient.get<FullImportScan>(this.apiUrl + `/${id}`);
+    return this.httpClient.get<ImportScan>(this.apiUrl + `/${id}`);
+  }
+
+  getErrorsPaged(id: string, pageNumber: number, pageSize: number) {
+      return this.httpClient.get<PagedList<ImportError>>(this.apiUrl + `/${id}/errors?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+  }
+
+  getDirectoriesPaged(id: string, pageNumber: number, pageSize: number) {
+    return this.httpClient.get<PagedList<DirectoryImportResult>>(this.apiUrl + `/${id}/directories?pageNumber=${pageNumber}&pageSize=${pageSize}`);
   }
 
   delete(id: string) {

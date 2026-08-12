@@ -11,7 +11,7 @@ import {
   Output,
   signal,
   TemplateRef,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy, contentChild
 } from '@angular/core';
 import {NgTemplateOutlet} from "@angular/common";
 import {TranslocoDirective} from "@jsverse/transloco";
@@ -37,6 +37,7 @@ export class PaginatorComponent<T> implements OnInit {
   private readonly toastService = inject(ToastService);
 
   @ContentChild("items") itemsTemplate?: TemplateRef<any>;
+  emptyTemplate = contentChild<TemplateRef<any>>('empty');
 
   pageLoader = input.required<PageLoader<T>>();
   pageSize = input(20);

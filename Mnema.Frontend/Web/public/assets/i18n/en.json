@@ -111,6 +111,13 @@
     "Failed": "Failed"
   },
 
+  "import-scan-overview": {
+    "directories": "Directories",
+    "errors": "Errors",
+    "empty": "No results found",
+    "select-item": "Select an item to get started"
+  },
+
   "download-modal": {
     "title": "Download {{name}}",
     "close": "{{common.close}}",
