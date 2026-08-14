@@ -126,7 +126,8 @@
     "files": "Files",
     "metadata-providers": "Metadata Providers",
     "link-hardcover": "Link Hardcover",
-    "link-mangabaka": "Link MangaBaka"
+    "link-mangabaka": "Link MangaBaka",
+    "monitored-series": "Monitored Series"
   },
 
   "download-modal": {

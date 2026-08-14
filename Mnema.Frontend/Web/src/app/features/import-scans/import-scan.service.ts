@@ -1,7 +1,13 @@
 import {inject, Service} from '@angular/core';
 import {environment} from "@env/environment";
 import {HttpClient} from "@angular/common/http";
-import {DirectoryImportResult, ImportError, ImportScan, StartScanRequest} from "@mnema/features/import-scans/models";
+import {
+  DirectoryImportResult,
+  ImportError,
+  ImportScan,
+  StartScanRequest,
+  UpdateDirectoryImportResult
+} from "@mnema/features/import-scans/models";
 import {PagedList} from "@mnema/_models/paged-list";
 
 @Service()
@@ -44,6 +50,10 @@ export class ImportScanService {
 
   autoAcceptDirectoryImportResult(id: string) {
     return this.httpClient.post(this.apiUrl + `/${id}/auto-accept`, {});
+  }
+
+  updateDirectoryImportResult(id: string, req: UpdateDirectoryImportResult) {
+    return this.httpClient.post(this.apiUrl + `/${id}/update`, req);
   }
 
 }

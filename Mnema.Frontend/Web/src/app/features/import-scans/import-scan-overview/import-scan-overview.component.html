@@ -58,6 +58,7 @@
                      (click)="selectItem(item)"
                      [class.active]="selectedItem()?.id == item.id"
                      [class.rejected]="item.status === DirectoryImportStatus.Rejected"
+                     [class.imported]="item.status === DirectoryImportStatus.Imported"
                 >
                   <span class="text-muted">
                     <i class="fa fa-folder"></i>

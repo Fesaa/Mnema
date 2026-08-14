@@ -61,7 +61,7 @@ public class MonitoredSeriesService(
         BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
     }
 
-    public async Task CreateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
+    public async Task<Guid> CreateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
     {
         if (await unitOfWork.MonitoredSeriesRepository.CheckDuplicateSeries(null, dto, cancellationToken))
         {
@@ -93,7 +93,7 @@ public class MonitoredSeriesService(
         if (!string.IsNullOrEmpty(jobId))
             jobId = BackgroundJob.ContinueJobWith(jobId, () => connectionService.CommunicateSeriesMonitored(series.Id, CancellationToken.None));
 
-        if (string.IsNullOrEmpty(series.ExternalId)) return;
+        if (string.IsNullOrEmpty(series.ExternalId)) return series.Id;
 
         if (string.IsNullOrEmpty(jobId))
         {
@@ -103,6 +103,8 @@ public class MonitoredSeriesService(
         {
             BackgroundJob.ContinueJobWith(jobId, () => StartDownload(series.Id, true, CancellationToken.None));
         }
+
+        return series.Id;
     }
 
     [AutomaticRetry(Attempts = 1)]

@@ -33,6 +33,12 @@ export interface DirectoryImportResult {
   lastModifiedUtc: string;
 }
 
+export interface UpdateDirectoryImportResult {
+  parsedSeriesName: string;
+  parsedHardcoverId: number;
+  parsedMangaBakaId: number;
+}
+
 export enum DirectoryImportStatus {
   Queued = 0,
   Rejected = 1,

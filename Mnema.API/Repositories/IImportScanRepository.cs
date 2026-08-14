@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Mnema.Common;
 using Mnema.Models.DTOs.Scanner;
 using Mnema.Models.Entities.Scanner;
+using Mnema.Models.Enums;
 
 namespace Mnema.API.Repositories;
 
@@ -27,7 +28,7 @@ public interface IImportScanRepository : INavigationalEntityRepository<ImportSca
 
     Task<HashSet<string>> GetAlreadyLinkedDirectoriesForRoot(string root, CancellationToken cancellationToken);
 
-    Task<int> GetMaxQueuePosition(Guid scanId, CancellationToken cancellationToken);
+    Task<int> GetMaxQueuePosition(Guid scanId, DirectoryImportStatus status, CancellationToken cancellationToken);
     Task<DirectoryImportResult?> GetDirectoryImportResult(Guid id, CancellationToken cancellationToken);
     Task<ImportError?> GetImportError(Guid id, CancellationToken cancellationToken);
 

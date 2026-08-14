@@ -61,7 +61,7 @@ public interface IMonitoredSeriesService
     ];
 
     Task UpdateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
-    Task CreateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
+    Task<Guid> CreateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     FormDefinition GetForm();
     Task<FormDefinition> GetMetadataForm(Provider provider, CancellationToken cancellationToken = default);
 

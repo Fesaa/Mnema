@@ -46,7 +46,8 @@ public class ImportScanRepository(MnemaDataContext ctx, IMapper mapper) : Abstra
         return ctx.DirectoryImportResults
             .Where(d => d.ImportScanId == scanId)
             .ProjectTo<DirectoryImportResultDto>(mapper.ConfigurationProvider)
-            .OrderBy(x => x.QueuePosition)
+            .OrderBy(x => x.Status)
+            .ThenBy(x => x.QueuePosition)
             .AsPagedList(paginationParams, cancellationToken);
     }
 
@@ -75,11 +76,12 @@ public class ImportScanRepository(MnemaDataContext ctx, IMapper mapper) : Abstra
             .ToHashSetAsync(cancellationToken);
     }
 
-    public Task<int> GetMaxQueuePosition(Guid scanId, CancellationToken cancellationToken)
+    public async Task<int> GetMaxQueuePosition(Guid scanId, DirectoryImportStatus status,  CancellationToken cancellationToken)
     {
-        return ctx.DirectoryImportResults
-            .Where(d => d.ImportScanId == scanId && d.Status == DirectoryImportStatus.Queued)
-            .MaxAsync(d => d.QueuePosition, cancellationToken);
+        return await ctx.DirectoryImportResults
+            .Where(d => d.ImportScanId == scanId && d.Status == status)
+            .Select(d => (int?) d.QueuePosition)
+            .MaxAsync(cancellationToken) ?? 0;
     }
 
     public Task<DirectoryImportResult?> GetDirectoryImportResult(Guid id, CancellationToken cancellationToken)

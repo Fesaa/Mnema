@@ -8,6 +8,11 @@
   opacity: 0.75;
 }
 
+.item-card.imported {
+  background-color: var(--secondary-color-light);
+  opacity: 0.75;
+}
+
 
 #items {
   height: 60vh;

@@ -8,7 +8,9 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.API.Repositories;
+using Mnema.API.Services;
 using Mnema.Common;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.Scanner;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
@@ -16,7 +18,7 @@ using Mnema.Models.Internal;
 namespace Mnema.Server.Controllers;
 
 [Authorize(Roles.ImportScans)]
-public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfWork unitOfWork): BaseApiController
+public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfWork unitOfWork, IMonitoredSeriesService monitoredSeriesService, IImportScanService importScanService): BaseApiController
 {
 
     [HttpPost("start-import-scan")]
@@ -73,15 +75,7 @@ public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfW
     [HttpPost("{id:guid}/reject")]
     public async Task<IActionResult> Reject(Guid id)
     {
-        var result = await unitOfWork.ImportScanRepository.GetDirectoryImportResult(id, HttpContext.RequestAborted);
-        if (result == null) return NotFound();
-
-        var max = await unitOfWork.ImportScanRepository.GetMaxQueuePosition(result.ImportScanId,
-            HttpContext.RequestAborted);
-
-        result.Status = DirectoryImportStatus.Rejected;
-        result.QueuePosition = max + 1;
-        await unitOfWork.CommitAsync();
+        await importScanService.RejectDirectoryImport(id, HttpContext.RequestAborted);
 
         return Ok();
     }
@@ -89,14 +83,15 @@ public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfW
     [HttpPost("{id:guid}/skip")]
     public async Task<IActionResult> Skip(Guid id)
     {
-        var result = await unitOfWork.ImportScanRepository.GetDirectoryImportResult(id, HttpContext.RequestAborted);
-        if (result == null) return NotFound();
+        await importScanService.SkipDirectoryImport(id, HttpContext.RequestAborted);
 
-        var max = await unitOfWork.ImportScanRepository.GetMaxQueuePosition(result.ImportScanId,
-            HttpContext.RequestAborted);
+        return Ok();
+    }
 
-        result.QueuePosition = max + 1;
-        await unitOfWork.CommitAsync();
+    [HttpPost("{id:guid}/update")]
+    public async Task<IActionResult> UpdateDirectoryImportResult(Guid id, [FromBody] UpdateDirectoryImportResultDto dto)
+    {
+        await importScanService.UpdateDirectoryImport(id, dto, HttpContext.RequestAborted);
 
         return Ok();
     }
@@ -104,6 +99,8 @@ public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfW
     [HttpPost("{id:guid}/auto-accept")]
     public async Task<IActionResult> AutoAccept(Guid id)
     {
+        await importScanService.AutoAcceptDirectoryImport(id, HttpContext.RequestAborted);
+
         return Ok();
     }
 
