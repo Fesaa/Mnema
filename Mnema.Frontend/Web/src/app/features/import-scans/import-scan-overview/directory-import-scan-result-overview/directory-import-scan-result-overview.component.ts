@@ -82,9 +82,10 @@ export class DirectoryImportScanResultOverviewComponent {
     }
 
     component.series.set(newMonitoredSeries);
+    component.submitOnClose.set(false);
 
-    this.modalService.onClose$(modal).pipe(
-      switchMap(() => this.importScanService.acceptDirectoryImportResult(this.result().id)),
+    this.modalService.onClose$<MonitoredSeries>(modal).pipe(
+      switchMap(s => this.importScanService.acceptDirectoryImportResult(this.result().id, s)),
       tap(() => this.decisionResult.emit(DirectoryImportStatus.Imported)),
     ).subscribe();
   }

@@ -9,6 +9,7 @@ using Mnema.Models.Entities.Authentication;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Scanner;
 using Mnema.Models.Entities.User;
+using Mnema.Models.Enums;
 
 namespace Mnema.Models;
 
@@ -37,7 +38,9 @@ public class AutoMapperProfiles : Profile
         CreateMap<DirectoryImportResult, DirectoryImportResultDto>();
         CreateMap<ImportError, ImportErrorDto>();
         CreateMap<ImportScan, ImportScanShallowDto>()
-            .ForMember(d => d.DirectoryImportResultCount, o => o.MapFrom(s => s.DirectoryImportResults.Count))
-            .ForMember(d => d.ImportErrorCount, o => o.MapFrom(s => s.ImportErrors.Count));
+            .ForMember(d => d.DirectoryImportResultCount, o
+                => o.MapFrom(s => s.DirectoryImportResults.Count(d => d.Status == DirectoryImportStatus.Queued)))
+            .ForMember(d => d.ImportErrorCount, o
+                => o.MapFrom(s => s.ImportErrors.Count));
     }
 }

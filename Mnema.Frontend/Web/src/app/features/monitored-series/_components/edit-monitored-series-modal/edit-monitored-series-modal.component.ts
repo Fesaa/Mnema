@@ -28,6 +28,10 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
   private readonly genericFormFactoryService = inject(GenericFormFactoryService);
 
   series = model.required<MonitoredSeries>();
+  /**
+   * Can we set to false if the caller wants to handle the callback with the new MonitoredSeries object themselves
+   */
+  submitOnClose = model(true);
 
   activeTab = signal<'general' | 'metadata' | 'advanced'>('general');
   saving = signal(false);
@@ -75,6 +79,11 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
     if (!seriesValue.metadata)
       seriesValue.metadata = {};
 
+    if (!this.submitOnClose()) {
+      this.modal.close(seriesValue);
+      return;
+    }
+
     const action$ = this.series().id === ''
       ? this.monitoredSeriesService.new(seriesValue)
       : this.monitoredSeriesService.update(seriesValue);
@@ -87,7 +96,7 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
       tap(() => this.saving.set(false)),
       tap(() => {
         this.toastService.successLoco(`monitored-series.toasts.${kind}.success`, {name: seriesValue.title});
-        this.modal.close(true);
+        this.modal.close();
       }),
       catchError(err => {
         this.toastService.errorLoco(`monitored-series.toasts.${kind}.error`, {name: seriesValue.title}, {msg: err.error.message});

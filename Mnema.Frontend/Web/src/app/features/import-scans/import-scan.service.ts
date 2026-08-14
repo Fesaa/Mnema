@@ -9,6 +9,7 @@ import {
   UpdateDirectoryImportResult
 } from "@mnema/features/import-scans/models";
 import {PagedList} from "@mnema/_models/paged-list";
+import {MonitoredSeries} from "@mnema/features/monitored-series/monitored-series.service";
 
 @Service()
 export class ImportScanService {
@@ -52,8 +53,8 @@ export class ImportScanService {
     return this.httpClient.post(this.apiUrl + `/${id}/auto-accept`, {});
   }
 
-  acceptDirectoryImportResult(id: string) {
-    return this.httpClient.post(this.apiUrl + `/${id}/accept`, {});
+  acceptDirectoryImportResult(id: string, req: MonitoredSeries) {
+    return this.httpClient.post(this.apiUrl + `/${id}/accept`, req);
   }
 
   updateDirectoryImportResult(id: string, req: UpdateDirectoryImportResult) {

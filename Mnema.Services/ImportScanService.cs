@@ -127,7 +127,7 @@ public class ImportScanService(IUnitOfWork unitOfWork, IMonitoredSeriesService m
         await unitOfWork.CommitAsync(cancellationToken);
     }
 
-    public async Task AcceptDirectoryImport(Guid id, CancellationToken cancellationToken)
+    public async Task AcceptDirectoryImport(Guid id, CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken)
     {
         var result = await unitOfWork.ImportScanRepository.GetDirectoryImportResult(id, cancellationToken);
         if (result == null)
@@ -140,11 +140,14 @@ public class ImportScanService(IUnitOfWork unitOfWork, IMonitoredSeriesService m
             throw new BadRequestException();
         }
 
+        var monitoredSeriesId = await monitoredSeriesService.CreateMonitoredSeries(dto, cancellationToken);
+
         var max = await unitOfWork.ImportScanRepository
             .GetMaxQueuePosition(result.ImportScanId, DirectoryImportStatus.Imported, cancellationToken);
 
         result.QueuePosition = max + 1;
         result.Status = DirectoryImportStatus.Imported;
+        result.MonitoredSeriesId = monitoredSeriesId;
         await unitOfWork.CommitAsync(cancellationToken);
     }
 }
