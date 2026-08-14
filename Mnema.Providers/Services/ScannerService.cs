@@ -304,7 +304,7 @@ public class ScannerService(
         }
 
         logger.LogDebug("Adding directory {Path} to scan. Series: {SeriesName}", path, onDiskContent.SeriesName);
-        scan.DirectoryImportResults.Add(new DirectoryImportResult
+        var result = new DirectoryImportResult
         {
             Directory = path.RemovePrefix(configuration.BaseDir),
             Status = DirectoryImportStatus.Queued,
@@ -313,7 +313,25 @@ public class ScannerService(
             ParsedMangaBakaId = ExternalIdParser.GetMangaBakaId(onDiskContent.ComicInfo?.Web),
             Files = files.Select(f => f.RemovePrefix(configuration.BaseDir)).ToList(),
             QueuePosition = scan.DirectoryImportResults.Count,
-        });
+        };
+
+        await LinkMonitoredSeries(result, cancellationToken);
+
+        scan.DirectoryImportResults.Add(result);
+    }
+
+    private async Task LinkMonitoredSeries(DirectoryImportResult result, CancellationToken cancellationToken)
+    {
+        if (result is { ParsedHardcoverId: <= 0, ParsedMangaBakaId: <= 0 })
+            return;
+
+        var match = await unitOfWork.MonitoredSeriesRepository
+            .GetByMetadataIds(result.ParsedHardcoverId.ToString(), result.ParsedMangaBakaId.ToString(), cancellationToken);
+        if (match != null)
+        {
+            result.MonitoredSeriesId = match.Id;
+            result.Status = DirectoryImportStatus.Imported;
+        }
     }
 
 

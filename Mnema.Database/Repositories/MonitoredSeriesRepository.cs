@@ -76,6 +76,17 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
             .ToListAsync(cancellationToken);
     }
 
+    public Task<MonitoredSeries?> GetByMetadataIds(string hardcoverId, string mangaBakaId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(hardcoverId) && string.IsNullOrEmpty(mangaBakaId))
+            return Task.FromResult<MonitoredSeries?>(null);
+
+        return ctx.MonitoredSeries
+            .Where(m => (!string.IsNullOrEmpty(hardcoverId) && m.HardcoverId == hardcoverId)
+                        || (!string.IsNullOrEmpty(mangaBakaId) && m.MangaBakaId == mangaBakaId))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public Task<List<MonitoredSeries>> GetByProvider(Provider provider, CancellationToken cancellationToken = default)
     {
         return ctx.MonitoredSeries
