@@ -104,6 +104,14 @@ public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfW
         return Ok();
     }
 
+    [HttpPost("{id:guid}/accept")]
+    public async Task<IActionResult> Import(Guid id)
+    {
+        await importScanService.AcceptDirectoryImport(id, HttpContext.RequestAborted);
+
+        return Ok();
+    }
+
 
 
 }

@@ -2,7 +2,7 @@ import {Component, computed, inject, input, model, output, TemplateRef, viewChil
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
 import {
   DirectoryImportResult,
-  DirectoryImportStatus,
+  DirectoryImportStatus, ImportScan,
   UpdateDirectoryImportResult
 } from "@mnema/features/import-scans/models";
 import {ImportScanService} from "@mnema/features/import-scans/import-scan.service";
@@ -18,6 +18,12 @@ import {ListSelectModalComponent} from "@mnema/shared/_component/list-select-mod
 import {SentenceCasePipe} from "@mnema/_pipes/sentence-case.pipe";
 import {ToastService} from "@mnema/_services/toast.service";
 import {RouterLink} from "@angular/router";
+import {
+  EditMonitoredSeriesModalComponent
+} from "@mnema/features/monitored-series/_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
+import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
+import {ContentFormat, Format, MonitoredSeries} from "@mnema/features/monitored-series/monitored-series.service";
+import {Provider} from "@mnema/_models/page";
 
 @Component({
   selector: 'app-directory-import-scan-result-overview',
@@ -35,6 +41,7 @@ export class DirectoryImportScanResultOverviewComponent {
 
   searchInfoTemplate = viewChild.required<TemplateRef<any>>('searchInfoPreview');
 
+  scan = input.required<ImportScan>();
   result = model.required<DirectoryImportResult>();
 
   canAutoAccept = computed(() => this.result().parsedHardcoverId != 0 || this.result().parsedMangaBakaId != 0)
@@ -54,7 +61,32 @@ export class DirectoryImportScanResultOverviewComponent {
   }
 
   accept() {
+    const [modal, component] = this.modalService.open(EditMonitoredSeriesModalComponent, DefaultModalOptions);
 
+    const newMonitoredSeries: MonitoredSeries = {
+      externalId: '',
+      baseDir: this.scan().rootDir,
+      chapters: [],
+      contentFormat: ContentFormat.Manga,
+      format: Format.Archive,
+      hardcoverId: this.result().parsedHardcoverId > 0 ? this.result().parsedHardcoverId + '' : '',
+      mangaBakaId: this.result().parsedMangaBakaId > 0 ? this.result().parsedMangaBakaId + '' : '',
+      lastDataRefreshUtc: "",
+      provider: Provider.NYAA,
+      summary: "",
+      titleOverride: this.result().parsedSeriesName,
+      validTitles: [this.result().parsedSeriesName],
+      id: '',
+      title: this.result().parsedSeriesName,
+      metadata: {},
+    }
+
+    component.series.set(newMonitoredSeries);
+
+    this.modalService.onClose$(modal).pipe(
+      switchMap(() => this.importScanService.acceptDirectoryImportResult(this.result().id)),
+      tap(() => this.decisionResult.emit(DirectoryImportStatus.Imported)),
+    ).subscribe();
   }
 
   autoAccept() {

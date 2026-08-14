@@ -11,4 +11,5 @@ public interface IImportScanService
     Task SkipDirectoryImport(Guid id, CancellationToken cancellationToken);
     Task UpdateDirectoryImport(Guid id, UpdateDirectoryImportResultDto dto, CancellationToken cancellationToken);
     Task AutoAcceptDirectoryImport(Guid id, CancellationToken cancellationToken);
+    Task AcceptDirectoryImport(Guid id, CancellationToken cancellationToken);
 }

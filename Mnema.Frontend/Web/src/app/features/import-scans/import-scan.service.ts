@@ -52,6 +52,10 @@ export class ImportScanService {
     return this.httpClient.post(this.apiUrl + `/${id}/auto-accept`, {});
   }
 
+  acceptDirectoryImportResult(id: string) {
+    return this.httpClient.post(this.apiUrl + `/${id}/accept`, {});
+  }
+
   updateDirectoryImportResult(id: string, req: UpdateDirectoryImportResult) {
     return this.httpClient.post(this.apiUrl + `/${id}/update`, req);
   }

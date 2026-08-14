@@ -126,4 +126,25 @@ public class ImportScanService(IUnitOfWork unitOfWork, IMonitoredSeriesService m
         result.MonitoredSeriesId = monitoredSeriesId;
         await unitOfWork.CommitAsync(cancellationToken);
     }
+
+    public async Task AcceptDirectoryImport(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await unitOfWork.ImportScanRepository.GetDirectoryImportResult(id, cancellationToken);
+        if (result == null)
+        {
+            throw new NotFoundException();
+        }
+
+        if (result.Status == DirectoryImportStatus.Imported)
+        {
+            throw new BadRequestException();
+        }
+
+        var max = await unitOfWork.ImportScanRepository
+            .GetMaxQueuePosition(result.ImportScanId, DirectoryImportStatus.Imported, cancellationToken);
+
+        result.QueuePosition = max + 1;
+        result.Status = DirectoryImportStatus.Imported;
+        await unitOfWork.CommitAsync(cancellationToken);
+    }
 }
