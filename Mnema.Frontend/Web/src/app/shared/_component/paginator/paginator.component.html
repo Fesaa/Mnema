@@ -4,7 +4,7 @@
 
 @if (!loading() || !hideOnLoading()) {
 
-  @if (items().length === 0) {
+  @if (items().length === 0 && handleEmpty()) {
     @if (emptyTemplate(); as tmpl) {
       <ng-container [ngTemplateOutlet]="tmpl">
       </ng-container>

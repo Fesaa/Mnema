@@ -34,7 +34,8 @@ public class ScannerService(
     INamingService namingService,
     HttpClient httpClient,
     IDistributedCache cache,
-    IUnitOfWork unitOfWork
+    IUnitOfWork unitOfWork,
+    IMessageService messageService
     ) : IScannerService
 {
 
@@ -224,6 +225,8 @@ public class ScannerService(
         {
             importScan.FinishedUtc = DateTime.UtcNow;
             await unitOfWork.CommitAsync(cancellationToken);
+
+            await messageService.ScanFinished(importScan.Id);
         }
     }
 

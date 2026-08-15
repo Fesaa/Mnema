@@ -7,7 +7,9 @@ import {ImportScanStatusPipe} from "@mnema/features/import-scans/import-scan-sta
 import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
 import {RouterLink} from "@angular/router";
 import {ModalService} from "@mnema/_services/modal.service";
-import {filter, switchMap, tap} from "rxjs";
+import {EMPTY, filter, switchMap, tap} from "rxjs";
+import {Dir} from "@angular/cdk/bidi";
+import {EventType, SignalRService} from "@mnema/_services/signal-r.service";
 
 @Component({
   selector: 'app-import-scans-list',
@@ -25,12 +27,20 @@ export class ImportScansListComponent {
 
   private readonly importScansService = inject(ImportScanService);
   private readonly modalService = inject(ModalService);
+  private readonly signalRService = inject(SignalRService);
 
   pageLoader = (pageNumber: number, pageSize: number) => {
     return this.importScansService.getPagedScans(pageNumber, pageSize);
   };
 
   reloader = new EventEmitter<void>();
+
+  constructor() {
+    this.signalRService.events$.pipe(
+      filter(e => e.type === EventType.ScanFinished),
+      tap(e => this.reloader.emit())
+    ).subscribe();
+  }
 
   trackById(index: number, item: ImportScan): string {
     return item.id;
@@ -46,4 +56,17 @@ export class ImportScansListComponent {
     ).subscribe();
   }
 
+  protected newScan() {
+    this.modalService.getDirectory$('', {
+      create: false, copy: false, showFiles: false, filter: true
+    }).pipe(
+      switchMap(directory => {
+        if (!directory) return EMPTY;
+
+        return this.importScansService.startScan({
+          rootDir: directory,
+        });
+      }),
+    ).subscribe();
+  }
 }

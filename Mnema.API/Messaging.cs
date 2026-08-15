@@ -19,6 +19,7 @@ public enum MessageEventType
     BulkContentInfoUpdate,
     MetadataRefreshed,
     RefreshDashboard,
+    ScanFinished,
 }
 
 public interface IMessageService
@@ -38,4 +39,5 @@ public interface IMessageService
     Task Notify(NotificationDto notification);
 
     Task MetadataRefreshed(Guid seriesId);
+    Task ScanFinished(Guid scanId);
 }

@@ -90,6 +90,14 @@ internal class MessageService(IHubContext<MessageHub> ctx) : IMessageService
         });
     }
 
+    public async Task ScanFinished(Guid scanId)
+    {
+        await Send(nameof(MessageEventType.ScanFinished), new
+        {
+            ScanId = scanId
+        });
+    }
+
     private async Task Send(string method, object? body = null)
     {
         await ctx.Clients.All.SendAsync(method, body);

@@ -1,7 +1,14 @@
 <ng-container *transloco="let t; prefix: 'import-scans-list'">
 
-  <h1>{{t('title')}}</h1>
-  <span class="text-muted my-2">{{t('description')}}</span>
+  <div class="d-flex justify-content-between mb-3">
+    <div>
+      <h1>{{t('title')}}</h1>
+      <span class="text-muted my-2">{{t('description')}}</span>
+    </div>
+    <div>
+      <button type="button" class="btn btn-primary" (click)="newScan()">{{t('start-new')}}</button>
+    </div>
+  </div>
 
   <app-table
     [pageLoader]="pageLoader"
@@ -59,7 +66,18 @@
     </ng-template>
 
     <ng-template #empty>
+      <tr>
+        <td colspan="4" class="py-5">
+          <div class="d-flex flex-column align-items-center text-center gap-3 text-muted">
+            <h5 class="mb-1">
+              {{ t('empty.title') }}
+            </h5>
 
+            <p class="mb-0" [innerHtml]="t('empty.description')">
+            </p>
+          </div>
+        </td>
+      </tr>
     </ng-template>
 
     <ng-template #mobile let-scan>

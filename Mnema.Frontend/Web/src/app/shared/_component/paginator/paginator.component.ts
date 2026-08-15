@@ -43,6 +43,7 @@ export class PaginatorComponent<T> implements OnInit {
   pageSize = input(20);
   startPage = input(0);
   simplePagination = input(false);
+  handleEmpty = input(true);
 
   noResultsKey = input<string | null>('common.no-results');
   successKey = input<string | null>(null);

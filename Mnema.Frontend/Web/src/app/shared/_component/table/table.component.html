@@ -5,6 +5,7 @@
                (currentItems)="currentItems.emit($event)"
                [reloader]="reloader()"
                [pageSize]="pageSize()"
+               [handleEmpty]="false"
 >
 
   <ng-template #items let-items>
@@ -16,7 +17,7 @@
         }
 
         @if (items.length === 0) {
-          <ng-container [ngTemplateOutlet]="emptyTemplate"></ng-container>
+
         }
       </div>
     } @else {
