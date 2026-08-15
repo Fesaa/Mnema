@@ -265,7 +265,8 @@
   },
   "format-pipe": {
     "Archive": "Archive",
-    "Epub": "Epub"
+    "Epub": "Epub",
+    "Unsupported": "Unsupported"
   },
 
   "confirm-modal": {

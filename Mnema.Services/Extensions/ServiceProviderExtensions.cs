@@ -43,6 +43,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<IGroupedReleaseDetector, GroupedReleaseDetector>();
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<IImportScanService, ImportScanService>();
+        services.AddScoped<IEpubMetadataService, EpubMetadataService>();
 
         #region External Connection
 

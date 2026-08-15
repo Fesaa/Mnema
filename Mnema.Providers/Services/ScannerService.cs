@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using BencodeNET.Parsing;
 using BencodeNET.Torrents;
@@ -37,7 +38,8 @@ public class ScannerService(
     IDistributedCache cache,
     IUnitOfWork unitOfWork,
     IMessageService messageService,
-    IMangabakaMetadataService mangabakaMetadataService
+    IMangabakaMetadataService mangabakaMetadataService,
+    IEpubMetadataService epubMetadataService
     ) : IScannerService
 {
 
@@ -86,13 +88,13 @@ public class ScannerService(
     {
         var file = Path.GetFileName(path);
 
-        var content = new OnDiskContent()
+        var content = new OnDiskContent
         {
             Path = path,
             FileName = file,
+            ComicInfo = ParseComicInfoFromFile(path)
         };
 
-        content.ComicInfo = ParseComicInfoFromFile(path);
         if (content.ComicInfo != null)
         {
             content.SeriesName = content.ComicInfo.Series;
@@ -128,7 +130,7 @@ public class ScannerService(
                 case Format.Archive:
                     return ParseComicInfoFromArchive(file);
                 case Format.Epub:
-                    break;
+                    return epubMetadataService.ReadComicInfo(file, CancellationToken.None);
                 case Format.Unsupported:
                     break;
                 default:
