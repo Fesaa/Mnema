@@ -62,10 +62,10 @@
 
   @if (!result().monitoredSeriesId) {
     <div class="card-footer d-flex flex-wrap justify-content-end gap-2">
-      <button type="button" class="btn btn-outline-danger" (click)="reject()">
+      <button type="button" class="btn btn-outline-danger" (click)="reject()" [disabled]="result().status === DirectoryImportStatus.Rejected">
         <i class="fa fa-xmark me-1"></i>{{ t('reject') }}
       </button>
-      <button type="button" class="btn btn-outline-secondary" (click)="skip()">
+      <button type="button" class="btn btn-outline-secondary" (click)="skip()" [disabled]="result().status === DirectoryImportStatus.Rejected">
         <i class="fa fa-forward me-1"></i>{{ t('skip') }}
       </button>
       <button type="button" class="btn btn-success" (click)="autoAccept()" [disabled]="!canAutoAccept()">

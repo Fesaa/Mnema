@@ -163,4 +163,5 @@ export class DirectoryImportScanResultOverviewComponent {
     return this.modalService.onClose$<MetadataSearchResult>(modal, true);
   }
 
+  protected readonly DirectoryImportStatus = DirectoryImportStatus;
 }
