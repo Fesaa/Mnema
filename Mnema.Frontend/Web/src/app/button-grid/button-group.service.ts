@@ -1,5 +1,5 @@
 import {computed, inject, Injectable, TemplateRef} from '@angular/core';
-import {NavigationExtras, Router, UrlTree} from "@angular/router";
+import {NavigationExtras, Router} from "@angular/router";
 import {Role} from "../_models/user";
 import {PageService} from "../_services/page.service";
 import {translate, TranslocoService} from "@jsverse/transloco";

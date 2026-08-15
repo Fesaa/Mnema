@@ -2,15 +2,13 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
-using Mnema.Models.Entities;
-using Mnema.Models.Entities.Content;
-using Mnema.Models.Publication;
 
 namespace Mnema.Services;
 
@@ -42,7 +40,7 @@ public class CalendarService(IUnitOfWork unitOfWork, INamingService namingServic
             };
         }).WhereNotNull();
 
-        var calendar = new Ical.Net.Calendar();
+        var calendar = new Calendar();
         calendar.Events.AddRange(events);
         calendar.AddTimeZone(TimeZoneInfo.Local);
 

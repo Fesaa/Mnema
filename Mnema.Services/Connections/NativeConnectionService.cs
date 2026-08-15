@@ -10,7 +10,6 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.Content;
-using Mnema.Models.Entities.User;
 
 namespace Mnema.Services.Connections;
 

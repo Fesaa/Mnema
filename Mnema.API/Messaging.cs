@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;

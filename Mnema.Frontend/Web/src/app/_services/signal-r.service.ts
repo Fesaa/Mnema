@@ -1,7 +1,6 @@
 import {effect, inject, Injectable} from '@angular/core';
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import {environment} from "../../environments/environment";
-import {User} from "../_models/user";
 import {ReplaySubject} from "rxjs";
 import {SettingsService} from "@mnema/_services/settings.service";
 

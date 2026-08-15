@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Mnema.Common;
 
@@ -12,5 +13,5 @@ public static class BuildInfo
 
     public static string AppIdentifier { get; } = $"{AppName}/{Version}";
 
-    public static string FrameworkDescription { get; } = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
+    public static string FrameworkDescription { get; } = RuntimeInformation.FrameworkDescription;
 }

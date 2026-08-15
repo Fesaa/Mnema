@@ -12,7 +12,6 @@ using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 
 namespace Mnema.Services;

@@ -1,4 +1,4 @@
-import {effect, inject, Injectable, signal} from '@angular/core';
+import {inject, Injectable, signal} from '@angular/core';
 import {environment} from "../../environments/environment";
 import {Config, UpdateServerSettings} from '../_models/config';
 import {HttpClient} from "@angular/common/http";

@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from '@angular/core';
 import {FormService} from "@mnema/_services/form.service";
-import {MetadataProvider, MetadataProviders} from "@mnema/features/monitored-series/metadata.service";
+import {MetadataProvider} from "@mnema/features/monitored-series/metadata.service";
 import {ModalService} from "@mnema/_services/modal.service";
 import {catchError, of, switchMap, tap} from "rxjs";
 import {GenericFormModalComponent} from "@mnema/generic-form/generic-form-modal/generic-form-modal.component";

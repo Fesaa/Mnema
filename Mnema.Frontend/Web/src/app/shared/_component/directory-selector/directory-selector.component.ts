@@ -1,14 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  HostListener,
-  inject,
-  Input,
-  OnInit,
-  Output,
-  ChangeDetectionStrategy,
-  signal
-} from '@angular/core';
+import {Component, EventEmitter, HostListener, inject, Input, OnInit, Output, signal} from '@angular/core';
 import {catchError, of, ReplaySubject, tap} from "rxjs";
 import {DirEntry} from "../../../_models/io";
 import {Stack} from "../../data-structures/stack";

@@ -1,4 +1,4 @@
-import {Component, computed, inject, input, OnInit, signal, ChangeDetectionStrategy} from '@angular/core';
+import {Component, computed, inject, input, OnInit, signal} from '@angular/core';
 import {SearchInfo} from "@mnema/_models/Info";
 import {Page} from "@mnema/_models/page";
 import {bounceIn200ms} from "@mnema/_animations/bounce-in";

@@ -12,7 +12,6 @@ using Mnema.API.Services;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.Scanner;
-using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 
 namespace Mnema.Server.Controllers;

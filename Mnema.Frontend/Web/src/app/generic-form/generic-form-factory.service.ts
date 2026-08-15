@@ -12,7 +12,6 @@ import {FormControlDefinition, FormControlOption, FormType, ValueType} from "./f
 import {TypeaheadSettings} from "../type-ahead/typeahead.component";
 import {of} from "rxjs";
 import {MnemaValidators} from "../shared/validators";
-import {environment} from "@env/environment";
 import {LoggingService, LogLevel} from "@mnema/_services/logging-service";
 import {HttpClient} from "@angular/common/http";
 

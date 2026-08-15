@@ -1,16 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnDestroy,
-  OnInit,
-  signal
-} from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import {ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
+import {FormsModule} from '@angular/forms';
 
-import { NavService } from '@mnema/_services/nav.service';
-import { FormDefinition } from '@mnema/generic-form/form';
-import { GenericFormComponent } from '@mnema/generic-form/generic-form.component';
+import {NavService} from '@mnema/_services/nav.service';
+import {FormDefinition} from '@mnema/generic-form/form';
+import {GenericFormComponent} from '@mnema/generic-form/generic-form.component';
 
 @Component({
   selector: 'app-generic-form-playground',

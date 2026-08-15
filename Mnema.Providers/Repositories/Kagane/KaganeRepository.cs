@@ -275,7 +275,7 @@ public class KaganeRepository(
 
                     if (genres.TryGetValue(id, out var value))
                     {
-                        return new Mnema.Models.Publication.Tag
+                        return new Models.Publication.Tag
                         {
                             Id = id,
                             Value = value.Name,
@@ -283,14 +283,14 @@ public class KaganeRepository(
                         };
                     }
 
-                    return new Mnema.Models.Publication.Tag
+                    return new Models.Publication.Tag
                     {
                         Id = id,
                         Value = g.SelectString("genre_name"),
                         IsMarkedAsGenre = false,
                     };
                 })
-                .Concat(response.SelectMany("tags").Select(t => new Mnema.Models.Publication.Tag
+                .Concat(response.SelectMany("tags").Select(t => new Models.Publication.Tag
                 {
                     Id = t.SelectString("tag_id"),
                     Value = t.SelectString("tag_name"),

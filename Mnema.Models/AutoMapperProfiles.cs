@@ -8,7 +8,6 @@ using Mnema.Models.Entities;
 using Mnema.Models.Entities.Authentication;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Scanner;
-using Mnema.Models.Entities.User;
 using Mnema.Models.Enums;
 
 namespace Mnema.Models;

@@ -1,4 +1,4 @@
-import {Component, computed, effect, EventEmitter, inject, OnInit, signal, ChangeDetectionStrategy} from '@angular/core';
+import {Component, computed, effect, EventEmitter, inject, OnInit, signal} from '@angular/core';
 import {NavService} from "@mnema/_services/nav.service";
 import {MonitoredChapterStatus, MonitoredSeries, MonitoredSeriesService} from "../monitored-series.service";
 import {PageService} from "@mnema/_services/page.service";
@@ -14,7 +14,6 @@ import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
 import {ProviderNamePipe} from "@mnema/_pipes/provider-name.pipe";
 import {querySignal} from "@mnema/shared/signals";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
-import {Role} from "@mnema/_models/user";
 import {Clipboard} from "@angular/cdk/clipboard";
 import {CalendarService} from "@mnema/features/monitored-series/manager/calendar.service";
 import {ToastService} from "@mnema/_services/toast.service";

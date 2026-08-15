@@ -1,13 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using Mnema.Common.Extensions;
 using Mnema.Models.Entities;
 
 namespace Mnema.Metadata.Mangabaka;
-
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 
 public enum MangabakaPublicationStatus
 {

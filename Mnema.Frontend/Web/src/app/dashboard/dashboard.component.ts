@@ -1,4 +1,4 @@
-import {Component, inject, OnDestroy, ChangeDetectionStrategy} from '@angular/core';
+import {Component, inject, OnDestroy} from '@angular/core';
 import {TranslocoDirective} from "@jsverse/transloco";
 import {ButtonGridComponent} from "../button-grid/button-grid.component";
 import {ButtonGroupService} from "../button-grid/button-group.service";

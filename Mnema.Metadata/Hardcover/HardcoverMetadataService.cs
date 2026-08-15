@@ -10,7 +10,6 @@ using Mnema.Common.Helpers;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.Entities;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 

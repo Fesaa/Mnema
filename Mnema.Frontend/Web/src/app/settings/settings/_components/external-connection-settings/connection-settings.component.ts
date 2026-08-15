@@ -8,7 +8,7 @@ import {ConnectionEventPipe} from "./_pipes/connection-event.pipe";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {GenericFormModalComponent} from "../../../../generic-form/generic-form-modal/generic-form-modal.component";
 import {DefaultModalOptions} from "../../../../_models/default-modal-options";
-import {filter, finalize, map, of, switchMap, tap} from "rxjs";
+import {filter, finalize, map, of, switchMap} from "rxjs";
 import {ListSelectModalComponent} from "../../../../shared/_component/list-select-modal/list-select-modal.component";
 import {NotificationService} from "@mnema/_services/notification.service";
 

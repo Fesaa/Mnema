@@ -6,9 +6,7 @@ import {
 } from "@mnema/features/monitored-series/manager/monitored-series-manager.component";
 import {SeriesSearchComponent} from "@mnema/features/monitored-series/series-search/series-search.component";
 import {MonitoredSeriesComponent} from "@mnema/features/monitored-series/monitored-series/monitored-series.component";
-import {
-  monitoredSeriesResolver
-} from "@mnema/features/monitored-series/monitored-series/monitored-series.resolver";
+import {monitoredSeriesResolver} from "@mnema/features/monitored-series/monitored-series/monitored-series.resolver";
 import {MissingChaptersComponent} from "@mnema/features/monitored-series/missing-chapters/missing-chapters.component";
 
 export const routes: Routes = [

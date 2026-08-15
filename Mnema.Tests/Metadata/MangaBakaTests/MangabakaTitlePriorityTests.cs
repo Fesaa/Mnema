@@ -1,8 +1,7 @@
-namespace Mnema.Tests.Metadata.MangaBakaTests;
-
 using System.Collections.Generic;
 using Mnema.Metadata.Mangabaka;
-using Xunit;
+
+namespace Mnema.Tests.Metadata.MangaBakaTests;
 
 public class MangabakaTitlePriorityTests
 {

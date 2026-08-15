@@ -1,7 +1,5 @@
 using Mnema.API;
 using Mnema.Common;
-using Mnema.Common.Extensions;
-using Mnema.Models;
 using Mnema.Models.DTOs.UI;
 
 namespace Mnema.Metadata.Mangabaka;

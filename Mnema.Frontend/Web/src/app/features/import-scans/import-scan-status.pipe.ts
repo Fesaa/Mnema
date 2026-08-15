@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import {Pipe, PipeTransform} from '@angular/core';
 import {ImportScanStatus} from "@mnema/features/import-scans/models";
 import {translate} from "@jsverse/transloco";
 

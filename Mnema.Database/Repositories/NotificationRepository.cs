@@ -3,14 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Mnema.API;
-using Mnema.Common;
-using Mnema.Database.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
-using Mnema.Models.Entities.User;
 
 namespace Mnema.Database.Repositories;
 

@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {CommonModule} from '@angular/common';
 import {MonitoredChapter, MonitoredSeriesService} from "@mnema/features/monitored-series/monitored-series.service";
-import { TableComponent } from "@mnema/shared/_component/table/table.component";
+import {TableComponent} from "@mnema/shared/_component/table/table.component";
 import {TranslocoModule} from "@jsverse/transloco";
 import {RouterLink} from "@angular/router";
 

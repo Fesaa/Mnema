@@ -1,4 +1,4 @@
-import {Component, DestroyRef, HostListener, inject, OnInit, ChangeDetectionStrategy} from '@angular/core';
+import {Component, DestroyRef, HostListener, inject, OnInit} from '@angular/core';
 import {NavigationEnd, Router, RouterOutlet} from '@angular/router';
 import {NavHeaderComponent} from "./nav-header/nav-header.component";
 import {Title} from "@angular/platform-browser";
@@ -11,7 +11,6 @@ import {filter, map, tap} from "rxjs";
 import {ActiveDownloadsService} from "./dashboard/active-downloads/active-downloads.service";
 import {NotificationService} from "./_services/notification.service";
 import {NavService} from "@mnema/_services/nav.service";
-import {ToastService} from "@mnema/_services/toast.service";
 import {RetoastService} from "ngx-retoast";
 
 @Component({

@@ -1,4 +1,4 @@
-import {Component, input, ChangeDetectionStrategy} from '@angular/core';
+import {Component, input} from '@angular/core';
 
 
 type SpinnerSize = 'small' | 'medium' | 'large';

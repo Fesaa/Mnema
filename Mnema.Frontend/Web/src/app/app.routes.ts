@@ -1,8 +1,8 @@
-import { Routes } from '@angular/router';
-import { setupGuard } from './_guards/setup.guard';
-import { authGuard } from './_guards/auth.guard';
-import { setupCompleteGuard } from './_guards/setup-complete.guard';
-import { loggedOutGuard } from './_guards/logged-out.guard';
+import {Routes} from '@angular/router';
+import {setupGuard} from './_guards/setup.guard';
+import {authGuard} from './_guards/auth.guard';
+import {setupCompleteGuard} from './_guards/setup-complete.guard';
+import {loggedOutGuard} from './_guards/logged-out.guard';
 import {InitialSetupComponent} from "@mnema/authentication/initial-setup/initial-setup.component";
 import {LoginComponent} from "@mnema/authentication/login/login.component";
 import {devOnlyGuard} from "@mnema/_guards/dev-only.guard";

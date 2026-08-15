@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  DestroyRef,
-  effect,
-  inject,
-  OnInit,
-  signal
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from '@angular/core';
 import {UpdateServerSettings} from '../../../../_models/config';
 import {FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
@@ -27,7 +18,9 @@ import {
   DownloadClientSettingsComponent
 } from "@mnema/settings/settings/_components/download-client/download-client-settings.component";
 import {AuthKeysComponent} from "@mnema/settings/settings/_components/auth-keys/auth-keys.component";
-import {MetadataProviderSettingsComponent} from "@mnema/settings/settings/_components/metadata-provider-settings/metadata-provider-settings.component";
+import {
+  MetadataProviderSettingsComponent
+} from "@mnema/settings/settings/_components/metadata-provider-settings/metadata-provider-settings.component";
 
 @Component({
   selector: 'app-server-settings',

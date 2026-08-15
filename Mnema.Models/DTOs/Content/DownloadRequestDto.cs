@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Mnema.Common;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 
 namespace Mnema.Models.DTOs.Content;

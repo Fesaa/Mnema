@@ -1,17 +1,15 @@
-using System.Collections.Generic;
-using Mnema.API.Content;
-using Mnema.Common.Extensions;
-using Mnema.Models.Entities.Content;
-using Mnema.Models.Enums;
-using Mnema.Models.Publication;
-
-namespace Mnema.Services;
-
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Mnema.API.Content;
+using Mnema.Common.Extensions;
+using Mnema.Models.Enums;
+using Mnema.Models.Publication;
+
+namespace Mnema.Services;
 
 /// <summary>
 /// This class has been copied and modified from
@@ -1205,7 +1203,7 @@ public partial class ParserService: IParserService
 
     public string? ExtractFilename(string fileUrl)
     {
-        var matches = ParserService.CssImageUrlRegex.Matches(fileUrl);
+        var matches = CssImageUrlRegex.Matches(fileUrl);
         foreach (Match match in matches)
         {
             if (!match.Success) continue;

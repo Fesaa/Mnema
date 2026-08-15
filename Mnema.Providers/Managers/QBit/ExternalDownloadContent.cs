@@ -1,8 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using Mnema.API.Content;
-using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;

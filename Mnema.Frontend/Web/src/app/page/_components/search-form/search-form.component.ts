@@ -1,4 +1,4 @@
-import {Component, computed, effect, input, output, signal, untracked, viewChild, ChangeDetectionStrategy} from '@angular/core';
+import {Component, computed, effect, input, output, signal, untracked} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 
 import {MetadataBag, SearchRequest} from "@mnema/_models/search";

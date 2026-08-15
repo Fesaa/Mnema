@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
@@ -18,15 +17,12 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.API.External;
-using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Common.Helpers;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Scanner;
 using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
-using Mnema.Models.Publication;
 
 namespace Mnema.Providers.Services;
 

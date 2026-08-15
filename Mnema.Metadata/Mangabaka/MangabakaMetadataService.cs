@@ -9,7 +9,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
-using Mnema.API.Content;
 using Mnema.API.Metadata;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
@@ -18,7 +17,6 @@ using Mnema.Common.StringFormatter;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.Entities;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 

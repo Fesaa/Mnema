@@ -4,8 +4,6 @@ using Mnema.Models.Enums;
 
 namespace Mnema.Tests.Metadata.MangaBakaTests;
 
-using Xunit;
-
 public class LinkFilterTests
 {
     [Fact]

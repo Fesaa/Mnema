@@ -2,6 +2,7 @@ import {
   Component,
   computed,
   ContentChild,
+  contentChild,
   effect,
   EventEmitter,
   inject,
@@ -10,13 +11,12 @@ import {
   OnInit,
   Output,
   signal,
-  TemplateRef,
-  ChangeDetectionStrategy, contentChild
+  TemplateRef
 } from '@angular/core';
 import {NgTemplateOutlet} from "@angular/common";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {EMPTY_PAGE, PagedList} from "../../../_models/paged-list";
-import {catchError, EMPTY, finalize, Observable, of, tap} from "rxjs";
+import {catchError, EMPTY, finalize, Observable, tap} from "rxjs";
 import {ToastService} from "../../../_services/toast.service";
 import {LoadingSpinnerComponent} from "../loading-spinner/loading-spinner.component";
 

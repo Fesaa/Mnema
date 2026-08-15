@@ -19,7 +19,7 @@ import {SubscriptionExternalUrlPipe} from "./_pipes/subscription-external-url.pi
 import {provideTransloco} from "@jsverse/transloco";
 import {TranslocoLoaderImpl} from "./_services/transloco-loader";
 import {NavService} from "./_services/nav.service";
-import {catchError, filter, firstValueFrom, of, switchMap, tap} from "rxjs";
+import {filter, firstValueFrom, switchMap, tap} from "rxjs";
 import {PageService} from "./_services/page.service";
 import {RolePipe} from "./_pipes/role.pipe";
 import {errorHandlerInterceptor} from "./_interceptors/error-handler.interceptor";

@@ -3,7 +3,6 @@ import {TranslocoDirective} from "@jsverse/transloco";
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {SearchFormComponent} from "@mnema/page/_components/search-form/search-form.component";
 import {Page} from "@mnema/_models/page";
-import {SearchRequest} from "@mnema/_models/search";
 
 @Component({
   selector: 'app-edit-page-defaults-modal',

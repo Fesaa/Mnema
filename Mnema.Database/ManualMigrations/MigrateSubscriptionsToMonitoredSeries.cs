@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Mnema.API.Content;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 

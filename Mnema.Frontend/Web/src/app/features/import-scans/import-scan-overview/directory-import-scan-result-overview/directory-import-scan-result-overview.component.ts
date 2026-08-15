@@ -2,7 +2,8 @@ import {Component, computed, inject, input, model, output, TemplateRef, viewChil
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
 import {
   DirectoryImportResult,
-  DirectoryImportStatus, ImportScan,
+  DirectoryImportStatus,
+  ImportScan,
   UpdateDirectoryImportResult
 } from "@mnema/features/import-scans/models";
 import {ImportScanService} from "@mnema/features/import-scans/import-scan.service";

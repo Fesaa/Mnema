@@ -10,7 +10,6 @@ using Mnema.Models.Entities.Authentication;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Entities.Scanner;
-using Mnema.Models.Entities.User;
 
 namespace Mnema.Database;
 
