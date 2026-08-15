@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.API.External;
+using Mnema.API.Metadata;
 using Mnema.Common.Extensions;
 using Mnema.Common.Helpers;
 using Mnema.Models.Entities.Scanner;
@@ -35,7 +36,8 @@ public class ScannerService(
     HttpClient httpClient,
     IDistributedCache cache,
     IUnitOfWork unitOfWork,
-    IMessageService messageService
+    IMessageService messageService,
+    IMangabakaMetadataService mangabakaMetadataService
     ) : IScannerService
 {
 
@@ -303,7 +305,7 @@ public class ScannerService(
             return;
         }
 
-        logger.LogDebug("Adding directory {Path} to scan. Series: {SeriesName}", path, onDiskContent.SeriesName);
+        logger.LogTrace("Adding directory {Path} to scan. Series: {SeriesName}", path, onDiskContent.SeriesName);
         var result = new DirectoryImportResult
         {
             Directory = path.RemovePrefix(configuration.BaseDir),
@@ -314,6 +316,18 @@ public class ScannerService(
             Files = files.Select(f => f.RemovePrefix(configuration.BaseDir)).ToList(),
             QueuePosition = scan.DirectoryImportResults.Count,
         };
+
+        if (result.ParsedMangaBakaId <= 0)
+        {
+            var aniListId = ExternalIdParser.GetAniListId(onDiskContent.ComicInfo?.Web);
+            var malId = ExternalIdParser.GetMalId(onDiskContent.ComicInfo?.Web);
+
+            var mangaBakaId = await mangabakaMetadataService.FindMangabakaSeries(aniListId, malId, cancellationToken);
+            if (mangaBakaId != null)
+            {
+                result.ParsedMangaBakaId = mangaBakaId.Value;
+            }
+        }
 
         await LinkMonitoredSeries(result, cancellationToken);
 

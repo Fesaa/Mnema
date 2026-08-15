@@ -278,6 +278,15 @@ internal class MangabakaMetadataService(
         };
     }
 
+    public Task<int?> FindMangabakaSeries(int? aniListId, string? malId, CancellationToken cancellationToken)
+    {
+        return ctx.Series
+            .Where(s => (aniListId != null && s.SourceAnilistId == aniListId) ||
+                        (malId != null && s.SourceMyAnimeListId == malId))
+            .Select(s => (int?) s.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public IStringFormatter<string> NativeLanguageFormatter { get; } = NativeLanguagePlaceholder;
 
     private static readonly StringFormatter<string> NativeLanguagePlaceholder = new StringFormatter<string>()

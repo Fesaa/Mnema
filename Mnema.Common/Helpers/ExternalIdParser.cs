@@ -10,6 +10,8 @@ namespace Mnema.Common.Helpers;
 /// <remarks>Copied and adjusted from Kavita</remarks>
 public static class ExternalIdParser
 {
+    private const string AniListWeblinkWebsite = "https://anilist.co/manga/";
+    private const string MalWeblinkWebsite = "https://myanimelist.net/manga/";
     private const string HardcoverStaffWebsite = "https://hardcover.app/id/authors/";
     private const string HardcoverSeriesWebsite = "https://hardcover.app/id/series/";
     private const string HardcoverBookWebsite = "https://hardcover.app/id/book/";
@@ -17,11 +19,23 @@ public static class ExternalIdParser
 
     private static readonly Dictionary<string, int> WeblinkExtractionMap = new()
     {
+        {AniListWeblinkWebsite, 0},
+        {MalWeblinkWebsite, 0},
         {HardcoverSeriesWebsite, 0},
         {HardcoverBookWebsite, 0},
         {HardcoverStaffWebsite, 0},
         {MangaBakaWebsite, 0},
     };
+
+    public static string? GetMalId(string? weblinks)
+    {
+        return ExtractId<string?>(weblinks, MalWeblinkWebsite);
+    }
+
+    public static int? GetAniListId(string? weblinks)
+    {
+        return ExtractId<int?>(weblinks, AniListWeblinkWebsite);
+    }
 
     public static int GetMangaBakaId(string? weblinks)
     {

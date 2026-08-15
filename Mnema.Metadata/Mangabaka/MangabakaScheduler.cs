@@ -134,7 +134,31 @@ public class MangabakaScheduler(
 
         logger.LogDebug("Downloaded database {DbPath} in {Elapsed}", dbPath, sw.Elapsed.ToReadableString());
 
+        await EnsureSourceIndexesAsync(ct);
         await ReIndexLucene(ct);
+    }
+
+    private async Task EnsureSourceIndexesAsync(CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Creating source ID indexes on series table");
+        var dbPath = Path.Join(configuration.PersistentStorage, DatabaseName);
+        await using var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={dbPath}");
+        await connection.OpenAsync(cancellationToken);
+
+        string[] indexes =
+        [
+            "CREATE INDEX IF NOT EXISTS idx_series_source_anilist_id ON series (source_anilist_id);",
+            "CREATE INDEX IF NOT EXISTS idx_series_source_my_anime_list_id ON series (source_my_anime_list_id);"
+        ];
+
+        foreach (var sql in indexes)
+        {
+            await using var cmd = connection.CreateCommand();
+            cmd.CommandText = sql;
+            await cmd.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        logger.LogInformation("Source ID indexes ready");
     }
 
     private async Task ReIndexLucene(CancellationToken ct)
