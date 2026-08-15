@@ -94,6 +94,15 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
             .ToListAsync(cancellationToken);
     }
 
+    public Task<MonitoredSeries?> GetByTitle(string title, Provider provider, CancellationToken cancellationToken = default)
+    {
+        var normalizedTitle = title.ToNormalized();
+
+        return ctx.MonitoredSeries
+            .Where(s => s.Provider == provider && s.NormalizedTitle == normalizedTitle)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public Task<List<MonitoredChapter>> GetUpcomingChapters(CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow.Date;

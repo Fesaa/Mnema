@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.API.External;
+using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Common.Helpers;
 using Mnema.Models.Entities.Content;
@@ -322,17 +323,14 @@ public class ScannerService(
 
     private async Task LinkMonitoredSeries(DirectoryImportResult result, CancellationToken cancellationToken)
     {
-        if (result is { ParsedHardcoverId: <= 0, ParsedMangaBakaId: <= 0 })
-            return;
+        var match = await unitOfWork.MonitoredSeriesRepository.GetByMetadataIds(result.ParsedHardcoverId.ToString(), result.ParsedMangaBakaId.ToString(), cancellationToken)
+            ?? await unitOfWork.MonitoredSeriesRepository.GetByTitle(result.ParsedSeriesName, Provider.Nyaa, cancellationToken);
 
-        var match = await unitOfWork.MonitoredSeriesRepository
-            .GetByMetadataIds(result.ParsedHardcoverId.ToString(), result.ParsedMangaBakaId.ToString(), cancellationToken);
         if (match != null)
         {
             result.MonitoredSeriesId = match.Id;
             result.Status = DirectoryImportStatus.Imported;
         }
     }
-
 
 }

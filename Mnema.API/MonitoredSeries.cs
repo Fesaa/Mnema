@@ -31,6 +31,7 @@ public interface IMonitoredSeriesRepository: INavigationalEntityRepository<Monit
     Task<List<MonitoredSeries>> GetByExternalIds(List<string> ids, Provider provider, CancellationToken cancellationToken = default);
     Task<MonitoredSeries?> GetByMetadataIds(string hardcoverId, string mangaBakaId, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByProvider(Provider provider, CancellationToken cancellationToken = default);
+    Task<MonitoredSeries?> GetByTitle(string title, Provider provider, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns all chapters that have <see cref="MonitoredChapter.Status"/> equal to <see cref="MonitoredChapterStatus.Upcoming"/>
