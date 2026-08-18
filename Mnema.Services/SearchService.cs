@@ -109,7 +109,8 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to search for recently updated {Provider}. Retrying once after 5s", provider.ToString());
+            logger.LogError("Failed to search for recently updated {Provider} - {Exception}. Retrying once after 5s",
+                provider.ToString(), ex.Message);
         }
 
         await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
