@@ -123,6 +123,25 @@
     "select-item": "Select an item to get started"
   },
 
+  "import-error-overview": {
+    "error": "Error",
+    "message": "Message",
+    "last-seen": "Last seen",
+    "show-stack-trace": "Show stack trace",
+    "hide-stack-trace": "Hide stack trace",
+    "open-folder": "Open folder",
+    "dismiss": "Dismiss",
+    "retry": "Retry"
+  },
+
+  "import-error-type-pipe": {
+    "unknown-directory": "Directory not found",
+    "generic-exception": "Unexpected error",
+    "mixed-content-formats": "Mixed content formats",
+    "failed-to-parse-content-format": "Failed to parse content format",
+    "failed-to-parse-series": "Failed to parse series"
+  },
+
   "directory-import-scan-result-overview": {
     "reject": "Reject",
     "skip": "Skip",

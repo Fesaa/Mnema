@@ -12,8 +12,8 @@ using Mnema.Database;
 namespace Mnema.Database.SqliteMigrations
 {
     [DbContext(typeof(SqliteMnemaDataContext))]
-    [Migration("20260812123740_SqliteAddImportScan")]
-    partial class SqliteAddImportScan
+    [Migration("20260819114253_SqliteAddImportScans")]
+    partial class SqliteAddImportScans
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -789,6 +789,9 @@ namespace Mnema.Database.SqliteMigrations
 
                     b.Property<string>("StackTrace")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

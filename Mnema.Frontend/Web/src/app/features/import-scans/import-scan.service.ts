@@ -61,4 +61,12 @@ export class ImportScanService {
     return this.httpClient.post(this.apiUrl + `/${id}/update`, req);
   }
 
+  dismissImportError(id: string) {
+    return this.httpClient.delete(this.apiUrl + `/error/${id}/dismiss`);
+  }
+
+  retryImportError(id: string) {
+    return this.httpClient.post(this.apiUrl + `/error/${id}/retry`, {});
+  }
+
 }

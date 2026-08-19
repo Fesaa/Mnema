@@ -93,4 +93,9 @@ public class ImportScanRepository(MnemaDataContext ctx, IMapper mapper) : Abstra
     {
         return ctx.ImportErrors.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
+
+    public Task DeleteError(Guid id, CancellationToken cancellationToken)
+    {
+        return ctx.ImportErrors.Where(x => x.Id == id).ExecuteDeleteAsync(cancellationToken);
+    }
 }

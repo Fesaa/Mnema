@@ -19,6 +19,8 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.API.External;
 using Mnema.API.Metadata;
+using Mnema.API.Repositories;
+using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Common.Helpers;
 using Mnema.Models.Entities.Scanner;
@@ -191,6 +193,30 @@ public class ScannerService(
         return info;
     }
 
+    public async Task Retry(Guid errorId, CancellationToken cancellationToken)
+    {
+        var error = await unitOfWork.ImportScanRepository.GetImportError(errorId, cancellationToken);
+        if (error == null) return;
+
+        var scan = await unitOfWork.ImportScanRepository.GetById(error.ImportScanId, ImportScanIncludes.DirectoryImports , cancellationToken);
+        if (scan == null) return;
+
+        if (error.Type is ImportErrorType.GenericException)
+        {
+            throw new BadRequestException("Cannot retry generic exceptions");
+        }
+
+        var alreadyScanned = scan.DirectoryImportResults.Select(r => r.Directory).ToHashSet();
+
+        await ProcessDirectory(scan, fileSystem.Path.Join(configuration.BaseDir, error.Path), alreadyScanned, cancellationToken);
+
+        if (unitOfWork.HasChanges())
+        {
+            await unitOfWork.CommitAsync(cancellationToken);
+            await unitOfWork.ImportScanRepository.DeleteError(errorId, cancellationToken);
+        }
+    }
+
     [Queue(HangfireQueue.ImportScanQueue)]
     [DisableConcurrentExecution(timeoutInSeconds: 60 * 60)]
     public async Task ScanRoot(string path, CancellationToken cancellationToken)
@@ -272,18 +298,21 @@ public class ScannerService(
 
     private async Task ProcessDirectory(ImportScan scan, string path, HashSet<string> alreadyScanned, CancellationToken cancellationToken)
     {
-
         var files = fileSystem.Directory.EnumerateFiles(path, "*", SearchOption.TopDirectoryOnly)
             .Where(parserService.IsSupportedFile)
             .ToList();
         if (files.Count == 0)
         {
-            logger.LogDebug("No files found in directory {Path}, scanning subdirectories", path);
+            logger.LogTrace("No files found in directory {Path}, scanning subdirectories", path);
             await ScanDirectory(scan, path, alreadyScanned, cancellationToken);
             return;
         }
 
-        var extensions = files.Select(f => fileSystem.Path.GetExtension(f)).Distinct().ToList();
+        var extensions = files
+            .Select(f => fileSystem.Path.GetExtension(f))
+            .Where(ext => ext.ContentFormatFromFileExt() != null)
+            .Distinct()
+            .ToList();
         if (extensions.Count > 1)
         {
             logger.LogWarning("Directory {Path} contains files with different extensions: {Extensions}", path, extensions);
@@ -291,7 +320,7 @@ public class ScannerService(
             return;
         }
 
-        var contentFormat = extensions[0].ContentFormatFromFileExt();
+        var contentFormat = extensions.FirstOrDefault()?.ContentFormatFromFileExt();
         if (contentFormat is null)
         {
             logger.LogWarning("Directory {Path} contains files with unknown content format: {Extension}", path, extensions[0]);

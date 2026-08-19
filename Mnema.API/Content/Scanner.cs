@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,8 @@ public interface IScannerService
     [Queue(HangfireQueue.ImportScanQueue)]
     [DisableConcurrentExecution(timeoutInSeconds: 60 * 60 * 60)]
     Task ScanRoot(string path, CancellationToken cancellationToken);
+
+    Task Retry(Guid errorId, CancellationToken cancellationToken);
 }
 
 public sealed record ParsedTorrentInfo(string Size, List<TorrentFile> Files);

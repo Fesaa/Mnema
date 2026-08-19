@@ -87,7 +87,9 @@
     <div class="col-9">
       @if (selectedItem(); as item) {
         @if (mode() === 'directories') {
-          <app-directory-import-scan-result-overview [scan]="scan()" [result]="$any(item)" (decisionResult)="handleDirectoryImportResult($event)" />
+          <app-directory-import-scan-result-overview [scan]="scan()" [result]="$any(item)" (decisionResult)="handleCardAction()" />
+        } @else if (mode() === 'errors') {
+          <app-import-error-card [error]="$any(item)" (action)="handleCardAction()" />
         }
       } @else {
         <div class="alert alert-info" role="alert">

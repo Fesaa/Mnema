@@ -17,7 +17,12 @@ using Mnema.Models.Internal;
 namespace Mnema.Server.Controllers;
 
 [Authorize(Roles.ImportScans)]
-public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfWork unitOfWork, IMonitoredSeriesService monitoredSeriesService, IImportScanService importScanService): BaseApiController
+public class ImportScanController(
+    ILogger<ImportScanController> logger,
+    IUnitOfWork unitOfWork,
+    IMonitoredSeriesService monitoredSeriesService,
+    IImportScanService importScanService,
+    IScannerService scannerService): BaseApiController
 {
 
     [HttpPost("start-import-scan")]
@@ -107,6 +112,22 @@ public class ImportScanController(ILogger<ImportScanController> logger, IUnitOfW
     public async Task<IActionResult> Accept(Guid id, [FromBody] CreateOrUpdateMonitoredSeriesDto dto)
     {
         await importScanService.AcceptDirectoryImport(id, dto, HttpContext.RequestAborted);
+
+        return Ok();
+    }
+
+    [HttpDelete("error/{id:guid}/dismiss")]
+    public async Task<IActionResult> DismissError(Guid id)
+    {
+        await unitOfWork.ImportScanRepository.DeleteError(id, HttpContext.RequestAborted);
+
+        return Ok();
+    }
+
+    [HttpPost("error/{id:guid}/retry")]
+    public async Task<IActionResult> Retry(Guid id)
+    {
+        await scannerService.Retry(id, HttpContext.RequestAborted);
 
         return Ok();
     }

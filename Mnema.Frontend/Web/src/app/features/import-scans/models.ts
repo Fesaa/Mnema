@@ -47,11 +47,20 @@ export enum DirectoryImportStatus {
 
 export interface ImportError {
   id: string;
+  type: ImportErrorType;
   path: string;
   message: string;
   stackTrace?: string;
   createdUtc: string;
   lastModifiedUtc: string;
+}
+
+export enum ImportErrorType {
+  UnknownDirectory = 0,
+  GenericException = 1,
+  MixedContentFormats = 2,
+  FailedToParseContentFormat = 3,
+  FailedToParseSeries = 4,
 }
 
 export interface StartScanRequest {

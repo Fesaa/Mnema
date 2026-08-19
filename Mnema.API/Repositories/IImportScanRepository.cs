@@ -31,5 +31,6 @@ public interface IImportScanRepository : INavigationalEntityRepository<ImportSca
     Task<int> GetMaxQueuePosition(Guid scanId, DirectoryImportStatus status, CancellationToken cancellationToken);
     Task<DirectoryImportResult?> GetDirectoryImportResult(Guid id, CancellationToken cancellationToken);
     Task<ImportError?> GetImportError(Guid id, CancellationToken cancellationToken);
+    Task DeleteError(Guid id, CancellationToken cancellationToken);
 
 }

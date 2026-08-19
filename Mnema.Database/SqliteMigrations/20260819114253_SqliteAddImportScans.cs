@@ -1,12 +1,12 @@
-﻿#nullable disable
-
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
 
 namespace Mnema.Database.SqliteMigrations
 {
     /// <inheritdoc />
-    public partial class SqliteAddImportScan : Migration
+    public partial class SqliteAddImportScans : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -68,6 +68,7 @@ namespace Mnema.Database.SqliteMigrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     ImportScanId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Type = table.Column<int>(type: "INTEGER", nullable: false),
                     Path = table.Column<string>(type: "TEXT", nullable: false),
                     Message = table.Column<string>(type: "TEXT", nullable: false),
                     StackTrace = table.Column<string>(type: "TEXT", nullable: true),

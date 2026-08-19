@@ -13,13 +13,17 @@ import {PagedList} from "@mnema/_models/paged-list";
 import {
   DirectoryImportScanResultOverviewComponent
 } from "@mnema/features/import-scans/import-scan-overview/directory-import-scan-result-overview/directory-import-scan-result-overview.component";
+import {
+  ImportErrorCardComponent
+} from "@mnema/features/import-scans/import-scan-overview/import-error-card/import-error-card.component";
 
 @Component({
   selector: 'app-import-scan-overview',
   imports: [
     TranslocoDirective,
     PaginatorComponent,
-    DirectoryImportScanResultOverviewComponent
+    DirectoryImportScanResultOverviewComponent,
+    ImportErrorCardComponent
   ],
   templateUrl: './import-scan-overview.component.html',
   styleUrl: './import-scan-overview.component.scss',
@@ -55,7 +59,7 @@ export class ImportScanOverviewComponent {
     this.selectedItem.set(item);
   }
 
-  handleDirectoryImportResult(status: DirectoryImportStatus) {
+  handleCardAction() {
     this.reloader.emit();
     this.selectedItem.set(null);
   }

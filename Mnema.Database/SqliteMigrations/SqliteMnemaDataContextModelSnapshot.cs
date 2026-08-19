@@ -787,6 +787,9 @@ namespace Mnema.Database.SqliteMigrations
                     b.Property<string>("StackTrace")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ImportScanId");
