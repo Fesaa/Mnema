@@ -156,7 +156,7 @@ internal partial class QBitContentManager(
         var externalDownloads = await unitOfWork.ExternalDownloadRepository.GetAll(CancellationToken.None);
         foreach (var externalDownload in externalDownloads)
         {
-            var torrent = torrents.FirstOrDefault(t => t.Hash == externalDownload.ExternalId);
+            var torrent = torrents.FirstOrDefault(t => t.Hash.Equals(externalDownload.ExternalId, StringComparison.OrdinalIgnoreCase));
             if (torrent == null)
             {
                 logger.LogWarning("External download has no linked torrent: {Id}", externalDownload.Id);
