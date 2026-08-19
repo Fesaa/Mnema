@@ -22,31 +22,45 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
     /// </summary>
     public Series? Series { get; set; }
 
-    public ContentState State => torrentInfo.State switch
+    public ContentState State
     {
-        TorrentState.Unknown => ContentState.Waiting,
-        TorrentState.Error => ContentState.Cancel,
-        TorrentState.PausedUpload => ContentState.Cleanup,
-        TorrentState.PausedDownload => ContentState.Waiting,
-        TorrentState.QueuedUpload => ContentState.Cleanup,
-        TorrentState.QueuedDownload => ContentState.Queued,
-        TorrentState.Uploading => ContentState.Cleanup,
-        TorrentState.StalledUpload => ContentState.Cleanup,
-        TorrentState.CheckingUpload => ContentState.Cleanup,
-        TorrentState.CheckingDownload => ContentState.Loading,
-        TorrentState.Downloading => ContentState.Downloading,
-        TorrentState.StalledDownload => ContentState.Downloading,
-        TorrentState.FetchingMetadata => ContentState.Loading,
-        TorrentState.ForcedFetchingMetadata => ContentState.Loading,
-        TorrentState.ForcedUpload => ContentState.Cleanup,
-        TorrentState.ForcedDownload => ContentState.Downloading,
-        TorrentState.MissingFiles => ContentState.Cancel,
-        TorrentState.Allocating => ContentState.Loading,
-        TorrentState.QueuedForChecking => ContentState.Queued,
-        TorrentState.CheckingResumeData => ContentState.Loading,
-        TorrentState.Moving => ContentState.Cleanup,
-        _ => throw new ArgumentOutOfRangeException()
-    };
+        get
+        {
+            var state = torrentInfo.State;
+            var progress = torrentInfo.Progress;
+
+            return state switch
+            {
+                TorrentState.Unknown => ContentState.Waiting,
+                TorrentState.Error => ContentState.Cancel,
+
+                TorrentState.PausedUpload
+                    or TorrentState.QueuedUpload
+                    or TorrentState.Uploading
+                    or TorrentState.StalledUpload
+                    or TorrentState.CheckingUpload
+                    or TorrentState.ForcedUpload
+                    or TorrentState.Moving
+                    => progress >= 100 ? ContentState.Cleanup :
+                progress == 0 ? ContentState.Waiting : ContentState.Downloading,
+
+                TorrentState.PausedDownload => ContentState.Waiting,
+                TorrentState.QueuedDownload => ContentState.Queued,
+                TorrentState.CheckingDownload => ContentState.Loading,
+                TorrentState.Downloading => ContentState.Downloading,
+                TorrentState.StalledDownload => ContentState.Downloading,
+                TorrentState.FetchingMetadata => ContentState.Loading,
+                TorrentState.ForcedFetchingMetadata => ContentState.Loading,
+                TorrentState.ForcedDownload => ContentState.Downloading,
+                TorrentState.MissingFiles => ContentState.Cancel,
+                TorrentState.Allocating => ContentState.Loading,
+                TorrentState.QueuedForChecking => ContentState.Queued,
+                TorrentState.CheckingResumeData => ContentState.Loading,
+
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+    }
 
     public DownloadRequestDto Request => new()
     {

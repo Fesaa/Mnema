@@ -52,7 +52,7 @@ internal partial class QBitContentManager
             .ToList();
 
         var toProcessFinishedContentHashes = content
-            .Where(c => UploadStates.Contains(c.TorrentInfo.State))
+            .Where(c => UploadStates.Contains(c.TorrentInfo.State) && c.TorrentInfo.Progress > 0)
             .Where(c => !_cleanupTorrents.ContainsKey(c.Id))
             .Select(c => c.Id)
             .ToHashSet();

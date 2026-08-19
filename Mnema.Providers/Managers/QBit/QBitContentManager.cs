@@ -157,7 +157,7 @@ internal partial class QBitContentManager(
 
         foreach (var tInfo in torrents)
         {
-            if (UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
+            if (UploadStates.Contains(tInfo.State) && tInfo.Progress < 0 && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
 
             if (downloads.TryGetValue(tInfo.Hash, out var externalDownloads))
             {
