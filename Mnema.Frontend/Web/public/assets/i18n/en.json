@@ -254,7 +254,9 @@
     "ignore_non_matched_volumes-title": "Ignore non-matched content",
     "ignore_non_matched_volumes-tooltip": "Don't download content if metadata is loaded and cannot be matched",
     "forceIndexChapterNumbers-title": "Force index chapter numbers",
-    "forceIndexChapterNumbers-tooltip": "Forcefully use the index as the chapter number. In case webtoon is being horrible about it"
+    "forceIndexChapterNumbers-tooltip": "Forcefully use the index as the chapter number. In case webtoon is being horrible about it",
+    "allow_chapter_downloads-title": "Allow chapter downloads",
+    "allow_chapter_downloads-tooltip": "Enable if you want to download chapters (not linked to volumes)"
   },
 
   "refresh-frequency-pipe": {

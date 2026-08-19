@@ -132,15 +132,16 @@ internal partial class QBitContentManager
     {
         var downloadDir = Path.Join(request.BaseDir, title);
         var existingContent = services.ScannerService.ScanDirectory(
-            downloadDir,
-            request.Metadata.GetKey(RequestConstants.ContentFormatKey),
-            request.Metadata.GetKey(RequestConstants.FormatKey), ct);
+            downloadDir, request.GetKey(RequestConstants.ContentFormatKey),
+            request.GetKey(RequestConstants.FormatKey), ct);
 
         var ignoreNonMatched = request.GetKey(RequestConstants.IgnoreNonMatchedVolumes);
+        var allowChapters = request.GetKey(RequestConstants.AllowChapterDownloads);
 
         return seriesFiles
             .WhereIf(mSeries != null, pair => ShouldDownloadMonitoredFile(pair, mSeries!, ignoreNonMatched, title, request.Id, services.ParserService))
             .Where(pair => IsFileNew(pair, existingContent, title, request.Id, services.ParserService))
+            .WhereIf(!allowChapters, pair => !string.IsNullOrEmpty(pair.ParseResult.VolumeMarker))
             .ToList();
     }
 

@@ -160,6 +160,11 @@ public class NyaaRepository(
                 DefaultValue = true,
                 Advanced = true,
             },
+            new SwitchFieldDefinition
+            {
+                Key = RequestConstants.AllowChapterDownloads.Key,
+                Advanced = true,
+            },
         ]);
     }
 
