@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Mnema.Common;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Enums;
 
@@ -22,6 +23,7 @@ public class ExternalDownload: IEntityDate, IDatabaseEntity
     public required string Title { get; set; }
     public required string BaseDir  { get; set; }
     public required Provider Provider { get; set; }
+    public required ContentState State { get; set; }
     public required MetadataBag Metadata { get; set; }
     public bool IsErrored { get; set; }
     public DateTime CreatedUtc { get; set; }
@@ -43,7 +45,6 @@ public class ExternalDownload: IEntityDate, IDatabaseEntity
 
 public class ExternalDownloadFile
 {
-    public Guid Id { get; set; }
     public required string FileName { get; set; }
     public required string FullPath { get; set; }
     public required long FileSize { get; set; }

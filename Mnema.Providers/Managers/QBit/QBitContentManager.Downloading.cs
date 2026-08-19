@@ -92,6 +92,9 @@ internal partial class QBitContentManager
             if (request.StartImmediately)
             {
                 await qBitClient.ResumeTorrentsAsync([request.Id], ct);
+
+                externalDownload.State = ContentState.Downloading;
+                await services.UnitOfWork.CommitAsync(ct);
             }
 
             await BroadcastDownloadStartedAsync(services, request, series, externalDownload);
@@ -237,6 +240,7 @@ internal partial class QBitContentManager
             Provider = request.Provider,
             Metadata = request.Metadata,
             BaseDir = request.BaseDir,
+            State = ContentState.Waiting,
             Files = seriesFiles.Select(pair => new ExternalDownloadFile
             {
                 FileName = pair.File.FileName,
@@ -287,7 +291,7 @@ internal partial class QBitContentManager
         {
             Provider = request.Provider,
             Id = externalDownload.Id.ToString(),
-            ContentState = ContentState.Queued,
+            ContentState = externalDownload.State,
             Name = externalDownload.Title,
             Description = series?.Summary,
             ImageUrl = series?.CoverUrl,

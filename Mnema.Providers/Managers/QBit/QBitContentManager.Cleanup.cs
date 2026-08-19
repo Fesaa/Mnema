@@ -77,8 +77,12 @@ internal partial class QBitContentManager
         var cleanupService = scope.GetRequiredService<ICleanupService>();
         var messageService = scope.GetRequiredService<IMessageService>();
         var connectionService = scope.GetRequiredService<IConnectionService>();
+        var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
 
         var content = new ExternalDownloadContent(externalDownload, torrent);
+
+        externalDownload.State = ContentState.Cleanup;
+        await unitOfWork.CommitAsync(ct);
 
         await cleanupService.CleanupAsync(content, ct);
 

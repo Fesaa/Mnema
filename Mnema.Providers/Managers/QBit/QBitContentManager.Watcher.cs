@@ -51,6 +51,7 @@ internal partial class QBitContentManager
             .SelectMany(t => downloads[t.Hash].Select(ed => new ExternalDownloadContent(ed, t)))
             .ToList();
 
+        // A torrent may be in an upload state is 0 files are selected. Filter on progress
         var toProcessFinishedContentHashes = content
             .Where(c => UploadStates.Contains(c.TorrentInfo.State) && c.TorrentInfo.Progress > 0)
             .Where(c => !_cleanupTorrents.ContainsKey(c.Id))
