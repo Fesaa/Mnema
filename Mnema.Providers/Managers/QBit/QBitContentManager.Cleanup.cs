@@ -82,6 +82,7 @@ internal partial class QBitContentManager
         var content = new ExternalDownloadContent(externalDownload, torrent);
 
         externalDownload.State = ContentState.Cleanup;
+        unitOfWork.ExternalDownloadRepository.Update(externalDownload);
         await unitOfWork.CommitAsync(ct);
 
         await cleanupService.CleanupAsync(content, ct);

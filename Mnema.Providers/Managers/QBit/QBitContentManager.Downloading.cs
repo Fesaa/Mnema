@@ -94,6 +94,7 @@ internal partial class QBitContentManager
                 await qBitClient.ResumeTorrentsAsync([request.Id], ct);
 
                 externalDownload.State = ContentState.Downloading;
+                services.UnitOfWork.ExternalDownloadRepository.Update(externalDownload);
                 await services.UnitOfWork.CommitAsync(ct);
             }
 
