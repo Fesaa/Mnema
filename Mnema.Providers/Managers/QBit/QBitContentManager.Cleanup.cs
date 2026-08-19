@@ -85,6 +85,8 @@ internal partial class QBitContentManager
         unitOfWork.ExternalDownloadRepository.Update(externalDownload);
         await unitOfWork.CommitAsync(ct);
 
+        await messageService.StateUpdate(externalDownload.Id.ToString(), ContentState.Cleanup);
+
         await cleanupService.CleanupAsync(content, ct);
 
         var monitoredSeriesId = externalDownload.GetKey(RequestConstants.MonitoredSeriesId);
@@ -93,7 +95,7 @@ internal partial class QBitContentManager
             BackgroundJob.Enqueue<IMonitoredSeriesService>(s => s.EnrichWithMetadata(monitoredSeriesId.Value, CancellationToken.None));
         }
 
-        await messageService.DeleteContent(externalDownload.ExternalId);
+        await messageService.DeleteContent(externalDownload.Id.ToString());
         connectionService.CommunicateDownloadFinished(content.DownloadInfo);
     }
 
