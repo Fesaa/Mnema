@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
+using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
@@ -285,7 +286,7 @@ public class MonitoredSeriesService(
 
             mChapter ??= new MonitoredChapter();
             PatchChapterMetadata(mChapter, chapter);
-            mChapter.FilePath = matchingFile?.Path;
+            mChapter.FilePath = matchingFile?.Path.RemovePrefix(configuration.BaseDir);
             mChapter.Status = status;
 
             mSeries.Chapters.Add(mChapter);
