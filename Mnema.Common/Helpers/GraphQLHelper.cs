@@ -1,11 +1,8 @@
 using System.IO;
 using System.Reflection;
-using Microsoft.Extensions.Logging;
-using Mnema.Common.Exceptions;
+using GraphQL;
 
 namespace Mnema.Common.Helpers;
-
-using GraphQL;
 
 public delegate GraphQLQuery GraphQlQueryLoader(string name);
 

@@ -1,8 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using Mnema.API.Content;
-using Mnema.Common;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
@@ -24,31 +22,7 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
     /// </summary>
     public Series? Series { get; set; }
 
-    public ContentState State => torrentInfo.State switch
-    {
-        TorrentState.Unknown => ContentState.Waiting,
-        TorrentState.Error => ContentState.Cancel,
-        TorrentState.PausedUpload => ContentState.Cleanup,
-        TorrentState.PausedDownload => ContentState.Waiting,
-        TorrentState.QueuedUpload => ContentState.Cleanup,
-        TorrentState.QueuedDownload => ContentState.Queued,
-        TorrentState.Uploading => ContentState.Cleanup,
-        TorrentState.StalledUpload => ContentState.Cleanup,
-        TorrentState.CheckingUpload => ContentState.Cleanup,
-        TorrentState.CheckingDownload => ContentState.Loading,
-        TorrentState.Downloading => ContentState.Downloading,
-        TorrentState.StalledDownload => ContentState.Downloading,
-        TorrentState.FetchingMetadata => ContentState.Loading,
-        TorrentState.ForcedFetchingMetadata => ContentState.Loading,
-        TorrentState.ForcedUpload => ContentState.Cleanup,
-        TorrentState.ForcedDownload => ContentState.Downloading,
-        TorrentState.MissingFiles => ContentState.Cancel,
-        TorrentState.Allocating => ContentState.Loading,
-        TorrentState.QueuedForChecking => ContentState.Queued,
-        TorrentState.CheckingResumeData => ContentState.Loading,
-        TorrentState.Moving => ContentState.Cleanup,
-        _ => throw new ArgumentOutOfRangeException()
-    };
+    public ContentState State => externalDownload.State;
 
     public DownloadRequestDto Request => new()
     {

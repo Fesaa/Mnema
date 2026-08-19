@@ -1,9 +1,7 @@
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Mnema.API;
-using Mnema.Database.Repositories;
 using Mnema.Models.Entities.Content;
-using Mnema.Models.Entities.User;
 
 namespace Mnema.Database.Extensions;
 

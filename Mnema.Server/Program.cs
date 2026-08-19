@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -117,7 +118,7 @@ public class Program
     {
         Console.WriteLine($"  {BuildInfo.AppName} v{BuildInfo.Version}");
         Console.WriteLine($"  Runtime:  {BuildInfo.FrameworkDescription}");
-        Console.WriteLine($"  OS:       {System.Runtime.InteropServices.RuntimeInformation.OSDescription}");
+        Console.WriteLine($"  OS:       {RuntimeInformation.OSDescription}");
         Console.WriteLine();
     }
 }

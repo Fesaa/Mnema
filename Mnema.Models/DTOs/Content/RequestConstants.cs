@@ -25,4 +25,5 @@ public static class RequestConstants
     public static readonly IMetadataKey<bool> IgnoreNonMatchedVolumes = MetadataKeys.Bool("ignore_non_matched_volumes");
     public static readonly IMetadataKey<bool> IsGroupedDownload = MetadataKeys.Bool("is_grouped_download");
     public static readonly IMetadataKey<Guid?> ExternalDownloadId = MetadataKeys.OptionalGuid("external_download_id");
+    public static readonly IMetadataKey<bool> AllowChapterDownloads = MetadataKeys.Bool("allow_chapter_downloads");
 }

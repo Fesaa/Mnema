@@ -6,8 +6,6 @@ using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.Entities;
-using Mnema.Models.Entities.Content;
-using Mnema.Models.Entities.User;
 using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Publication;

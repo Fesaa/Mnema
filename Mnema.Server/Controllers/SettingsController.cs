@@ -10,7 +10,6 @@ using Mnema.API;
 using Mnema.API.Metadata;
 using Mnema.API.Services;
 using Mnema.Common.Exceptions;
-using Mnema.Metadata.Mangabaka;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;

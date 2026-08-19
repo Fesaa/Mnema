@@ -5,7 +5,8 @@ import {
   effect,
   inject,
   linkedSignal,
-  signal, TemplateRef,
+  signal,
+  TemplateRef,
   viewChild
 } from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
@@ -46,9 +47,6 @@ import {
 } from "@mnema/features/monitored-series/metadata.service";
 import {PagedList} from "@mnema/_models/paged-list";
 import {SubscriptionExternalUrlPipe} from "@mnema/_pipes/subscription-external-url.pipe";
-import {
-  CompactSeriesInfoComponent
-} from "@mnema/features/monitored-series/_components/compact-series-info/compact-series-info.component";
 import {SentenceCasePipe} from "@mnema/_pipes/sentence-case.pipe";
 
 @Component({
@@ -321,4 +319,11 @@ export class MonitoredSeriesComponent {
     return this.modalService.onClose$<MetadataSearchResult>(modal, true);
   }
 
+  protected openBaseDir() {
+    if (!this.series().titleOverride) return;
+
+    this.modalService.getDirectory$(this.series().baseDir + '/' + this.series().titleOverride, {
+      showFiles: true, copy: false, filter: true, create: false
+    }).subscribe();
+  }
 }

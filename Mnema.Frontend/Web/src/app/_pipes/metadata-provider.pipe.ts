@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import {Pipe, PipeTransform} from '@angular/core';
 import {MetadataProvider} from "@mnema/features/monitored-series/metadata.service";
 
 @Pipe({

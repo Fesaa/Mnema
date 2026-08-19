@@ -8,8 +8,6 @@ using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.Common.Exceptions;
-using Mnema.Common.Extensions;
-using Mnema.Models.DTOs.Content;
 using QBittorrent.Client;
 
 namespace Mnema.Providers.Managers.QBit;
@@ -53,8 +51,9 @@ internal partial class QBitContentManager
             .SelectMany(t => downloads[t.Hash].Select(ed => new ExternalDownloadContent(ed, t)))
             .ToList();
 
+        // A torrent may be in an upload state is 0 files are selected. Filter on progress
         var toProcessFinishedContentHashes = content
-            .Where(c => UploadStates.Contains(c.TorrentInfo.State))
+            .Where(c => UploadStates.Contains(c.TorrentInfo.State) && c.TorrentInfo.Progress > 0)
             .Where(c => !_cleanupTorrents.ContainsKey(c.Id))
             .Select(c => c.Id)
             .ToHashSet();

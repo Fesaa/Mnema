@@ -74,7 +74,7 @@ internal partial class PublicationManager
 
         _fileSystem.Directory.Delete(directory, true);
 
-        _logger.LogDebug("Finished removing files in {Directory} in {Elapsed}", directory, sw.Elapsed.ToReadableString());
+        _logger.LogTrace("Finished removing files in {Directory} in {Elapsed}", directory, sw.Elapsed.ToReadableString());
 
         return Task.CompletedTask;
     }

@@ -1,0 +1,105 @@
+<div class="card import-scan-result-card" *transloco="let t; prefix:'directory-import-scan-result-overview'">
+
+  <div class="card-body">
+
+    <h5 class="mb-1 text-truncate d-flex justify-content-between align-items-center">
+      <span>{{ result().parsedSeriesName || result().directory }}</span>
+
+      @if (result().monitoredSeriesId; as monitoredSeriesId) {
+        <a [routerLink]="['/monitored-series-detail', monitoredSeriesId]" class="btn btn-sm ms-2">
+          <i class="fa fa-eye"></i>
+          {{t('monitored-series')}}
+        </a>
+      }
+
+    </h5>
+
+    <div class="text-muted small text-truncate mb-3">
+      <i class="fa fa-folder me-1"></i>{{ result().directory }}
+    </div>
+
+    <div class="mb-3">
+      <div class="text-muted text-uppercase small fw-semibold mb-2">
+        {{ t('metadata-providers') }}
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 mt-2">
+        @if (result().parsedHardcoverId) {
+          <a [href]="'https://hardcover.app/id/series/' + result().parsedHardcoverId" rel="noreferrer nofollow noopener" target="_blank" class="btn btn-sm btn-secondary text-white">
+            <img src="/assets/icons/hardcover.ico" alt="Hardcover" class="logo">
+          </a>
+        } @else {
+          <button class="btn btn-sm btn-primary" (click)="searchHardcover()">
+            <i class="fa fa-link"></i> {{ t('link-hardcover') }}
+          </button>
+        }
+        @if (result().parsedMangaBakaId) {
+          <a [href]="'https://mangabaka.org/' + result().parsedMangaBakaId" rel="noreferrer nofollow noopener" target="_blank" class="btn btn-sm btn-secondary text-white">
+            <img src="/assets/icons/mangabaka.ico" alt="MangaBaka" class="logo">
+          </a>
+        } @else {
+          <button class="btn btn-sm btn-primary" (click)="searchMangabaka()">
+            <i class="fa fa-link"></i> {{ t('link-mangabaka') }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div>
+      <div class="text-muted text-uppercase small fw-semibold mb-2">
+        {{ t('files') }} ({{ result().files.length }})
+      </div>
+      <ul class="list-group file-list">
+        @for (file of result().files; track file) {
+          <li class="list-group-item small text-truncate">
+            <i class="fa fa-file me-1 text-muted"></i>{{ file }}
+          </li>
+        }
+      </ul>
+    </div>
+
+  </div>
+
+  @if (!result().monitoredSeriesId) {
+    <div class="card-footer d-flex flex-wrap justify-content-end gap-2">
+      <button type="button" class="btn btn-outline-danger" (click)="reject()" [disabled]="result().status === DirectoryImportStatus.Rejected">
+        <i class="fa fa-xmark me-1"></i>{{ t('reject') }}
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="skip()" [disabled]="result().status === DirectoryImportStatus.Rejected">
+        <i class="fa fa-forward me-1"></i>{{ t('skip') }}
+      </button>
+      <button type="button" class="btn btn-success" (click)="autoAccept()" [disabled]="!canAutoAccept()">
+        <i class="fa fa-bolt me-1"></i>{{ t('auto-accept') }}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="accept()">
+        <i class="fa fa-check me-1"></i>{{ t('accept') }}
+      </button>
+    </div>
+  }
+
+</div>
+
+<ng-template #searchInfoPreview let-item let-selectedItems="selectedItems">
+  <div class="d-flex gap-2 align-items-center" *transloco="let t;">
+    <img [src]="item.value.coverUrl" [alt]="item.label" style="width: 40px; height: 64px;">
+
+    <div class="d-flex flex-column gap-1">
+      <div class="fw-bold">
+        {{item.label | sentenceCase}}
+      </div>
+      <span class="text-muted">
+        {{item.value.summary}}
+      </span>
+      @if (item.url) {
+        <a [href]="item.url" rel="noreferrer nofollow noopener" target="_blank">
+          <i class="fa fa-external-link-alt"></i>
+          <span class="ms-2">{{t('common.source')}}</span>
+        </a>
+      }
+    </div>
+
+    @if (selectedItems && selectedItems.includes(item)) {
+      <span class="pill p-1 ms-1">{{t('common.selected')}}</span>
+    }
+  </div>
+</ng-template>

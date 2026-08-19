@@ -221,6 +221,9 @@ namespace Mnema.Database.SqliteMigrations
                     b.Property<int>("Provider")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("State")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -708,6 +711,125 @@ namespace Mnema.Database.SqliteMigrations
                     b.ToTable("ProviderSettings");
                 });
 
+            modelBuilder.Entity("Mnema.Models.Entities.Scanner.DirectoryImportResult", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Directory")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("Files")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("[]");
+
+                    b.Property<Guid>("ImportScanId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastModifiedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("MonitoredSeriesId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ParsedHardcoverId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ParsedMangaBakaId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ParsedSeriesName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("QueuePosition")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImportScanId");
+
+                    b.HasIndex("MonitoredSeriesId");
+
+                    b.ToTable("DirectoryImportResults");
+                });
+
+            modelBuilder.Entity("Mnema.Models.Entities.Scanner.ImportError", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ImportScanId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastModifiedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StackTrace")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImportScanId");
+
+                    b.ToTable("ImportErrors");
+                });
+
+            modelBuilder.Entity("Mnema.Models.Entities.Scanner.ImportScan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("FinishedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastModifiedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RootDir")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ImportScans");
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.ServerSetting", b =>
                 {
                     b.Property<int>("Key")
@@ -733,9 +855,45 @@ namespace Mnema.Database.SqliteMigrations
                     b.Navigation("Series");
                 });
 
+            modelBuilder.Entity("Mnema.Models.Entities.Scanner.DirectoryImportResult", b =>
+                {
+                    b.HasOne("Mnema.Models.Entities.Scanner.ImportScan", "ImportScan")
+                        .WithMany("DirectoryImportResults")
+                        .HasForeignKey("ImportScanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mnema.Models.Entities.Content.MonitoredSeries", "MonitoredSeries")
+                        .WithMany()
+                        .HasForeignKey("MonitoredSeriesId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ImportScan");
+
+                    b.Navigation("MonitoredSeries");
+                });
+
+            modelBuilder.Entity("Mnema.Models.Entities.Scanner.ImportError", b =>
+                {
+                    b.HasOne("Mnema.Models.Entities.Scanner.ImportScan", "ImportScan")
+                        .WithMany("ImportErrors")
+                        .HasForeignKey("ImportScanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ImportScan");
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.Content.MonitoredSeries", b =>
                 {
                     b.Navigation("Chapters");
+                });
+
+            modelBuilder.Entity("Mnema.Models.Entities.Scanner.ImportScan", b =>
+                {
+                    b.Navigation("DirectoryImportResults");
+
+                    b.Navigation("ImportErrors");
                 });
 #pragma warning restore 612, 618
         }

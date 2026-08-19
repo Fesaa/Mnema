@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Mnema.Models.DTOs.Content;
+using Mnema.Models.External;
 using Mnema.Models.Publication;
 
 namespace Mnema.API.Content;
@@ -28,6 +29,7 @@ public class OnDiskContent: IHasPositionMarkers
     public string FileName { get; set; }
     public string? Chapter { get; set; }
     public string? Volume { get; set; }
+    public ComicInfo? ComicInfo { get; set; }
 
     public string VolumeMarker => Volume ?? string.Empty;
     public string ChapterMarker => Chapter ?? string.Empty;

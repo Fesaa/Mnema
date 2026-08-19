@@ -1,7 +1,6 @@
 import {effect, inject, Injectable} from '@angular/core';
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import {environment} from "../../environments/environment";
-import {User} from "../_models/user";
 import {ReplaySubject} from "rxjs";
 import {SettingsService} from "@mnema/_services/settings.service";
 
@@ -18,6 +17,7 @@ export enum EventType {
   BulkContentInfoUpdate = "BulkContentInfoUpdate",
   MetadataRefreshed= "MetadataRefreshed",
   RefreshDashboard = "RefreshDashboard",
+  ScanFinished = "ScanFinished",
 }
 
 export interface Event<T> {
@@ -139,6 +139,13 @@ export class SignalRService {
     this.hubConnection.on(EventType.MetadataRefreshed, (message) => {
       this.eventsSource.next({
         type: EventType.MetadataRefreshed,
+        data: message
+      });
+    });
+
+    this.hubConnection.on(EventType.ScanFinished, (message) => {
+      this.eventsSource.next({
+        type: EventType.ScanFinished,
         data: message
       });
     });

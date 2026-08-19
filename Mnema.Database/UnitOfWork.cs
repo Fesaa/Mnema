@@ -24,6 +24,7 @@ public class UnitOfWork(ILogger<UnitOfWork> logger, MnemaDataContext ctx, IMappe
     public IProviderSettingsRepository ProviderSettingsRepository { get; } = new ProviderSettingsRepository(ctx, mapper);
     public IExternalDownloadRepository ExternalDownloadRepository { get; } = new ExternalDownloadRepository(ctx, mapper);
     public IMetadataProviderSettingsRepository MetadataProviderSettingsRepository { get; } = new MetadataProviderSettingsRepository(ctx, mapper);
+    public IImportScanRepository ImportScanRepository { get; } = new ImportScanRepository(ctx, mapper);
 
     public async Task<bool> CommitAsync(CancellationToken cancellationToken = default)
     {

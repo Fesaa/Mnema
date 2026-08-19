@@ -2,6 +2,7 @@ import {
   Component,
   computed,
   ContentChild,
+  contentChild,
   effect,
   EventEmitter,
   inject,
@@ -10,13 +11,12 @@ import {
   OnInit,
   Output,
   signal,
-  TemplateRef,
-  ChangeDetectionStrategy
+  TemplateRef
 } from '@angular/core';
 import {NgTemplateOutlet} from "@angular/common";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {EMPTY_PAGE, PagedList} from "../../../_models/paged-list";
-import {catchError, EMPTY, finalize, Observable, of, tap} from "rxjs";
+import {catchError, EMPTY, finalize, Observable, tap} from "rxjs";
 import {ToastService} from "../../../_services/toast.service";
 import {LoadingSpinnerComponent} from "../loading-spinner/loading-spinner.component";
 
@@ -37,10 +37,13 @@ export class PaginatorComponent<T> implements OnInit {
   private readonly toastService = inject(ToastService);
 
   @ContentChild("items") itemsTemplate?: TemplateRef<any>;
+  emptyTemplate = contentChild<TemplateRef<any>>('empty');
 
   pageLoader = input.required<PageLoader<T>>();
   pageSize = input(20);
   startPage = input(0);
+  simplePagination = input(false);
+  handleEmpty = input(true);
 
   noResultsKey = input<string | null>('common.no-results');
   successKey = input<string | null>(null);

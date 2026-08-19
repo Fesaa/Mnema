@@ -29,7 +29,8 @@ public static class AuthenticationExtensions
             .AddPolicy(Roles.ManagePages)
             .AddPolicy(Roles.HangFire)
             .AddPolicy(Roles.CreateDirectory)
-            .AddPolicy(Roles.ManageExternalConnections);
+            .AddPolicy(Roles.ManageExternalConnections)
+            .AddPolicy(Roles.ImportScans);
 
         var noAuthEnabled = configuration.GetSection(NoAuthentication).Get<bool>();
         if (noAuthEnabled)

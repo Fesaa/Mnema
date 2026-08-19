@@ -1,4 +1,3 @@
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 
 namespace Mnema.Models.Publication;

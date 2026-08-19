@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import {Pipe, PipeTransform} from '@angular/core';
 import {MonitoredChapterStatus} from "@mnema/features/monitored-series/monitored-series.service";
 
 @Pipe({

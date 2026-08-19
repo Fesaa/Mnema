@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
@@ -20,6 +19,7 @@ public enum MessageEventType
     BulkContentInfoUpdate,
     MetadataRefreshed,
     RefreshDashboard,
+    ScanFinished,
 }
 
 public interface IMessageService
@@ -39,4 +39,5 @@ public interface IMessageService
     Task Notify(NotificationDto notification);
 
     Task MetadataRefreshed(Guid seriesId);
+    Task ScanFinished(Guid scanId);
 }

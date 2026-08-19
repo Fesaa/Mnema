@@ -1,4 +1,4 @@
-import {Component, computed, effect, inject, signal, ChangeDetectionStrategy} from '@angular/core';
+import {Component, effect, inject, signal} from '@angular/core';
 import {Page, Provider} from "../../../../_models/page";
 import {PageService} from "../../../../_services/page.service";
 import {RouterLink} from "@angular/router";
@@ -11,7 +11,7 @@ import {TableComponent} from "../../../../shared/_component/table/table.componen
 import {ModalService} from "../../../../_services/modal.service";
 import {EditPageModalComponent} from "./_components/edit-page-modal/edit-page-modal.component";
 import {DefaultModalOptions} from "../../../../_models/default-modal-options";
-import {catchError, filter, merge, of, switchMap, take, tap} from "rxjs";
+import {catchError, merge, of, switchMap, take, tap} from "rxjs";
 import {
   EditPageDefaultsModalComponent
 } from "@mnema/settings/settings/_components/pages-settings/_components/edit-page-defaults-modal/edit-page-defaults-modal.component";

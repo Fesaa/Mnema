@@ -5,9 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Mnema.API.Content;
 using Mnema.Common;
-using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
@@ -29,7 +27,9 @@ public interface IMonitoredSeriesRepository: INavigationalEntityRepository<Monit
     Task<List<MonitoredSeries>> GetByHardcoverIds(List<string> ids, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByMangaBakaIds(List<string> ids, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByExternalIds(List<string> ids, Provider provider, CancellationToken cancellationToken = default);
+    Task<MonitoredSeries?> GetByMetadataIds(string hardcoverId, string mangaBakaId, CancellationToken cancellationToken = default);
     Task<List<MonitoredSeries>> GetByProvider(Provider provider, CancellationToken cancellationToken = default);
+    Task<MonitoredSeries?> GetByTitle(string title, Provider provider, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns all chapters that have <see cref="MonitoredChapter.Status"/> equal to <see cref="MonitoredChapterStatus.Upcoming"/>
@@ -61,7 +61,7 @@ public interface IMonitoredSeriesService
     ];
 
     Task UpdateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
-    Task CreateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
+    Task<Guid> CreateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default);
     FormDefinition GetForm();
     Task<FormDefinition> GetMetadataForm(Provider provider, CancellationToken cancellationToken = default);
 

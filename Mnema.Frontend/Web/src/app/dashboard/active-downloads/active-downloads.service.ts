@@ -3,12 +3,7 @@ import {ContentService} from "../../_services/content.service";
 import {EventType, SignalRService} from "../../_services/signal-r.service";
 import {ContentState, InfoStat} from "../../_models/stats";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {
-  ContentProgressUpdate,
-  ContentSizeUpdate,
-  ContentStateUpdate,
-  DeleteContent
-} from "../../_models/signalr";
+import {ContentProgressUpdate, ContentSizeUpdate, ContentStateUpdate, DeleteContent} from "../../_models/signalr";
 import {SettingsService} from "@mnema/_services/settings.service";
 import {environment} from "@env/environment";
 

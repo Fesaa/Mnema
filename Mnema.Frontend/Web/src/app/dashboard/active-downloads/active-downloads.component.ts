@@ -6,7 +6,7 @@ import {SpeedPipe} from "../../_pipes/speed.pipe";
 import {SpeedTypePipe} from "../../_pipes/speed-type.pipe";
 import {TableComponent} from "../../shared/_component/table/table.component";
 import {TimePipe} from "../../_pipes/time.pipe";
-import {translate, TranslocoDirective} from "@jsverse/transloco";
+import {TranslocoDirective} from "@jsverse/transloco";
 import {ContentState, InfoStat} from "../../_models/stats";
 import {LoadingSpinnerComponent} from "../../shared/_component/loading-spinner/loading-spinner.component";
 import {ModalService} from "../../_services/modal.service";

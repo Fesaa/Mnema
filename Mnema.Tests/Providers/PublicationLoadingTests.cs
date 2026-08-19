@@ -1,8 +1,6 @@
 using System.IO.Abstractions;
 using System.Net.Http;
 using System.Threading;
-using System.Threading.Tasks;
-using Hangfire.Logging;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,7 +9,6 @@ using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.User;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;

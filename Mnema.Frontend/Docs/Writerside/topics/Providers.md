@@ -18,6 +18,10 @@ It is recommended you have `Hardcover` and/or `Mangabaka` ids linked. Leave exte
 Torrents matching to a list of naming conversions will be considered a grouped release. And will parse the files inside
 as separate series. 
 
+<note>
+    If you want to download non-volumes (chapters) from Nyaa. You will need to enable it in advanced settings
+</note>
+
 ### Mangadex
 
 Everything is supported.

@@ -13,7 +13,6 @@ using Mnema.API.Content;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using QBittorrent.Client;
@@ -152,19 +151,19 @@ internal partial class QBitContentManager(
         var torrents = await GetTorrents(provider);
         if (torrents.Count == 0) return [];
 
-        var downloads = await unitOfWork.ExternalDownloadRepository.GetByExternalIds(torrents.Select(t => t.Hash));
-
         List<IContent> contents = [];
 
-        foreach (var tInfo in torrents)
+        var externalDownloads = await unitOfWork.ExternalDownloadRepository.GetAll(CancellationToken.None);
+        foreach (var externalDownload in externalDownloads)
         {
-            if (UploadStates.Contains(tInfo.State) && !_cleanupTorrents.ContainsKey(tInfo.Hash)) continue;
-
-            if (downloads.TryGetValue(tInfo.Hash, out var externalDownloads))
+            var torrent = torrents.FirstOrDefault(t => t.Hash == externalDownload.ExternalId);
+            if (torrent == null)
             {
-                foreach (var download in externalDownloads)
-                    contents.Add(new ExternalDownloadContent(download, tInfo));
+                logger.LogWarning("External download has no linked torrent: {Id}", externalDownload.Id);
+                continue;
             }
+
+            contents.Add(new ExternalDownloadContent(externalDownload, torrent));
         }
 
         return contents;

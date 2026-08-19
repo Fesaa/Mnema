@@ -46,7 +46,7 @@ internal class DiscordConnectionService(
         ConnectionEvent.ProviderSettingEvents,
     ];
 
-    public override Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
+    public override async Task CommunicateDownloadStarted(Connection connection, DownloadInfo info)
     {
         var embed = new EmbedBuilder()
             .WithTitle("Download Started")
@@ -62,10 +62,10 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.ImageUrl))
             embed.WithImageUrl(info.ImageUrl);
 
-        return SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
+        await SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
     }
 
-    public override Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
+    public override async Task CommunicateDownloadFinished(Connection connection, DownloadInfo info)
     {
         var embed = new EmbedBuilder()
             .WithTitle("Download Complete")
@@ -81,10 +81,10 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.ImageUrl))
             embed.WithImageUrl(info.ImageUrl);
 
-        return SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
+        await SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
     }
 
-    public override Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
+    public override async Task CommunicateSubscriptionExhausted(Connection connection, DownloadInfo info)
     {
         var embed = new EmbedBuilder()
             .WithTitle("Series fully downloaded")
@@ -100,10 +100,10 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.ImageUrl))
             embed.WithImageUrl(info.ImageUrl);
 
-        return SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
+        await SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
     }
 
-    public override Task CommunicateDownloadInfo(Connection connection, DownloadInfo info, string title, string description)
+    public override async Task CommunicateDownloadInfo(Connection connection, DownloadInfo info, string title, string description)
     {
         var embed = new EmbedBuilder()
             .WithTitle(title)
@@ -119,10 +119,10 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.ImageUrl))
             embed.WithImageUrl(info.ImageUrl);
 
-        return SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
+        await SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(info.MonitoredSeriesId));
     }
 
-    public override Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
+    public override async Task CommunicateSeriesMonitored(Connection connection, MonitoredSeries series)
     {
         var embed = new EmbedBuilder()
             .WithTitle("Series monitored")
@@ -137,10 +137,10 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(series.CoverUrl) && series.CoverUrl.StartsWith("http"))
             embed.WithImageUrl(series.CoverUrl);
 
-        return SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(series.Id));
+        await SendMessage(connection, [embed.Build()], MonitoredSeriesComponents(series.Id));
     }
 
-    public override Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
+    public override async Task CommunicateSeriesUnmonitored(Connection connection, MonitoredSeries series)
     {
         var embed = new EmbedBuilder()
             .WithTitle("Series unmonitored")
@@ -155,10 +155,10 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(series.CoverUrl) && series.CoverUrl.StartsWith("http"))
             embed.WithImageUrl(series.CoverUrl);
 
-        return SendMessage(connection, [embed.Build()]);
+        await SendMessage(connection, [embed.Build()]);
     }
 
-    public override Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries series, int amount)
+    public override async Task CommunicateTooManyForAutomatedDownload(Connection connection, MonitoredSeries series, int amount)
     {
         var embed = new EmbedBuilder()
             .WithTitle("Manual intervention required")
@@ -175,9 +175,9 @@ internal class DiscordConnectionService(
             embed.WithImageUrl(series.CoverUrl);
 
         if (string.IsNullOrEmpty(applicationConfiguration.Host))
-            return SendMessage(connection, [embed.Build()]);
+            await SendMessage(connection, [embed.Build()]);
 
-        return SendMessage(connection, [embed.Build()], new ComponentBuilder()
+        await SendMessage(connection, [embed.Build()], new ComponentBuilder()
             .WithButton(new ButtonBuilder()
                 .WithLabel("Open Downloads")
                 .WithUrl($"{applicationConfiguration.Host}/active-downloads")
@@ -185,7 +185,7 @@ internal class DiscordConnectionService(
             .Build());
     }
 
-    public override Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
+    public override async Task CommunicateDownloadClientEvent(Connection connection, DownloadClient client)
     {
         var colour = client.IsFailed ? Color.Red : Color.Green;
 
@@ -200,7 +200,7 @@ internal class DiscordConnectionService(
             .Build();
 
         if (string.IsNullOrEmpty(applicationConfiguration.Host))
-            return SendMessage(connection, [embed]);
+            await SendMessage(connection, [embed]);
 
         var component = new ComponentBuilder()
             .WithButton(new ButtonBuilder()
@@ -208,7 +208,7 @@ internal class DiscordConnectionService(
                 .WithUrl($"{applicationConfiguration.Host}/settings#download_clients")
                 .WithStyle(ButtonStyle.Link));
 
-        return SendMessage(connection, [embed], component.Build());
+        await SendMessage(connection, [embed], component.Build());
     }
 
     private MessageComponent? MonitoredSeriesComponents(Guid? id)
@@ -256,7 +256,7 @@ internal class DiscordConnectionService(
         return fields;
     }
 
-    public override Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
+    public override async Task CommunicateDownloadFailure(Connection connection, DownloadInfo info, Exception ex)
     {
         var progressText = info.Progress > 0
             ? $"{info.Progress:F1}% complete before failure"
@@ -284,10 +284,10 @@ internal class DiscordConnectionService(
         if (!string.IsNullOrEmpty(info.ImageUrl))
             embed.WithImageUrl(info.ImageUrl);
 
-        return SendMessage(connection, [embed.Build()]);
+        await SendMessage(connection, [embed.Build()]);
     }
 
-    public override Task CommunicateException(Connection connection, string message, Exception ex)
+    public override async Task CommunicateException(Connection connection, string message, Exception ex)
     {
         var embed = new EmbedBuilder()
             .WithTitle("An exception occurred!")
@@ -309,7 +309,7 @@ internal class DiscordConnectionService(
                     .WithIsInline(false))
             .Build();
 
-        return SendMessage(connection, [embed]);
+        await SendMessage(connection, [embed]);
     }
 
     public override async Task CommunicateProviderEnabledSwitch(Connection connection, Provider provider)
@@ -385,7 +385,7 @@ internal class DiscordConnectionService(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to send message to Discord webhook trying again in 1s");
+            logger.LogError("Failed to send message to Discord webhook trying again in 1s: {Message}", ex.Message);
             await Task.Delay(1000);
 
             await client.SendMessageAsync(username: username, avatarUrl: avatar, embeds: embeds, components: components);

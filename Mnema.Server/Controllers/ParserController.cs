@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Mnema.API.Content;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 
 namespace Mnema.Server.Controllers;

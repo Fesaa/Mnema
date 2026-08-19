@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Exceptions;
+using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
@@ -61,7 +62,7 @@ public class MonitoredSeriesService(
         BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
     }
 
-    public async Task CreateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
+    public async Task<Guid> CreateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
     {
         if (await unitOfWork.MonitoredSeriesRepository.CheckDuplicateSeries(null, dto, cancellationToken))
         {
@@ -93,7 +94,7 @@ public class MonitoredSeriesService(
         if (!string.IsNullOrEmpty(jobId))
             jobId = BackgroundJob.ContinueJobWith(jobId, () => connectionService.CommunicateSeriesMonitored(series.Id, CancellationToken.None));
 
-        if (string.IsNullOrEmpty(series.ExternalId)) return;
+        if (string.IsNullOrEmpty(series.ExternalId)) return series.Id;
 
         if (string.IsNullOrEmpty(jobId))
         {
@@ -103,6 +104,8 @@ public class MonitoredSeriesService(
         {
             BackgroundJob.ContinueJobWith(jobId, () => StartDownload(series.Id, true, CancellationToken.None));
         }
+
+        return series.Id;
     }
 
     [AutomaticRetry(Attempts = 1)]
@@ -283,7 +286,7 @@ public class MonitoredSeriesService(
 
             mChapter ??= new MonitoredChapter();
             PatchChapterMetadata(mChapter, chapter);
-            mChapter.FilePath = matchingFile?.Path;
+            mChapter.FilePath = matchingFile?.Path.RemovePrefix(configuration.BaseDir);
             mChapter.Status = status;
 
             mSeries.Chapters.Add(mChapter);

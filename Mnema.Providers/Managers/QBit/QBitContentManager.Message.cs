@@ -121,6 +121,11 @@ internal partial class QBitContentManager
 
         using var scope = scopeFactory.CreateScope();
         var messageService = scope.GetRequiredService<IMessageService>();
+        var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
+
+        externalDownload.State = ContentState.Downloading;
+        unitOfWork.ExternalDownloadRepository.Update(externalDownload);
+        await unitOfWork.CommitAsync(ct);
 
         await messageService.RefreshDashboard();
 

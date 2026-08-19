@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Mnema.API;
@@ -88,6 +87,14 @@ internal class MessageService(IHubContext<MessageHub> ctx) : IMessageService
         await Send(nameof(MessageEventType.MetadataRefreshed), new
         {
             SeriesId = seriesId
+        });
+    }
+
+    public async Task ScanFinished(Guid scanId)
+    {
+        await Send(nameof(MessageEventType.ScanFinished), new
+        {
+            ScanId = scanId
         });
     }
 

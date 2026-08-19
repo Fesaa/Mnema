@@ -1,8 +1,8 @@
-import { Routes } from '@angular/router';
-import { setupGuard } from './_guards/setup.guard';
-import { authGuard } from './_guards/auth.guard';
-import { setupCompleteGuard } from './_guards/setup-complete.guard';
-import { loggedOutGuard } from './_guards/logged-out.guard';
+import {Routes} from '@angular/router';
+import {setupGuard} from './_guards/setup.guard';
+import {authGuard} from './_guards/auth.guard';
+import {setupCompleteGuard} from './_guards/setup-complete.guard';
+import {loggedOutGuard} from './_guards/logged-out.guard';
 import {InitialSetupComponent} from "@mnema/authentication/initial-setup/initial-setup.component";
 import {LoginComponent} from "@mnema/authentication/login/login.component";
 import {devOnlyGuard} from "@mnema/_guards/dev-only.guard";
@@ -30,6 +30,10 @@ export const routes: Routes = [
         path: '',
         loadChildren: () => import('./_routes/extra.routes').then(m => m.routes)
       },
+      {
+        path: 'import-scans',
+        loadChildren: () => import('./features/import-scans/import-scans.routes').then(m => m.routes)
+      }
     ]
   },
   {

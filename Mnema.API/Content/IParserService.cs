@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 
@@ -24,6 +22,7 @@ public interface IParserService
     bool IsLooseLeafVolume(string? volumeNumber);
     bool IsCoverImage(string filename);
     bool IsImage(string filePath);
+    bool IsSupportedFile(string filePath);
     float MinNumberFromRange(string range);
     float MaxNumberFromRange(string range);
     ParseResult FullParse(string input, ContentFormat type);

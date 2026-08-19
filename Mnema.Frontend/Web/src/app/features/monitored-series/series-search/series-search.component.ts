@@ -14,9 +14,9 @@ import {
   CompactSeriesInfoComponent
 } from "@mnema/features/monitored-series/_components/compact-series-info/compact-series-info.component";
 import {
-  MetadataService,
   MetadataProvider,
-  MetadataSearchResult
+  MetadataSearchResult,
+  MetadataService
 } from "@mnema/features/monitored-series/metadata.service";
 import {
   EditMonitoredSeriesModalComponent

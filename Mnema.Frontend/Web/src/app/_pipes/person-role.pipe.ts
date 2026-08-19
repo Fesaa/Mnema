@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import {Pipe, PipeTransform} from '@angular/core';
 import {PersonRole} from "@mnema/page/_components/series-info/_types";
 import {translate} from "@jsverse/transloco";
 

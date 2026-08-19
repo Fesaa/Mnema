@@ -1,11 +1,8 @@
 using System.Diagnostics;
-using Hangfire;
-using Microsoft.Extensions.Logging;
-using Mnema.API;
-using Mnema.Models.Internal;
 using System.Formats.Tar;
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
+using Hangfire;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Cjk;
 using Lucene.Net.Analysis.Ja;
@@ -19,9 +16,11 @@ using Lucene.Net.Store;
 using Lucene.Net.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.Common.Extensions;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
+using Mnema.Models.Internal;
 using Directory = System.IO.Directory;
 
 namespace Mnema.Metadata.Mangabaka;
@@ -135,7 +134,31 @@ public class MangabakaScheduler(
 
         logger.LogDebug("Downloaded database {DbPath} in {Elapsed}", dbPath, sw.Elapsed.ToReadableString());
 
+        await EnsureSourceIndexesAsync(ct);
         await ReIndexLucene(ct);
+    }
+
+    private async Task EnsureSourceIndexesAsync(CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Creating source ID indexes on series table");
+        var dbPath = Path.Join(configuration.PersistentStorage, DatabaseName);
+        await using var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={dbPath}");
+        await connection.OpenAsync(cancellationToken);
+
+        string[] indexes =
+        [
+            "CREATE INDEX IF NOT EXISTS idx_series_source_anilist_id ON series (source_anilist_id);",
+            "CREATE INDEX IF NOT EXISTS idx_series_source_my_anime_list_id ON series (source_my_anime_list_id);"
+        ];
+
+        foreach (var sql in indexes)
+        {
+            await using var cmd = connection.CreateCommand();
+            cmd.CommandText = sql;
+            await cmd.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        logger.LogInformation("Source ID indexes ready");
     }
 
     private async Task ReIndexLucene(CancellationToken ct)

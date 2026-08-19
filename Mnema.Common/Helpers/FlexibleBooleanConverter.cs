@@ -1,8 +1,8 @@
-namespace Mnema.Common.Helpers;
-
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
+namespace Mnema.Common.Helpers;
 
 public class FlexibleBooleanConverter : JsonConverter<bool>
 {

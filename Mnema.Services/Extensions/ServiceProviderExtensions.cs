@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
@@ -43,6 +42,8 @@ public static class ServiceProviderExtensions
         services.AddScoped<IProviderSettingsService, ProviderSettingsService>();
         services.AddScoped<IGroupedReleaseDetector, GroupedReleaseDetector>();
         services.AddScoped<IPasswordService, PasswordService>();
+        services.AddScoped<IImportScanService, ImportScanService>();
+        services.AddScoped<IEpubMetadataService, EpubMetadataService>();
 
         #region External Connection
 

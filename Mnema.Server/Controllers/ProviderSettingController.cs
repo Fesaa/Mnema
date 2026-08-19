@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
 using Mnema.Common;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 

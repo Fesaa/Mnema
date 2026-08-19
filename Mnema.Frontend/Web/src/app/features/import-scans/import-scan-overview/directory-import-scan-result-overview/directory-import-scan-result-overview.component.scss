@@ -1,0 +1,18 @@
+.import-scan-result-card {
+  height: 75vh;
+
+  .logo {
+    height: 16px;
+    width: 16px;
+  }
+
+  .file-list {
+    height: 35vh;
+    overflow-y: auto;
+
+    .list-group-item {
+      padding: 0.375rem 0.75rem;
+      min-height: 32px;
+    }
+  }
+}

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
@@ -61,11 +60,11 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
             }
             catch (Exception ex)
             {
-                var errorMessage = $"Failed to search for recently updated for {provider.ToString()}";
+                var errorMessage = $"Failed to search for recently updated for {provider.ToString()}: {ex.Message}";
 
                 var consecutiveFailures = providerSettings.Settings.Increment(ProviderSettings.ConsecutiveFailures, 1);
 
-                logger.LogError(ex, $"{errorMessage} - {consecutiveFailures} consecutive failures");
+                logger.LogError("{ErrorMessage} - {ConsecutiveFailures} consecutive failures", errorMessage, consecutiveFailures);
 
                 var disableAfter = await settingsService.GetSettingsAsync<int>(ServerSettingKey.AutoDisableAfter);
                 if (consecutiveFailures >= disableAfter && disableAfter != 0)
@@ -110,7 +109,8 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to search for recently updated {Provider}. Retrying once after 5s", provider.ToString());
+            logger.LogError("Failed to search for recently updated {Provider} - {Exception}. Retrying once after 5s",
+                provider.ToString(), ex.Message);
         }
 
         await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);

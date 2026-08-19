@@ -54,7 +54,8 @@
       "monitored-series": "Monitored Series",
       "notifications": "Notifications",
       "search-series": "Search Series",
-      "missing-chapters": "Missing Chapters"
+      "missing-chapters": "Missing Chapters",
+      "import-scans": "Import Scans"
     },
     "settings": {
       "title": "Settings",
@@ -91,6 +92,66 @@
     "text": {
       "noResults": "No results found"
     }
+  },
+
+  "import-scans-list": {
+    "directory": "Scan directory",
+    "status": "Status",
+    "info": "Info",
+    "actions": "Actions",
+    "confirm-delete": "Are you sure you want to delete this scan? ({{id}})",
+    "title": "Import Scans",
+    "description": "A quick way to start monitoring existing series. Scan a directory, and then process all found series.",
+    "start-new": "Start new scan",
+    "empty": {
+      "title": "No scans found",
+      "description": "Start a scan above to monitor existing series"
+    }
+  },
+
+  "import-scan-status-pipe": {
+    "Queued": "Queued",
+    "Started": "Started",
+    "Finished": "Finished",
+    "Failed": "Failed"
+  },
+
+  "import-scan-overview": {
+    "directories": "Directories",
+    "errors": "Errors",
+    "empty": "No results found",
+    "select-item": "Select an item to get started"
+  },
+
+  "import-error-overview": {
+    "error": "Error",
+    "message": "Message",
+    "last-seen": "Last seen",
+    "show-stack-trace": "Show stack trace",
+    "hide-stack-trace": "Hide stack trace",
+    "open-folder": "Open folder",
+    "dismiss": "Dismiss",
+    "retry": "Retry"
+  },
+
+  "import-error-type-pipe": {
+    "unknown-directory": "Directory not found",
+    "generic-exception": "Unexpected error",
+    "mixed-content-formats": "Mixed content formats",
+    "failed-to-parse-content-format": "Failed to parse content format",
+    "failed-to-parse-series": "Failed to parse series"
+  },
+
+  "directory-import-scan-result-overview": {
+    "reject": "Reject",
+    "skip": "Skip",
+    "auto-accept": "Auto Accept",
+    "accept": "Accept",
+    "files": "Files",
+    "metadata-providers": "Metadata Providers",
+    "link-hardcover": "Link Hardcover",
+    "link-mangabaka": "Link MangaBaka",
+    "monitored-series": "Monitored Series"
   },
 
   "download-modal": {
@@ -193,7 +254,9 @@
     "ignore_non_matched_volumes-title": "Ignore non-matched content",
     "ignore_non_matched_volumes-tooltip": "Don't download content if metadata is loaded and cannot be matched",
     "forceIndexChapterNumbers-title": "Force index chapter numbers",
-    "forceIndexChapterNumbers-tooltip": "Forcefully use the index as the chapter number. In case webtoon is being horrible about it"
+    "forceIndexChapterNumbers-tooltip": "Forcefully use the index as the chapter number. In case webtoon is being horrible about it",
+    "allow_chapter_downloads-title": "Allow chapter downloads",
+    "allow_chapter_downloads-tooltip": "Enable if you want to download chapters (not linked to volumes)"
   },
 
   "refresh-frequency-pipe": {
@@ -223,7 +286,8 @@
   },
   "format-pipe": {
     "Archive": "Archive",
-    "Epub": "Epub"
+    "Epub": "Epub",
+    "Unsupported": "Unsupported"
   },
 
   "confirm-modal": {

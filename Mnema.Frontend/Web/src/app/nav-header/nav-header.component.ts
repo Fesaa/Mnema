@@ -1,11 +1,11 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, signal} from '@angular/core';
 import {toSignal} from "@angular/core/rxjs-interop";
 import {Breakpoint, UtilityService} from "../_services/utility.service";
 import {NavigationEnd, Router, RouterLink, RouterLinkActive} from "@angular/router";
 import {NavService} from "../_services/nav.service";
 import {ButtonGroup, ButtonGroupKey, ButtonGroupService} from "../button-grid/button-group.service";
 import {translate, TranslocoPipe} from "@jsverse/transloco";
-import {NgTemplateOutlet, TitleCasePipe} from "@angular/common";
+import {NgTemplateOutlet} from "@angular/common";
 import {animate, style, transition, trigger} from "@angular/animations";
 import {MobileGridComponent} from "../button-grid/mobile-grid/mobile-grid.component";
 import {BadgeComponent} from "@mnema/shared/_component/badge/badge.component";

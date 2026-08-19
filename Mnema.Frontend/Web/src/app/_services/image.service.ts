@@ -1,9 +1,7 @@
-import {effect, inject, Injectable} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {environment} from "../../environments/environment";
 import {of, Subject} from "rxjs";
-import {ToastService} from "./toast.service";
-import {AuthKeyService} from "@mnema/settings/settings/_components/auth-keys/auth-key.service";
 
 @Injectable({
   providedIn: 'root'

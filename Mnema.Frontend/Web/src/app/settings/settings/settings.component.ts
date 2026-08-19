@@ -1,14 +1,10 @@
-import {Component, computed, effect, inject, linkedSignal, signal, ChangeDetectionStrategy} from '@angular/core';
+import {Component, computed, effect, inject, linkedSignal, signal} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NavService} from '../../_services/nav.service';
 import {PreferenceSettingsComponent} from "./_components/preference-settings/preference-settings.component";
 import {PagesSettingsComponent} from "./_components/pages-settings/pages-settings.component";
 import {ServerSettingsComponent} from "./_components/server-settings/server-settings.component";
-import {
-  Button,
-  ButtonGroupService,
-  SettingsID
-} from "../../button-grid/button-group.service";
+import {Button, ButtonGroupService, SettingsID} from "../../button-grid/button-group.service";
 import {ReleaseBrowserComponent} from "@mnema/settings/settings/_components/release-browser/release-browser.component";
 
 @Component({

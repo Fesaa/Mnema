@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
-using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;

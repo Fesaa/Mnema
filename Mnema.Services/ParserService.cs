@@ -1,17 +1,15 @@
-using System.Collections.Generic;
-using Mnema.API.Content;
-using Mnema.Common.Extensions;
-using Mnema.Models.Entities.Content;
-using Mnema.Models.Enums;
-using Mnema.Models.Publication;
-
-namespace Mnema.Services;
-
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Mnema.API.Content;
+using Mnema.Common.Extensions;
+using Mnema.Models.Enums;
+using Mnema.Models.Publication;
+
+namespace Mnema.Services;
 
 /// <summary>
 /// This class has been copied and modified from
@@ -49,11 +47,8 @@ public partial class ParserService: IParserService
     private const string ImageFileExtensions = @"(\.png|\.jpeg|\.jpg|\.webp|\.gif|\.avif)"; // Don't forget to update CoverChooser
     private const string ArchiveFileExtensions = @"\.cbz|\.zip|\.rar|\.cbr|\.tar.gz|\.7zip|\.7z|\.cb7|\.cbt";
     private const string EpubFileExtension = @"\.epub";
-    private const string PdfFileExtension = @"\.pdf";
-    private const string BookFileExtensions = EpubFileExtension + "|" + PdfFileExtension;
+    private const string BookFileExtensions = EpubFileExtension;
     private const string XmlRegexExtensions = @"\.xml";
-    public const string MacOsMetadataFileStartsWith = @"._";
-    public const string FontFileExtensions = @"\.[woff2|ttf|otf|woff]";
 
     private const string SupportedExtensions =
         ArchiveFileExtensions + "|" + ImageFileExtensions + "|" + BookFileExtensions;
@@ -1022,6 +1017,11 @@ public partial class ParserService: IParserService
         return !filePath.StartsWith('.') && ImageRegex.IsMatch(Path.GetExtension(filePath));
     }
 
+    public bool IsSupportedFile(string filePath)
+    {
+        return SupportedExtensionsRegex().IsMatch(filePath);
+    }
+
     public bool IsXml(string filePath)
     {
         return XmlRegex.IsMatch(Path.GetExtension(filePath));
@@ -1203,7 +1203,7 @@ public partial class ParserService: IParserService
 
     public string? ExtractFilename(string fileUrl)
     {
-        var matches = ParserService.CssImageUrlRegex.Matches(fileUrl);
+        var matches = CssImageUrlRegex.Matches(fileUrl);
         foreach (Match match in matches)
         {
             if (!match.Success) continue;

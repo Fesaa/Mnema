@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Mnema.Common;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Enums;
 

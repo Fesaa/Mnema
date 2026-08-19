@@ -1,11 +1,7 @@
-import {ChangeDetectionStrategy, Component, computed, inject, model, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, model} from '@angular/core';
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
-import {SeriesService} from "./series.service";
-import {Provider} from "../../../_models/page";
 import {Series} from "./_types";
-import {finalize, tap} from "rxjs";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
-import {LoadingSpinnerComponent} from "../../../shared/_component/loading-spinner/loading-spinner.component";
 import {UtcToLocalTimePipe} from "../../../_pipes/utc-to-local.pipe";
 import {PersonRolePipe} from "@mnema/_pipes/person-role.pipe";
 

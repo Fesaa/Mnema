@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using GraphQL.Client.Abstractions.Utilities;
 using Mnema.Models.Publication;
 
 namespace Mnema.Metadata.Hardcover;

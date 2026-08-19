@@ -1,5 +1,5 @@
 import {computed, inject, Injectable, TemplateRef} from '@angular/core';
-import {NavigationExtras, Router, UrlTree} from "@angular/router";
+import {NavigationExtras, Router} from "@angular/router";
 import {Role} from "../_models/user";
 import {PageService} from "../_services/page.service";
 import {translate, TranslocoService} from "@jsverse/transloco";
@@ -119,6 +119,11 @@ export class ButtonGroupService {
         navUrl: '/notifications',
         badge: this.notificationService.notificationsCount() > 0
           ? `${this.notificationService.notificationsCount()}` : undefined,
+      },
+      {
+        title: translate('button-groups.actions.import-scans'),
+        icon: 'fa fa-file-import',
+        navUrl: '/import-scans',
       },
       {
         title: translate('button-groups.settings.logout'),

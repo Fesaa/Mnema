@@ -2,12 +2,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using GraphQL.Client.Abstractions;
 using GraphQL.Client.Http;
+using GraphQL.Client.Serializer.SystemTextJson;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
@@ -17,7 +17,6 @@ using Mnema.API.Metadata;
 using Mnema.Common;
 using Mnema.Metadata.Hardcover;
 using Mnema.Metadata.Mangabaka;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using Serilog;
@@ -65,7 +64,7 @@ public static class ServiceProviderExtensions
                     .CreateClient(nameof(HardcoverMetadataService));
 
                 return new GraphQLHttpClient(HardcoverGraphQlEndpoint,
-                    new GraphQL.Client.Serializer.SystemTextJson.SystemTextJsonSerializer
+                    new SystemTextJsonSerializer
                     {
                         Options =
                         {

@@ -77,8 +77,15 @@ internal partial class QBitContentManager
         var cleanupService = scope.GetRequiredService<ICleanupService>();
         var messageService = scope.GetRequiredService<IMessageService>();
         var connectionService = scope.GetRequiredService<IConnectionService>();
+        var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
 
         var content = new ExternalDownloadContent(externalDownload, torrent);
+
+        externalDownload.State = ContentState.Cleanup;
+        unitOfWork.ExternalDownloadRepository.Update(externalDownload);
+        await unitOfWork.CommitAsync(ct);
+
+        await messageService.StateUpdate(externalDownload.Id.ToString(), ContentState.Cleanup);
 
         await cleanupService.CleanupAsync(content, ct);
 
@@ -88,7 +95,7 @@ internal partial class QBitContentManager
             BackgroundJob.Enqueue<IMonitoredSeriesService>(s => s.EnrichWithMetadata(monitoredSeriesId.Value, CancellationToken.None));
         }
 
-        await messageService.DeleteContent(externalDownload.ExternalId);
+        await messageService.DeleteContent(externalDownload.Id.ToString());
         connectionService.CommunicateDownloadFinished(content.DownloadInfo);
     }
 

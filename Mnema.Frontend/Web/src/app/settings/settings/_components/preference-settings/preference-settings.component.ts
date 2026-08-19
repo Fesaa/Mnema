@@ -1,20 +1,13 @@
-import {ChangeDetectorRef, Component, DestroyRef, inject, OnInit, signal, ChangeDetectionStrategy} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit, signal} from '@angular/core';
 import {FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {PreferencesService} from '../../../../_services/preferences.service';
-import {
-  KavitaMetadataPreferences,
-  Preferences
-} from '../../../../_models/preferences';
+import {KavitaMetadataPreferences, Preferences} from '../../../../_models/preferences';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {debounceTime, distinctUntilChanged, filter, skip, switchMap, tap} from 'rxjs';
+import {debounceTime, filter, switchMap, tap} from 'rxjs';
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {FormService} from "@mnema/_services/form.service";
 import {FormDefinition} from "@mnema/generic-form/form";
 import {GenericFormComponent} from "@mnema/generic-form/generic-form.component";
-import {
-  ConnectionService,
-  ConnectionType
-} from "@mnema/settings/settings/_components/external-connection-settings/connection.service";
 import {UtilityService} from "@mnema/_services/utility.service";
 
 @Component({

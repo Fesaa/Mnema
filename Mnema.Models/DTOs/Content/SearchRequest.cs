@@ -1,5 +1,4 @@
 using Mnema.Common;
-using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 
 namespace Mnema.Models.DTOs.Content;

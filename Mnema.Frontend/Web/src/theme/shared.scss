@@ -7,6 +7,10 @@
   cursor: pointer;
 }
 
+.cursor-pointer {
+  cursor: pointer;
+}
+
 .selected {
   background-color: var(--secundairy-color);
   color: var(--secondary-text-color);
@@ -185,4 +189,16 @@ a:hover {
 
 .nav-pills .nav-link.active {
   background-color: var(--secondary-color-lighter);
+}
+
+.nav-link {
+  color: var(--primary-color);
+}
+
+.nav-link:hover {
+  color: var(--primary-color);
+}
+
+.nav-link.active {
+  color: var(--secondary-color) !important;
 }

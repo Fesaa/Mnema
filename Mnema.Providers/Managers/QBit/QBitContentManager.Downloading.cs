@@ -48,10 +48,21 @@ internal partial class QBitContentManager
         var seriesFiles = ParseSeriesFiles(request, torrentInfo.Files, normalizedTitles, services.ParserService);
         var toDownload = FilterFilesToDownload(request, title, seriesFiles, mSeries, services, ct);
 
+        var hasNoDownloadsBecauseMissingMetadata = false;
         if (toDownload.Count == 0)
         {
-            logger.LogDebug("[{Title}/{Id}] No files to download, skipping", title, request.Id);
-            return;
+            var hasVolumes = seriesFiles.Any(f => !string.IsNullOrEmpty(f.ParseResult.VolumeMarker));
+            if (hasVolumes && mSeries is { Chapters.Count: > 0 })
+            {
+                logger.LogDebug("[{Title}/{Id}] No files to download, likely because upstream metadata is missing. Halting removing to allow for upstream correction", title, request.Id);
+                request.StartImmediately = false;
+                hasNoDownloadsBecauseMissingMetadata = true;
+            }
+            else
+            {
+                logger.LogDebug("[{Title}/{Id}] No files to download, skipping", title, request.Id);
+                return;
+            }
         }
 
         logger.LogDebug("[{Title}/{Id}] Found {Count}/{TotalCount} files to download",
@@ -60,6 +71,16 @@ internal partial class QBitContentManager
         var newDownload = await EnsureTorrentAddedAsync(request, title, ct);
 
         var externalDownload = await SaveExternalDownloadRecord(services.UnitOfWork, request, title, seriesFiles, toDownload, ct);
+
+        if (hasNoDownloadsBecauseMissingMetadata)
+        {
+            var info = BuildDownloadInfo(request, series, externalDownload);
+            services.ConnectionService.CommunicateDownloadInfo(info,
+                "Missing upstream Metadata",
+                "This download is not automatically starting as all volumes were skipped because no match could be found." +
+                $" Update upstream (Hardcover: {mSeries?.HardcoverId}, MangaBaka: {mSeries?.MangaBakaId}) metadata, and manually select volumes to download." +
+                " Metadata will be reloading on cleanup.");
+        }
 
         try
         {
@@ -71,6 +92,10 @@ internal partial class QBitContentManager
             if (request.StartImmediately)
             {
                 await qBitClient.ResumeTorrentsAsync([request.Id], ct);
+
+                externalDownload.State = ContentState.Downloading;
+                services.UnitOfWork.ExternalDownloadRepository.Update(externalDownload);
+                await services.UnitOfWork.CommitAsync(ct);
             }
 
             await BroadcastDownloadStartedAsync(services, request, series, externalDownload);
@@ -132,15 +157,16 @@ internal partial class QBitContentManager
     {
         var downloadDir = Path.Join(request.BaseDir, title);
         var existingContent = services.ScannerService.ScanDirectory(
-            downloadDir,
-            request.Metadata.GetKey(RequestConstants.ContentFormatKey),
-            request.Metadata.GetKey(RequestConstants.FormatKey), ct);
+            downloadDir, request.GetKey(RequestConstants.ContentFormatKey),
+            request.GetKey(RequestConstants.FormatKey), ct);
 
         var ignoreNonMatched = request.GetKey(RequestConstants.IgnoreNonMatchedVolumes);
+        var allowChapters = request.GetKey(RequestConstants.AllowChapterDownloads);
 
         return seriesFiles
             .WhereIf(mSeries != null, pair => ShouldDownloadMonitoredFile(pair, mSeries!, ignoreNonMatched, title, request.Id, services.ParserService))
             .Where(pair => IsFileNew(pair, existingContent, title, request.Id, services.ParserService))
+            .WhereIf(!allowChapters, pair => !string.IsNullOrEmpty(pair.ParseResult.VolumeMarker))
             .ToList();
     }
 
@@ -215,6 +241,7 @@ internal partial class QBitContentManager
             Provider = request.Provider,
             Metadata = request.Metadata,
             BaseDir = request.BaseDir,
+            State = ContentState.Waiting,
             Files = seriesFiles.Select(pair => new ExternalDownloadFile
             {
                 FileName = pair.File.FileName,
@@ -256,16 +283,16 @@ internal partial class QBitContentManager
         }, ct);
     }
 
-    internal static async Task BroadcastDownloadStartedAsync(ResolvedServices services, DownloadRequestDto request, Series? series, ExternalDownload externalDownload)
+    internal static DownloadInfo BuildDownloadInfo(DownloadRequestDto request, Series? series, ExternalDownload externalDownload)
     {
         var totalSize = externalDownload.TotalFileSize.AsHumanReadableSize();
         var toDownloadSize = externalDownload.SelectedFileSize.AsHumanReadableSize();
 
-        var info = new DownloadInfo
+        return new DownloadInfo
         {
             Provider = request.Provider,
             Id = externalDownload.Id.ToString(),
-            ContentState = ContentState.Queued,
+            ContentState = externalDownload.State,
             Name = externalDownload.Title,
             Description = series?.Summary,
             ImageUrl = series?.CoverUrl,
@@ -281,6 +308,11 @@ internal partial class QBitContentManager
             DownloadDir = Path.Join(externalDownload.BaseDir, externalDownload.Title),
             MonitoredSeriesId = request.GetKey(RequestConstants.MonitoredSeriesId),
         };
+    }
+
+    internal static async Task BroadcastDownloadStartedAsync(ResolvedServices services, DownloadRequestDto request, Series? series, ExternalDownload externalDownload)
+    {
+        var info = BuildDownloadInfo(request, series, externalDownload);
 
         await services.MessageService.AddContent(info);
 
