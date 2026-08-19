@@ -319,4 +319,11 @@ export class MonitoredSeriesComponent {
     return this.modalService.onClose$<MetadataSearchResult>(modal, true);
   }
 
+  protected openBaseDir() {
+    if (!this.series().titleOverride) return;
+
+    this.modalService.getDirectory$(this.series().baseDir + '/' + this.series().titleOverride, {
+      showFiles: true, copy: false, filter: true, create: false
+    }).subscribe();
+  }
 }

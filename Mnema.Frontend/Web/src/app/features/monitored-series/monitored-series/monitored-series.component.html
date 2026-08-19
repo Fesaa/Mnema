@@ -69,6 +69,9 @@
                 <app-badge padding="p-2 me-2" colour="secondary">
                   <i class="fa fa-file"></i> {{ s.contentFormat | contentFormat }}
                 </app-badge>
+                <app-badge padding="p-2 me-2" colour="secondary" cursor="pointer" (click)="openBaseDir()">
+                  <i class="fa fa-folder"></i> {{s.baseDir}}
+                </app-badge>
                 @if (s.lastDataRefreshUtc) {
                   <span class="small clickable" (click)="refreshMetadata()">
                 <i class="fa fa-calendar-alt"></i>
