@@ -1388,7 +1388,8 @@
   "monitored-series-detail": {
     "last-updated": "Last updated {{time}}",
     "chapters": "Chapters",
-    "no-chapters": "No chapters found, note that chapters from UpStream are not tracked",
+    "unmatched-chapters": "UnMatched Chapters",
+    "no-chapters": "No chapters found",
     "confirm-delete": "Are you sure you want to stop monitoring {{name}}",
     "select-status": "Set chapter status",
     "confirm-refresh-metadata": "Refresh metadata for {{name}}?",

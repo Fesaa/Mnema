@@ -4,6 +4,7 @@ using Mnema.API.Repositories;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Enums;
+using Mnema.Models.External;
 using Mnema.Models.Publication;
 
 namespace Mnema.Models.Entities.Content;
@@ -65,5 +66,13 @@ public class MonitoredSeries: IEntityDate, IDatabaseEntity
     public List<MonitoredChapter> Chapters { get; set; }
 
     [JsonColumn]
-    public List<OnDiskContent> UnMatchedChapters { get; set; }
+    public List<RawFile> UnMatchedChapters { get; set; }
+}
+
+public class RawFile
+{
+    public string Path { get; set; }
+    public string? Chapter { get; set; }
+    public string? Volume { get; set; }
+    public ComicInfo? ComicInfo { get; set; }
 }

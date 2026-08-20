@@ -103,6 +103,7 @@ export class SeriesSearchComponent implements OnInit {
       summary: "",
       lastDataRefreshUtc: '',
       chapters: [],
+      unMatchedChapters: [],
       metadata: {},
     });
 

@@ -80,6 +80,7 @@ export class DirectoryImportScanResultOverviewComponent {
       id: '',
       title: this.result().parsedSeriesName,
       metadata: {},
+      unMatchedChapters: [],
     }
 
     component.series.set(newMonitoredSeries);

@@ -69,6 +69,7 @@ export class SearchResultComponent implements OnInit{
       id: '',
       title: this.searchResult().name,
       metadata: {},
+      unMatchedChapters: [],
     }
 
     component.series.set(newMonitoredSeries);

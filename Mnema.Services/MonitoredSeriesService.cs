@@ -254,43 +254,7 @@ public class MonitoredSeriesService(
         var path = Path.Join(mSeries.BaseDir, title);
         var onDiskContent = scannerService.ScanDirectory(path, mSeries.ContentFormat, mSeries.Format, ct);
 
-        var seriesChapters = mSeries.Chapters;
-
-        mSeries.Chapters = [];
-
-        var allIds = series.Chapters.Select(c => c.Id).ToHashSet();
-        unitOfWork.MonitoredSeriesRepository.RemoveRange(seriesChapters.Where(c => !allIds.Contains(c.ExternalId)));
-
-        foreach (var chapter in series.Chapters)
-        {
-            var mChapter = seriesChapters.FirstOrDefault(c => c.ExternalId == chapter.Id);
-
-            if (mChapter?.Status == MonitoredChapterStatus.NotMonitored)
-            {
-                PatchChapterMetadata(mChapter, chapter);
-                mSeries.Chapters.Add(mChapter);
-                continue;
-            }
-
-            var matchingFile = parserService.FindMatch(onDiskContent, chapter);
-
-            var status = MonitoredChapterStatus.Missing;
-            if (matchingFile != null)
-            {
-                status = MonitoredChapterStatus.Available;
-            }
-            else if (chapter.ReleaseDate?.Date > DateTime.UtcNow.Date)
-            {
-                status = MonitoredChapterStatus.Upcoming;
-            }
-
-            mChapter ??= new MonitoredChapter();
-            PatchChapterMetadata(mChapter, chapter);
-            mChapter.FilePath = matchingFile?.Path.RemovePrefix(configuration.BaseDir);
-            mChapter.Status = status;
-
-            mSeries.Chapters.Add(mChapter);
-        }
+        SyncChapters(mSeries, series.Chapters, onDiskContent);
 
         if (series.ContentFormat is not null)
         {
@@ -314,6 +278,65 @@ public class MonitoredSeriesService(
         await unitOfWork.CommitAsync(ct);
 
         await messageService.MetadataRefreshed(mSeries.Id);
+    }
+
+    private void SyncChapters(MonitoredSeries mSeries, IList<Chapter> upstreamChapters, List<OnDiskContent> onDiskContent)
+    {
+        var existingChapters = mSeries.Chapters;
+        mSeries.Chapters = [];
+
+        var upstreamIds = upstreamChapters.Select(c => c.Id).ToHashSet();
+        var removedChapters = existingChapters.Where(c => !upstreamIds.Contains(c.ExternalId));
+        unitOfWork.MonitoredSeriesRepository.RemoveRange(removedChapters);
+
+        foreach (var upstreamChapter in upstreamChapters)
+        {
+            var existingChapter = existingChapters.FirstOrDefault(c => c.ExternalId == upstreamChapter.Id);
+            mSeries.Chapters.Add(SyncChapter(existingChapter, upstreamChapter, onDiskContent));
+        }
+
+        mSeries.UnMatchedChapters.Clear();
+        mSeries.UnMatchedChapters.AddRange(onDiskContent.Select(file => new RawFile
+        {
+            Path = file.Path.RemovePrefix(configuration.BaseDir),
+            Chapter = file.ChapterMarker,
+            Volume = file.VolumeMarker,
+            ComicInfo = file.ComicInfo
+        }));
+    }
+
+    private MonitoredChapter SyncChapter(MonitoredChapter? existingChapter, Chapter upstreamChapter, List<OnDiskContent> onDiskContent)
+    {
+        if (existingChapter?.Status == MonitoredChapterStatus.NotMonitored)
+        {
+            PatchChapterMetadata(existingChapter, upstreamChapter);
+            return existingChapter;
+        }
+
+        var matchingFile = parserService.FindMatch(onDiskContent, upstreamChapter);
+        if (matchingFile != null)
+        {
+            onDiskContent.Remove(matchingFile);
+        }
+
+        var mChapter = existingChapter ?? new MonitoredChapter();
+        PatchChapterMetadata(mChapter, upstreamChapter);
+        mChapter.FilePath = matchingFile?.Path.RemovePrefix(configuration.BaseDir);
+        mChapter.ComicInfo = matchingFile?.ComicInfo;
+        mChapter.Status = DetermineStatus(matchingFile, upstreamChapter);
+
+        return mChapter;
+    }
+
+    private static MonitoredChapterStatus DetermineStatus(OnDiskContent? matchingFile, Chapter upstreamChapter)
+    {
+        if (matchingFile != null)
+            return MonitoredChapterStatus.Available;
+
+        if (upstreamChapter.ReleaseDate?.Date > DateTime.UtcNow.Date)
+            return MonitoredChapterStatus.Upcoming;
+
+        return MonitoredChapterStatus.Missing;
     }
 
     private static void PatchChapterMetadata(MonitoredChapter? mChapter, Chapter chapter)

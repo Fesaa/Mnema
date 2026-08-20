@@ -26,7 +26,14 @@ export type MonitoredSeries = {
   validTitles: string[];
   lastDataRefreshUtc: string;
   chapters: MonitoredChapter[];
+  unMatchedChapters: RawFile[];
   metadata: MetadataBag;
+}
+
+export type RawFile = {
+  path: string;
+  chapter: string;
+  volume: string;
 }
 
 export enum Format {

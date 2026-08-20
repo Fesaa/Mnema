@@ -110,6 +110,9 @@ export class MonitoredSeriesComponent {
   protected missingHardcoverId = computed(() => !this.series().hardcoverId);
   protected missingMangabakaId = computed(() => !this.series().mangaBakaId);
 
+  protected activeChapterTab = signal<'chapters' | 'unmatched'>('chapters');
+  private chapterTabInitialized = false;
+
 
   constructor() {
     this.signalR.events$.pipe(
@@ -124,6 +127,16 @@ export class MonitoredSeriesComponent {
       this.pageService.metadata(this.provider()).pipe(
         tap(m => this.metadataFormDefinition.set(m))
       ).subscribe();
+    });
+
+    effect(() => {
+      const s = this.series();
+      if (s && !this.chapterTabInitialized) {
+        this.chapterTabInitialized = true;
+        if (s.chapters.length === 0 && s.unMatchedChapters.length > 0) {
+          this.activeChapterTab.set('unmatched');
+        }
+      }
     });
   }
 
