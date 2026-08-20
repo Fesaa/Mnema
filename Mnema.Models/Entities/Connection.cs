@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Mnema.API.Repositories;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
 
@@ -12,6 +13,7 @@ public class Connection: IDatabaseEntity
     public ConnectionType Type { get; set; }
     public string Name { get; set; }
     public List<ConnectionEvent> FollowedEvents { get; set; }
+    [JsonColumn]
     public MetadataBag Metadata { get; set; }
 }
 

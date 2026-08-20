@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Mnema.API.Repositories;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Interfaces;
@@ -24,11 +25,13 @@ public class ExternalDownload: IEntityDate, IDatabaseEntity
     public required string BaseDir  { get; set; }
     public required Provider Provider { get; set; }
     public required ContentState State { get; set; }
+    [JsonColumn]
     public required MetadataBag Metadata { get; set; }
     public bool IsErrored { get; set; }
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModifiedUtc { get; set; }
 
+    [JsonColumn]
     public required List<ExternalDownloadFile> Files { get; set; }
 
     public T GetKey<T>(IMetadataKey<T> key) => Metadata.GetKey(key);

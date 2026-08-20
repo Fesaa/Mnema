@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using Mnema.API.Repositories;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Enums;
@@ -50,6 +51,7 @@ public class MetadataProviderSettings: IDatabaseEntity
 
     public bool ChapterCoverUrl { get; set; }
 
+    [JsonColumn]
     public MetadataBag MetadataProviderSpecific { get; set; }
 
     public T GetKey<T>(IMetadataKey<T> key)

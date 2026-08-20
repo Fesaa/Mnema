@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Mnema.API.Repositories;
 using Mnema.Common;
 using Mnema.Models.Enums;
 
@@ -9,6 +10,7 @@ public class ProviderSettings
 {
     public Provider Provider { get; set; }
 
+    [JsonColumn]
     public MetadataBag Settings { get; set; } = new();
 
     public bool IsEnabled => !Settings.GetKey(Disable);

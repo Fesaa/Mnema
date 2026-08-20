@@ -66,75 +66,16 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
         builder.Entity<Preferences>()
             .ComplexCollection(p => p.LinkFilters, b => b.ToJson());
 
-        builder.Entity<Subscription>()
-            .Property(s => s.Metadata)
-            .HasJsonConversion(new MetadataBag())
-            .HasColumnType("TEXT")
-            .HasDefaultValue(new MetadataBag());
-
-        builder.Entity<Connection>()
-            .Property(c => c.Metadata)
-            .HasJsonConversion([])
-            .HasColumnType("TEXT")
-            .HasDefaultValue(new MetadataBag());
         builder.Entity<Connection>()
             .PrimitiveCollection(c => c.FollowedEvents)
             .HasDefaultValue(new List<ConnectionEvent>());
 
-        builder.Entity<DownloadClient>()
-            .Property(d => d.Metadata)
-            .HasJsonConversion([])
-            .HasColumnType("TEXT")
-            .HasDefaultValue(new MetadataBag());
-
         builder.Entity<MonitoredSeries>()
             .PrimitiveCollection(m => m.ValidTitles);
-
-        builder.Entity<MonitoredSeries>()
-            .Property(s => s.Metadata)
-            .HasJsonConversion(new MetadataBag())
-            .HasColumnType("TEXT")
-            .HasDefaultValue(new MetadataBag());
-
-        builder.Entity<MonitoredSeries>()
-            .Property(s => s.UnMatchedChapters)
-            .HasJsonConversion([])
-            .HasColumnType("TEXT")
-            .HasDefaultValue(new List<OnDiskContent>());
 
         builder.Entity<AuthKey>()
             .PrimitiveCollection(k => k.Roles)
             .HasDefaultValue(new List<string>());
-
-        builder.Entity<ProviderSettings>()
-            .Property(ps => ps.Settings)
-            .HasJsonConversion(new MetadataBag())
-            .HasColumnType("TEXT")
-            .HasDefaultValue(new MetadataBag());
-
-        builder.Entity<Page>()
-            .Property(p => p.DefaultOptions)
-            .HasJsonConversion(new MetadataBag())
-            .HasColumnType("TEXT")
-            .HasDefaultValue(new MetadataBag());
-
-        builder.Entity<ExternalDownload>()
-            .Property(p => p.Metadata)
-            .HasJsonConversion(new MetadataBag())
-            .HasColumnType("TEXT")
-            .HasDefaultValue(new MetadataBag());
-
-        builder.Entity<ExternalDownload>()
-            .Property(p => p.Files)
-            .HasJsonConversion([])
-            .HasColumnType("TEXT")
-            .HasDefaultValue(new List<ExternalDownloadFile>());
-
-        builder.Entity<MetadataProviderSettings>()
-            .Property(p => p.MetadataProviderSpecific)
-            .HasJsonConversion(new MetadataBag())
-            .HasColumnType("TEXT")
-            .HasDefaultValue(new MetadataBag());
 
         builder.Entity<DirectoryImportResult>()
             .PrimitiveCollection(p => p.Files)
