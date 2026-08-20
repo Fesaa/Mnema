@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Enums;
+using Mnema.Models.Publication;
 
 namespace Mnema.Models.Entities.Content;
 
@@ -60,4 +61,6 @@ public class MonitoredSeries: IEntityDate, IDatabaseEntity
     public DateTime LastDataRefreshUtc { get; set; }
 
     public List<MonitoredChapter> Chapters { get; set; }
+
+    public List<OnDiskContent> UnMatchedChapters { get; set; }
 }

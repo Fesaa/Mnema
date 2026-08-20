@@ -10,6 +10,7 @@ using Mnema.Models.Entities.Authentication;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Entities.Scanner;
+using Mnema.Models.Publication;
 
 namespace Mnema.Database;
 
@@ -45,6 +46,8 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        builder.ApplyJsonColumns();
+
         builder.Entity<Preferences>()
             .PrimitiveCollection(p => p.ConvertToGenreList)
             .HasDefaultValue(new List<string>());
@@ -92,6 +95,12 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
             .HasJsonConversion(new MetadataBag())
             .HasColumnType("TEXT")
             .HasDefaultValue(new MetadataBag());
+
+        builder.Entity<MonitoredSeries>()
+            .Property(s => s.UnMatchedChapters)
+            .HasJsonConversion([])
+            .HasColumnType("TEXT")
+            .HasDefaultValue(new List<OnDiskContent>());
 
         builder.Entity<AuthKey>()
             .PrimitiveCollection(k => k.Roles)
