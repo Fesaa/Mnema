@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Hangfire;
 using Mnema.API.External;
 using Mnema.Models.Enums;
+using Mnema.Models.Publication;
 
 namespace Mnema.API.Content;
 

@@ -27,6 +27,7 @@ using Mnema.Models.Entities.Scanner;
 using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
+using Mnema.Models.Publication;
 
 namespace Mnema.Providers.Services;
 
