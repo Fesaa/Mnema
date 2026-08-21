@@ -11,4 +11,5 @@ public enum FormFieldType
     Array = 6,
     CommaSeparatedValues = 7,
     CheckBox = 8,
+    FieldRow = 9,
 }

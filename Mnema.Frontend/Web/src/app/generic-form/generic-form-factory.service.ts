@@ -71,6 +71,8 @@ export class GenericFormFactoryService extends LoggingService {
 
     const formGroup: FormGroup = existing ?? fb.group({});
 
+    controls = controls.flatMap(c => c.fieldType === FormType.FieldRow ? c.controls! : [c]);
+
     for (const control of controls) {
 
       if (control.field === GENERIC_METADATA_FIELD) {
@@ -416,6 +418,7 @@ export class GenericFormFactoryService extends LoggingService {
       case FormType.Text:
       case FormType.Directory:
         return this.transFormValue(value, ValueType.String);
+      case FormType.FieldRow:
       case FormType.Array:
         this.log(`Error: FormTypes.Array passed into transFormValueForFormType`);
         throw new Error('Error FormTypes should be handled separately');

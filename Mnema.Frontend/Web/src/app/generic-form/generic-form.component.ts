@@ -23,6 +23,7 @@ import {
 } from "@mnema/shared/form/setting-multi-text-field/setting-multi-text-field.component";
 import {Breakpoint, UtilityService} from "@mnema/_services/utility.service";
 import {WikiLinkComponent} from "@mnema/shared/_component/wiki-link/wiki-link.component";
+import {NgTemplateOutlet} from "@angular/common";
 
 @Component({
   selector: 'app-generic-form',
@@ -35,6 +36,7 @@ import {WikiLinkComponent} from "@mnema/shared/_component/wiki-link/wiki-link.co
     TypeaheadComponent,
     SettingMultiTextFieldComponent,
     WikiLinkComponent,
+    NgTemplateOutlet,
   ],
   templateUrl: './generic-form.component.html',
   styleUrl: './generic-form.component.scss',
@@ -175,6 +177,18 @@ export class GenericFormComponent<T> {
     this.collapsedArrays.has(control.key)
       ? this.collapsedArrays.delete(control.key)
       : this.collapsedArrays.add(control.key);
+  }
+
+  getFieldRowColClass(control: FormControlDefinition): string {
+    if (!control.controls)
+      throw new Error('getFieldRowColClass called on a control with controls');
+
+    return {
+      1: 'col-12',
+      2: 'col-6',
+      3: 'col-4',
+      4: 'col-3',
+    }[control.controls.length] ?? 'col';
   }
 
 }

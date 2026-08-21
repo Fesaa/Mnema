@@ -1,247 +1,261 @@
-<form
-  *transloco="let t; prefix: formDefinition().key"
-  class="row"
-  [class.flex-nowrap]="inline() && utilityService.breakPoint() > Breakpoint.Mobile"
->
+<form class="row" [class.flex-nowrap]="inline() && utilityService.breakPoint() > Breakpoint.Mobile">
 
-  @for (control of toShowControl(); track control.key) {
-    @let formControl = getFormControl(control);
-    @let formControlName = getFormControlName(control);
-    @let forceSingle = control.forceSingle || control.fieldType === FormType.Array;
+  @for (control of toShowControl(); track $index) {
+    <ng-container
+      *ngTemplateOutlet="renderControl; context: {
+        $implicit: control,
+        containerClass: inline()
+          ? 'col pt-4'
+          : ((double() && !control.forceSingle && control.fieldType !== FormType.Array)
+              ? 'col-md-6'
+              : 'col-md-12') + ' col-sm-12 pt-4'
+      }"
+    />
+  }
 
-    <div
-      [formGroup]="getFormGroup(control)"
-      [class]="inline()
-    ? 'col pt-4'
-    : ((double() && !forceSingle) ? 'col-md-6' : 'col-md-12') + ' col-sm-12 pt-4'"
-    >
-      @switch (control.fieldType) {
-        @case (FormType.Switch) {
-          <app-settings-switch
-            [control]="formControl"
-            [labelId]="control.key"
-            [title]="t(control.key + '-title')"
-            [tooltip]="t(control.key + '-tooltip')"
-            [wikiLink]="control.wikiLink"
-          >
-            <ng-template #switch>
-              <div class="form-switch form-check">
-                <input class="form-check-input" type="checkbox" [formControlName]="formControlName">
+</form>
+
+<ng-template #renderControl let-control let-containerClass="containerClass">
+  @let formControl = getFormControl(control);
+  @let formControlName = getFormControlName(control);
+
+  <div [formGroup]="getFormGroup(control)" [class]="containerClass" *transloco="let t; prefix: formDefinition().key">
+    @switch (control.fieldType) {
+      @case (FormType.Switch) {
+        <app-settings-switch
+          [control]="formControl"
+          [labelId]="control.key"
+          [title]="t(control.key + '-title')"
+          [tooltip]="t(control.key + '-tooltip')"
+          [wikiLink]="control.wikiLink"
+        >
+          <ng-template #switch>
+            <div class="form-switch form-check">
+              <input class="form-check-input" type="checkbox" [formControlName]="formControlName">
+            </div>
+          </ng-template>
+
+        </app-settings-switch>
+      }
+      @case (FormType.CheckBox) {
+        <app-settings-item
+          [control]="formControl"
+          [title]=""
+          [canEdit]="false"
+          [showEdit]="false"
+          [isEditMode]="true"
+          [wikiLink]="control.wikiLink"
+        >
+
+          <ng-template #edit>
+            <div class="form-check d-flex align-items-center gap-2 mb-0 flex-grow-1">
+              <input class="form-check-input" type="checkbox" [id]="formControlName" [formControlName]="formControlName">
+              <label class="form-check-label text-truncate" [for]="formControlName">
+                {{ t(control.key + '-title') }}
+              </label>
+            </div>
+          </ng-template>
+
+        </app-settings-item>
+      }
+      @case (FormType.Text) {
+        <app-settings-item
+          [control]="formControl"
+          [labelId]="control.key"
+          [title]="t(control.key + '-title')"
+          [tooltip]="t(control.key + '-tooltip')"
+          [showEdit]="!control.forceEditMode"
+          [isEditMode]="control.forceEditMode"
+          [hideText]="control.hideText"
+          [wikiLink]="control.wikiLink"
+        >
+          <ng-template #view>
+            {{formControl.value | defaultValue}}
+          </ng-template>
+          <ng-template #edit>
+            <input class="form-control" type="text" [formControlName]="formControlName">
+          </ng-template>
+        </app-settings-item>
+      }
+      @case (FormType.Directory) {
+        <app-settings-item
+          [control]="formControl"
+          [labelId]="control.key"
+          [title]="t(control.key + '-title')"
+          [tooltip]="t(control.key + '-tooltip')"
+          [hideText]="control.hideText"
+          [wikiLink]="control.wikiLink"
+        >
+          <ng-template #view>
+            <div class="d-flex align-items-center">
+              <div role="button" class="btn btn-primary me-2" (click)="$event.stopPropagation(); pickDirectory(formControl)">
+                <i class="fa fa-folder"></i>
               </div>
-            </ng-template>
-
-          </app-settings-switch>
-        }
-        @case (FormType.CheckBox) {
-          <app-settings-item
-            [control]="formControl"
-            [title]=""
-            [canEdit]="false"
-            [showEdit]="false"
-            [isEditMode]="true"
-            [wikiLink]="control.wikiLink"
-          >
-
-            <ng-template #edit>
-              <div class="form-check d-flex align-items-center gap-2 mb-0 flex-grow-1">
-                <input class="form-check-input" type="checkbox" [id]="formControlName" [formControlName]="formControlName">
-                <label class="form-check-label text-truncate" [for]="formControlName">
-                  {{ t(control.key + '-title') }}
-                </label>
-              </div>
-            </ng-template>
-
-          </app-settings-item>
-        }
-        @case (FormType.Text) {
-          <app-settings-item
-            [control]="formControl"
-            [labelId]="control.key"
-            [title]="t(control.key + '-title')"
-            [tooltip]="t(control.key + '-tooltip')"
-            [showEdit]="!control.forceEditMode"
-            [isEditMode]="control.forceEditMode"
-            [hideText]="control.hideText"
-            [wikiLink]="control.wikiLink"
-          >
-            <ng-template #view>
-              {{formControl.value | defaultValue}}
-            </ng-template>
-            <ng-template #edit>
-              <input class="form-control" type="text" [formControlName]="formControlName">
-            </ng-template>
-          </app-settings-item>
-        }
-        @case (FormType.Directory) {
-          <app-settings-item
-            [control]="formControl"
-            [labelId]="control.key"
-            [title]="t(control.key + '-title')"
-            [tooltip]="t(control.key + '-tooltip')"
-            [hideText]="control.hideText"
-            [wikiLink]="control.wikiLink"
-          >
-            <ng-template #view>
-              <div class="d-flex align-items-center">
-                <div role="button" class="btn btn-primary me-2" (click)="$event.stopPropagation(); pickDirectory(formControl)">
-                  <i class="fa fa-folder"></i>
-                </div>
-                <span>{{formControl.value | defaultValue}}</span>
-              </div>
-            </ng-template>
-            <ng-template #edit>
-              <input class="form-control" type="text" [formControlName]="formControlName">
-            </ng-template>
-          </app-settings-item>
-        }
-        @case (FormType.DropDown) {
-          <app-settings-item
-            [control]="formControl"
-            [labelId]="control.key"
-            [title]="t(control.key + '-title')"
-            [tooltip]="t(control.key + '-tooltip')"
-            [showEdit]="!control.forceEditMode"
-            [isEditMode]="control.forceEditMode"
-            [hideText]="control.hideText"
-            [wikiLink]="control.wikiLink"
-          >
-            <ng-template #view>
-              @let option = getFormOption(control, formControl.value);
-              {{ option ? getFormOptionsTranslation(control, option) : null | defaultValue }}
-            </ng-template>
-            <ng-template #edit>
-              <select class="form-select" [formControlName]="formControlName">
-                @for (option of control.options; track option.key) {
-                  <option [ngValue]="option.value"> {{ getFormOptionsTranslation(control, option) }} </option>
-                }
-              </select>
-            </ng-template>
-          </app-settings-item>
-        }
-        @case (FormType.MultiSelect) {
-          <app-settings-item
-            [control]="formControl"
-            [labelId]="control.key"
-            [title]="t(control.key + '-title')"
-            [tooltip]="t(control.key + '-tooltip')"
-            [canEdit]="false"
-            [showEdit]="false"
-            [hideText]="control.hideText"
-            [wikiLink]="control.wikiLink"
-          >
-            <ng-template #view>
-              <app-type-ahead
-                [settings]="genericFormFactoryService.createTypeAheadSettings(formControl.value, control, inModal())"
-                (selectedData)="patchTypeAheadControlValue($event, formControl)"
-              >
-                <ng-template #optionItem let-option>
-                  {{ getFormOptionsTranslation(control, option) }}
-                </ng-template>
-                <ng-template #badgeItem let-item>
-                  {{ getFormOptionsTranslation(control, item) }}
-                </ng-template>
-              </app-type-ahead>
-            </ng-template>
-          </app-settings-item>
-        }
-        @case (FormType.MultiText) {
-          <app-settings-item
-            [control]="formControl"
-            [labelId]="control.key"
-            [title]="t(control.key + '-title')"
-            [tooltip]="t(control.key + '-tooltip')"
-            [canEdit]="false"
-            [showEdit]="false"
-            [hideText]="control.hideText"
-            [wikiLink]="control.wikiLink"
-          >
-            <ng-template #view>
-              <app-type-ahead
-                [settings]="genericFormFactoryService.createTypeAheadSettings(formControl.value, control, inModal())"
-                (selectedData)="patchTypeAheadControlValue($event, formControl)"
-              >
-                <ng-template #optionItem let-option>
-                  {{ option.key }}
-                </ng-template>
-                <ng-template #badgeItem let-item>
-                  {{ item.key }}
-                </ng-template>
-              </app-type-ahead>
-            </ng-template>
-          </app-settings-item>
-        }
-        @case (FormType.Array) {
-          @if (!!control.controls) {
-            @let isCollapsed = isArrayCollapsed(control);
-            <div [formArrayName]="getFormControlName(control)" class="d-flex flex-column align-items-start w-100">
-              <div
-                class="col-auto setting-title edit d-flex align-items-center gap-2 w-100"
-                role="button"
-                (click)="toggleArrayCollapsed(control)"
-              >
-                <i class="fa me-2" [class.fa-chevron-right]="isCollapsed" [class.fa-chevron-down]="!isCollapsed"></i>
-                <div class="flex-grow-1">
-                  <h4 class="section-title mb-0 d-flex align-items-center">
+              <span>{{formControl.value | defaultValue}}</span>
+            </div>
+          </ng-template>
+          <ng-template #edit>
+            <input class="form-control" type="text" [formControlName]="formControlName">
+          </ng-template>
+        </app-settings-item>
+      }
+      @case (FormType.DropDown) {
+        <app-settings-item
+          [control]="formControl"
+          [labelId]="control.key"
+          [title]="t(control.key + '-title')"
+          [tooltip]="t(control.key + '-tooltip')"
+          [showEdit]="!control.forceEditMode"
+          [isEditMode]="control.forceEditMode"
+          [hideText]="control.hideText"
+          [wikiLink]="control.wikiLink"
+        >
+          <ng-template #view>
+            @let option = getFormOption(control, formControl.value);
+            {{ option ? getFormOptionsTranslation(control, option) : null | defaultValue }}
+          </ng-template>
+          <ng-template #edit>
+            <select class="form-select" [formControlName]="formControlName">
+              @for (option of control.options; track option.key) {
+                <option [ngValue]="option.value"> {{ getFormOptionsTranslation(control, option) }} </option>
+              }
+            </select>
+          </ng-template>
+        </app-settings-item>
+      }
+      @case (FormType.MultiSelect) {
+        <app-settings-item
+          [control]="formControl"
+          [labelId]="control.key"
+          [title]="t(control.key + '-title')"
+          [tooltip]="t(control.key + '-tooltip')"
+          [canEdit]="false"
+          [showEdit]="false"
+          [hideText]="control.hideText"
+          [wikiLink]="control.wikiLink"
+        >
+          <ng-template #view>
+            <app-type-ahead
+              [settings]="genericFormFactoryService.createTypeAheadSettings(formControl.value, control, inModal())"
+              (selectedData)="patchTypeAheadControlValue($event, formControl)"
+            >
+              <ng-template #optionItem let-option>
+                {{ getFormOptionsTranslation(control, option) }}
+              </ng-template>
+              <ng-template #badgeItem let-item>
+                {{ getFormOptionsTranslation(control, item) }}
+              </ng-template>
+            </app-type-ahead>
+          </ng-template>
+        </app-settings-item>
+      }
+      @case (FormType.MultiText) {
+        <app-settings-item
+          [control]="formControl"
+          [labelId]="control.key"
+          [title]="t(control.key + '-title')"
+          [tooltip]="t(control.key + '-tooltip')"
+          [canEdit]="false"
+          [showEdit]="false"
+          [hideText]="control.hideText"
+          [wikiLink]="control.wikiLink"
+        >
+          <ng-template #view>
+            <app-type-ahead
+              [settings]="genericFormFactoryService.createTypeAheadSettings(formControl.value, control, inModal())"
+              (selectedData)="patchTypeAheadControlValue($event, formControl)"
+            >
+              <ng-template #optionItem let-option>
+                {{ option.key }}
+              </ng-template>
+              <ng-template #badgeItem let-item>
+                {{ item.key }}
+              </ng-template>
+            </app-type-ahead>
+          </ng-template>
+        </app-settings-item>
+      }
+      @case (FormType.Array) {
+        @if (!!control.controls) {
+          @let isCollapsed = isArrayCollapsed(control);
+          <div [formArrayName]="getFormControlName(control)" class="d-flex flex-column align-items-start w-100">
+            <div
+              class="col-auto setting-title edit d-flex align-items-center gap-2 w-100"
+              role="button"
+              (click)="toggleArrayCollapsed(control)"
+            >
+              <i class="fa me-2" [class.fa-chevron-right]="isCollapsed" [class.fa-chevron-down]="!isCollapsed"></i>
+              <div class="flex-grow-1">
+                <h4 class="section-title mb-0 d-flex align-items-center">
                     <span class="flex-grow-1">
                       {{ t(control.key + '-title') }}
                       <span class="text-muted">({{ getFormArray(control).length }})</span>
                     </span>
 
-                    <app-wiki-link [wikiLink]="control.wikiLink" />
-                  </h4>
-                  <span class="text-muted">{{t(control.key + '-tooltip')}}</span>
-                </div>
+                  <app-wiki-link [wikiLink]="control.wikiLink" />
+                </h4>
+                <span class="text-muted">{{t(control.key + '-tooltip')}}</span>
               </div>
+            </div>
 
-              @if (!isCollapsed) {
-                @for (group of getFormArray(control).controls; track $index) {
-                  <div class="array-item d-flex align-items-center gap-2 mb-3 w-100">
-                    <div class="flex-grow-1">
-                      <app-generic-form
-                        [formDefinition]="{ key: formDefinition().key + '.' + control.key, descriptionKey: '', controls: control.controls}"
-                        [initialValue]="{}"
-                        [supplyFormGroup]="group"
-                        [inModal]="inModal()"
-                        [inline]="control.inline"
-                      >
-                      </app-generic-form>
-                    </div>
-
-                    <button
-                      type="button"
-                      class="btn btn-small btn-outline-danger"
-                      (click)="removeArrayItem(control, $index)">
-                      <i class="fa fa-trash me-1"></i>
-                    </button>
+            @if (!isCollapsed) {
+              @for (group of getFormArray(control).controls; track $index) {
+                <div class="array-item d-flex align-items-center gap-2 mb-3 w-100">
+                  <div class="flex-grow-1">
+                    <app-generic-form
+                      [formDefinition]="{ key: formDefinition().key + '.' + control.key, descriptionKey: '', controls: control.controls}"
+                      [initialValue]="{}"
+                      [supplyFormGroup]="group"
+                      [inModal]="inModal()"
+                      [inline]="control.inline"
+                    >
+                    </app-generic-form>
                   </div>
-                }
 
-                <div class="d-flex justify-content-end w-100">
                   <button
                     type="button"
-                    class="btn btn-primary mt-2"
-                    (click)="addArrayItem(control)">
-                    <i class="fa fa-plus me-1"></i> Add
+                    class="btn btn-small btn-outline-danger"
+                    (click)="removeArrayItem(control, $index)">
+                    <i class="fa fa-trash me-1"></i>
                   </button>
                 </div>
               }
-            </div>
 
-            <div class="setting-section-break my-2"></div>
-          }
-        }
-        @case (FormType.CommaSeparatedValues) {
-          <app-setting-multi-text-field
-            [formControl]="formControl"
-            [title]="t(control.key + '-title')"
-            [tooltip]="t(control.key + '-tooltip')"
-            [wikiLink]="control.wikiLink"
-            [control]="formControl"
-          />
+              <div class="d-flex justify-content-end w-100">
+                <button
+                  type="button"
+                  class="btn btn-primary mt-2"
+                  (click)="addArrayItem(control)">
+                  <i class="fa fa-plus me-1"></i> Add
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="setting-section-break my-2"></div>
         }
       }
-    </div>
-
-  }
-
-</form>
+      @case (FormType.CommaSeparatedValues) {
+        <app-setting-multi-text-field
+          [formControl]="formControl"
+          [title]="t(control.key + '-title')"
+          [tooltip]="t(control.key + '-tooltip')"
+          [wikiLink]="control.wikiLink"
+          [control]="formControl"
+        />
+      }
+      @case (FormType.FieldRow) {
+        <div class="row g-3">
+          @for (rowControl of control.controls; track rowControl.field) {
+            <ng-container
+              *ngTemplateOutlet="renderControl; context: {
+                $implicit: rowControl,
+                containerClass: getFieldRowColClass(control)
+              }"
+            />
+          }
+        </div>
+      }
+    }
+  </div>
+</ng-template>
