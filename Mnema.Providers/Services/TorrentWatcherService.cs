@@ -8,43 +8,24 @@ using Mnema.Providers.Managers.QBit;
 namespace Mnema.Providers.Services;
 
 internal class TorrentWatcherService(ILogger<TorrentWatcherService> logger, QBitContentManager qBitContentManager)
-    : IHostedService, IDisposable
+    : BackgroundService
 {
-    private Timer? _timer;
-
-    public Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _timer = new Timer(
-            async _ => await DoWorkAsync(),
-            null,
-            TimeSpan.Zero,
-            TimeSpan.FromSeconds(10)
-        );
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
 
-        return Task.CompletedTask;
-    }
-
-    private async Task DoWorkAsync()
-    {
-        try
+        do
         {
-            await qBitContentManager.TorrentWatcher();
+            try
+            {
+                await qBitContentManager.TorrentWatcher(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Unhandled exception in torrent watcher");
+            }
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Unhandled exception in torrent watcher");
-        }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _timer?.Change(Timeout.Infinite, 0);
-        return Task.CompletedTask;
-    }
-
-    public void Dispose()
-    {
-        _timer?.Dispose();
+        while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 }
 
