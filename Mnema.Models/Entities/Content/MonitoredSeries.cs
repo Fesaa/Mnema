@@ -69,10 +69,13 @@ public class MonitoredSeries: IEntityDate, IDatabaseEntity
     public List<RawFile> UnMatchedChapters { get; set; }
 }
 
-public class RawFile
+public class RawFile: IHasPositionMarkers
 {
     public string Path { get; set; }
     public string? Chapter { get; set; }
     public string? Volume { get; set; }
     public ComicInfo? ComicInfo { get; set; }
+
+    public string VolumeMarker => Volume ?? string.Empty;
+    public string ChapterMarker => Chapter ?? string.Empty;
 }

@@ -69,35 +69,17 @@ public class ComicInfo
             case PersonRole.Writer:
                 Writer = value;
                 break;
-            case PersonRole.Penciller:
-                Penciller = value;
-                break;
-            case PersonRole.Inker:
-                Inker = value;
-                break;
             case PersonRole.Colorist:
                 Colorist = value;
                 break;
             case PersonRole.Letterer:
                 Letterer = value;
                 break;
-            case PersonRole.CoverArtist:
-                CoverArtist = value;
-                break;
-            case PersonRole.Editor:
-                Editor = value;
-                break;
             case PersonRole.Translator:
                 Translator = value;
                 break;
             case PersonRole.Publisher:
                 Publisher = value;
-                break;
-            case PersonRole.Imprint:
-                Imprint = value;
-                break;
-            case PersonRole.Character:
-                Characters = value;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(role), role, null);

@@ -129,12 +129,6 @@ public sealed record HardoverContribution
             if (string.Equals(Contribution, Translator, StringComparison.OrdinalIgnoreCase))
                 return PersonRole.Translator;
 
-            if (string.Equals(Contribution, Editor, StringComparison.OrdinalIgnoreCase))
-                return PersonRole.Editor;
-
-            if (string.Equals(Contribution, CoverArtist, StringComparison.OrdinalIgnoreCase))
-                return PersonRole.CoverArtist;
-
             if (string.Equals(Contribution, Letterer, StringComparison.OrdinalIgnoreCase))
                 return PersonRole.Letterer;
 

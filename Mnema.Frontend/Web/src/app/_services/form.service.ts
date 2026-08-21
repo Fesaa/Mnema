@@ -32,6 +32,10 @@ export class FormService {
     return this.getForm('server-settings');
   }
 
+  getEditFileMetadataForm() {
+    return this.getForm(`edit-file-metadata`);
+  }
+
   private getForm(endpoint: string) {
     if (this.cache.has(endpoint)) {
       return of(this.cache.get(endpoint)!);
@@ -39,7 +43,8 @@ export class FormService {
 
     return this.httpClient.get<FormDefinition>(this.baseUrl + endpoint).pipe(
       tap((response: FormDefinition) => {
-        this.cache.set(endpoint, response);
+        if (environment.production)
+          this.cache.set(endpoint, response);
       })
     );
   }

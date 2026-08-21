@@ -12,6 +12,7 @@ import {
 import {ActivatedRoute, Router} from "@angular/router";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {
+  FileMetadataDto,
   MonitoredChapterStatus,
   MonitoredChapterStatuses,
   MonitoredSeries,
@@ -23,11 +24,11 @@ import {ProviderNamePipe} from "@mnema/_pipes/provider-name.pipe";
 import {TagBadgeComponent} from "@mnema/shared/_component/tag-badge/tag-badge.component";
 import {ContentFormatPipe} from "@mnema/features/monitored-series/pipes/content-format.pipe";
 import {FormatPipe} from "@mnema/features/monitored-series/pipes/format.pipe";
-import {TranslocoDirective, TranslocoService} from "@jsverse/transloco";
+import {translate, TranslocoDirective, TranslocoService} from "@jsverse/transloco";
 import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
 import {BadgeComponent} from "@mnema/shared/_component/badge/badge.component";
 import {ModalService} from "@mnema/_services/modal.service";
-import {EMPTY, filter, map, switchMap, tap} from "rxjs";
+import {EMPTY, filter, forkJoin, map, merge, switchMap, tap} from "rxjs";
 import {SeriesInfoComponent} from "@mnema/page/_components/series-info/series-info.component";
 import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
 import {
@@ -48,6 +49,8 @@ import {
 import {PagedList} from "@mnema/_models/paged-list";
 import {SubscriptionExternalUrlPipe} from "@mnema/_pipes/subscription-external-url.pipe";
 import {SentenceCasePipe} from "@mnema/_pipes/sentence-case.pipe";
+import {FormService} from "@mnema/_services/form.service";
+import {GenericFormModalComponent} from "@mnema/generic-form/generic-form-modal/generic-form-modal.component";
 
 @Component({
   selector: 'app-monitored-series',
@@ -70,6 +73,8 @@ export class MonitoredSeriesComponent {
   private readonly toastR = inject(ToastService);
   private readonly pageService = inject(PageService);
   private readonly router = inject(Router);
+  private readonly formService = inject(FormService);
+
   private readonly data = toSignal(this.route.data);
 
   searchInfoTemplate = viewChild.required<TemplateRef<any>>('searchInfoPreview');
@@ -338,5 +343,38 @@ export class MonitoredSeriesComponent {
     this.modalService.getDirectory$(this.series().baseDir + '/' + this.series().titleOverride, {
       showFiles: true, copy: false, filter: true, create: false
     }).subscribe();
+  }
+
+  protected editFile(path: string) {
+    if (!path) return;
+
+    forkJoin([
+      this.monitoredSeriesService.getFileInfo(this.series().id, path),
+      this.formService.getEditFileMetadataForm(),
+    ]).pipe(
+      switchMap(([fileInfo, form]) => {
+        const [modal, component] = this.modalService.open(GenericFormModalComponent, DefaultModalOptions);
+
+        let title = translate(form.key + '.modal-title', {seriesName: this.series().title});
+        if (fileInfo.volume) {
+          title += ` Vol. ${fileInfo.volume}`;
+        }
+        if (fileInfo.chapter) {
+          title += ` Ch. ${fileInfo.chapter}`;
+        }
+        if (fileInfo.path) {
+          title += ` (${fileInfo.path})`
+        }
+
+        component.title.set(title);
+        component.translationKey.set(form.key);
+        component.formDefinition.set(form);
+        component.double.set(false);
+        component.initialValue.set(fileInfo.metadata);
+
+        return this.modalService.onClose$<FileMetadataDto>(modal);
+      }),
+      tap(f => console.log(f))
+    ).subscribe();
   }
 }

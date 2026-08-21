@@ -8,6 +8,7 @@ using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models;
 using Mnema.Models.DTOs;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.User;
@@ -301,6 +302,90 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
                         .WithMax(100)
                         .Build(),
                     ForceSingle = true,
+                }
+            ]
+        });
+    }
+
+    [HttpGet("edit-file-metadata")]
+    [Authorize(Roles.Subscriptions)]
+    public ActionResult<FormDefinition> GetFileMetadataForm()
+    {
+        return Ok(new FormDefinition
+        {
+            Key = "edit-file-metadata",
+            Controls = [
+                new FormFieldRow
+                {
+                  Controls  = [
+                      new TextFieldDefinition
+                      {
+                          Field = nameof(FileMetadataDto.Title).ToCamelCase(),
+                      },
+                      new TextFieldDefinition
+                      {
+                          Field = nameof(FileMetadataDto.Volume).ToCamelCase(),
+                      },
+                      new TextFieldDefinition
+                      {
+                          Field = nameof(FileMetadataDto.Chapter).ToCamelCase(),
+                      },
+                  ]
+                },
+                new FormFieldRow
+                {
+                    Controls = [
+                        FormFieldDefinitions.EnumDropDown<AgeRating>(nameof(FileMetadataDto.AgeRating).ToCamelCase(), "age-rating-pipe"),
+                        new TextFieldDefinition
+                        {
+                            Field = nameof(FileMetadataDto.Isbn).ToCamelCase(),
+                        },
+                        new IntegerFieldDefinition
+                        {
+                            Field = nameof(FileMetadataDto.Count).ToCamelCase(),
+                        },
+                    ]
+                },
+                new CommaSeparatedValuesFieldDefinition
+                {
+                    Field = nameof(FileMetadataDto.Tags).ToCamelCase(),
+                },
+                new CommaSeparatedValuesFieldDefinition
+                {
+                    Field = nameof(FileMetadataDto.Genres).ToCamelCase(),
+                },
+                new CommaSeparatedValuesFieldDefinition
+                {
+                    Field = nameof(FileMetadataDto.Writers).ToCamelCase(),
+                },
+                new CommaSeparatedValuesFieldDefinition
+                {
+                    Field = nameof(FileMetadataDto.Colorists).ToCamelCase(),
+                },
+                new CommaSeparatedValuesFieldDefinition
+                {
+                    Field = nameof(FileMetadataDto.Letterers).ToCamelCase(),
+                },
+                new CommaSeparatedValuesFieldDefinition
+                {
+                    Field = nameof(FileMetadataDto.Translators).ToCamelCase(),
+                },
+                new CommaSeparatedValuesFieldDefinition
+                {
+                    Field = nameof(FileMetadataDto.Publishers).ToCamelCase(),
+                },
+                new ArrayFieldDefinition
+                {
+                    Field = nameof(FileMetadataDto.WebLinks).ToCamelCase(),
+                    Inline = true,
+                    Controls = [
+                        new TextFieldDefinition
+                        {
+                            Field = nameof(WebLink.Url).ToCamelCase(),
+                            ForceEditMode = true,
+                            HideText = true,
+                        }
+                    ]
                 }
             ]
         });

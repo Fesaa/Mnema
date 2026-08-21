@@ -246,7 +246,7 @@ public class MetadataResolverTests(ITestOutputHelper testOutputHelper) : Databas
             People = new List<Person>
             {
                 Person.Create("Author A", PersonRole.Writer),
-                Person.Create("Artist B", PersonRole.Penciller)
+                Person.Create("Artist B", PersonRole.Colorist)
             },
             Links = new List<string>(),
             Chapters = new List<Chapter>()
@@ -262,7 +262,7 @@ public class MetadataResolverTests(ITestOutputHelper testOutputHelper) : Databas
             People = new List<Person>
             {
                 Person.Create("Author A", PersonRole.Writer), // Duplicate
-                Person.Create("Artist C", PersonRole.CoverArtist) // New
+                Person.Create("Artist C", PersonRole.Translator) // New
             },
             Links = new List<string>(),
             Chapters = new List<Chapter>()

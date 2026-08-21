@@ -183,6 +183,41 @@ public class MonitoredSeriesController(
         return Ok(await unitOfWork.MonitoredSeriesRepository.GetMissingChapters(pagination, HttpContext.RequestAborted));
     }
 
+    [HttpGet("{id:guid}/file-info")]
+    public async Task<ActionResult<FileInfoDto?>> GetFileInfo(Guid id, [FromQuery] string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath)) return BadRequest();
+
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
+        if (series == null) return NotFound();
+
+        var chapter = series.Chapters.FirstOrDefault(c => c.FilePath == filePath);
+        if (chapter != null)
+        {
+            return Ok(new FileInfoDto
+            {
+                Path = chapter.FilePath!,
+                Volume = chapter.Volume,
+                Chapter = chapter.Chapter,
+                Metadata = FileMetadataDto.FromComicInfo(chapter.ComicInfo)
+            });
+        }
+
+        var unMatchedChapter = series.UnMatchedChapters.FirstOrDefault(c => c.Path == filePath);
+        if (unMatchedChapter != null)
+        {
+            return Ok(new FileInfoDto
+            {
+                Path = unMatchedChapter.Path,
+                Volume = unMatchedChapter.VolumeMarker,
+                Chapter = unMatchedChapter.ChapterMarker,
+                Metadata = FileMetadataDto.FromComicInfo(unMatchedChapter.ComicInfo)
+            });
+        }
+
+        return NotFound();
+    }
+
     [HttpGet("form")]
     public ActionResult<FormDefinition> GetForm()
     {

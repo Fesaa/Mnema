@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -123,6 +124,11 @@ public static class StringExtensions
         public string ToCamelCase()
         {
             return JsonNamingPolicy.CamelCase.ConvertName(s);
+        }
+
+        public List<string> SplitNonEmpty(string separator)
+        {
+            return s.Split(separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         }
     }
 
