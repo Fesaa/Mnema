@@ -314,6 +314,7 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
         return Ok(new FormDefinition
         {
             Key = "edit-file-metadata",
+            DescriptionKey = "modal-description",
             Controls = [
                 new FormFieldRow
                 {

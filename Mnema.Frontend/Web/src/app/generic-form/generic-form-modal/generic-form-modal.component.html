@@ -18,6 +18,11 @@
 
     <div class="modal-body scrollable-modal">
 
+      @if (formDefinition().descriptionKey; as descriptionKey) {
+        <span>{{t(descriptionKey)}}</span>
+        <div class="setting-section-break"></div>
+      }
+
       <app-generic-form
         [double]="double()"
         [formDefinition]="formDefinition()"

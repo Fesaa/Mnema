@@ -1411,6 +1411,7 @@
 
   "edit-file-metadata": {
     "modal-title": "Edit Metadata for {{seriesName}} - ",
+    "modal-description": "Metadata is generated on download, and saved into the file. You can update the metadata manually below, or press the 'Refresh Metadata' button to update it automatically.",
     "close": "Close",
     "save": "Save",
     "title-title": "Title",
