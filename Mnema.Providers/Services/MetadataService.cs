@@ -110,6 +110,9 @@ internal class MetadataService(
 
     public ComicInfo? ParseComicInfoFromFile(string file)
     {
+        if (!fileSystem.File.Exists(file))
+            throw new MnemaException($"File not found: {file}");
+
         try
         {
             switch (parserService.ParseFormat(file))
@@ -188,7 +191,7 @@ internal class MetadataService(
 
     #region Genre and Tags Mappings (Mostly Kavita copied code)
 
-    internal static (List<string> Genres, List<string> Tags) GenerateGenreAndTagLists(Preferences preferences, List<Tag> allTags, bool applyBlackAndWhiteLists = true)
+    public (List<string> Genres, List<string> Tags) GenerateGenreAndTagLists(Preferences preferences, List<Tag> allTags, bool applyBlackAndWhiteLists = true)
     {
         var genres = allTags.Where(t => t.IsMarkedAsGenre).Select(t => t.Value).Distinct().ToList();
         var tags = allTags.Where(t => !t.IsMarkedAsGenre).Select(t => t.Value).Distinct().ToList();
@@ -285,7 +288,7 @@ internal class MetadataService(
 
     #endregion
 
-    internal static AgeRating? GetAgeRating(Preferences preferences, List<Tag> inputTags)
+    public AgeRating? GetAgeRating(Preferences preferences, List<Tag> inputTags)
     {
         var ageRatingMappings = preferences.AgeRatingMappings.Select(m => m with
         {

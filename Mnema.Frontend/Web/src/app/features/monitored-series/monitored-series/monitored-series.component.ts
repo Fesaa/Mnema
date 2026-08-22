@@ -12,7 +12,7 @@ import {
 import {ActivatedRoute, Router} from "@angular/router";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {
-  FileMetadataDto,
+  FileMetadata,
   MonitoredChapterStatus,
   MonitoredChapterStatuses,
   MonitoredSeries,
@@ -372,9 +372,10 @@ export class MonitoredSeriesComponent {
         component.double.set(false);
         component.initialValue.set(fileInfo.metadata);
 
-        return this.modalService.onClose$<FileMetadataDto>(modal);
+        return this.modalService.onClose$<FileMetadata>(modal);
       }),
-      tap(f => console.log(f))
+      switchMap(f => this.monitoredSeriesService.writeFileMetadata(this.series().id, path, f)),
+      tap(() => this.toastR.successLoco('edit-file-metadata.metadata-updated', {}, {path: path})),
     ).subscribe();
   }
 }

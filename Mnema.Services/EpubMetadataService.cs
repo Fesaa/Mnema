@@ -21,7 +21,7 @@ public class EpubMetadataService(IFileSystem fileSystem): IEpubMetadataService
 
     public ComicInfo? ReadComicInfo(string filePath, CancellationToken cancellationToken)
     {
-        if (!File.Exists(filePath)) return null;
+        if (!fileSystem.File.Exists(filePath)) return null;
 
         using var stream = fileSystem.File.Open(filePath, FileMode.Open, FileAccess.ReadWrite);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);

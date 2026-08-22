@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
+using Mnema.Models.External;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
 
@@ -30,7 +32,10 @@ public class MonitoredSeriesService(
     IUnitOfWork unitOfWork,
     IServiceProvider serviceProvider,
     IMessageService messageService,
-    IConnectionService connectionService
+    IConnectionService connectionService,
+    IMetadataService metadataService,
+    INamingService namingService,
+    IFileSystem fileSystem
 ): IMonitoredSeriesService
 {
     public async Task UpdateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
@@ -106,6 +111,83 @@ public class MonitoredSeriesService(
         }
 
         return series.Id;
+    }
+
+    public async Task UpdateFileMetadata(Guid id, string file, FileMetadataDto metadata, CancellationToken cancellationToken)
+    {
+        var path = fileSystem.Path.Join(configuration.BaseDir, file);
+
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, cancellationToken);
+        if (series == null) throw new NotFoundException();
+
+        if (string.IsNullOrEmpty(series.TitleOverride))
+            throw new BadRequestException("Monitored series requires a title override to support metadata changes");
+
+        var preferences = await unitOfWork.SettingsRepository.GetPreferencesAsync(cancellationToken);
+
+        var ci = metadataService.ParseComicInfoFromFile(path) ?? new ComicInfo();
+
+        ci.Title = metadata.Title;
+        ci.Summary = metadata.Summary;
+
+        var allTags = metadata.Tags
+            .Select(t => new Tag(t, false))
+            .Concat(metadata.Genres.Select(g => new Tag(g, true)))
+            .ToList();
+
+        var (genres, tags) = metadataService.GenerateGenreAndTagLists(preferences, allTags);
+        ci.Tags = string.Join(",", tags);
+        ci.Genre = string.Join(",", genres);
+
+        var tagAgeRating = metadataService.GetAgeRating(preferences, allTags);
+        if (tagAgeRating == null || tagAgeRating < metadata.AgeRating)
+        {
+            tagAgeRating = metadata.AgeRating;
+        }
+
+        ci.AgeRating = tagAgeRating.Value;
+
+        ci.Web = string.Join(",", metadata.WebLinks.Select(l => l.Url));
+        ci.Writer = string.Join(",", metadata.Writers);
+        ci.Colorist = string.Join(",", metadata.Colorists);
+        ci.Letterer = string.Join(",", metadata.Letterers);
+        ci.Translator = string.Join(",", metadata.Translators);
+        ci.Publisher = string.Join(",", metadata.Publishers);
+
+        ci.Isbn = metadata.Isbn;
+        ci.Count = metadata.Count;
+
+        if (ci.Volume != metadata.Volume || ci.Number != metadata.Chapter)
+        {
+            ci.Volume = metadata.Volume;
+            ci.Number = metadata.Chapter;
+
+            var fileName = namingService.GetChapterFileName(preferences, series.Title, new Chapter
+            {
+                Id = string.Empty,
+                Title = ci.Title,
+                VolumeMarker = ci.Volume,
+                ChapterMarker = ci.Number,
+            });
+
+            var directory = fileSystem.Path.GetDirectoryName(path);
+            var fileExtension = fileSystem.Path.GetExtension(path);
+            if (string.IsNullOrEmpty(directory))
+                throw new MnemaException($"Could not determine directory for file {path}");
+            if (string.IsNullOrEmpty(fileExtension))
+                throw new MnemaException($"Could not determine file extension for file {path}");
+
+            var newPath = fileSystem.Path.Combine(directory, fileName) + fileExtension;
+            if (fileSystem.File.Exists(newPath))
+                throw new BadRequestException($"File already exists: {newPath}");
+
+            fileSystem.File.Move(path, newPath);
+            path = newPath;
+        }
+
+        await metadataService.WriteComicInfo(ci, path, cancellationToken);
+
+        BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
     }
 
     [AutomaticRetry(Attempts = 1)]

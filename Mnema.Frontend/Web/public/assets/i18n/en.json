@@ -1441,7 +1441,11 @@
     "publishers-title": "Publishers",
     "publishers-tooltip": "",
     "webLinks-title": "Web Links",
-    "webLinks-tooltip": ""
+    "webLinks-tooltip": "",
+    "metadata-updated": {
+      "title": "Metadata updated",
+      "summary": "Metadata updated for {{path}}"
+    }
   },
 
   "edit-page-defaults": {

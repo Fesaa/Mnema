@@ -85,10 +85,10 @@ export interface FileInfoDto {
   path: string;
   volume: string;
   chapter: string;
-  metadata: FileMetadataDto | null;
+  metadata: FileMetadata | null;
 }
 
-export interface FileMetadataDto {
+export interface FileMetadata {
   title: string;
   summary: string;
   volume: string;
@@ -189,6 +189,10 @@ export class MonitoredSeriesService {
 
   getFileInfo(id: string, path: string) {
     return this.httpClient.get<FileInfoDto>(`${this.baseUrl}/${id}/file-info?filePath=${path}`);
+  }
+
+  writeFileMetadata(id: string, path: string, metadata: FileMetadata) {
+    return this.httpClient.post(`${this.baseUrl}/${id}/file-metadata?filePath=${path}`, metadata);
   }
 
   getForm() {

@@ -223,8 +223,7 @@ public class MonitoredSeriesController(
     {
         if (string.IsNullOrEmpty(filePath)) return BadRequest();
 
-        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
-        if (series == null) return NotFound();
+        await monitoredSeriesService.UpdateFileMetadata(id, filePath, metadata, HttpContext.RequestAborted);
 
         return Ok();
     }
