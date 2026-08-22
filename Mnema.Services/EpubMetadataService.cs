@@ -243,7 +243,7 @@ public class EpubMetadataService(IFileSystem fileSystem): IEpubMetadataService
             if (!string.IsNullOrEmpty(seriesId))
             {
                 var group = GetRefinedValue(metadata, seriesId, "group-position");
-                if (!string.IsNullOrEmpty(group)) info.Volume = group;
+                if (!string.IsNullOrEmpty(group)) info.Volume = group.RemoveSuffix(".0");
             }
 
             return;
@@ -255,7 +255,7 @@ public class EpubMetadataService(IFileSystem fileSystem): IEpubMetadataService
         {
             info.Series = calibreSeries;
             var idx = GetLegacyMetaContent(metadata, "calibre:series_index");
-            if (!string.IsNullOrEmpty(idx)) info.Volume = idx;
+            if (!string.IsNullOrEmpty(idx)) info.Volume = idx.RemoveSuffix(".0");
         }
     }
 
