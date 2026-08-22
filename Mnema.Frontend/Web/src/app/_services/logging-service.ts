@@ -16,49 +16,49 @@ export abstract class LoggingService {
     return level >= this.logLevel;
   }
 
-  protected log(message: string, data?: unknown) {
+  protected log(message: string, ...data: any[]) {
     if (!this.isLogLevelEnabled(LogLevel.DEBUG) || environment.production) {
       return;
     }
 
-    if (data !== undefined) {
-      console.debug(`[${this.name}] ${message}`, data);
+    if (data !== undefined && data.length > 0) {
+      console.debug(`[${this.name}] ${message}`, ...data);
     } else {
       console.debug(`[${this.name}] ${message}`);
     }
   }
 
-  protected info(message: string, data?: unknown) {
-    if (!this.isLogLevelEnabled(LogLevel.INFO) || environment.production) {
+  protected info(message: string, ...data: any[]) {
+    if (!this.isLogLevelEnabled(LogLevel.INFO)) {
       return;
     }
 
-    if (data !== undefined) {
-      console.warn(`[${this.name}] ${message}`, data);
+    if (data !== undefined && data.length > 0) {
+      console.warn(`[${this.name}] ${message}`, ...data);
     } else {
       console.warn(`[${this.name}] ${message}`);
     }
   }
 
-  protected warn(message: string, data?: unknown) {
-    if (!this.isLogLevelEnabled(LogLevel.WARN) || environment.production) {
+  protected warn(message: string, ...data: any[]) {
+    if (!this.isLogLevelEnabled(LogLevel.WARN)) {
       return;
     }
 
-    if (data !== undefined) {
-      console.warn(`[${this.name}] ${message}`, data);
+    if (data !== undefined && data.length > 0) {
+      console.warn(`[${this.name}] ${message}`, ...data);
     } else {
       console.warn(`[${this.name}] ${message}`);
     }
   }
 
-  protected error(message: string, data?: unknown) {
-    if (!this.isLogLevelEnabled(LogLevel.ERROR) || environment.production) {
+  protected error(message: string, ...data: any[]) {
+    if (!this.isLogLevelEnabled(LogLevel.ERROR)) {
       return;
     }
 
-    if (data !== undefined) {
-      console.warn(`[${this.name}] ${message}`, data);
+    if (data !== undefined && data.length > 0) {
+      console.warn(`[${this.name}] ${message}`, ...data);
     } else {
       console.warn(`[${this.name}] ${message}`);
     }
