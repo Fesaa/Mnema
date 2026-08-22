@@ -218,6 +218,17 @@ public class MonitoredSeriesController(
         return NotFound();
     }
 
+    [HttpPost("{id:guid}/file-metadata")]
+    public async Task<IActionResult> WriteFileMetadata(Guid id, [FromQuery] string filePath, [FromBody] FileMetadataDto metadata)
+    {
+        if (string.IsNullOrEmpty(filePath)) return BadRequest();
+
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
+        if (series == null) return NotFound();
+
+        return Ok();
+    }
+
     [HttpGet("form")]
     public ActionResult<FormDefinition> GetForm()
     {

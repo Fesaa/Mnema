@@ -1,13 +1,9 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Mnema.API.Content;
-using Mnema.Common;
 using Mnema.Models.DTOs;
-using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.User;
-using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 using Mnema.Providers.Services;
 
@@ -16,25 +12,6 @@ namespace Mnema.Tests.Providers.Services;
 [TestSubject(typeof(MetadataService))]
 public class MetadataServiceTest
 {
-    private static IMetadataService CreateSut()
-    {
-        return new MetadataService();
-    }
-
-    private static DownloadRequestDto Request()
-    {
-        return new DownloadRequestDto
-        {
-            Provider = Provider.Nyaa,
-            Id = string.Empty,
-            BaseDir = string.Empty,
-            TempTitle = string.Empty,
-            Metadata = new MetadataBag
-            {
-                [RequestConstants.IncludeNotMatchedTagsKey.Key] = ["true"]
-            }
-        };
-    }
 
     private static Preferences CreateDefaultPreferences(
         IList<TagMappingDto>? tagMappings = null,
