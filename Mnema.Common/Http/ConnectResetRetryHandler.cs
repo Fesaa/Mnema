@@ -17,7 +17,7 @@ public class ConnectResetRetryHandler(ILogger<ConnectResetRetryHandler> logger):
         }
         catch (HttpRequestException ex) when (ex.InnerException is SocketException)
         {
-            logger.LogWarning(ex, "Failed to send request. Retrying once after 1s");
+            logger.LogWarning("Failed to send request. Retrying once after 1s");
 
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
 
