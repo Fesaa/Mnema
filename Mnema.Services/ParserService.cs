@@ -1342,26 +1342,26 @@ public partial class ParserService: IParserService
     public T? FindMatch<T>(IList<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers
     {
         // If both markers are missing, no match can be made
-        if (string.IsNullOrEmpty(item.VolumeMarker) && string.IsNullOrEmpty(item.ChapterMarker))
+        if (EmptyOrDefault(item.VolumeMarker) && EmptyOrDefault(item.ChapterMarker))
         {
             return default;
         }
 
         // Matching Volume-only chapters
-        if (string.IsNullOrEmpty(item.ChapterMarker))
+        if (EmptyOrDefault(item.ChapterMarker))
         {
             var volumeMatches = items.Where(c => c.VolumeMarker == item.VolumeMarker).ToList();
 
             if (volumeMatches.Count == 1)
                 return volumeMatches[0];
 
-            return volumeMatches.FirstOrDefault(c => string.IsNullOrEmpty(c.ChapterMarker));
+            return volumeMatches.FirstOrDefault(c => EmptyOrDefault(c.ChapterMarker));
         }
 
         // Matching Chapter-only chapters
-        if (string.IsNullOrEmpty(item.VolumeMarker))
+        if (EmptyOrDefault(item.VolumeMarker))
         {
-            return items.FirstOrDefault(c => string.IsNullOrEmpty(c.VolumeMarker) && c.ChapterMarker == item.ChapterMarker);
+            return items.FirstOrDefault(c => EmptyOrDefault(c.VolumeMarker) && c.ChapterMarker == item.ChapterMarker);
         }
 
         // Exact Match (both Volume and Chapter set)
@@ -1372,6 +1372,8 @@ public partial class ParserService: IParserService
         // Fallback: single partial match on volume
         var partialMatches = items.Where(c => c.VolumeMarker == item.VolumeMarker).ToList();
         return partialMatches.Count == 1 ? partialMatches[0] : default;
+
+        bool EmptyOrDefault(string s) =>string.IsNullOrEmpty(s) || IsLooseLeafVolume(s) || IsDefaultChapter(s);
     }
 
 
