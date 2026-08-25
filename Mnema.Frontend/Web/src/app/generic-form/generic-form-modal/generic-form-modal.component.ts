@@ -30,6 +30,7 @@ export class GenericFormModalComponent<T> {
   initialValue = model.required<T>();
   double = model<boolean>(true);
   title = model<string>();
+  showChanges = model(false);
   descriptionTemplate = model<TemplateRef<any>>();
 
   formGroup = signal<FormGroup | null>(null);

@@ -56,6 +56,7 @@ export class GenericFormComponent<T> {
   double = input<boolean>(true);
   inline = input<boolean>(false);
   inModal = input<boolean>(false);
+  showChanges = input(false);
   supplyFormGroup = input<FormGroup>();
 
   formGroupTracker = output<FormGroup>();

@@ -40,7 +40,8 @@
     "clear": "Clear",
     "filter": "Filter",
     "wiki": "Visit the Wiki for more information",
-    "source": "Source"
+    "source": "Source",
+    "changes": "This content has been modified"
   },
 
   "button-groups": {

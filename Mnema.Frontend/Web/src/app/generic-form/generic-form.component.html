@@ -44,6 +44,7 @@
           [canEdit]="false"
           [showEdit]="false"
           [isEditMode]="true"
+          [showChanges]="showChanges()"
           [wikiLink]="control.wikiLink"
         >
 
@@ -68,6 +69,7 @@
           [isEditMode]="control.forceEditMode"
           [hideText]="control.hideText"
           [wikiLink]="control.wikiLink"
+          [showChanges]="showChanges()"
         >
           <ng-template #view>
             {{formControl.value | defaultValue}}
@@ -85,6 +87,7 @@
           [tooltip]="t(control.key + '-tooltip')"
           [hideText]="control.hideText"
           [wikiLink]="control.wikiLink"
+          [showChanges]="showChanges()"
         >
           <ng-template #view>
             <div class="d-flex align-items-center">
@@ -109,6 +112,7 @@
           [isEditMode]="control.forceEditMode"
           [hideText]="control.hideText"
           [wikiLink]="control.wikiLink"
+          [showChanges]="showChanges()"
         >
           <ng-template #view>
             @let option = getFormOption(control, formControl.value);
@@ -208,6 +212,7 @@
                       [supplyFormGroup]="group"
                       [inModal]="inModal()"
                       [inline]="control.inline"
+                      [showChanges]="showChanges()"
                     >
                     </app-generic-form>
                   </div>
@@ -242,6 +247,7 @@
           [tooltip]="t(control.key + '-tooltip')"
           [wikiLink]="control.wikiLink"
           [control]="formControl"
+          [showChanges]="showChanges()"
         />
       }
       @case (FormType.FieldRow) {

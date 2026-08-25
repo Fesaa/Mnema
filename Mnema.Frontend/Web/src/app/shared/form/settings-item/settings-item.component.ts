@@ -23,6 +23,7 @@ import {SafeHtmlPipe} from '../../../_pipes/safe-html-pipe';
 import {filter, fromEvent, tap} from 'rxjs';
 import {WikiLinkComponent} from "@mnema/shared/_component/wiki-link/wiki-link.component";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   selector: 'app-settings-item',
@@ -32,6 +33,7 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
     NgClass,
     SafeHtmlPipe,
     WikiLinkComponent,
+    NgbTooltip,
   ],
   templateUrl: './settings-item.component.html',
   styleUrl: './settings-item.component.scss',
@@ -55,6 +57,7 @@ export class SettingsItemComponent implements OnChanges, OnInit {
   showEdit = input(true);
   isEditMode = model(false);
   wikiLink = input<string>();
+  showChanges = input(false);
 
   toggleOnViewClick = input(true);
 

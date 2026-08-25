@@ -373,6 +373,7 @@ export class MonitoredSeriesComponent {
         component.translationKey.set(form.key);
         component.formDefinition.set(form);
         component.double.set(false);
+        component.showChanges.set(true);
         component.initialValue.set(fileInfo.metadata ?? {});
 
         return this.modalService.onClose$<FileMetadata>(modal);
