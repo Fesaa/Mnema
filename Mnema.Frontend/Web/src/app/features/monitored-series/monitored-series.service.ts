@@ -97,7 +97,7 @@ export interface FileMetadata {
 
   genres: string[];
   tags: string[];
-  webLinks: string[];
+  webLinks: { url: string }[];
 
   writers: string[];
   colorists: string[];
@@ -188,11 +188,13 @@ export class MonitoredSeriesService {
   }
 
   getFileInfo(id: string, path: string) {
-    return this.httpClient.get<FileInfoDto>(`${this.baseUrl}/${id}/file-info?filePath=${path}`);
+    const filePath = encodeURIComponent(path);
+    return this.httpClient.get<FileInfoDto>(`${this.baseUrl}/${id}/file-info?filePath=${filePath}`);
   }
 
   writeFileMetadata(id: string, path: string, metadata: FileMetadata) {
-    return this.httpClient.post(`${this.baseUrl}/${id}/file-metadata?filePath=${path}`, metadata);
+    const filePath = encodeURIComponent(path);
+    return this.httpClient.post(`${this.baseUrl}/${id}/file-metadata?filePath=${filePath}`, metadata);
   }
 
   getForm() {

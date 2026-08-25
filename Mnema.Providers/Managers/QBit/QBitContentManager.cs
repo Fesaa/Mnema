@@ -41,7 +41,7 @@ internal partial class QBitContentManager(
         if (string.IsNullOrEmpty(request.DownloadUrl))
             throw new MnemaException($"Download url is missing");
 
-        var scope = scopeFactory.CreateScope();
+        using var scope = scopeFactory.CreateScope();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
         if (!request.GetKey(RequestConstants.IsGroupedDownload) && await unitOfWork.ExternalDownloadRepository.ExistsByExternalId(request.Id))

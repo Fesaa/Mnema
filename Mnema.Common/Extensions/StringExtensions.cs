@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Mnema.Common.Exceptions;
 
 namespace Mnema.Common.Extensions;
 
@@ -129,6 +130,24 @@ public static class StringExtensions
         public List<string> SplitNonEmpty(string separator)
         {
             return s.Split(separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+        }
+
+        public void EnsureValidUserFilePath(string? baseDir = null)
+        {
+            if (Path.IsPathRooted(s))
+                throw new MnemaException("File paths must be relative");
+
+            if (s.Contains(".."))
+                throw new MnemaException("File paths must not contain ..");
+
+            if (string.IsNullOrEmpty(baseDir))
+                return;
+
+            var baseDirFull = Path.GetFullPath(baseDir).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var path = Path.GetFullPath(Path.Combine(baseDirFull, s));
+
+            if (!path.StartsWith(baseDirFull + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                throw new MnemaException("File path is not within the base directory");
         }
     }
 

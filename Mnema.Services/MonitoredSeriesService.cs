@@ -115,6 +115,8 @@ public class MonitoredSeriesService(
 
     public async Task UpdateFileMetadata(Guid id, string file, FileMetadataDto metadata, CancellationToken cancellationToken)
     {
+        file.EnsureValidUserFilePath(configuration.BaseDir);
+
         var path = fileSystem.Path.Join(configuration.BaseDir, file);
 
         var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, cancellationToken);
@@ -162,7 +164,7 @@ public class MonitoredSeriesService(
             ci.Volume = metadata.Volume;
             ci.Number = metadata.Chapter;
 
-            var fileName = namingService.GetChapterFileName(preferences, series.Title, new Chapter
+            var fileName = namingService.GetChapterFileName(preferences, series.TitleOverride, new Chapter
             {
                 Id = string.Empty,
                 Title = ci.Title,
@@ -389,16 +391,16 @@ public class MonitoredSeriesService(
 
     private MonitoredChapter SyncChapter(MonitoredChapter? existingChapter, Chapter upstreamChapter, List<OnDiskContent> onDiskContent)
     {
-        if (existingChapter?.Status == MonitoredChapterStatus.NotMonitored)
-        {
-            PatchChapterMetadata(existingChapter, upstreamChapter);
-            return existingChapter;
-        }
-
         var matchingFile = parserService.FindMatch(onDiskContent, upstreamChapter);
         if (matchingFile != null)
         {
             onDiskContent.Remove(matchingFile);
+        }
+
+        if (existingChapter?.Status == MonitoredChapterStatus.NotMonitored)
+        {
+            PatchChapterMetadata(existingChapter, upstreamChapter);
+            return existingChapter;
         }
 
         var mChapter = existingChapter ?? new MonitoredChapter();
