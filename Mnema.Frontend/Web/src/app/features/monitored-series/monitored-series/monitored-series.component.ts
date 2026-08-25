@@ -353,7 +353,10 @@ export class MonitoredSeriesComponent {
       this.formService.getEditFileMetadataForm(),
     ]).pipe(
       switchMap(([fileInfo, form]) => {
-        const [modal, component] = this.modalService.open(GenericFormModalComponent, DefaultModalOptions);
+        const [modal, component] = this.modalService.open(GenericFormModalComponent, {
+          ...DefaultModalOptions,
+          backdrop: 'static',
+        });
 
         let title = translate(form.key + '.modal-title', {seriesName: this.series().title});
         if (fileInfo.volume) {

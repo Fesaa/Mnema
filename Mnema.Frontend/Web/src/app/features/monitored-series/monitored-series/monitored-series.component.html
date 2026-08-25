@@ -220,11 +220,6 @@
               @for (file of s.unMatchedChapters; track file.path) {
                 <div class="chapter-row">
                   <div class="d-flex gap-2 align-items-start">
-                    <div class="chapter-thumb-wrap flex-shrink-0">
-                      <div class="chapter-thumb-placeholder">
-                        <i class="fa fa-file"></i>
-                      </div>
-                    </div>
                     <div class="flex-grow-1 min-w-0">
                       <div class="d-flex justify-content-between">
                         <div class="chapter-labels mb-1">
@@ -243,7 +238,10 @@
                           </div>
                         }
                       </div>
-                      <p class="chapter-title mb-1 text-truncate" [title]="file.path">{{ file.path }}</p>
+                      <div class="d-flex flex-row gap-1">
+                        <i class="fa fa-file"></i>
+                        <p class="chapter-title mb-1 text-truncate" [title]="file.path">{{ file.path }}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
