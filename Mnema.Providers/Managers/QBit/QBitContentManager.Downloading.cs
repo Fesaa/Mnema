@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.API.External;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
@@ -20,6 +21,9 @@ namespace Mnema.Providers.Managers.QBit;
 
 internal partial class QBitContentManager
 {
+
+    [Queue(HangfireQueue.TorrentDownload)]
+    [DisableConcurrentExecution(timeoutInSeconds: 86400 * 2)]
     [AutomaticRetry(Attempts = 1, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
     public async Task DownloadTorrent(DownloadRequestDto request, CancellationToken ct)
     {
