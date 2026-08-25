@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Common.Exceptions;
+using Mnema.Models.DTOs.Content;
 using QBittorrent.Client;
 
 namespace Mnema.Providers.Managers.QBit;
@@ -57,6 +58,7 @@ internal partial class QBitContentManager
         var toProcessFinishedContentHashes = content
             .Where(c => UploadStates.Contains(c.TorrentInfo.State) && c.TorrentInfo.Progress > 0)
             .Where(c => !_cleanupTorrents.ContainsKey(c.Id))
+            .Where(c => c.State != ContentState.Waiting) // Still being added
             .Select(c => c.Id)
             .ToHashSet();
 

@@ -107,7 +107,7 @@ internal partial class QBitContentManager
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to filter or start download. Aborting");
+            logger.LogError(ex, "[{Title}/{Id}] Failed to filter or start download. Aborting", title, request.Id);
 
             await services.UnitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id, ct);
         }
