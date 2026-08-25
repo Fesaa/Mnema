@@ -4,7 +4,7 @@ import {
   computed,
   effect,
   inject,
-  linkedSignal,
+  linkedSignal, OnInit,
   signal,
   TemplateRef,
   viewChild
@@ -12,7 +12,7 @@ import {
 import {ActivatedRoute, Router} from "@angular/router";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {
-  FileMetadata,
+  FileMetadata, MonitoredChapter,
   MonitoredChapterStatus,
   MonitoredChapterStatuses,
   MonitoredSeries,
@@ -40,7 +40,7 @@ import {SearchInfo} from "@mnema/_models/Info";
 import {ToastService} from "@mnema/_services/toast.service";
 import {DownloadModalComponent} from "@mnema/page/_components/download-modal/download-modal.component";
 import {PageService} from "@mnema/_services/page.service";
-import {FormControlDefinition} from "@mnema/generic-form/form";
+import {FormControlDefinition, FormDefinition} from "@mnema/generic-form/form";
 import {
   MetadataProvider,
   MetadataSearchResult,
@@ -51,16 +51,19 @@ import {SubscriptionExternalUrlPipe} from "@mnema/_pipes/subscription-external-u
 import {SentenceCasePipe} from "@mnema/_pipes/sentence-case.pipe";
 import {FormService} from "@mnema/_services/form.service";
 import {GenericFormModalComponent} from "@mnema/generic-form/generic-form-modal/generic-form-modal.component";
+import {FormGroup, NonNullableFormBuilder} from "@angular/forms";
+import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
+import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factory.service";
 
 @Component({
   selector: 'app-monitored-series',
   standalone: true,
-  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe, SentenceCasePipe],
+  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe, SentenceCasePipe, NgbTooltip],
   templateUrl: './monitored-series.component.html',
   styleUrl: './monitored-series.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MonitoredSeriesComponent {
+export class MonitoredSeriesComponent implements OnInit {
 
   private readonly chapterStatusPipe = new MonitoredChapterStatusPipe();
 
@@ -74,13 +77,19 @@ export class MonitoredSeriesComponent {
   private readonly pageService = inject(PageService);
   private readonly router = inject(Router);
   private readonly formService = inject(FormService);
+  private readonly genericFormFactoryService = inject(GenericFormFactoryService);
+  private readonly fb = inject(NonNullableFormBuilder);
 
   private readonly data = toSignal(this.route.data);
 
   searchInfoTemplate = viewChild.required<TemplateRef<any>>('searchInfoPreview');
+  metadataEditorHeader = viewChild.required<TemplateRef<any>>('metadataEditorHeader');
+
+  private selectedChapter = signal<MonitoredChapter | null>(null);
 
   protected series = linkedSignal(() => this.data()!['series'] as MonitoredSeries);
   protected provider = computed(() => this.series().provider);
+  private editFileMetadataFormDefinition = signal<FormDefinition | null>(null);
   protected metadataFormDefinition = signal<FormControlDefinition[]>([]);
   protected metadata = computed(() => {
     const m = this.series().metadata;
@@ -143,6 +152,12 @@ export class MonitoredSeriesComponent {
         }
       }
     });
+  }
+
+  ngOnInit() {
+    this.formService.getEditFileMetadataForm().pipe(
+      tap(f => this.editFileMetadataFormDefinition.set(f))
+    ).subscribe();
   }
 
   setChapterStatus(chapterId: string) {
@@ -345,14 +360,16 @@ export class MonitoredSeriesComponent {
     }).subscribe();
   }
 
-  protected editFile(path: string) {
+  protected editFile(path: string, chapter: MonitoredChapter | null = null) {
     if (!path) return;
 
-    forkJoin([
-      this.monitoredSeriesService.getFileInfo(this.series().id, path),
-      this.formService.getEditFileMetadataForm(),
-    ]).pipe(
-      switchMap(([fileInfo, form]) => {
+    const form = this.editFileMetadataFormDefinition();
+    if (!form) return;
+
+    this.selectedChapter.set(chapter)
+
+    this.monitoredSeriesService.getFileInfo(this.series().id, path).pipe(
+      switchMap((fileInfo) => {
         const [modal, component] = this.modalService.open(GenericFormModalComponent, {
           ...DefaultModalOptions,
           backdrop: 'static',
@@ -376,10 +393,33 @@ export class MonitoredSeriesComponent {
         component.showChanges.set(true);
         component.initialValue.set(fileInfo.metadata ?? {});
 
+        if (this.selectedChapter() != null) {
+          component.descriptionTemplate.set(this.metadataEditorHeader());
+        }
+
         return this.modalService.onClose$<FileMetadata>(modal);
       }),
       switchMap(f => this.monitoredSeriesService.writeFileMetadata(this.series().id, path, f)),
-      tap(() => this.toastR.successLoco('edit-file-metadata.metadata-updated', {}, {path: path})),
+      tap(() => {
+        this.toastR.successLoco('edit-file-metadata.metadata-updated', {}, {path: path});
+        this.selectedChapter.set(null);
+      }),
     ).subscribe();
   }
+
+  protected loadUpstreamMetadata(form: FormGroup) {
+    const chapter = this.selectedChapter();
+    if (!chapter) return;
+
+    const formDefinition = this.editFileMetadataFormDefinition();
+    if (!formDefinition) return;
+
+    this.monitoredSeriesService.getChapterMetadata(this.series().id, chapter.id).pipe(
+      tap(metadata => {
+        this.genericFormFactoryService.extendFormGroupForValue(form, formDefinition.controls, metadata, this.fb);
+        form.setValue(metadata);
+      })
+    ).subscribe();
+  }
+
 }

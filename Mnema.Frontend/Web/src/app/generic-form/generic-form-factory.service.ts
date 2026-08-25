@@ -214,6 +214,67 @@ export class GenericFormFactoryService extends LoggingService {
     return obj;
   }
 
+  /**
+   * Extends an existing FormGroup to ensure it has enough controls (e.g., FormArray elements)
+   * to accommodate the structure of the incoming value object.
+   * Does NOT set or update the actual form values.
+   *
+   * @param formGroup The FormGroup to extend
+   * @param controls The array of control definitions for this group
+   * @param value The target value object providing the required array lengths/structures
+   * @param fb The FormBuilder instance to use when instantiating new controls
+   */
+  extendFormGroupForValue(
+    formGroup: FormGroup,
+    controls: FormControlDefinition[],
+    value: any,
+    fb: FormBuilder | NonNullableFormBuilder
+  ): void {
+    this.log(`extendFormGroupForValue called`, { controlsCount: controls?.length, value });
+
+    if (!formGroup || !controls || !value) {
+      return;
+    }
+
+    const flattenedControls = controls.flatMap(c =>
+      c.fieldType === FormType.FieldRow ? (c.controls ?? []) : [c]
+    );
+
+    for (const controlDef of flattenedControls) {
+      if (controlDef.field === GENERIC_METADATA_FIELD) {
+        throw new Error(`FormGroups with ${GENERIC_METADATA_FIELD} cannot be extended`);
+      }
+
+      if (controlDef.fieldType === FormType.Array) {
+        const arrayControl = formGroup.get(controlDef.field) as FormArray<FormGroup> | null;
+        const targetArrayValue: any[] = value?.[controlDef.field] ?? [];
+
+        if (arrayControl && Array.isArray(targetArrayValue)) {
+          const currentLength = arrayControl.length;
+          const requiredLength = targetArrayValue.length;
+
+          if (requiredLength > currentLength) {
+            this.log(`Extending FormArray '${controlDef.field}' from ${currentLength} to ${requiredLength} items.`);
+
+            for (let i = currentLength; i < requiredLength; i++) {
+              const newItem = this.createArrayItem(controlDef, fb);
+              arrayControl.push(newItem);
+            }
+          }
+
+          for (let i = 0; i < requiredLength; i++) {
+            const childGroup = arrayControl.at(i) as FormGroup;
+            const childValue = targetArrayValue[i];
+
+            if (childGroup && childValue && controlDef.controls) {
+              this.extendFormGroupForValue(childGroup, controlDef.controls, childValue, fb);
+            }
+          }
+        }
+      }
+    }
+  }
+
   private serializeMetadataValue(v: any): string {
     if (v !== null && typeof v === 'object') {
       const serialized = JSON.stringify(v);
@@ -223,38 +284,7 @@ export class GenericFormFactoryService extends LoggingService {
     return v + '';
   }
 
-  adjustForNestedControls(obj: any | undefined, controls: FormControlDefinition[]) {
-    this.log(`adjustForNestedControls input`, { obj, controlsCount: controls?.length });
-
-    obj = this.adjustForGenericMetadata(obj);
-
-    const result: any = {};
-
-    for (const control of controls) {
-      const fieldName = control.field;
-      const value = obj?.[fieldName];
-
-      if (value === undefined) continue;
-
-      const keys = fieldName.split('.');
-      let current = result;
-
-      for (let i = 0; i < keys.length - 1; i++) {
-        const key = keys[i];
-        if (!current[key]) {
-          current[key] = {};
-        }
-        current = current[key];
-      }
-
-      current[keys[keys.length - 1]] = value;
-    }
-
-    this.log(`adjustForNestedControls output`, { result });
-    return result;
-  }
-
-  genericMetadataGroup(
+  private genericMetadataGroup(
     metadata: GenericBag,
     controls: FormControlDefinition[],
     fb: FormBuilder | NonNullableFormBuilder,
@@ -320,7 +350,7 @@ export class GenericFormFactoryService extends LoggingService {
     }
   }
 
-  validators(data: GenericBag): [ValidatorFn[], AsyncValidatorFn[]]{
+  private validators(data: GenericBag): [ValidatorFn[], AsyncValidatorFn[]]{
     const validators: ValidatorFn[] = [];
     const asyncValidators: AsyncValidatorFn[] = [];
 
@@ -343,7 +373,7 @@ export class GenericFormFactoryService extends LoggingService {
     return [validators, asyncValidators];
   }
 
-  validator(key: string, args: any[]): [ValidatorFn | null, false] | [AsyncValidatorFn | null, true] {
+  private validator(key: string, args: any[]): [ValidatorFn | null, false] | [AsyncValidatorFn | null, true] {
     this.log(`Evaluating validator '${key}'`, { args });
     switch (key) {
       case "required":
@@ -369,7 +399,7 @@ export class GenericFormFactoryService extends LoggingService {
     return [null, false];
   }
 
-  initialValue(obj: any, control: FormControlDefinition) {
+  private initialValue(obj: any, control: FormControlDefinition) {
     let fieldName = control.field;
 
     if (control.field === GENERIC_METADATA_FIELD) {

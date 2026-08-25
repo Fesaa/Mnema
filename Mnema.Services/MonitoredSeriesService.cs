@@ -115,7 +115,7 @@ public class MonitoredSeriesService(
 
     public async Task UpdateFileMetadata(Guid id, string file, FileMetadataDto metadata, CancellationToken cancellationToken)
     {
-        file.EnsureValidUserFilePath(configuration.BaseDir);
+        file.EnsureValidUserFilePath();
 
         var path = fileSystem.Path.Join(configuration.BaseDir, file);
 

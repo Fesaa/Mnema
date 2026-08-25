@@ -314,7 +314,6 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
         return Ok(new FormDefinition
         {
             Key = "edit-file-metadata",
-            DescriptionKey = "modal-description",
             Controls = [
                 new FormFieldRow
                 {
@@ -346,6 +345,11 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
                             Field = nameof(FileMetadataDto.Count).ToCamelCase(),
                         },
                     ]
+                },
+                new TextFieldDefinition
+                {
+                    Field = nameof(FileMetadataDto.Summary).ToCamelCase(),
+                    ForceSingle = true
                 },
                 new CommaSeparatedValuesFieldDefinition
                 {

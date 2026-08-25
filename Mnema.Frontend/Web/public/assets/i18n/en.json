@@ -1413,6 +1413,7 @@
   "edit-file-metadata": {
     "modal-title": "Edit Metadata for {{seriesName}} - ",
     "modal-description": "Metadata is generated on download, and saved into the file. You can update the metadata manually below, or press the 'Refresh Metadata' button to update it automatically.",
+    "download-metadata": "Download metadata from upstream sources",
     "close": "Close",
     "save": "Save",
     "title-title": "Title",
@@ -1427,6 +1428,8 @@
     "isbn-tooltip": "Only applicable for books",
     "count-title": "Count",
     "count-tooltip": "Total number of volumes/chapters in this series",
+    "summary-title": "Summary",
+    "summary-tooltip": "",
     "tags-title": "Tags",
     "tags-tooltip": "Will be processed by the metadata system on save",
     "genres-title": "Genres",
@@ -1443,6 +1446,10 @@
     "publishers-tooltip": "",
     "webLinks-title": "Web Links",
     "webLinks-tooltip": "",
+    "webLinks": {
+      "url-title": "",
+      "url-tooltip": ""
+    },
     "metadata-updated": {
       "title": "Metadata updated",
       "summary": "Metadata updated for {{path}}"
