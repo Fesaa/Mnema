@@ -24,5 +24,6 @@
         <toc-element topic="Monitored-Series.md"/>
         <toc-element topic="Providers.md"/>
     </toc-element>
+    <toc-element topic="Import-Scans.md"/>
     <toc-element topic="File-Metadata.md"/>
 </instance-profile>
