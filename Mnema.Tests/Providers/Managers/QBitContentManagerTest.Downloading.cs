@@ -30,8 +30,18 @@ public partial class QBitContentManagerTest
         var (unitOfWork, _, _) = await CreateDatabase();
         var service = CreateServices(unitOfWork);
 
-        service.QBitClient.GetTorrentsAsync(Arg.Any<TorrentListQuery>(), Arg.Any<CancellationToken>())
-            .Returns([new TorrentInfo() { Hash = SpiceAndWolfHash }]);
+        unitOfWork.ExternalDownloadRepository.Add(new ExternalDownload
+        {
+            ExternalId = SpiceAndWolfHash,
+            Title = "Spice and Wolf",
+            BaseDir = "Manga",
+            Provider = Provider.Nyaa,
+            State = ContentState.Queued,
+            Metadata = new MetadataBag(),
+            Files = []
+        });
+
+        await unitOfWork.CommitAsync();
 
         await Assert.ThrowsAsync<MnemaException>(async () => await service.QBitContentManager.Download(CreateDownloadRequestDto()));
     }
