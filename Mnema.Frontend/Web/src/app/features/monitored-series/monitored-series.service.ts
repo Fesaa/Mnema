@@ -192,6 +192,10 @@ export class MonitoredSeriesService {
     return this.httpClient.get<FileInfoDto>(`${this.baseUrl}/${id}/file-info?filePath=${filePath}`);
   }
 
+  getChapterMetadata(id: string, chapterId: string) {
+    return this.httpClient.get<FileMetadata>(`${this.baseUrl}/${id}/${chapterId}/metadata`);
+  }
+
   writeFileMetadata(id: string, path: string, metadata: FileMetadata) {
     const filePath = encodeURIComponent(path);
     return this.httpClient.post(`${this.baseUrl}/${id}/file-metadata?filePath=${filePath}`, metadata);

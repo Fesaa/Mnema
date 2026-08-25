@@ -222,9 +222,9 @@ public class MonitoredSeriesController(
         return NotFound();
     }
 
-    [HttpGet("{id:guid}/file-metadata")]
-    [OutputCache(PolicyName = CacheProfiles.FiveMinutes, VaryByQueryKeys = ["chapterId"])]
-    public async Task<ActionResult<FileMetadataDto>> GetFileMetadata(Guid id, [FromQuery] Guid chapterId)
+    [HttpGet("{id:guid}/{chapterId:guid}/metadata")]
+    [OutputCache(PolicyName = CacheProfiles.FiveMinutes)]
+    public async Task<ActionResult<FileMetadataDto>> GetFileMetadata(Guid id, Guid chapterId)
     {
         var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
         if (series == null) return NotFound();
