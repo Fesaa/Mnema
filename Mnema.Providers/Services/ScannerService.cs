@@ -293,9 +293,16 @@ public class ScannerService(
         var onDiskContent = ParseContent(files[0], contentFormat.Value);
         if (string.IsNullOrEmpty(onDiskContent.SeriesName))
         {
-            logger.LogWarning("Directory {Path} contains files with unknown series name: {Extension}", path, extensions[0]);
-            scan.ImportErrors.Add(ImportError.FailedToParseSeries(path.RemovePrefix(configuration.BaseDir), files[0].RemovePrefix(path)));
-            return;
+            var dirName = fileSystem.Path.GetDirectoryName(path);
+            logger.LogWarning("Directory {Path} contains files with unknown series name: {Extension}. Falling back to directory name: {DirectoryName}",
+                path, extensions[0], dirName.I());
+            onDiskContent.SeriesName = dirName ?? string.Empty;
+
+            if (string.IsNullOrEmpty(onDiskContent.SeriesName))
+            {
+                scan.ImportErrors.Add(ImportError.FailedToParseSeries(path.RemovePrefix(configuration.BaseDir), files[0].RemovePrefix(path)));
+                return;
+            }
         }
 
         logger.LogTrace("Adding directory {Path} to scan. Series: {SeriesName}", path, onDiskContent.SeriesName);
