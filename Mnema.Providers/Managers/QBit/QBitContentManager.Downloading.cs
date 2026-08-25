@@ -56,7 +56,7 @@ internal partial class QBitContentManager
         var hasNoDownloadsBecauseMissingMetadata = false;
         if (toDownload.Count == 0)
         {
-            var hasVolumes = seriesFiles.Any(f => !string.IsNullOrEmpty(f.ParseResult.VolumeMarker));
+            var hasVolumes = seriesFiles.Any(f => !string.IsNullOrEmpty(f.ParseResult.VolumeMarker) && !services.ParserService.IsLooseLeafVolume(f.ParseResult.VolumeMarker));
             if (hasVolumes && mSeries is { Chapters.Count: > 0 })
             {
                 logger.LogDebug("[{Title}/{Id}] No files to download, likely because upstream metadata is missing. Halting removing to allow for upstream correction", title, request.Id);
