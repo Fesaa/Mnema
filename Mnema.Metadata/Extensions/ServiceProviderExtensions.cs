@@ -1,8 +1,4 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using GraphQL.Client.Abstractions;
-using GraphQL.Client.Http;
-using GraphQL.Client.Serializer.SystemTextJson;
+using System.Net.Http.Headers;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
@@ -16,6 +12,7 @@ using Mnema.API.Content;
 using Mnema.API.Metadata;
 using Mnema.Common;
 using Mnema.Metadata.Hardcover;
+using Mnema.Metadata.Hardcover.Generated;
 using Mnema.Metadata.Mangabaka;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
@@ -51,29 +48,15 @@ public static class ServiceProviderExtensions
             }
 
             services.AddKeyedScoped<IMetadataProviderService, HardcoverMetadataService>(MetadataProvider.Hardcover);
-            services.AddHttpClient(nameof(HardcoverMetadataService), client =>
+            services.AddHttpClient(HardcoverClient.ClientName, client =>
             {
                 client.BaseAddress = new Uri(HardcoverGraphQlEndpoint);
                 client.Timeout = TimeSpan.FromSeconds(30);
                 client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, BuildInfo.AppIdentifier);
-                client.DefaultRequestHeaders.Add(HeaderNames.Authorization, $"Bearer {hardCoverToken}");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", hardCoverToken);
             });
-            services.AddKeyedSingleton<IGraphQLClient>(MetadataProvider.Hardcover,(s, _) =>
-            {
-                var httpClient = s.GetRequiredService<IHttpClientFactory>()
-                    .CreateClient(nameof(HardcoverMetadataService));
-
-                return new GraphQLHttpClient(HardcoverGraphQlEndpoint,
-                    new SystemTextJsonSerializer
-                    {
-                        Options =
-                        {
-                            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
-                            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-                            //Converters = { new JsonNumberEnumConverter<HardcoverUserBookStatus>() }
-                        }
-                    }, httpClient);
-            });
+            services.AddHardcoverClient();
+            services.AddHasuraScalars();
 
             return services;
         }

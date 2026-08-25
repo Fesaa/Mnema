@@ -14,13 +14,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Hardcover\Queries\*.graphql" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="GraphQL" Version="8.8.4" />
-      <PackageReference Include="GraphQL.Client" Version="6.1.0" />
-      <PackageReference Include="GraphQL.Client.Serializer.SystemTextJson" Version="6.1.0" />
       <PackageReference Include="Hangfire.Core" Version="1.8.24" />
       <PackageReference Include="Lucene.Net" Version="4.8.0-beta00017" />
       <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00017" />
@@ -30,6 +23,8 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.10" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
       <PackageReference Include="Serilog" Version="4.4.0" />
+      <PackageReference Include="StrawberryShake.Server" Version="16.6.1" />
+      <PackageReference Include="StrawberryShake.Transport.Http" Version="16.6.1" />
     </ItemGroup>
 
 </Project>

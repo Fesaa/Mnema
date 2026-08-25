@@ -1,0 +1,37 @@
+scalar _KeyFieldSet
+
+extend scalar float8
+@serializationType(name: "global::System.Single")
+@runtimeType(name: "global::System.Single")
+
+extend scalar bigint
+@serializationType(name: "global::System.Int64")
+@runtimeType(name: "global::System.Int64")
+
+extend scalar numeric
+@serializationType(name: "global::System.Decimal")
+@runtimeType(name: "global::System.Decimal")
+
+extend scalar jsonb
+@serializationType(name: "global::System.Text.Json.JsonElement")
+@runtimeType(name: "global::System.Text.Json.JsonElement")
+
+extend scalar json
+@serializationType(name: "global::System.Text.Json.JsonElement")
+@runtimeType(name: "global::System.Text.Json.JsonElement")
+
+extend scalar date
+@serializationType(name: "global::System.String")
+@runtimeType(name: "global::System.DateTime")
+
+directive @key(fields: _KeyFieldSet!) on SCHEMA | OBJECT
+
+directive @serializationType(name: String!) on SCALAR
+
+directive @runtimeType(name: String!) on SCALAR
+
+directive @enumValue(value: String!) on ENUM_VALUE
+
+directive @rename(name: String!) on INPUT_FIELD_DEFINITION | INPUT_OBJECT | ENUM | ENUM_VALUE
+
+extend schema @key(fields: "id")

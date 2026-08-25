@@ -1,0 +1,7 @@
+fragment BookSeriesInfo on book_series {
+    position
+    featured
+    book {
+        ...BookInfo
+    }
+}

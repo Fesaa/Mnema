@@ -1,0 +1,43 @@
+fragment ContributionInfo on contributions {
+    contribution
+    author {
+        ...AuthorInfo
+    }
+}
+
+fragment BookInfo on books {
+    id
+    title
+    alternativeTitles: alternative_titles
+    description
+    releaseDate: release_date
+    releaseYear: release_year
+    slug
+    usersReadCount: users_read_count
+    image {
+        url
+    }
+    editions {
+        isbn: isbn_13
+        releaseDate: release_date
+        language {
+            language
+            code: code2
+        }
+        contributions {
+            ...ContributionInfo
+        }
+    }
+    taggings {
+        tag {
+            id
+            tag
+            tagCategory: tag_category {
+                category
+            }
+        }
+    }
+    contributions {
+        ...ContributionInfo
+    }
+}
