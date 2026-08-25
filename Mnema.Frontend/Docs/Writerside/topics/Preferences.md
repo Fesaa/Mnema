@@ -5,10 +5,6 @@ Preferences are global options to be used when downloading content, and will be 
 
 ## General
 
-<warning>
-    WebP conversion can cause high sustained memory usage on Linux
-</warning>
-
 ![preferences_general.png](preferences_general.png)
 
 ## Mappings
