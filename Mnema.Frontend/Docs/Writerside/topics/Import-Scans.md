@@ -18,7 +18,7 @@ The scanner is a very simple recursive process:
 The parser for each series is very, again, simple
 1) Are all files in the directory of the same type (cbz or epub)
 2) No ⇒ Error, Yes ⇒ continue
-3) Parse metadata out of the first file (Series name falls back to directory name)
+3) Parse metadata out of the first file
 4) Parse upstream metadata ids and try to link to an existing monitored series
 5) If a successful link, mark as imported otherwise as queued
 
@@ -28,12 +28,12 @@ After a scan has finished, you can open the scan in the UI. And complete the inf
 
 ### Actions
 
-| Action      | When                                           | Result                                                            |
-|-------------|------------------------------------------------|-------------------------------------------------------------------|
-| Reject      | You do not want to import this series          | Moved to the back of the list, and marked in red                  |
-| Skip        | You do not want to process this series now     | Moved to the back of the list, and marked in gray (before reject) |
-| Auto Accept | The series has a Hardcover or Mangabaka id     | Create a monitored series automaticlly from the avaible metadata  |
-| Accept      | Missing metadata, or in need of custom options | Open the monitor series modal for full customizability            |
+| Action      | When                                           | Result                                                              |
+|-------------|------------------------------------------------|---------------------------------------------------------------------|
+| Reject      | You do not want to import this series          | Moved to the back of the list, and marked in red                    |
+| Skip        | You do not want to process this series now     | Moved to the back of the list, and marked in gray (before reject)   |
+| Auto Accept | The series has a Hardcover or Mangabaka id     | Create a monitored series automatically from the available metadata |
+| Accept      | Missing metadata, or in need of custom options | Open the monitor series modal for full customizability              |
 
 
 ### Errors
