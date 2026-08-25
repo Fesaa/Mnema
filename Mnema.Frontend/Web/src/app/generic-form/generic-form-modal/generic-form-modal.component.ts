@@ -1,17 +1,19 @@
-import {ChangeDetectionStrategy, Component, inject, model, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, model, signal, TemplateRef} from '@angular/core';
 import {FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {GenericFormComponent} from "../generic-form.component";
 import {FormDefinition} from "../form";
 import {GenericFormFactoryService} from "../generic-form-factory.service";
+import {NgTemplateOutlet} from "@angular/common";
 
 @Component({
   selector: 'app-generic-form-modal',
   imports: [
     ReactiveFormsModule,
     TranslocoDirective,
-    GenericFormComponent
+    GenericFormComponent,
+    NgTemplateOutlet
   ],
   templateUrl: './generic-form-modal.component.html',
   styleUrl: './generic-form-modal.component.scss',
@@ -28,6 +30,7 @@ export class GenericFormModalComponent<T> {
   initialValue = model.required<T>();
   double = model<boolean>(true);
   title = model<string>();
+  descriptionTemplate = model<TemplateRef<any>>();
 
   formGroup = signal<FormGroup | null>(null);
 

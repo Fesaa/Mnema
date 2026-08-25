@@ -18,7 +18,9 @@
 
     <div class="modal-body scrollable-modal">
 
-      @if (formDefinition().descriptionKey; as descriptionKey) {
+      @if (descriptionTemplate(); as templ) {
+        <ng-container [ngTemplateOutlet]="templ" />
+      } @else if (formDefinition().descriptionKey; as descriptionKey) {
         <span>{{t(descriptionKey)}}</span>
         <div class="setting-section-break"></div>
       }
