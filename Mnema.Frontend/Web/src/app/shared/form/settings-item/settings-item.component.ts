@@ -109,7 +109,7 @@ export class SettingsItemComponent implements OnChanges, OnInit {
 
     this.control()?.valueChanges?.pipe(
       takeUntilDestroyed(this.destroyRef),
-      tap(value => this.hasBeenChanged.set(value !== this.initialValue))
+      tap(value => this.hasBeenChanged.set(value !== this.initialValue && JSON.stringify(value) !== JSON.stringify(this.initialValue)))
     ).subscribe();
   }
 
