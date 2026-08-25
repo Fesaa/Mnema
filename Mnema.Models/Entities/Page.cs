@@ -1,4 +1,5 @@
 using System;
+using Mnema.API.Repositories;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Enums;
@@ -13,5 +14,6 @@ public class Page: IDatabaseEntity
     public required int SortValue { get; set; }
     public required Provider Provider { get; set; }
     public string CustomRootDir { get; set; } = string.Empty;
+    [JsonColumn]
     public MetadataBag DefaultOptions { get; set; } = new();
 }

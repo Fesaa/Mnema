@@ -10,6 +10,10 @@
               } @else {
                 {{ title }}
               }
+
+              @if (showChanges() && hasBeenChanged()) {
+                <i class="fa fa-pen-nib ms-2" [ngbTooltip]="t('common.changes')"></i>
+              }
             </h4>
           </div>
         }

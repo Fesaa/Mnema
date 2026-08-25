@@ -6,8 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Common.Exceptions;
+using Mnema.Models.DTOs.Content;
 using QBittorrent.Client;
 
 namespace Mnema.Providers.Managers.QBit;
@@ -20,13 +22,13 @@ internal partial class QBitContentManager
         TorrentState.PausedUpload, TorrentState.QueuedUpload,
     ];
 
-    public async Task TorrentWatcher()
+    public async Task TorrentWatcher(CancellationToken cancellationToken)
     {
         IReadOnlyList<TorrentInfo> torrents;
         try
         {
             var listQuery = new TorrentListQuery { Category = MnemaCategory };
-            torrents = await qBitClient.GetTorrentsAsync(listQuery);
+            torrents = await qBitClient.GetTorrentsAsync(listQuery, cancellationToken);
         }
         catch (Exception ex) when (ex is HttpRequestException or QBittorrentClientRequestException or MnemaException)
         {
@@ -43,18 +45,20 @@ internal partial class QBitContentManager
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        var downloads = await unitOfWork.ExternalDownloadRepository
-            .GetByExternalIds(torrents.Select(t => t.Hash));
+        var downloads = (await unitOfWork.ExternalDownloadRepository.GetAll(cancellationToken))
+            .GroupBy(d => d.ExternalId)
+            .ToDictionary(g => g.Key, g => g.ToList());
 
         var content = torrents
             .Where(t => downloads.ContainsKey(t.Hash))
             .SelectMany(t => downloads[t.Hash].Select(ed => new ExternalDownloadContent(ed, t)))
             .ToList();
 
-        // A torrent may be in an upload state is 0 files are selected. Filter on progress
+        // A torrent may be in an upload state if 0 files are selected. Filter on progress
         var toProcessFinishedContentHashes = content
             .Where(c => UploadStates.Contains(c.TorrentInfo.State) && c.TorrentInfo.Progress > 0)
             .Where(c => !_cleanupTorrents.ContainsKey(c.Id))
+            .Where(c => c.State != ContentState.Waiting) // Still being added
             .Select(c => c.Id)
             .ToHashSet();
 

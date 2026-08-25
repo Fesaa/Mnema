@@ -1,40 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.IO.Abstractions;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
-using Mnema.Common;
 using Mnema.Models.DTOs;
-using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.User;
-using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 using Mnema.Providers.Services;
+using Mnema.Services;
+using NSubstitute;
 
 namespace Mnema.Tests.Providers.Services;
 
 [TestSubject(typeof(MetadataService))]
 public class MetadataServiceTest
 {
-    private static IMetadataService CreateSut()
-    {
-        return new MetadataService();
-    }
 
-    private static DownloadRequestDto Request()
-    {
-        return new DownloadRequestDto
-        {
-            Provider = Provider.Nyaa,
-            Id = string.Empty,
-            BaseDir = string.Empty,
-            TempTitle = string.Empty,
-            Metadata = new MetadataBag
-            {
-                [RequestConstants.IncludeNotMatchedTagsKey.Key] = ["true"]
-            }
-        };
-    }
+    private readonly IMetadataService _metadataService = new MetadataService(
+        Substitute.For<ILogger<MetadataService>>(),
+        Substitute.For<IEpubMetadataService>(),
+        Substitute.For<IParserService>(),
+        Substitute.For<IFileSystem>()
+    );
 
     private static Preferences CreateDefaultPreferences(
         IList<TagMappingDto>? tagMappings = null,
@@ -85,7 +74,7 @@ public class MetadataServiceTest
             TagOf("Nudity")
         };
 
-        var rating = MetadataService.GetAgeRating(preferences, tags);
+        var rating = _metadataService.GetAgeRating(preferences, tags);
 
         Assert.Equal(AgeRating.Mature, rating);
     }
@@ -102,7 +91,7 @@ public class MetadataServiceTest
 
         var tags = new List<Tag> { TagOf("Romance") };
 
-        var rating = MetadataService.GetAgeRating(preferences, tags);
+        var rating = _metadataService.GetAgeRating(preferences, tags);
 
         Assert.Null(rating);
     }
@@ -119,7 +108,7 @@ public class MetadataServiceTest
 
         var tags = new List<Tag>();
 
-        var rating = MetadataService.GetAgeRating(preferences, tags);
+        var rating = _metadataService.GetAgeRating(preferences, tags);
 
         Assert.Null(rating);
     }
@@ -131,7 +120,7 @@ public class MetadataServiceTest
 
         var tags = new List<Tag> { TagOf("Violence") };
 
-        var rating = MetadataService.GetAgeRating(preferences, tags);
+        var rating = _metadataService.GetAgeRating(preferences, tags);
 
         Assert.Null(rating);
     }
@@ -148,7 +137,7 @@ public class MetadataServiceTest
 
         var tags = new List<Tag> { TagOf("violence") };
 
-        var rating = MetadataService.GetAgeRating(preferences, tags);
+        var rating = _metadataService.GetAgeRating(preferences, tags);
 
         Assert.Equal(AgeRating.Mature, rating);
     }
@@ -172,7 +161,7 @@ public class MetadataServiceTest
             TagOf("Graphic")
         };
 
-        var rating = MetadataService.GetAgeRating(preferences, tags);
+        var rating = _metadataService.GetAgeRating(preferences, tags);
 
         Assert.Equal(AgeRating.AdultsOnly, rating);
     }

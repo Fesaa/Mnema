@@ -74,6 +74,7 @@ export class SettingMultiTextFieldComponent<T> implements ControlValueAccessor {
    */
   id = input<string>('');
   wikiLink = input<string>();
+  showChanges = input(false);
 
   isLoading = computed(() => {
     const loading = this.loading();

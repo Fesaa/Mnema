@@ -1,14 +1,23 @@
 using System;
 using System.Collections.Generic;
+using System.IO.Abstractions;
+using System.IO.Compression;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Serialization;
+using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
+using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
+using Mnema.Common.Helpers;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities;
 using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Publication;
+using Mnema.Providers.Extensions;
 
 namespace Mnema.Providers.Services;
 
@@ -18,8 +27,14 @@ internal class StringLinkInfoImplementation(string url) : ILinkInfo
     public string Language => string.Empty;
 }
 
-internal class MetadataService : IMetadataService
+internal class MetadataService(
+    ILogger<MetadataService> logger,
+    IEpubMetadataService epubMetadataService,
+    IParserService parserService,
+    IFileSystem fileSystem) : IMetadataService
 {
+    private static readonly XmlSerializer XmlSerializer = new(typeof(ComicInfo));
+
     public ComicInfo? CreateComicInfo(Preferences preferences, DownloadRequestDto request, string title, Series? series,
         Chapter? chapter, string? note = null)
     {
@@ -93,7 +108,77 @@ internal class MetadataService : IMetadataService
         return ci;
     }
 
-    internal static string CollectLinks(Preferences preferences, List<string> links)
+    public ComicInfo? ParseComicInfoFromFile(string file)
+    {
+        if (!fileSystem.File.Exists(file))
+            throw new MnemaException($"File not found: {file}");
+
+        try
+        {
+            switch (parserService.ParseFormat(file))
+            {
+                case Format.Archive:
+                    return ParseComicInfoFromArchive(file);
+                case Format.Epub:
+                    return epubMetadataService.ReadComicInfo(file, CancellationToken.None);
+                case Format.Unsupported:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogDebug(ex, "Failed to parse ComicInfo.xml from {FileName}", file);
+            return null;
+        }
+
+        return null;
+    }
+
+    public async Task WriteComicInfo(ComicInfo comicInfo, string filePath, CancellationToken cancellationToken)
+    {
+        if (!fileSystem.File.Exists(filePath))
+            throw new MnemaException($"File not found: {filePath}");
+
+        switch (parserService.ParseFormat(filePath))
+        {
+            case Format.Archive:
+                await WriteComicInfoIntoArchive(comicInfo, filePath, cancellationToken);
+                break;
+            case Format.Epub:
+                await epubMetadataService.WriteComicInfo(comicInfo, filePath, cancellationToken);
+                break;
+            case Format.Unsupported:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private static async Task WriteComicInfoIntoArchive(ComicInfo comicInfo, string filePath, CancellationToken cancellationToken)
+    {
+        await using var archive = await ZipFile.OpenAsync(filePath, ZipArchiveMode.Update, cancellationToken);
+
+        var comicInfoEntry = archive.GetComicInfo();
+        comicInfoEntry?.Delete();
+
+        var entry = archive.CreateEntry("ComicInfo.xml", CompressionLevel.Optimal);
+        await using var fileStream = await entry.OpenAsync(cancellationToken);
+        XmlSerializer.Serialize(fileStream, comicInfo);
+    }
+
+    private static ComicInfo? ParseComicInfoFromArchive(string file)
+    {
+        using var archive = ZipFile.OpenRead(file);
+
+        var comicInfoEntry = archive.GetComicInfo();
+        if (comicInfoEntry == null) return null;
+
+        return XmlHelper.Deserialize<ComicInfo>(XmlSerializer, comicInfoEntry.Open());
+    }
+
+    private static string CollectLinks(Preferences preferences, List<string> links)
     {
         var filters = preferences.LinkFilters.Where(f => f.Type == LinkFilterType.Hostname).ToList();
 
@@ -106,7 +191,7 @@ internal class MetadataService : IMetadataService
 
     #region Genre and Tags Mappings (Mostly Kavita copied code)
 
-    internal static (List<string> Genres, List<string> Tags) GenerateGenreAndTagLists(Preferences preferences, List<Tag> allTags, bool applyBlackAndWhiteLists = true)
+    public (List<string> Genres, List<string> Tags) GenerateGenreAndTagLists(Preferences preferences, List<Tag> allTags, bool applyBlackAndWhiteLists = true)
     {
         var genres = allTags.Where(t => t.IsMarkedAsGenre).Select(t => t.Value).Distinct().ToList();
         var tags = allTags.Where(t => !t.IsMarkedAsGenre).Select(t => t.Value).Distinct().ToList();
@@ -203,7 +288,7 @@ internal class MetadataService : IMetadataService
 
     #endregion
 
-    internal static AgeRating? GetAgeRating(Preferences preferences, List<Tag> inputTags)
+    public AgeRating? GetAgeRating(Preferences preferences, List<Tag> inputTags)
     {
         var ageRatingMappings = preferences.AgeRatingMappings.Select(m => m with
         {

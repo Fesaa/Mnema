@@ -40,7 +40,8 @@
     "clear": "Clear",
     "filter": "Filter",
     "wiki": "Visit the Wiki for more information",
-    "source": "Source"
+    "source": "Source",
+    "changes": "This content has been modified"
   },
 
   "button-groups": {
@@ -1388,7 +1389,8 @@
   "monitored-series-detail": {
     "last-updated": "Last updated {{time}}",
     "chapters": "Chapters",
-    "no-chapters": "No chapters found, note that chapters from UpStream are not tracked",
+    "unmatched-chapters": "UnMatched Chapters",
+    "no-chapters": "No chapters found",
     "confirm-delete": "Are you sure you want to stop monitoring {{name}}",
     "select-status": "Set chapter status",
     "confirm-refresh-metadata": "Refresh metadata for {{name}}?",
@@ -1405,6 +1407,52 @@
     "deleted": {
       "title": "Deleted {{name}}",
       "summary": ""
+    }
+  },
+
+  "edit-file-metadata": {
+    "modal-title": "Edit Metadata for {{seriesName}} - ",
+    "modal-description": "Metadata is generated on download, and saved into the file. You can update the metadata manually below, or press the 'Refresh Metadata' button to update it automatically.",
+    "download-metadata": "Download metadata from upstream sources",
+    "close": "Close",
+    "save": "Save",
+    "title-title": "Title",
+    "title-tooltip": "Title of the chapter",
+    "volume-title": "Volume",
+    "volume-tooltip": "",
+    "chapter-title": "Chapter",
+    "chapter-tooltip": "",
+    "ageRating-title": "Age Rating",
+    "ageRating-tooltip": "",
+    "isbn-title": "ISBN",
+    "isbn-tooltip": "Only applicable for books",
+    "count-title": "Count",
+    "count-tooltip": "Total number of volumes/chapters in this series",
+    "summary-title": "Summary",
+    "summary-tooltip": "",
+    "tags-title": "Tags",
+    "tags-tooltip": "Will be processed by the metadata system on save",
+    "genres-title": "Genres",
+    "genres-tooltip": "Will be processed by the metadata system on save",
+    "writers-title": "Writers",
+    "writers-tooltip": "",
+    "colorists-title": "Colorists",
+    "colorists-tooltip": "",
+    "letterers-title": "Letterers",
+    "letterers-tooltip": "",
+    "translators-title": "Translators",
+    "translators-tooltip": "",
+    "publishers-title": "Publishers",
+    "publishers-tooltip": "",
+    "webLinks-title": "Web Links",
+    "webLinks-tooltip": "",
+    "webLinks": {
+      "url-title": "",
+      "url-tooltip": ""
+    },
+    "metadata-updated": {
+      "title": "Metadata updated",
+      "summary": "Metadata updated for {{path}}"
     }
   },
 

@@ -5,13 +5,13 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  ContentChild,
+  ContentChild, DestroyRef,
   ElementRef,
   HostListener,
   inject,
   input,
   model,
-  OnChanges,
+  OnChanges, OnInit, signal,
   SimpleChange,
   SimpleChanges,
   TemplateRef
@@ -22,6 +22,8 @@ import {NgClass, NgTemplateOutlet} from '@angular/common';
 import {SafeHtmlPipe} from '../../../_pipes/safe-html-pipe';
 import {filter, fromEvent, tap} from 'rxjs';
 import {WikiLinkComponent} from "@mnema/shared/_component/wiki-link/wiki-link.component";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   selector: 'app-settings-item',
@@ -31,16 +33,17 @@ import {WikiLinkComponent} from "@mnema/shared/_component/wiki-link/wiki-link.co
     NgClass,
     SafeHtmlPipe,
     WikiLinkComponent,
-
+    NgbTooltip,
   ],
   templateUrl: './settings-item.component.html',
   styleUrl: './settings-item.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SettingsItemComponent implements OnChanges {
+export class SettingsItemComponent implements OnChanges, OnInit {
 
   private readonly cdRef = inject(ChangeDetectorRef);
   private readonly elementRef = inject(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
 
   control = input<AbstractControl>();
 
@@ -54,6 +57,7 @@ export class SettingsItemComponent implements OnChanges {
   showEdit = input(true);
   isEditMode = model(false);
   wikiLink = input<string>();
+  showChanges = input(false);
 
   toggleOnViewClick = input(true);
 
@@ -71,11 +75,15 @@ export class SettingsItemComponent implements OnChanges {
     event.stopPropagation(); // Prevent the click from bubbling up
   }
 
+  protected initialValue: any;
+  protected hasBeenChanged = signal(false);
+
   constructor(elementRef: ElementRef) {
     if (!this.toggleOnViewClick() || !this.showEdit()) return;
 
     fromEvent(window, 'click')
       .pipe(
+        takeUntilDestroyed(),
         filter((event: Event) => {
           if (!this.toggleOnViewClick()) return false;
           if (!this.showEdit()) return false;
@@ -94,6 +102,15 @@ export class SettingsItemComponent implements OnChanges {
         })
       )
       .subscribe();
+  }
+
+  ngOnInit() {
+    this.initialValue = this.control()?.value;
+
+    this.control()?.valueChanges?.pipe(
+      takeUntilDestroyed(this.destroyRef),
+      tap(value => this.hasBeenChanged.set(value !== this.initialValue && JSON.stringify(value) !== JSON.stringify(this.initialValue)))
+    ).subscribe();
   }
 
   toggleEditMode() {

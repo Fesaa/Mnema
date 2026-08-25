@@ -109,87 +109,149 @@
 
     <div class="chapters-section">
       <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h2 class="section-title mb-0">
-            <i class="fa fa-list"></i> {{t('chapters')}}
-            <span class="badge bg-secondary ms-2">{{ s.chapters.length }}</span>
-          </h2>
-        </div>
+        <ul class="nav nav-tabs mb-3">
+          <li class="nav-item">
+            <button
+              class="nav-link d-flex align-items-center gap-2"
+              type="button"
+              [class.active]="activeChapterTab() === 'chapters'"
+              (click)="activeChapterTab.set('chapters')">
+              <i class="fa fa-list"></i> {{t('chapters')}}
+              <app-badge padding="p-1 px-2">{{ s.chapters.length }}</app-badge>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button
+              class="nav-link d-flex align-items-center gap-2"
+              type="button"
+              [class.active]="activeChapterTab() === 'unmatched'"
+              (click)="activeChapterTab.set('unmatched')">
+              <i class="fa fa-question-circle"></i> {{t('unmatched-chapters')}}
+              <app-badge padding="p-1 px-2" colour="secondary">{{ s.unMatchedChapters.length }}</app-badge>
+            </button>
+          </li>
+        </ul>
 
-        @if (s.chapters && s.chapters.length > 0) {
-          <div class="chapters-list">
-            @for (chapter of s.chapters; track chapter.id) {
-              <div class="chapter-row">
-                <div class="d-flex gap-2 align-items-start">
+        @if (activeChapterTab() === 'chapters') {
+          @if (s.chapters && s.chapters.length > 0) {
+            <div class="chapters-list">
+              @for (chapter of s.chapters; track chapter.id) {
+                <div class="chapter-row">
+                  <div class="d-flex gap-2 align-items-start">
 
-                  <div class="chapter-thumb-wrap flex-shrink-0">
-                    @if (chapter.coverUrl) {
-                      <img [src]="chapter.coverUrl" [alt]="chapter.title" class="chapter-thumb">
-                    } @else {
-                      <div class="chapter-thumb-placeholder">
-                        <i class="fa fa-file"></i>
-                      </div>
-                    }
-                  </div>
-
-                  <div class="flex-grow-1 min-w-0">
-
-                    @if (chapter.volume || chapter.chapter) {
-                      <div class="chapter-labels mb-1">
-                        @if (chapter.volume) {
-                          <span class="text-muted small">Vol. {{ chapter.volume }}</span>
-                        }
-                        @if (chapter.chapter) {
-                          <span class="text-muted small">Ch. {{ chapter.chapter }}</span>
-                        }
-                      </div>
-                    }
-
-                    <p class="chapter-title mb-1">{{ chapter.title }}</p>
-
-                    @if (chapter.summary) {
-                      <p class="chapter-summary small mb-1">{{ chapter.summary }}</p>
-                    }
-
-                    <div class="chapter-meta d-flex flex-wrap gap-2">
-                      @if (chapter.releaseDate) {
-                        <small class="text-muted">
-                          <i class="fa fa-calendar"></i>
-                          {{ chapter.releaseDate | utcToLocalTime:'shortDate' }}
-                        </small>
-                      }
-                      @if (chapter.filePath) {
-                        <small class="text-muted text-truncate chapter-filepath">
-                          <i class="fa fa-folder"></i> {{ chapter.filePath }}
-                        </small>
+                    <div class="chapter-thumb-wrap flex-shrink-0">
+                      @if (chapter.coverUrl) {
+                        <img [src]="chapter.coverUrl" [alt]="chapter.title" class="chapter-thumb">
+                      } @else {
+                        <div class="chapter-thumb-placeholder">
+                          <i class="fa fa-file"></i>
+                        </div>
                       }
                     </div>
 
-                  </div>
-                </div>
+                    <div class="flex-grow-1 min-w-0">
+                      <div class="d-flex justify-content-between">
+                        <div class="chapter-labels mb-1">
+                          @if (chapter.volume || chapter.chapter) {
+                            @if (chapter.volume) {
+                              <span class="text-muted small">Vol. {{ chapter.volume }}</span>
+                            }
+                            @if (chapter.chapter) {
+                              <span class="text-muted small">Ch. {{ chapter.chapter }}</span>
+                            }
+                          }
+                        </div>
+                        @if (chapter.filePath) {
+                          <div>
+                            <i class="fa fa-pencil clickable text-primary" (click)="editFile(chapter.filePath, chapter)"></i>
+                          </div>
+                        }
+                      </div>
 
-                <div class="chapter-row-footer d-flex align-items-center justify-content-between mt-2 pt-2">
-                  <div>
-                    @if (chapter.refUrl) {
-                      <a [href]="chapter.refUrl" target="_blank" class="chapter-source-link small">
-                        <i class="fa fa-external-link-alt"></i> Source
-                      </a>
-                    }
+                      <p class="chapter-title mb-1">{{ chapter.title }}</p>
+
+                      @if (chapter.summary) {
+                        <p class="chapter-summary small mb-1">{{ chapter.summary }}</p>
+                      }
+
+                      <div class="chapter-meta d-flex flex-wrap gap-2">
+                        @if (chapter.releaseDate) {
+                          <small class="text-muted">
+                            <i class="fa fa-calendar"></i>
+                            {{ chapter.releaseDate | utcToLocalTime:'shortDate' }}
+                          </small>
+                        }
+                        @if (chapter.filePath) {
+                          <small class="text-muted text-truncate chapter-filepath">
+                            <i class="fa fa-folder"></i> {{ chapter.filePath }}
+                          </small>
+                        }
+                      </div>
+
+                    </div>
                   </div>
-                  <span
-                    class="badge clickable"
-                    (click)="setChapterStatus(chapter.id)"
-                    [ngClass]="getStatusClass(chapter.status)">
-                    {{ chapter.status | monitoredChapterStatus }}
-                  </span>
+
+                  <div class="chapter-row-footer d-flex align-items-center justify-content-between mt-2 pt-2">
+                    <div>
+                      @if (chapter.refUrl) {
+                        <a [href]="chapter.refUrl" target="_blank" class="chapter-source-link small">
+                          <i class="fa fa-external-link-alt"></i> Source
+                        </a>
+                      }
+                    </div>
+                    <span
+                      class="badge clickable"
+                      (click)="setChapterStatus(chapter.id)"
+                      [ngClass]="getStatusClass(chapter.status)">
+                  {{ chapter.status | monitoredChapterStatus }}
+                </span>
+                  </div>
                 </div>
-              </div>
-            }
-          </div>
+              }
+            </div>
+          } @else {
+            <div class="alert alert-info">
+              <i class="fa fa-info-circle"></i> {{t('no-chapters')}}
+            </div>
+          }
         } @else {
-          <div class="alert alert-info">
-            <i class="fa fa-info-circle"></i> {{t('no-chapters')}}
-          </div>
+          @if (s.unMatchedChapters && s.unMatchedChapters.length > 0) {
+            <div class="chapters-list">
+              @for (file of s.unMatchedChapters; track file.path) {
+                <div class="chapter-row">
+                  <div class="d-flex gap-2 align-items-start">
+                    <div class="flex-grow-1 min-w-0">
+                      <div class="d-flex justify-content-between">
+                        <div class="chapter-labels mb-1">
+                          @if (file.volume || file.chapter) {
+                            @if (file.volume) {
+                              <span class="text-muted small">Vol. {{ file.volume }}</span>
+                            }
+                            @if (file.chapter) {
+                              <span class="text-muted small">Ch. {{ file.chapter }}</span>
+                            }
+                          }
+                        </div>
+                        @if (file.path) {
+                          <div>
+                            <i class="fa fa-pencil clickable text-primary" (click)="editFile(file.path)"></i>
+                          </div>
+                        }
+                      </div>
+                      <div class="d-flex flex-row gap-1">
+                        <i class="fa fa-file"></i>
+                        <p class="chapter-title mb-1 text-truncate" [title]="file.path">{{ file.path }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="alert alert-info">
+              <i class="fa fa-info-circle"></i> {{t('no-unmatched-chapters')}}
+            </div>
+          }
         }
       </div>
     </div>
@@ -218,5 +280,18 @@
     @if (selectedItems && selectedItems.includes(item)) {
       <span class="pill p-1 ms-1">{{t('common.selected')}}</span>
     }
+  </div>
+</ng-template>
+
+<ng-template #metadataEditorHeader let-form *transloco="let t; prefix: 'edit-file-metadata'">
+  <div>
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="mb-0">{{t('modal-description')}}</span>
+      <div>
+        <button type="button" class="btn btn-sm btn-primary" (click)="loadUpstreamMetadata(form)" [ngbTooltip]="t('download-metadata')">
+          <i class="fa fa-download"></i>
+        </button>
+      </div>
+    </div>
   </div>
 </ng-template>

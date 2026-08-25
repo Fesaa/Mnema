@@ -9,17 +9,22 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.API.External;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 using QBittorrent.Client;
+using BuildInfo = Mnema.Common.BuildInfo;
 
 namespace Mnema.Providers.Managers.QBit;
 
 internal partial class QBitContentManager
 {
+
+    [Queue(HangfireQueue.TorrentDownload)]
+    [DisableConcurrentExecution(timeoutInSeconds: 86400 * 2)]
     [AutomaticRetry(Attempts = 1, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
     public async Task DownloadTorrent(DownloadRequestDto request, CancellationToken ct)
     {
@@ -51,7 +56,7 @@ internal partial class QBitContentManager
         var hasNoDownloadsBecauseMissingMetadata = false;
         if (toDownload.Count == 0)
         {
-            var hasVolumes = seriesFiles.Any(f => !string.IsNullOrEmpty(f.ParseResult.VolumeMarker));
+            var hasVolumes = seriesFiles.Any(f => !string.IsNullOrEmpty(f.ParseResult.VolumeMarker) && !services.ParserService.IsLooseLeafVolume(f.ParseResult.VolumeMarker));
             if (hasVolumes && mSeries is { Chapters.Count: > 0 })
             {
                 logger.LogDebug("[{Title}/{Id}] No files to download, likely because upstream metadata is missing. Halting removing to allow for upstream correction", title, request.Id);
@@ -102,7 +107,7 @@ internal partial class QBitContentManager
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to filter or start download. Aborting");
+            logger.LogError(ex, "[{Title}/{Id}] Failed to filter or start download. Aborting", title, request.Id);
 
             await services.UnitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id, ct);
         }
@@ -218,11 +223,15 @@ internal partial class QBitContentManager
                 throw new MnemaException("No download url found, cannot start torrent download");
             }
 
+            var downloadDirSuffix = request.GetKey(RequestConstants.IsGroupedDownload)
+                ? BuildInfo.AppName
+                : request.BaseDir;
+
             var addRequest = new AddTorrentUrlsRequest(new Uri(request.DownloadUrl))
             {
                 Category = MnemaCategory,
                 Tags = [request.Provider.ToString()],
-                DownloadFolder = Path.Join(configuration.DownloadDir, request.BaseDir),
+                DownloadFolder = Path.Join(configuration.DownloadDir, downloadDirSuffix),
                 Paused = true,
             };
 

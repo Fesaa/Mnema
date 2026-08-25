@@ -27,6 +27,7 @@ using Mnema.Models.Entities.Scanner;
 using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
+using Mnema.Models.Publication;
 
 namespace Mnema.Providers.Services;
 
@@ -41,11 +42,10 @@ public class ScannerService(
     IUnitOfWork unitOfWork,
     IMessageService messageService,
     IMangabakaMetadataService mangabakaMetadataService,
-    IEpubMetadataService epubMetadataService
+    IMetadataService metadataService
     ) : IScannerService
 {
 
-    private static readonly XmlSerializer XmlSerializer = new(typeof(ComicInfo));
     private static readonly BencodeParser BencodeParser = new();
     private static readonly StreamPipeReaderOptions StreamPipeReaderOptions = new();
     private static readonly DistributedCacheEntryOptions CacheEntryOptions = new()
@@ -94,7 +94,7 @@ public class ScannerService(
         {
             Path = path,
             FileName = file,
-            ComicInfo = ParseComicInfoFromFile(path)
+            ComicInfo = metadataService.ParseComicInfoFromFile(path)
         };
 
         if (content.ComicInfo != null)
@@ -121,44 +121,6 @@ public class ScannerService(
 
 
         return content;
-    }
-
-    private ComicInfo? ParseComicInfoFromFile(string file)
-    {
-        try
-        {
-            switch (parserService.ParseFormat(file))
-            {
-                case Format.Archive:
-                    return ParseComicInfoFromArchive(file);
-                case Format.Epub:
-                    return epubMetadataService.ReadComicInfo(file, CancellationToken.None);
-                case Format.Unsupported:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogDebug(ex, "Failed to parse ComicInfo.xml from {FileName}", file);
-            return null;
-        }
-
-        return null;
-    }
-
-    private static ComicInfo? ParseComicInfoFromArchive(string file)
-    {
-        using var archive = ZipFile.OpenRead(file);
-
-        var comicInfoEntry = archive.GetEntry("ComicInfo.xml")??
-                             archive.Entries
-                                 .FirstOrDefault(e
-                                     => e.Name.Equals("ComicInfo.xml", StringComparison.OrdinalIgnoreCase));
-        if (comicInfoEntry == null) return null;
-
-        return XmlHelper.Deserialize<ComicInfo>(XmlSerializer, comicInfoEntry.Open());
     }
 
     public async Task<ParsedTorrentInfo> ParseTorrentFile(string remoteUrl, CancellationToken cancellationToken)

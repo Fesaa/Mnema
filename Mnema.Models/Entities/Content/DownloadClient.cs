@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using Mnema.API.Repositories;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
 
@@ -13,6 +14,7 @@ public class DownloadClient: IDatabaseEntity
     public DownloadClientType Type { get; set; }
     public bool IsFailed { get; set; }
     public DateTime? FailedAt { get; set; }
+    [JsonColumn]
     public MetadataBag Metadata { get; set; }
 }
 

@@ -8,6 +8,7 @@ import {PagedList} from "@mnema/_models/paged-list";
 import {Series} from "@mnema/page/_components/series-info/_types";
 import {SearchInfo} from "@mnema/_models/Info";
 import {MetadataBag} from "@mnema/_models/search";
+import {ComicInfoAgeRating} from "@mnema/_models/preferences";
 
 export type MonitoredSeries = {
   id: string;
@@ -26,7 +27,14 @@ export type MonitoredSeries = {
   validTitles: string[];
   lastDataRefreshUtc: string;
   chapters: MonitoredChapter[];
+  unMatchedChapters: RawFile[];
   metadata: MetadataBag;
+}
+
+export type RawFile = {
+  path: string;
+  chapter: string;
+  volume: string;
 }
 
 export enum Format {
@@ -72,6 +80,34 @@ export const MonitoredChapterStatuses = [
   MonitoredChapterStatus.Importing,
   MonitoredChapterStatus.Available,
 ]
+
+export interface FileInfoDto {
+  path: string;
+  volume: string;
+  chapter: string;
+  metadata: FileMetadata | null;
+}
+
+export interface FileMetadata {
+  title: string;
+  summary: string;
+  volume: string;
+  chapter: string;
+  ageRating: ComicInfoAgeRating;
+
+  genres: string[];
+  tags: string[];
+  webLinks: { url: string }[];
+
+  writers: string[];
+  colorists: string[];
+  letterers: string[];
+  translators: string[];
+  publishers: string[];
+
+  isbn: string;
+  count: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -149,6 +185,20 @@ export class MonitoredSeriesService {
 
   missingChapters(pageNumber: number, pageSize: number) {
     return this.httpClient.get<PagedList<MonitoredChapter>>(`${this.baseUrl}/missing-chapters?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+  }
+
+  getFileInfo(id: string, path: string) {
+    const filePath = encodeURIComponent(path);
+    return this.httpClient.get<FileInfoDto>(`${this.baseUrl}/${id}/file-info?filePath=${filePath}`);
+  }
+
+  getChapterMetadata(id: string, chapterId: string) {
+    return this.httpClient.get<FileMetadata>(`${this.baseUrl}/${id}/${chapterId}/metadata`);
+  }
+
+  writeFileMetadata(id: string, path: string, metadata: FileMetadata) {
+    const filePath = encodeURIComponent(path);
+    return this.httpClient.post(`${this.baseUrl}/${id}/file-metadata?filePath=${filePath}`, metadata);
   }
 
   getForm() {

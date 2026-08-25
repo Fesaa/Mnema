@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
@@ -15,6 +16,7 @@ using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
+using Mnema.Server.Configuration;
 
 namespace Mnema.Server.Controllers;
 
@@ -26,7 +28,9 @@ public class MonitoredSeriesController(
     IMessageService messageService,
     ISearchService searchService,
     IDownloadService downloadService,
-    IConnectionService connectionService
+    IConnectionService connectionService,
+    IParserService parserService,
+    IMetadataService metadataService
 ) : BaseApiController
 {
     [HttpGet("all")]
@@ -181,6 +185,85 @@ public class MonitoredSeriesController(
         [FromQuery] PaginationParams pagination)
     {
         return Ok(await unitOfWork.MonitoredSeriesRepository.GetMissingChapters(pagination, HttpContext.RequestAborted));
+    }
+
+    [HttpGet("{id:guid}/file-info")]
+    public async Task<ActionResult<FileInfoDto?>> GetFileInfo(Guid id, [FromQuery] string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath)) return BadRequest();
+
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
+        if (series == null) return NotFound();
+
+        var chapter = series.Chapters.FirstOrDefault(c => c.FilePath == filePath);
+        if (chapter != null)
+        {
+            return Ok(new FileInfoDto
+            {
+                Path = chapter.FilePath!,
+                Volume = chapter.Volume,
+                Chapter = chapter.Chapter,
+                Metadata = FileMetadataDto.FromComicInfo(chapter.ComicInfo)
+            });
+        }
+
+        var unMatchedChapter = series.UnMatchedChapters.FirstOrDefault(c => c.Path == filePath);
+        if (unMatchedChapter != null)
+        {
+            return Ok(new FileInfoDto
+            {
+                Path = unMatchedChapter.Path,
+                Volume = unMatchedChapter.VolumeMarker,
+                Chapter = unMatchedChapter.ChapterMarker,
+                Metadata = FileMetadataDto.FromComicInfo(unMatchedChapter.ComicInfo)
+            });
+        }
+
+        return NotFound();
+    }
+
+    [HttpGet("{id:guid}/{chapterId:guid}/metadata")]
+    [OutputCache(PolicyName = CacheProfiles.FiveMinutes)]
+    public async Task<ActionResult<FileMetadataDto>> GetFileMetadata(Guid id, Guid chapterId)
+    {
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
+        if (series == null) return NotFound();
+
+        if (string.IsNullOrEmpty(series.TitleOverride))
+            return BadRequest("Monitored series requires a title override to support metadata changes");
+
+        var chapter = series.Chapters.FirstOrDefault(c => c.Id == chapterId);
+        if (chapter == null) return BadRequest("Chapter not found");
+
+        var metadata = series.MetadataForDownloadRequest();
+        var resolvedSeries = await metadataResolver.ResolveSeriesAsync(series.Provider, metadata, HttpContext.RequestAborted);
+        if (resolvedSeries == null) return NotFound();
+
+        var resolvedChapter = parserService.FindMatch(resolvedSeries.Chapters, chapter);
+        if (resolvedChapter == null) return NotFound();
+
+        var preferences = await unitOfWork.SettingsRepository.GetPreferencesAsync(HttpContext.RequestAborted);
+
+        var ci = metadataService.CreateComicInfo(preferences, new DownloadRequestDto
+        {
+            Provider = series.Provider,
+            Id = series.ExternalId,
+            BaseDir = series.BaseDir,
+            TempTitle = series.TitleOverride,
+            Metadata = metadata
+        }, series.TitleOverride, resolvedSeries, resolvedChapter);
+
+        return Ok(FileMetadataDto.FromComicInfo(ci));
+    }
+
+    [HttpPost("{id:guid}/file-metadata")]
+    public async Task<IActionResult> WriteFileMetadata(Guid id, [FromQuery] string filePath, [FromBody] FileMetadataDto metadata)
+    {
+        if (string.IsNullOrEmpty(filePath)) return BadRequest();
+
+        await monitoredSeriesService.UpdateFileMetadata(id, filePath, metadata, HttpContext.RequestAborted);
+
+        return Ok();
     }
 
     [HttpGet("form")]

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
+using Mnema.Models.External;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
 
@@ -30,7 +32,10 @@ public class MonitoredSeriesService(
     IUnitOfWork unitOfWork,
     IServiceProvider serviceProvider,
     IMessageService messageService,
-    IConnectionService connectionService
+    IConnectionService connectionService,
+    IMetadataService metadataService,
+    INamingService namingService,
+    IFileSystem fileSystem
 ): IMonitoredSeriesService
 {
     public async Task UpdateMonitoredSeries(CreateOrUpdateMonitoredSeriesDto dto, CancellationToken cancellationToken = default)
@@ -106,6 +111,85 @@ public class MonitoredSeriesService(
         }
 
         return series.Id;
+    }
+
+    public async Task UpdateFileMetadata(Guid id, string file, FileMetadataDto metadata, CancellationToken cancellationToken)
+    {
+        file.EnsureValidUserFilePath();
+
+        var path = fileSystem.Path.Join(configuration.BaseDir, file);
+
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, cancellationToken);
+        if (series == null) throw new NotFoundException();
+
+        if (string.IsNullOrEmpty(series.TitleOverride))
+            throw new BadRequestException("Monitored series requires a title override to support metadata changes");
+
+        var preferences = await unitOfWork.SettingsRepository.GetPreferencesAsync(cancellationToken);
+
+        var ci = metadataService.ParseComicInfoFromFile(path) ?? new ComicInfo();
+
+        ci.Title = metadata.Title;
+        ci.Summary = metadata.Summary;
+
+        var allTags = metadata.Tags
+            .Select(t => new Tag(t, false))
+            .Concat(metadata.Genres.Select(g => new Tag(g, true)))
+            .ToList();
+
+        var (genres, tags) = metadataService.GenerateGenreAndTagLists(preferences, allTags);
+        ci.Tags = string.Join(",", tags);
+        ci.Genre = string.Join(",", genres);
+
+        var tagAgeRating = metadataService.GetAgeRating(preferences, allTags);
+        if (tagAgeRating == null || tagAgeRating < metadata.AgeRating)
+        {
+            tagAgeRating = metadata.AgeRating;
+        }
+
+        ci.AgeRating = tagAgeRating.Value;
+
+        ci.Web = string.Join(",", metadata.WebLinks.Select(l => l.Url));
+        ci.Writer = string.Join(",", metadata.Writers);
+        ci.Colorist = string.Join(",", metadata.Colorists);
+        ci.Letterer = string.Join(",", metadata.Letterers);
+        ci.Translator = string.Join(",", metadata.Translators);
+        ci.Publisher = string.Join(",", metadata.Publishers);
+
+        ci.Isbn = metadata.Isbn;
+        ci.Count = metadata.Count;
+
+        if (ci.Volume != metadata.Volume || ci.Number != metadata.Chapter)
+        {
+            ci.Volume = metadata.Volume;
+            ci.Number = metadata.Chapter;
+
+            var fileName = namingService.GetChapterFileName(preferences, series.TitleOverride, new Chapter
+            {
+                Id = string.Empty,
+                Title = ci.Title,
+                VolumeMarker = ci.Volume,
+                ChapterMarker = ci.Number,
+            });
+
+            var directory = fileSystem.Path.GetDirectoryName(path);
+            var fileExtension = fileSystem.Path.GetExtension(path);
+            if (string.IsNullOrEmpty(directory))
+                throw new MnemaException($"Could not determine directory for file {path}");
+            if (string.IsNullOrEmpty(fileExtension))
+                throw new MnemaException($"Could not determine file extension for file {path}");
+
+            var newPath = fileSystem.Path.Combine(directory, fileName) + fileExtension;
+            if (fileSystem.File.Exists(newPath))
+                throw new BadRequestException($"File already exists: {newPath}");
+
+            fileSystem.File.Move(path, newPath);
+            path = newPath;
+        }
+
+        await metadataService.WriteComicInfo(ci, path, cancellationToken);
+
+        BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
     }
 
     [AutomaticRetry(Attempts = 1)]
@@ -254,43 +338,7 @@ public class MonitoredSeriesService(
         var path = Path.Join(mSeries.BaseDir, title);
         var onDiskContent = scannerService.ScanDirectory(path, mSeries.ContentFormat, mSeries.Format, ct);
 
-        var seriesChapters = mSeries.Chapters;
-
-        mSeries.Chapters = [];
-
-        var allIds = series.Chapters.Select(c => c.Id).ToHashSet();
-        unitOfWork.MonitoredSeriesRepository.RemoveRange(seriesChapters.Where(c => !allIds.Contains(c.ExternalId)));
-
-        foreach (var chapter in series.Chapters)
-        {
-            var mChapter = seriesChapters.FirstOrDefault(c => c.ExternalId == chapter.Id);
-
-            if (mChapter?.Status == MonitoredChapterStatus.NotMonitored)
-            {
-                PatchChapterMetadata(mChapter, chapter);
-                mSeries.Chapters.Add(mChapter);
-                continue;
-            }
-
-            var matchingFile = parserService.FindMatch(onDiskContent, chapter);
-
-            var status = MonitoredChapterStatus.Missing;
-            if (matchingFile != null)
-            {
-                status = MonitoredChapterStatus.Available;
-            }
-            else if (chapter.ReleaseDate?.Date > DateTime.UtcNow.Date)
-            {
-                status = MonitoredChapterStatus.Upcoming;
-            }
-
-            mChapter ??= new MonitoredChapter();
-            PatchChapterMetadata(mChapter, chapter);
-            mChapter.FilePath = matchingFile?.Path.RemovePrefix(configuration.BaseDir);
-            mChapter.Status = status;
-
-            mSeries.Chapters.Add(mChapter);
-        }
+        SyncChapters(mSeries, series.Chapters, onDiskContent);
 
         if (series.ContentFormat is not null)
         {
@@ -314,6 +362,65 @@ public class MonitoredSeriesService(
         await unitOfWork.CommitAsync(ct);
 
         await messageService.MetadataRefreshed(mSeries.Id);
+    }
+
+    private void SyncChapters(MonitoredSeries mSeries, IList<Chapter> upstreamChapters, List<OnDiskContent> onDiskContent)
+    {
+        var existingChapters = mSeries.Chapters;
+        mSeries.Chapters = [];
+
+        var upstreamIds = upstreamChapters.Select(c => c.Id).ToHashSet();
+        var removedChapters = existingChapters.Where(c => !upstreamIds.Contains(c.ExternalId));
+        unitOfWork.MonitoredSeriesRepository.RemoveRange(removedChapters);
+
+        foreach (var upstreamChapter in upstreamChapters)
+        {
+            var existingChapter = existingChapters.FirstOrDefault(c => c.ExternalId == upstreamChapter.Id);
+            mSeries.Chapters.Add(SyncChapter(existingChapter, upstreamChapter, onDiskContent));
+        }
+
+        mSeries.UnMatchedChapters.Clear();
+        mSeries.UnMatchedChapters.AddRange(onDiskContent.Select(file => new RawFile
+        {
+            Path = file.Path.RemovePrefix(configuration.BaseDir),
+            Chapter = file.ChapterMarker,
+            Volume = file.VolumeMarker,
+            ComicInfo = file.ComicInfo
+        }));
+    }
+
+    private MonitoredChapter SyncChapter(MonitoredChapter? existingChapter, Chapter upstreamChapter, List<OnDiskContent> onDiskContent)
+    {
+        var matchingFile = parserService.FindMatch(onDiskContent, upstreamChapter);
+        if (matchingFile != null)
+        {
+            onDiskContent.Remove(matchingFile);
+        }
+
+        if (existingChapter?.Status == MonitoredChapterStatus.NotMonitored)
+        {
+            PatchChapterMetadata(existingChapter, upstreamChapter);
+            return existingChapter;
+        }
+
+        var mChapter = existingChapter ?? new MonitoredChapter();
+        PatchChapterMetadata(mChapter, upstreamChapter);
+        mChapter.FilePath = matchingFile?.Path.RemovePrefix(configuration.BaseDir);
+        mChapter.ComicInfo = matchingFile?.ComicInfo;
+        mChapter.Status = DetermineStatus(matchingFile, upstreamChapter);
+
+        return mChapter;
+    }
+
+    private static MonitoredChapterStatus DetermineStatus(OnDiskContent? matchingFile, Chapter upstreamChapter)
+    {
+        if (matchingFile != null)
+            return MonitoredChapterStatus.Available;
+
+        if (upstreamChapter.ReleaseDate?.Date > DateTime.UtcNow.Date)
+            return MonitoredChapterStatus.Upcoming;
+
+        return MonitoredChapterStatus.Missing;
     }
 
     private static void PatchChapterMetadata(MonitoredChapter? mChapter, Chapter chapter)

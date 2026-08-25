@@ -1,5 +1,7 @@
 using System;
+using Mnema.API.Repositories;
 using Mnema.Models.Entities.Interfaces;
+using Mnema.Models.External;
 using Mnema.Models.Publication;
 
 namespace Mnema.Models.Entities.Content;
@@ -25,6 +27,9 @@ public class MonitoredChapter: IEntityDate, IDatabaseEntity, IHasPositionMarkers
     public string? RefUrl { get; set; }
 
     public string? FilePath { get; set; }
+
+    [JsonColumn]
+    public ComicInfo? ComicInfo { get; set; }
 
     /// <summary>
     /// Chapters without a release date are considered available

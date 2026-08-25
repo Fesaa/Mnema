@@ -41,15 +41,10 @@ internal partial class QBitContentManager(
         if (string.IsNullOrEmpty(request.DownloadUrl))
             throw new MnemaException($"Download url is missing");
 
-        var listQuery = new TorrentListQuery
-        {
-            Category = MnemaCategory,
-            Tag = request.Provider.ToString(),
-            Hashes = [request.Id]
-        };
+        using var scope = scopeFactory.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        var torrents = await qBitClient.GetTorrentsAsync(listQuery);
-        if (torrents.Any(t => t.Hash == request.Id) && !request.GetKey(RequestConstants.IsGroupedDownload))
+        if (!request.GetKey(RequestConstants.IsGroupedDownload) && await unitOfWork.ExternalDownloadRepository.ExistsByExternalId(request.Id))
         {
             throw new MnemaException($"Torrent with hash {request.Id} has already been added");
         }

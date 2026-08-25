@@ -29,7 +29,7 @@ public abstract record FormFieldDefinition
     /// <summary>
     /// Field on the value containing the value. Defaults to metadata for historical reasons.
     /// </summary>
-    public string Field { get; init; } = "metadata";
+    public virtual string Field { get; init; } = "metadata";
 
     public GenericBag<object> Validators { get; init; } = new();
 
@@ -134,4 +134,14 @@ public sealed record CommaSeparatedValuesFieldDefinition : FormFieldDefinition
 {
     public override FormFieldType FieldType => FormFieldType.CommaSeparatedValues;
     public override FieldValueType ValueType => FieldValueType.String;
+}
+
+public sealed record FormFieldRow : FormFieldDefinition
+{
+    public override FormFieldType FieldType => FormFieldType.FieldRow;
+    public override FieldValueType ValueType => FieldValueType.String;
+
+    public override string Field => "";
+
+    public required List<FormFieldDefinition> Controls { get; init; } = [];
 }

@@ -4,6 +4,7 @@ using Mnema.Common;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Enums;
+using Mnema.Models.Publication;
 
 namespace Mnema.Models.DTOs.Content;
 
@@ -46,4 +47,6 @@ public sealed record MonitoredSeriesDto: IDatabaseEntity
     public DateTime LastDataRefreshUtc { get; init; }
 
     public List<MonitoredChapterDto> Chapters { get; init; }
+
+    public List<RawFile> UnMatchedChapters { get; set; }
 }

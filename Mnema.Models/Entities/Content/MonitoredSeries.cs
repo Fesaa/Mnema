@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Mnema.API.Repositories;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Enums;
+using Mnema.Models.External;
+using Mnema.Models.Publication;
 
 namespace Mnema.Models.Entities.Content;
 
@@ -51,6 +54,7 @@ public class MonitoredSeries: IEntityDate, IDatabaseEntity
     /// This holds metadata for the download option from the <see cref="Provider"/>. Some options will be filtered out
     /// as they're stored in the object itself.
     /// </summary>
+    [JsonColumn]
     public MetadataBag Metadata { get; set; }
 
 
@@ -60,4 +64,18 @@ public class MonitoredSeries: IEntityDate, IDatabaseEntity
     public DateTime LastDataRefreshUtc { get; set; }
 
     public List<MonitoredChapter> Chapters { get; set; }
+
+    [JsonColumn]
+    public List<RawFile> UnMatchedChapters { get; set; }
+}
+
+public class RawFile: IHasPositionMarkers
+{
+    public string Path { get; set; }
+    public string? Chapter { get; set; }
+    public string? Volume { get; set; }
+    public ComicInfo? ComicInfo { get; set; }
+
+    public string VolumeMarker => Volume ?? string.Empty;
+    public string ChapterMarker => Chapter ?? string.Empty;
 }

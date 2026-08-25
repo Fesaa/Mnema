@@ -1,4 +1,5 @@
 using System;
+using Mnema.API.Repositories;
 using Mnema.Common;
 using Mnema.Models.Entities.Interfaces;
 using Mnema.Models.Enums;
@@ -26,6 +27,8 @@ public class Subscription: IEntityDate, IDatabaseEntity
     public required string BaseDir { get; set; }
 
     public required Provider Provider { get; set; }
+
+    [JsonColumn]
     public required MetadataBag Metadata { get; set; }
 
     public required SubscriptionStatus Status { get; set; }

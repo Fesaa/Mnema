@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Mnema.Common.Exceptions;
 
 namespace Mnema.Common.Extensions;
 
@@ -123,6 +125,17 @@ public static class StringExtensions
         public string ToCamelCase()
         {
             return JsonNamingPolicy.CamelCase.ConvertName(s);
+        }
+
+        public List<string> SplitNonEmpty(string separator)
+        {
+            return s.Split(separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+        }
+
+        public void EnsureValidUserFilePath()
+        {
+            if (s.Contains(".."))
+                throw new MnemaException("File paths must not contain ..");
         }
     }
 

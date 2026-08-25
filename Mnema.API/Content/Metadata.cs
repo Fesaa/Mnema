@@ -25,6 +25,14 @@ public interface IMetadataService
     /// <param name="note"></param>
     /// <returns></returns>
     ComicInfo? CreateComicInfo(Preferences preferences, DownloadRequestDto request, string title, Series? series, Chapter? chapter, string? note = null);
+
+    (List<string> Genres, List<string> Tags) GenerateGenreAndTagLists(Preferences preferences, List<Tag> allTags, bool applyBlackAndWhiteLists = true);
+
+    AgeRating? GetAgeRating(Preferences preferences, List<Tag> inputTags);
+
+    ComicInfo? ParseComicInfoFromFile(string file);
+
+    Task WriteComicInfo(ComicInfo comicInfo, string filePath, CancellationToken cancellationToken);
 }
 
 public interface IMetadataProviderService
