@@ -16,6 +16,7 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
 using QBittorrent.Client;
+using BuildInfo = Mnema.Common.BuildInfo;
 
 namespace Mnema.Providers.Managers.QBit;
 
@@ -222,11 +223,15 @@ internal partial class QBitContentManager
                 throw new MnemaException("No download url found, cannot start torrent download");
             }
 
+            var downloadDirSuffix = request.GetKey(RequestConstants.IsGroupedDownload)
+                ? BuildInfo.AppName
+                : request.BaseDir;
+
             var addRequest = new AddTorrentUrlsRequest(new Uri(request.DownloadUrl))
             {
                 Category = MnemaCategory,
                 Tags = [request.Provider.ToString()],
-                DownloadFolder = Path.Join(configuration.DownloadDir, request.BaseDir),
+                DownloadFolder = Path.Join(configuration.DownloadDir, downloadDirSuffix),
                 Paused = true,
             };
 
