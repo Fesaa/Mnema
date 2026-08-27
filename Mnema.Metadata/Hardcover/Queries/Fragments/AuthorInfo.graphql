@@ -1,0 +1,11 @@
+fragment AuthorInfo on authors {
+    id
+    slug
+    name
+    alternateNames: alternate_names
+    bio
+    genderId: gender_id
+    image {
+        url
+    }
+}

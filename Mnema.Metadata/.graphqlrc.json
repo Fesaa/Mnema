@@ -1,0 +1,43 @@
+{
+  "schema": "schema.graphql",
+  "documents": "**/*.graphql",
+  "extensions": {
+    "strawberryShake": {
+      "name": "HardcoverClient",
+      "namespace": "Mnema.Metadata.Hardcover.Generated",
+      "url": "https://api.hardcover.app/v1/graphql",
+      "records": {
+        "inputs": false,
+        "entities": false
+      },
+      "transportProfiles": [
+        {
+          "default": "Http",
+          "subscription": "WebSocket"
+        }
+      ],
+      "customScalars": [
+        {
+          "name": "bigint",
+          "type": "System.Int64"
+        },
+        {
+          "name": "float8",
+          "type": "System.Single"
+        },
+        {
+          "name": "numeric",
+          "type": "System.Decimal"
+        },
+        {
+          "name": "json",
+          "type": "System.Text.Json.JsonElement"
+        },
+        {
+          "name": "jsonb",
+          "type": "System.Text.Json.JsonElement"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,22 @@
+fragment SeriesDetails on series {
+    id
+    name
+    slug
+    description
+    isCompleted: is_completed
+    booksCount: books_count
+    author {
+        ...AuthorInfo
+    }
+    bookSeries: book_series(
+        where: {
+            book: {
+                canonical_id: { _is_null: true }
+                compilation: { _eq: false }
+            }
+        }
+        order_by: { position: asc }
+    ) {
+        ...BookSeriesInfo
+    }
+}
