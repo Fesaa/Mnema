@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
+using Mnema.Common.Extensions;
 using Mnema.Common.StringFormatter;
 using Mnema.Models.Entities;
 using Mnema.Models.Internal;
@@ -95,6 +96,6 @@ internal class ChapterMarkerStringResolver(ILogger<NamingService> logger, IParse
             return ctx.Chapter.ChapterMarker;
 
         var width = int.Parse(spec[1..]);
-        return ctx.Chapter.ChapterMarker.PadLeft(width, '0');
+        return ctx.Chapter.ChapterMarker.PadFloat(width, '0');
     }
 }
