@@ -287,7 +287,7 @@ internal class MangabakaMetadataService(
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public IStringFormatter<string> NativeLanguageFormatter { get; } = NativeLanguagePlaceholder;
+    public IStringFormatter<string> NativeLanguageFormatter => NativeLanguagePlaceholder;
 
     private static readonly StringFormatter<string> NativeLanguagePlaceholder = new StringFormatter<string>()
         .WithVariable("Native", s => s);

@@ -41,9 +41,12 @@ public class NamingService(ILogger<NamingService> logger, ApplicationConfigurati
         var ctx = new ChapterNameContext(title, chapter);
 
         var format = chapter.IsOneShot ? preferences.OneShotFileFormat : preferences.ChapterFileFormat;
-        if (string.IsNullOrEmpty(format) || !ChapterFormatter.IsValid(format))
+        var errors = ChapterFormatter.Validate(format);
+        if (string.IsNullOrEmpty(format) || errors.Count > 0)
         {
-            logger.LogWarning("Empty or invalid ");
+            logger.LogWarning("Empty or invalid format, falling back to default format. {Format}: {Errors}",
+                format, string.Join(", ", errors));
+
             format = chapter.IsOneShot ? INamingService.DefaultOneShotFormat : INamingService.DefaultChapterFormat;
         }
 
