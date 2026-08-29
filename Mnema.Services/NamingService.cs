@@ -92,7 +92,7 @@ internal class ChapterMarkerStringResolver(ILogger<NamingService> logger, IParse
         if (number is null)
         {
             logger.LogWarning("Failed to parse chapter number for marker {ChapterMarker}, not padding", ctx.Chapter.ChapterMarker);
-            return null;
+            return ctx.Chapter.ChapterMarker;
         }
 
         if (string.IsNullOrEmpty(spec))
