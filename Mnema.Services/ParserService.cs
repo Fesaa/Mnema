@@ -168,6 +168,9 @@ public partial class ParserService: IParserService
 
     private static readonly Regex[] MangaSeriesRegex =
     [
+        new Regex(
+            @"^(?<Series>.+?)\s+\d+(?:-\d+)?\s+as\s+v(?<Volume>\d+)",
+            MatchOptions, RegexTimeout),
         // Thai Volume: เล่ม n -> Volume n
         new Regex(
             @"(?<Series>.+?)(เล่ม|เล่มที่)(\s)?(\.?)(\s|_)?(?<Volume>\d+(\-\d+)?(\.\d+)?)",
@@ -442,6 +445,9 @@ public partial class ParserService: IParserService
 
     private static readonly Regex[] MangaVolumeRegex =
     [
+        new Regex(
+            @"\bas\s+v(?<Volume>\d+)",
+            MatchOptions, RegexTimeout),
         // Thai Volume: เล่ม n -> Volume n
         new Regex(
             @"(เล่ม|เล่มที่)(\s)?(\.?)(\s|_)?(?<Volume>\d+(\-\d+)?(\.\d+)?)",
