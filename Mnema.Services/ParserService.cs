@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -32,15 +31,13 @@ namespace Mnema.Services;
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 public partial class ParserService: IParserService
 {
-    public const string DefaultChapter = "-100000";
-    public const string LooseLeafVolume = "-100000";
-    public const int DefaultChapterNumber = -100_000;
-    public const int LooseLeafVolumeNumber = -100_000;
+    private const string DefaultChapter = "-100000";
+    private const string LooseLeafVolume = "-100000";
+
     /// <summary>
     /// The Volume Number of Specials to reside in
     /// </summary>
     public const int SpecialVolumeNumber = 100_000;
-    public const string SpecialVolume = "100000";
 
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(2000);
 
@@ -55,13 +52,6 @@ public partial class ParserService: IParserService
 
     private const RegexOptions MatchOptions =
         RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant;
-
-    private static readonly ImmutableArray<string> FormatTagSpecialKeywords =
-    [
-        "Special", "Reference", "Director's Cut", "Box Set", "Box-Set", "Annual", "Anthology", "Epilogue",
-        "One Shot", "One-Shot", "Prologue", "TPB", "Trade Paper Back", "Omnibus", "Compendium", "Absolute", "Graphic Novel",
-        "GN", "FCBD", "Giant Size"
-    ];
 
     private static readonly char[] LeadingZeroesTrimChars = ['0'];
 
@@ -88,13 +78,6 @@ public partial class ParserService: IParserService
 
 
     /// <summary>
-    /// Misc css image references, like background-image: url(), border-image, or list-style-image
-    /// </summary>
-    /// Original prepend: (background|border|list-style)-image:\s?)?
-    private static readonly Regex CssImageUrlRegex = new(@"(url\((?!data:).(?!data:))" + "(?<Filename>(?!data:)[^\"']*)" + @"(.\))",
-        MatchOptions, RegexTimeout);
-
-    /// <summary>
     /// An Appropriate guess at an ASIN being valid
     /// </summary>
     private static readonly Regex AsinRegex = new(@"^(B0|BT)[0-9A-Z]{8}$",
@@ -114,19 +97,6 @@ public partial class ParserService: IParserService
     private static readonly Regex BookFileRegex = new(BookFileExtensions,
         MatchOptions, RegexTimeout);
     private static readonly Regex CoverImageRegex = new(@"(?<!back[\s_-])(?<!\(back )(?<!back)(?:^|[^a-zA-Z0-9])(!?cover|folder)(?![a-zA-Z0-9]|s\b)",
-        MatchOptions, RegexTimeout);
-
-    /// <summary>
-    /// Normalize everything within Kavita. Some characters don't fall under Unicode, like full-width characters and need to be
-    /// added on a case-by-case basis.
-    /// </summary>
-    private static readonly Regex NormalizeRegex = new(@"[^\p{L}0-9\+!＊！＋]",
-        MatchOptions, RegexTimeout);
-
-    /// <summary>
-    /// Supports Batman (2020) or Batman (2)
-    /// </summary>
-    private static readonly Regex SeriesAndYearRegex = new(@"^\D+\s\((?<Year>\d+)\)$",
         MatchOptions, RegexTimeout);
 
     /// <summary>
@@ -589,13 +559,13 @@ public partial class ParserService: IParserService
         new Regex(
             @"^(?<Series>.+?)(?:\s|_)#(?<Chapter>\d+)",
             MatchOptions, RegexTimeout),
-        // Batman 2016 - Chapter 01, Batman 2016 - Issue 01, Batman 2016 - Issue #01
+        // Batman 2016 - Chapter 01, Batman 2016 - Issue 01, Batman 2016 - Issue #01, Blade Runner 2019 - Ch. 01
         new Regex(
-            @"^(?<Series>.+?)((c(hapter)?)|issue)(_|\s)#?(?<Chapter>(\d+(\.\d)?)-?(\d+(\.\d)?)?)",
+            @"^(?<Series>.+?)((chapter|ch|c)\.?|issue)(_|\s)#?(?<Chapter>(\d+(\.\d)?)-?(\d+(\.\d)?)?)",
             MatchOptions, RegexTimeout),
         // Invincible 070.5 - Invincible Returns 1 (2010) (digital) (Minutemen-InnerDemons).cbr
         new Regex(
-            @"^(?<Series>.+?)(?:\s|_)(c? ?(chapter)?)(?<Chapter>(\d+(\.\d)?)-?(\d+(\.\d)?)?)(c? ?)-",
+            @"^(?<Series>.+?)(?<!Vol)(?<!Vol.)(?<!Volume)(?<!Tome)(?:\s|_)(c? ?(chapter)?)(?<Chapter>(\d+(\.\d)?)-?(\d+(\.\d)?)?)(?!\d)(?![\s_]*-?[\s_]*(?:vol(?:ume)?|tome)(?![a-zA-Z]))(c? ?)-",
             MatchOptions, RegexTimeout),
         // Batgirl Vol.2000 #57 (December, 2004)
         new Regex(
@@ -612,7 +582,7 @@ public partial class ParserService: IParserService
             MatchOptions, RegexTimeout),
         // Batman & Catwoman - Trail of the Gun 01, Batman & Grendel (1996) 01 - Devil's Bones, Teen Titans v1 001 (1966-02) (digital) (OkC.O.M.P.U.T.O.-Novus)
         new Regex(
-            @"^(?<Series>.+?)(?: (?<Chapter>\d+))",
+            @"^(?<Series>.+?)(?<!Vol)(?<!Vol.)(?<!Volume)(?<!Tome)(?: (?<Chapter>\d+))(?!\d)(?![\s_]*-?[\s_]*(?:vol(?:ume)?|tome)(?![a-zA-Z]))",
             MatchOptions, RegexTimeout),
         // Saga 001 (2012) (Digital) (Empire-Zone)
         new Regex(
@@ -639,8 +609,10 @@ public partial class ParserService: IParserService
             @"(?<Volume>((เล่ม|เล่มที่))?(\s|_)?\.?\d+)(\s|_)(บทที่|ตอนที่)\.?(\s|_)?(?<Chapter>\d+)",
             MatchOptions, RegexTimeout),
         // Historys Strongest Disciple Kenichi_v11_c90-98.zip, ...c90.5-100.5
+        // Trailing (?(Range)|(?![a-zA-Z])) keeps this from matching inside ripper/scanlator tags like "(c1fi7)"
+        // (a bare short number glued to more letters) while still allowing ranges like c001-006x1.
         new Regex(
-            @"(\b|_)(c|ch)(\.?\s?)(?<Chapter>(\d+(\.\d)?)(-c?\d+(\.\d)?)?)",
+            @"(\b|_)(c|ch)(\.?\s?)(?<Chapter>(\d+(\.\d)?)(?<Range>-c?\d+(\.\d)?)?)(?(Range)|(?![a-zA-Z]))",
             MatchOptions, RegexTimeout),
         // [Suihei Kiki]_Kasumi_Otoko_no_Ko_[Taruby]_v1.1.zip
         new Regex(
@@ -661,7 +633,7 @@ public partial class ParserService: IParserService
 
         // Hinowa ga CRUSH! 018 (2019) (Digital) (LuCaZ).cbz, Hinowa ga CRUSH! 018.5 (2019) (Digital) (LuCaZ).cbz
         new Regex(
-            @"^(?<Series>.+?)(?<!Vol)(?<!Vol.)(?<!Volume)\s(\d\s)?(?<Chapter>\d+(?:\.\d+|-\d+)?)(?:\s\(\d{4}\))?(\b|_|-)",
+            @"^(?<Series>.+?)(?<!Vol)(?<!Vol.)(?<!Volume)(?<!Tome)\s(\d\s)?(?<Chapter>\d+(?:\.\d+|-\d+)?)(?![\d.권])(?:\s\(\d{4}\))?(?!\d)(?![\s_]*-?[\s_]*(?:vol(?:ume)?|tome)(?![a-zA-Z]))(?!.*\bv\.?\d)(?!.*\b(?:vol(?:ume)?|tome)\.?\s*\d)(?<!\bv\.?\d.*)(?<!\b(?:vol(?:ume)?|tome)\.?\s*\d.*)(\b|_|-)",
             MatchOptions, RegexTimeout),
         // Tower Of God S01 014 (CBT) (digital).cbz
         new Regex(
@@ -669,7 +641,7 @@ public partial class ParserService: IParserService
             MatchOptions, RegexTimeout),
         // Beelzebub_01_[Noodles].zip, Beelzebub_153b_RHS.zip
         new Regex(
-            @"^((?!v|vo|vol|Volume).)*(\s|_)(?<Chapter>\.?\d+(?:.\d+|-\d+)?)(?<Part>b)?(\s|_|\[|\()",
+            @"^((?!v|vo|vol|Volume).)*(\s|_)(?<Chapter>\.?\d+(?:.\d+|-\d+)?)(?<Part>b)?(?!\d)(?![\s_]*-?[\s_]*(?:vol(?:ume)?|tome)(?![a-zA-Z]))(?!.*\bv\.?\d)(?!.*\b(?:vol(?:ume)?|tome)\.?\s*\d)(\s|_|\[|\()",
             MatchOptions, RegexTimeout),
         // Yumekui-Merry_DKThias_Chapter21.zip
         new Regex(
@@ -725,7 +697,11 @@ public partial class ParserService: IParserService
         MatchOptions, RegexTimeout
     );
 
-
+    // Don't strip parens for cases like rent-a-(really shy)-girlfriend
+    private static readonly Regex GluedParenRegex = new Regex(
+        $@"(?<=[a-z0-9]-?)\({BalancedParen}\)(?=-?[a-z0-9])",
+        MatchOptions, RegexTimeout
+    );
 
     public Format ParseFormat(string filePath)
     {
@@ -740,29 +716,6 @@ public partial class ParserService: IParserService
         filePath = ReplaceUnderscores(filePath);
         var match = MangaEditionRegex.Match(filePath);
         return match.Success ? match.Value : string.Empty;
-    }
-
-    /// <summary>
-    /// If the file has SP marker.
-    /// </summary>
-    /// <param name="filePath"></param>
-    /// <returns></returns>
-    public bool HasSpecialMarker(string? filePath)
-    {
-        if (string.IsNullOrEmpty(filePath)) return false;
-        return SpecialMarkerRegex.IsMatch(filePath);
-    }
-
-    public int ParseSpecialIndex(string filePath)
-    {
-        var match = SpecialMarkerRegex.Match(filePath).Value.Replace("SP", string.Empty);
-        if (string.IsNullOrEmpty(match)) return 0;
-        return int.Parse(match);
-    }
-
-    public bool IsSpecial(string? filePath)
-    {
-        return HasSpecialMarker(filePath);
     }
 
     private string ParseMangaSeries(string filename)
@@ -782,7 +735,8 @@ public partial class ParserService: IParserService
 
         return string.Empty;
     }
-    public string ParseComicSeries(string filename)
+
+    private string ParseComicSeries(string filename)
     {
         foreach (var regex in ComicSeriesRegex)
         {
@@ -796,7 +750,7 @@ public partial class ParserService: IParserService
         return string.Empty;
     }
 
-    public string ParseMangaVolume(string filename)
+    private string ParseMangaVolume(string filename)
     {
         filename = RemoveDuplicateVolumeIfExists(filename);
 
@@ -816,7 +770,7 @@ public partial class ParserService: IParserService
         return LooseLeafVolume;
     }
 
-    public string ParseComicVolume(string filename)
+    private string ParseComicVolume(string filename)
     {
         foreach (var regex in ComicVolumeRegex)
         {
@@ -973,7 +927,11 @@ public partial class ParserService: IParserService
 
     private string RemoveEditionTagHolders(string title)
     {
-        title = CleanupRegex.Replace(title, string.Empty);
+        title = CleanupRegex.Replace(title, m =>
+        {
+            var glued = GluedParenRegex.Match(title, m.Index);
+            return glued.Success && glued.Index == m.Index ? m.Value : string.Empty;
+        });
 
         title = MangaEditionRegex.Replace(title, string.Empty);
 
@@ -990,8 +948,7 @@ public partial class ParserService: IParserService
     /// <param name="title"></param>
     /// <param name="isComic"></param>
     /// <returns></returns>
-
-    public string CleanTitle(string title, bool isComic = false)
+    private string CleanTitle(string title, bool isComic = false)
     {
 
         title = ReplaceUnderscores(title);
@@ -1005,17 +962,9 @@ public partial class ParserService: IParserService
         return title;
     }
 
-    public bool IsArchive(string filePath)
+    private bool IsArchive(string filePath)
     {
         return ArchiveFileRegex.IsMatch(Path.GetExtension(filePath));
-    }
-    public bool IsComicInfoExtension(string filePath)
-    {
-        return ComicInfoArchiveRegex.IsMatch(Path.GetExtension(filePath));
-    }
-    public bool IsBook(string filePath)
-    {
-        return BookFileRegex.IsMatch(Path.GetExtension(filePath));
     }
 
     public bool IsImage(string filePath)
@@ -1148,114 +1097,14 @@ public partial class ParserService: IParserService
     }
 
 
-    public bool IsEpub(string filePath)
+    private bool IsEpub(string filePath)
     {
         return Path.GetExtension(filePath).Equals(".epub", StringComparison.InvariantCultureIgnoreCase);
-    }
-
-    public bool IsPdf(string filePath)
-    {
-        return Path.GetExtension(filePath).Equals(".pdf", StringComparison.InvariantCultureIgnoreCase);
-    }
-
-    /// <summary>
-    /// Cleans an author's name
-    /// </summary>
-    /// <remarks>If the author is Last, First, this will not reverse</remarks>
-    /// <param name="author"></param>
-    /// <returns></returns>
-    public string CleanAuthor(string author)
-    {
-        return string.IsNullOrEmpty(author) ? string.Empty : author.Trim();
-    }
-
-    /// <summary>
-    /// Cleans user query string input
-    /// </summary>
-    /// <param name="query"></param>
-    /// <returns></returns>
-    public string CleanQuery(string query)
-    {
-        return Uri.UnescapeDataString(query).Trim().Replace(@"%", string.Empty)
-            .Replace(":", string.Empty);
-    }
-
-    /// <summary>
-    /// Normalizes the slashes in a path to be <see cref="Path.AltDirectorySeparatorChar"/>
-    /// </summary>
-    /// <example>/manga/1\1 -> /manga/1/1</example>
-    /// <param name="path"></param>
-    /// <returns></returns>
-    public string NormalizePath(string? path)
-    {
-        return string.IsNullOrEmpty(path) ? string.Empty : path.Replace('\\', Path.AltDirectorySeparatorChar)
-            .Replace(@"//", Path.AltDirectorySeparatorChar + string.Empty);
-    }
-
-    /// <summary>
-    /// Checks against a set of strings to validate if a ComicInfo.Format should receive special treatment
-    /// </summary>
-    /// <param name="comicInfoFormat"></param>
-    /// <returns></returns>
-    public bool HasComicInfoSpecial(string comicInfoFormat)
-    {
-        return FormatTagSpecialKeywords.Contains(comicInfoFormat);
     }
 
     private string ReplaceUnderscores(string name)
     {
         return string.IsNullOrEmpty(name) ? string.Empty : name.Replace('_', ' ');
-    }
-
-    public string? ExtractFilename(string fileUrl)
-    {
-        var matches = CssImageUrlRegex.Matches(fileUrl);
-        foreach (Match match in matches)
-        {
-            if (!match.Success) continue;
-
-            // NOTE: This is failing for //localhost:5000/api/book/29919/book-resources?file=OPS/images/tick1.jpg
-            var importFile = match.Groups["Filename"].Value;
-            if (!importFile.Contains('?')) return importFile;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// If the name matches exactly Series (Volume digits)
-    /// </summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
-    public bool IsSeriesAndYear(string? name)
-    {
-        return !string.IsNullOrEmpty(name) && SeriesAndYearRegex.IsMatch(name);
-    }
-
-    /// <summary>
-    /// Parse a Year from a Comic Series: Series Name (YEAR)
-    /// </summary>
-    /// <example>Harley Quinn (2024) returns 2024</example>
-    /// <param name="name"></param>
-    /// <returns></returns>
-    public string ParseYear(string? name)
-    {
-        if (string.IsNullOrEmpty(name)) return string.Empty;
-        var match = SeriesAndYearRegex.Match(name);
-        if (!match.Success) return string.Empty;
-
-        return match.Groups["Year"].Value;
-    }
-
-    public string? RemoveExtensionIfSupported(string? filename)
-    {
-        if (string.IsNullOrEmpty(filename)) return filename;
-
-        if (SupportedExtensionsRegex().IsMatch(filename))
-        {
-            return SupportedExtensionsRegex().Replace(filename, string.Empty);
-        }
-        return filename;
     }
 
     /// <summary>
@@ -1292,20 +1141,12 @@ public partial class ParserService: IParserService
         return filename;
     }
 
-    /**
-     * Replaced non-alphanumerical chars with a space
-     */
-    public string PrettifyFileName(string name)
-    {
-        return Regex.Replace(name, "[^a-zA-Z0-9]", " ");
-    }
-
     /// <summary>
     /// Removes duplicate chapter markers from filename, keeping only the first occurrence
     /// </summary>
     /// <param name="filename">Original filename</param>
     /// <returns>Processed filename with duplicate chapter markers removed</returns>
-    public string RemoveDuplicateChapterIfExists(string filename)
+    private string RemoveDuplicateChapterIfExists(string filename)
     {
         // First check if this contains a chapter range pattern - if so, don't process as duplicate (c1-c2, edge case)
         if (ChapterRangeRegex.IsMatch(filename))
