@@ -202,7 +202,8 @@ internal class RawFileCleanupService(
 
         await HandleFormatAsync(context, sourceFile, destPath, coverUrl, comicInfo);
 
-        logger.LogDebug("Finished processing file {FileName} for cleanup in {Elapsed}", sourceFile, sw.Elapsed.ToReadableString());
+        logger.LogDebug("Finished processing file {FileName} -> {DestPath} for cleanup in {Elapsed}",
+            sourceFile, destPath, sw.Elapsed.ToReadableString());
     }
 
     private async Task HandleFormatAsync(
