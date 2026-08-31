@@ -41,7 +41,7 @@ public class StringExtensionsTests
     [InlineData("42.5", 0, "42.5")]
     public void PadFloat_ReturnsExpectedResult(string? input, int padding, string expected)
     {
-        Assert.Equal(expected, input.PadFloat(padding));
+        Assert.Equal(expected, input.PadFloat(padding, '0'));
     }
 
     #endregion

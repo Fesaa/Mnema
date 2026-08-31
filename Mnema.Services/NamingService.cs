@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
+using Mnema.Common.Extensions;
 using Mnema.Common.StringFormatter;
 using Mnema.Models.Entities;
 using Mnema.Models.Internal;
@@ -40,9 +41,12 @@ public class NamingService(ILogger<NamingService> logger, ApplicationConfigurati
         var ctx = new ChapterNameContext(title, chapter);
 
         var format = chapter.IsOneShot ? preferences.OneShotFileFormat : preferences.ChapterFileFormat;
-        if (string.IsNullOrEmpty(format) || !ChapterFormatter.IsValid(format))
+        var errors = ChapterFormatter.Validate(format);
+        if (string.IsNullOrEmpty(format) || errors.Count > 0)
         {
-            logger.LogWarning("Empty or invalid ");
+            logger.LogWarning("Empty or invalid format, falling back to default format. {Format}: {Errors}",
+                format, string.Join(", ", errors));
+
             format = chapter.IsOneShot ? INamingService.DefaultOneShotFormat : INamingService.DefaultChapterFormat;
         }
 
@@ -88,13 +92,13 @@ internal class ChapterMarkerStringResolver(ILogger<NamingService> logger, IParse
         if (number is null)
         {
             logger.LogWarning("Failed to parse chapter number for marker {ChapterMarker}, not padding", ctx.Chapter.ChapterMarker);
-            return null;
+            return ctx.Chapter.ChapterMarker;
         }
 
         if (string.IsNullOrEmpty(spec))
             return ctx.Chapter.ChapterMarker;
 
         var width = int.Parse(spec[1..]);
-        return ctx.Chapter.ChapterMarker.PadLeft(width, '0');
+        return ctx.Chapter.ChapterMarker.PadFloat(width, '0');
     }
 }

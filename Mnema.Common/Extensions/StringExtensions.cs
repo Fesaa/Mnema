@@ -45,14 +45,15 @@ public static class StringExtensions
             return string.Empty;
         }
 
-        public string PadFloat(int n)
+        public string PadFloat(int totalWidth, char paddingChar)
         {
+            ArgumentOutOfRangeException.ThrowIfNegative(totalWidth);
             if (string.IsNullOrEmpty(s)) return string.Empty;
 
             var parts = s.Split(".");
-            if (parts.Length < 2) return s.PadLeft(n, '0');
+            if (parts.Length < 2) return s.PadLeft(totalWidth, paddingChar);
 
-            return parts[0].PadLeft(n, '0') + "." + parts[1];
+            return parts[0].PadLeft(totalWidth, paddingChar) + "." + parts[1];
         }
 
         public string Limit(int n)
