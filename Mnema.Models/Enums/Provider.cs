@@ -18,7 +18,7 @@ public enum Provider
     Kagane = 7,
     MadoKami = 8,
     /// <remarks>Forgive me for my transgression, MTL is bad.</remarks>
-    AthreaScans,
+    AthreaScans = 9,
 }
 
 public static class ProviderExtensions
