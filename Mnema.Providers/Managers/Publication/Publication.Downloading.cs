@@ -293,6 +293,7 @@ internal partial class Publication
             {
                 _logger.LogError("[{Title}/{Id}] Skipping {Url} for chapter {Chapter} as it's invalid",
                     Title, Id, url, chapter.Id);
+                continue;
             }
 
             if (!channel.Writer.TryWrite(new DownloadWork(++idx, url)))
