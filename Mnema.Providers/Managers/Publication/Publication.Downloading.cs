@@ -16,7 +16,6 @@ using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities;
-using Mnema.Models.Enums;
 using Mnema.Models.Publication;
 
 namespace Mnema.Providers.Managers.Publication;
@@ -27,8 +26,7 @@ internal sealed record IoWork(
     string FilePath,
     string Url,
     int Idx,
-    string Format,
-    SemaphoreSlim? ChapterBarrier);
+    string Format);
 
 internal sealed record DownloadWork(int Idx, DownloadUrl Url);
 
@@ -36,7 +34,6 @@ internal sealed record DownloadContext
 {
     public ChannelReader<DownloadWork> Reader { get; set; }
     public Chapter Chapter { get; init; }
-    public SemaphoreSlim? ChapterBarrier { get; init; }
 }
 
 internal partial class Publication
@@ -44,8 +41,6 @@ internal partial class Publication
     private readonly IHttpClientFactory _httpClientFactory =
         scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
     private readonly IIoHandler _ioHandler = scope.ServiceProvider.GetRequiredKeyedService<IIoHandler>(provider);
-
-    private Task? _ioTask;
 
     public Task DownloadContentAsync(CancellationTokenSource tokenSource)
     {
@@ -186,22 +181,12 @@ internal partial class Publication
 
         var urlChannel = BuildUrlChannel(urls);
 
-        using var pendingIo = new SemaphoreSlim(0);
-        var expectedCount = urls.Count;
-
         await Task.WhenAll(Enumerable.Range(0, _settings.MaxConcurrentImages)
             .Select(_ => DownloadWorker(new DownloadContext
             {
                 Reader = urlChannel.Reader,
                 Chapter = chapter,
-                ChapterBarrier = pendingIo
             })));
-
-        if (provider.IsDirectDownload())
-        {
-            for (var i = 0; i < expectedCount; i++)
-                await pendingIo.WaitAsync(_tokenSource.Token);
-        }
 
         _logger.LogTrace("[{Title}/{Id}] Finished downloading chapter {Chapter} in {Elapsed}", Title, Id, chapter.ChapterMarker, sw.Elapsed.ToReadableString());
 
@@ -250,6 +235,7 @@ internal partial class Publication
             if (!lease.IsAcquired)
             {
                 _logger.LogWarning("[{Title}/{Id}] Failed to acquire rate limiter lease for {Url}", Title, Id, task.Url);
+                if (!isRetry) failedTasks.Add(task);
                 continue;
             }
 
@@ -266,8 +252,7 @@ internal partial class Publication
                     ChapterPath(ctx.Chapter),
                     url,
                     task.Idx,
-                    task.Url.Format,
-                    ctx.ChapterBarrier);
+                    task.Url.Format);
 
                 await _ioHandler.HandleIoWork(Title, Id, work, _tokenSource);
 

@@ -198,9 +198,6 @@ internal partial class Publication(
 
         await _tokenSource.CancelAsync();
 
-        if (_ioTask != null)
-            await Task.WhenAny(_ioTask, Task.Delay(5000)); // Wait at most 5s for I/O, it's been cancelled
-
         if (reason != null)
         {
             _connectionService.CommunicateDownloadFailure(DownloadInfo, reason);
@@ -263,7 +260,6 @@ internal partial class Publication(
     {
         await _limiter.DisposeAsync();
         await CastAndDispose(_tokenSource);
-        if (_ioTask != null) await CastAndDispose(_ioTask);
         await CastAndDispose(scope);
 
         return;
