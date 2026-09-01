@@ -147,6 +147,17 @@ internal partial class Publication
         }
     }
 
+    private static bool IsValidUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return false;
+
+        // Second http, merged links
+        if (url.IndexOf("http", 4, StringComparison.OrdinalIgnoreCase) != -1)
+            return false;
+
+        return Uri.TryCreate(url, UriKind.Absolute, out var parsedUri) && (parsedUri.Scheme == Uri.UriSchemeHttp || parsedUri.Scheme == Uri.UriSchemeHttps);
+    }
+
     private async Task DownloadChapter(Chapter chapter)
     {
         var urls = await _repository.ChapterUrls(Request.Metadata, chapter, _tokenSource.Token);
@@ -179,7 +190,7 @@ internal partial class Publication
 
         _speedTracker!.SetIntermediate(urls.Count);
 
-        var urlChannel = BuildUrlChannel(urls);
+        var urlChannel = BuildUrlChannel(urls, chapter);
 
         await Task.WhenAll(Enumerable.Range(0, _settings.MaxConcurrentImages)
             .Select(_ => DownloadWorker(new DownloadContext
@@ -271,14 +282,24 @@ internal partial class Publication
         return failedTasks;
     }
 
-    private Channel<DownloadWork> BuildUrlChannel(IEnumerable<DownloadUrl> urls)
+    private Channel<DownloadWork> BuildUrlChannel(IEnumerable<DownloadUrl> urls, Chapter chapter)
     {
         var channel = Channel.CreateUnbounded<DownloadWork>();
 
         var idx = 0;
         foreach (var url in urls)
+        {
+            if (!IsValidUrl(url.Url) && !IsValidUrl(url.FallbackUrl))
+            {
+                _logger.LogError("[{Title}/{Id}] Skipping {Url} for chapter {Chapter} as it's invalid",
+                    Title, Id, url, chapter.Id);
+            }
+
             if (!channel.Writer.TryWrite(new DownloadWork(++idx, url)))
+            {
                 _logger.LogWarning("[{Title}/{Id}] Failed to write {Url} to channel", Title, Id, url);
+            }
+        }
 
         channel.Writer.Complete();
 
