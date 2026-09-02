@@ -27,6 +27,7 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
         pref.BlackListedTags = NormalizeTags(dto.BlackListedTags);
         pref.WhiteListedTags = NormalizeTags(dto.WhiteListedTags);
         pref.PinSubscriptionTitles = dto.PinSubscriptionTitles;
+        pref.LinkFilters = dto.LinkFilters;
 
         pref.AgeRatingMappings.Clear();
         foreach (var mapping in dto.AgeRatingMappings.DistinctBy(arm => arm.Tag.ToNormalized()))
