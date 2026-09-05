@@ -151,11 +151,11 @@ internal partial class Publication
     {
         if (string.IsNullOrWhiteSpace(url)) return false;
 
-        // Second http, merged links
+        // Second http, merged links (AthreaScans nonsense)
         if (url.IndexOf("http", 4, StringComparison.OrdinalIgnoreCase) != -1)
             return false;
 
-        return Uri.TryCreate(url, UriKind.Absolute, out var parsedUri) && (parsedUri.Scheme == Uri.UriSchemeHttp || parsedUri.Scheme == Uri.UriSchemeHttps);
+        return true;
     }
 
     private async Task DownloadChapter(Chapter chapter)
