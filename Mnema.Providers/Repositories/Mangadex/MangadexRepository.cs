@@ -205,6 +205,9 @@ internal class MangadexRepository : IRepository
             .SetQueryParam("offset", 0)
             .SetQueryParam("includes[]", "manga")
             .SetQueryParam("translatedLanguage[]", "en")
+            // Exclude MangaUp! official publisher (https://mangadex.org/group/32908541-c7ec-40d4-b129-d4f0ce85884b/manga-up)
+            // They spam the updates tab
+            .SetQueryParam("excludedGroups[]", "32908541-c7ec-40d4-b129-d4f0ce85884b")
             .AddAllContentRatings()
             .SetQueryParam("order[readableAt]", "desc");
 
