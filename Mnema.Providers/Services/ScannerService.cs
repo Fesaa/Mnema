@@ -139,7 +139,7 @@ public class ScannerService(
         {
             TorrentFileMode.Unknown => [],
             TorrentFileMode.Single => [
-                new TorrentFile(torrent.DisplayName, Path.Join(torrent.DisplayName, torrent.File.FileName), torrent.TotalSize)
+                new TorrentFile(torrent.DisplayName, torrent.File.FileName, torrent.TotalSize)
             ],
             TorrentFileMode.Multi => torrent.Files
                 .Select(f => new TorrentFile(f.FileName, Path.Join(torrent.DisplayName, f.FullPath), f.FileSize))
