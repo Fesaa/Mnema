@@ -64,6 +64,7 @@ public static class ServiceProviderExtensions
             services.AddRepository<MangadexRepository>(Provider.Mangadex);
             services.AddKeyedScoped<IPreDownloadHook, LoadVolumesHook>(Provider.Mangadex);
             services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Mangadex);
+            services.AddKeyedScoped<IConfigurationProvider, MangadexConfigurationProvider>(Provider.Mangadex);
 
             services.AddHttpClient(nameof(Provider.Mangadex), ConfigureDefaultClient("https://api.mangadex.org"));
 

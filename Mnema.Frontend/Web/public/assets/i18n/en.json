@@ -1083,7 +1083,9 @@
     "disabled-title": "Disable",
     "disabled-tooltip": "Stop this provider from being used for monitored series (Skip search)",
     "block_automatic_downloads-title": "Block Automatic Downloads",
-    "block_automatic_downloads-tooltip": "Always require manual confirmation for downloads for this provider"
+    "block_automatic_downloads-tooltip": "Always require manual confirmation for downloads for this provider",
+    "blockedGroups-title": "Blocked groups",
+    "blockedGroups-tooltip": "Groups to filter out during recently updated check"
   },
 
   "link-filter-mode-pipe": {

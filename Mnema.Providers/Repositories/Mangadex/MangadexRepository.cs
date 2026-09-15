@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Flurl;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Exceptions;
@@ -53,16 +54,18 @@ internal class MangadexRepository : IRepository
     private readonly IDistributedCache _cache;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<MangadexRepository> _logger;
+    private readonly IUnitOfWork _unitOfWork;
 
 
     private readonly AsyncLazy<List<SelectOption<string>>> _tagOptions;
 
     public MangadexRepository(ILogger<MangadexRepository> logger, IDistributedCache cache,
-        IHttpClientFactory httpClientFactory)
+        IHttpClientFactory httpClientFactory, IUnitOfWork unitOfWork)
     {
         _logger = logger;
         _cache = cache;
         _httpClientFactory = httpClientFactory;
+        _unitOfWork = unitOfWork;
         _tagOptions = new AsyncLazy<List<SelectOption<string>>>(LoadTagOptions);
     }
 
@@ -200,14 +203,14 @@ internal class MangadexRepository : IRepository
 
     public async Task<IList<ContentRelease>> GetRecentlyUpdated(CancellationToken cancellationToken)
     {
+        var settings = await _unitOfWork.ProviderSettingsRepository.GetSettingsForProvider(Provider.Mangadex, cancellationToken);
+
         var url = "chapter"
             .SetQueryParam("limit", 50)
             .SetQueryParam("offset", 0)
             .SetQueryParam("includes[]", "manga")
             .SetQueryParam("translatedLanguage[]", "en")
-            // Exclude MangaUp! official publisher (https://mangadex.org/group/32908541-c7ec-40d4-b129-d4f0ce85884b/manga-up)
-            // They spam the updates tab
-            .SetQueryParam("excludedGroups[]", "32908541-c7ec-40d4-b129-d4f0ce85884b")
+            .AddRange("excludedGroups[]", settings.GetKey(MangadexConfigurationProvider.BlockedGroups))
             .AddAllContentRatings()
             .SetQueryParam("order[readableAt]", "desc");
 

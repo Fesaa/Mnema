@@ -15,6 +15,8 @@ public class ProviderSettings
 
     public bool IsEnabled => !Settings.GetKey(Disable);
 
+    public T GetKey<T>(IMetadataKey<T> key) => Settings.GetKey(key);
+
     public static readonly IMetadataKey<bool> Disable = MetadataKeys.Bool("disabled");
     public static readonly IMetadataKey<int> ConsecutiveFailures = MetadataKeys.Int("consecutive_failures", 0);
     public static readonly IMetadataKey<bool> BlockAutomaticDownloads = MetadataKeys.Bool("block_automatic_downloads");
