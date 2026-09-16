@@ -28,6 +28,10 @@ export class ConnectionEventPipe implements PipeTransform {
         return translate('external-connections-event-types-pipe.DownloadFinished');
       case ConnectionEvent.DownloadFailure:
         return translate('external-connections-event-types-pipe.DownloadFailure');
+      case ConnectionEvent.Exception:
+        return translate('external-connections-event-types-pipe.Exception');
+      case ConnectionEvent.ProviderSettingEvents:
+        return translate('external-connections-event-types-pipe.ProviderSettingEvents');
       default:
         return 'Unknown';
     }

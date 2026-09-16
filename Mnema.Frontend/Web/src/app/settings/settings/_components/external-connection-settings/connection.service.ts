@@ -30,7 +30,9 @@ export enum ConnectionEvent {
   SeriesUnmonitored = 5,
   TooManyForAutomatedDownload = 6,
   DownloadClientEvents = 7,
-  GenericDownloadInfo = 8,
+  Exception = 8,
+  GenericDownloadInfo = 9,
+  ProviderSettingEvents= 10,
 }
 
 @Injectable({
