@@ -98,6 +98,7 @@ export class TypeaheadSettings<T>  {
    * Useful when the trigger element is narrower than the content that needs to be displayed.
    */
   overlayMinWidth?: number;
+  getDisplayText?: (item: T) => string;
 }
 
 @Component({
@@ -441,6 +442,10 @@ export class TypeaheadComponent<T> implements OnInit {
   }
 
   getDisplayText(item: T): string {
+    if (this.settings().getDisplayText) {
+      return this.settings().getDisplayText!(item);
+    }
+
     if (typeof item === 'string') return item;
     if (typeof item === 'object' && item !== null && 'name' in item) {
       return (item as any).name;

@@ -9,6 +9,7 @@ import {Series} from "@mnema/page/_components/series-info/_types";
 import {SearchInfo} from "@mnema/_models/Info";
 import {MetadataBag} from "@mnema/_models/search";
 import {ComicInfoAgeRating} from "@mnema/_models/preferences";
+import {NgxFileDropEntry} from "ngx-file-drop";
 
 export type MonitoredSeries = {
   id: string;
@@ -217,6 +218,33 @@ export class MonitoredSeriesService {
         }
       }),
     );
+  }
+
+  async upload(id: string, files: NgxFileDropEntry[]) {
+    const formData = new FormData();
+    const filePromises: Promise<void>[] = [];
+
+    for (const file of files) {
+      if (file.fileEntry.isFile) {
+        const fileEntry = file.fileEntry as FileSystemFileEntry;
+
+        const promise = new Promise<void>((resolve) => {
+          fileEntry.file((file: File) => {
+            formData.append('files', file, file.name);
+            resolve();
+          });
+        });
+
+        filePromises.push(promise);
+      }
+    }
+
+    await Promise.all(filePromises);
+
+    return this.httpClient.post(`${this.baseUrl}/${id}/upload`, formData, {
+      reportUploadProgress: true,
+      observe: 'events'
+    });
   }
 
 }

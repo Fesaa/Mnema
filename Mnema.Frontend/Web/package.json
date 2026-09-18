@@ -28,6 +28,7 @@
     "bootstrap": "^5.3.8",
     "install": "^0.13.0",
     "luxon": "^3.6.0",
+    "ngx-file-drop": "^16.0.0",
     "ngx-retoast": "^1.0.1",
     "npm": "^12.0.2",
     "rxjs": "~7.8.0",
