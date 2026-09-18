@@ -36,6 +36,8 @@ public class IoController(
                 return new ListDirEntryDto(fileSystem.Path.GetFileName(entry), isDirectory);
             })
             .WhereNotNull()
+            .OrderByDescending(entry => entry.Dir)
+            .ThenBy(entry => entry.Name)
             .ToList();
 
         return Ok(dirEntries);
