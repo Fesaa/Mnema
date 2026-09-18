@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.API.External;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
@@ -360,6 +361,9 @@ public class MonitoredSeriesController(
         return Ok();
     }
 
+    [AutomaticRetry(Attempts = 0)]
+    [Queue(HangfireQueue.TorrentCleanup)]
+    [DisableConcurrentExecution(timeoutInSeconds: 86400 * 2)]
     public async Task Cleanup(Guid id, CancellationToken ct)
     {
         var droppedContent = await unitOfWork.DroppedContentRepository.GetById(id, ct);
