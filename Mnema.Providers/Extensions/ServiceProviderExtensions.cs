@@ -9,6 +9,7 @@ using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Providers.Cleanup;
 using Mnema.Providers.Dynasty;
+using Mnema.Providers.Managers.Dropped;
 using Mnema.Providers.Managers.Publication;
 using Mnema.Providers.Managers.QBit;
 using Mnema.Providers.Mangadex;
@@ -32,6 +33,7 @@ public static class ServiceProviderExtensions
             services.AddScoped<ICleanupService, CleanupService>();
             services.AddScoped<PublicationCleanupService>();
             services.AddScoped<RawFileCleanupService>();
+            services.AddKeyedScoped<ICleanupService>(ICleanupService.RawFileCleanupServiceKey, (s, _) => s.GetRequiredService<RawFileCleanupService>());
             services.AddScoped<IFormatHandler, ArchiveFormatHandler>();
             services.AddScoped<IFormatHandler, EpubFormatHandler>();
             services.AddScoped<NoOpRepository>();
@@ -148,6 +150,8 @@ public static class ServiceProviderExtensions
             services.AddHttpClient(nameof(Provider.AthreaScans), ConfigureDefaultClient("https://athreascans.com/"));
 
             #endregion
+
+            services.AddKeyedScoped<IContentManager, DroppedContentManager>(Provider.GenericFile);
         }
 
         private void AddRepository<T>(Provider provider)

@@ -14,11 +14,15 @@ public enum Provider
     Weebdex = 5,
     [Obsolete("Dumb anti scraper, not worth my time")]
     Comix = 6,
-    [Obsolete("Perm cloudflare protection")]
+    [Obsolete("Perm cloudflare protection (I have a python script, ping me on discord if you want it)")]
     Kagane = 7,
     MadoKami = 8,
     /// <remarks>Forgive me for my transgression, MTL is bad.</remarks>
     AthreaScans = 9,
+    /// <summary>
+    /// Used for dropped fils. Cannot be searched against
+    /// </summary>
+    GenericFile = 10,
 }
 
 public static class ProviderExtensions
@@ -34,10 +38,6 @@ public enum MetadataProvider
 {
     Hardcover = 0,
     Mangabaka = 1,
-    /// <summary>
-    /// Metadata from <see cref="Provider"/>
-    /// </summary>
-    /// <remarks>The typo is intentional at this point, or I need to write a migration....</remarks>
     [Obsolete("Upstream is a typo, use Upstream instead")]
     Upsteam = 2,
     Upstream = 3,
