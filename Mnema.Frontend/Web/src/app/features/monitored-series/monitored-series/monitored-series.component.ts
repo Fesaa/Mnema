@@ -392,10 +392,7 @@ export class MonitoredSeriesComponent implements OnInit {
         component.double.set(false);
         component.showChanges.set(true);
         component.initialValue.set(fileInfo.metadata ?? {});
-
-        if (this.selectedChapter() != null) {
-          component.descriptionTemplate.set(this.metadataEditorHeader());
-        }
+        component.descriptionTemplate.set(this.metadataEditorHeader());
 
         return this.modalService.onClose$<FileMetadata>(modal);
       }),
@@ -408,13 +405,10 @@ export class MonitoredSeriesComponent implements OnInit {
   }
 
   protected loadUpstreamMetadata(form: FormGroup) {
-    const chapter = this.selectedChapter();
-    if (!chapter) return;
-
     const formDefinition = this.editFileMetadataFormDefinition();
     if (!formDefinition) return;
 
-    this.monitoredSeriesService.getChapterMetadata(this.series().id, chapter.id).pipe(
+    this.monitoredSeriesService.getChapterMetadata(this.series().id, this.selectedChapter()?.id).pipe(
       tap(metadata => {
         this.genericFormFactoryService.extendFormGroupForValue(form, formDefinition.controls, metadata, this.fb);
         form.setValue(metadata);

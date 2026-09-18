@@ -192,7 +192,11 @@ export class MonitoredSeriesService {
     return this.httpClient.get<FileInfoDto>(`${this.baseUrl}/${id}/file-info?filePath=${filePath}`);
   }
 
-  getChapterMetadata(id: string, chapterId: string) {
+  getChapterMetadata(id: string, chapterId?: string) {
+    if (!chapterId) {
+      chapterId = '00000000-0000-0000-0000-000000000000'
+    }
+
     return this.httpClient.get<FileMetadata>(`${this.baseUrl}/${id}/${chapterId}/metadata`);
   }
 

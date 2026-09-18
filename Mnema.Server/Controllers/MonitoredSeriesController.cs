@@ -232,15 +232,23 @@ public class MonitoredSeriesController(
         if (string.IsNullOrEmpty(series.TitleOverride))
             return BadRequest("Monitored series requires a title override to support metadata changes");
 
-        var chapter = series.Chapters.FirstOrDefault(c => c.Id == chapterId);
-        if (chapter == null) return BadRequest("Chapter not found");
+        MonitoredChapter? chapter = null;
+        if (chapterId != Guid.Empty)
+        {
+            chapter = series.Chapters.FirstOrDefault(c => c.Id == chapterId);
+            if (chapter == null) return BadRequest("Chapter not found");
+        }
 
         var metadata = series.MetadataForDownloadRequest();
         var resolvedSeries = await metadataResolver.ResolveSeriesAsync(series.Provider, metadata, HttpContext.RequestAborted);
         if (resolvedSeries == null) return NotFound();
 
-        var resolvedChapter = parserService.FindMatch(resolvedSeries.Chapters, chapter);
-        if (resolvedChapter == null) return NotFound();
+        Chapter? resolvedChapter = null;
+        if (chapter is not null)
+        {
+            resolvedChapter = parserService.FindMatch(resolvedSeries.Chapters, chapter);
+            if (resolvedChapter == null) return NotFound();
+        }
 
         var preferences = await unitOfWork.SettingsRepository.GetPreferencesAsync(HttpContext.RequestAborted);
 
