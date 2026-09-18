@@ -29,6 +29,7 @@ public interface IParserService
     Format ParseFormat(string filePath);
 
     T? FindMatch<T>(IList<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers;
+    IEnumerable<T> Sort<T>(IEnumerable<T> items) where T : IHasPositionMarkers;
 }
 
 public record NumberRange(string Value, float MinNumber, float MaxNumber);
