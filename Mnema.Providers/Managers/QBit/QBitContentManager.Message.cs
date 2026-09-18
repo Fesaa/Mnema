@@ -139,7 +139,7 @@ internal partial class QBitContentManager
         return BuildTree(externalDownload.Files);
     }
 
-    private List<ListContentData> BuildTree(IReadOnlyList<ExternalDownloadFile> files, int depth = 0)
+    private List<ListContentData> BuildTree(IReadOnlyList<DownloadFile> files, int depth = 0)
     {
         var tree = new List<ListContentData>();
 

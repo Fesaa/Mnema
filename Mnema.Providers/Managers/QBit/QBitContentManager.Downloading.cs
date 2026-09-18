@@ -251,7 +251,7 @@ internal partial class QBitContentManager
             Metadata = request.Metadata,
             BaseDir = request.BaseDir,
             State = ContentState.Waiting,
-            Files = seriesFiles.Select(pair => new ExternalDownloadFile
+            Files = seriesFiles.Select(pair => new DownloadFile
             {
                 FileName = pair.File.FileName,
                 FullPath = pair.File.FilePath,

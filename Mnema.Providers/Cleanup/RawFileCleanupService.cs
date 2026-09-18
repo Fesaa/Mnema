@@ -122,24 +122,39 @@ internal class RawFileCleanupService(
     private async Task<List<string>> GetFilesToProcessAsync(CleanupContext context)
     {
         var externalDownloadId = context.Request.GetKey(RequestConstants.ExternalDownloadId);
-        if (externalDownloadId == null)
+        if (externalDownloadId is not null)
         {
-            logger.LogWarning("No external download found, what's going on? Falling back to directory parsing");
+            var externalDownload = await unitOfWork.ExternalDownloadRepository.GetById(externalDownloadId.Value);
+            if (externalDownload == null)
+                throw new MnemaException($"Failed to find external download {externalDownloadId.Value} linked to {context.Title}");
 
-            var files = fileSystem.Directory.GetFiles(context.DownloadDirectory, "*", SearchOption.AllDirectories);
-            var allowedExtensions = parserService.FileExtensionsForFormat(context.Format);
+            context.ExternalDownload = externalDownload;
 
-            var validFiles = files.Where(f => Filter(allowedExtensions, f)).ToList();
-            return validFiles;
+            return CreatePaths(externalDownload.Files);
         }
 
-        var externalDownload = await unitOfWork.ExternalDownloadRepository.GetById(externalDownloadId.Value);
-        if (externalDownload == null)
-            throw new MnemaException($"Failed to find external download {externalDownloadId.Value} linked to {context.Title}");
+        var droppedContentId = context.Request.GetKey(RequestConstants.DroppedContentId);
+        if (droppedContentId is not null)
+        {
+            var droppedContent = await unitOfWork.DroppedContentRepository.GetById(droppedContentId.Value);
+            if (droppedContent == null)
+                throw new MnemaException(
+                    $"Failed to find dropped content {droppedContentId.Value} linked to {context.Title}");
 
-        context.ExternalDownload = externalDownload;
+            context.DroppedContent = droppedContent;
 
-        return externalDownload.Files
+            return CreatePaths(droppedContent.Files);
+        }
+
+        logger.LogWarning("No linked content found, what's going on? Falling back to directory parsing");
+
+        var files = fileSystem.Directory.GetFiles(context.DownloadDirectory, "*", SearchOption.AllDirectories);
+        var allowedExtensions = parserService.FileExtensionsForFormat(context.Format);
+
+        var validFiles = files.Where(f => Filter(allowedExtensions, f)).ToList();
+        return validFiles;
+
+        List<string> CreatePaths(List<DownloadFile> downloadFiles) => downloadFiles
             .Where(f => f.Selected)
             .Select(f => Path.Join(context.DownloadDirectory, f.FullPath))
             .ToList();
@@ -208,15 +223,15 @@ internal class RawFileCleanupService(
         logger.LogDebug("Finished processing file {FileName} -> {DestPath} for cleanup in {Elapsed}",
             sourceFile, destPath, sw.Elapsed.ToReadableString());
 
-        if (context.ExternalDownload is not null)
+
+        var downloadFiles = context.ExternalDownload?.Files ?? context.ExternalDownload?.Files ?? [];
+
+        var searchKey = sourceFile.RemoveSuffix(context.DownloadDirectory);
+        var file = downloadFiles.FirstOrDefault(f => f.FullPath == searchKey);
+        if (file is not null)
         {
-            var searchKey = sourceFile.RemoveSuffix(context.DownloadDirectory);
-            var file = context.ExternalDownload.Files.FirstOrDefault(f => f.FileName == searchKey);
-            if (file is not null)
-            {
-                file.Processed = true;
-                await unitOfWork.CommitAsync();
-            }
+            file.Processed = true;
+            await unitOfWork.CommitAsync();
         }
     }
 
@@ -258,5 +273,6 @@ internal record CleanupContext(
     string DownloadDirectory)
 {
     public ExternalDownload? ExternalDownload { get; set; }
+    public DroppedContent? DroppedContent { get; set; }
 
 }

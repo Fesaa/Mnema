@@ -20,6 +20,7 @@ public interface IUnitOfWork
     IExternalDownloadRepository ExternalDownloadRepository { get; }
     IMetadataProviderSettingsRepository MetadataProviderSettingsRepository { get; }
     IImportScanRepository ImportScanRepository { get; }
+    IDroppedContentRepository DroppedContentRepository { get; }
 
     Task<bool> CommitAsync(CancellationToken cancellationToken = default);
     bool HasChanges();
