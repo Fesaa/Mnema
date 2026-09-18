@@ -53,7 +53,7 @@ public class MonitoredSeriesService(
         series.Provider = dto.Provider;
         series.ContentFormat = dto.ContentFormat;
         series.Format = dto.Format;
-        series.ValidTitles = dto.ValidTitles;
+        series.SearchTitles = [.. dto.ValidTitles.Select(t => new SearchTitle { Title = t })];
         series.TitleOverride = dto.TitleOverride;
         series.HardcoverId = dto.HardcoverId;
         series.MangaBakaId = dto.MangaBakaId;
@@ -86,7 +86,7 @@ public class MonitoredSeriesService(
             ExternalId = dto.ExternalId,
             Metadata = dto.Metadata,
             TitleOverride = dto.TitleOverride,
-            ValidTitles = dto.ValidTitles,
+            SearchTitles = [.. dto.ValidTitles.Select(t => new SearchTitle { Title = t })],
             Summary = string.Empty,
             Chapters = [],
         };
@@ -379,13 +379,18 @@ public class MonitoredSeriesService(
             mSeries.Chapters.Add(SyncChapter(existingChapter, upstreamChapter, onDiskContent));
         }
 
-        mSeries.UnMatchedChapters.Clear();
-        mSeries.UnMatchedChapters.AddRange(onDiskContent.Select(file => new RawFile
+        var unMatchedFiles = onDiskContent.Select(file => new RawFile
         {
             Path = file.Path.RemovePrefix(configuration.BaseDir),
             Chapter = file.ChapterMarker,
             Volume = file.VolumeMarker,
             ComicInfo = file.ComicInfo
+        });
+
+        mSeries.UnMatchedChapters.Clear();
+        mSeries.UnMatchedChapters.AddRange(parserService.Sort(unMatchedFiles).Select((file, idx) => file with
+        {
+            SortOrder = idx,
         }));
     }
 

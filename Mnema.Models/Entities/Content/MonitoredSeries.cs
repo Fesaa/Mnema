@@ -40,7 +40,13 @@ public class MonitoredSeries: IEntityDate, IDatabaseEntity
     /// Titles that are considered valid for this release. I.e., Translated, original, romanized, etc.
     /// </summary>
     /// <remarks>You can use the auto-complete in the UI to load from metadata providers</remarks>
-    public List<string> ValidTitles { get; set; }
+    [Obsolete("Use SearchTitles")]
+    public List<string> ValidTitles { get; set; } = [];
+
+    /// <summary>
+    /// Titles to match against
+    /// </summary>
+    public List<SearchTitle> SearchTitles { get; set; } = [];
 
     public string HardcoverId { get; set; }
     public string MangaBakaId { get; set; }
@@ -69,12 +75,13 @@ public class MonitoredSeries: IEntityDate, IDatabaseEntity
     public List<RawFile> UnMatchedChapters { get; set; }
 }
 
-public class RawFile: IHasPositionMarkers
+public sealed record RawFile: IHasPositionMarkers
 {
     public string Path { get; set; }
     public string? Chapter { get; set; }
     public string? Volume { get; set; }
     public ComicInfo? ComicInfo { get; set; }
+    public int SortOrder { get; set; }
 
     public string VolumeMarker => Volume ?? string.Empty;
     public string ChapterMarker => Chapter ?? string.Empty;

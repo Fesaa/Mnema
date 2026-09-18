@@ -26,4 +26,5 @@ public static class RequestConstants
     public static readonly IMetadataKey<bool> IsGroupedDownload = MetadataKeys.Bool("is_grouped_download");
     public static readonly IMetadataKey<Guid?> ExternalDownloadId = MetadataKeys.OptionalGuid("external_download_id");
     public static readonly IMetadataKey<bool> AllowChapterDownloads = MetadataKeys.Bool("allow_chapter_downloads");
+    public static readonly IMetadataKey<Guid?> DroppedContentId = MetadataKeys.OptionalGuid("dropped_content_id");
 }

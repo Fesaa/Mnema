@@ -8,6 +8,7 @@ import {SeriesSearchComponent} from "@mnema/features/monitored-series/series-sea
 import {MonitoredSeriesComponent} from "@mnema/features/monitored-series/monitored-series/monitored-series.component";
 import {monitoredSeriesResolver} from "@mnema/features/monitored-series/monitored-series/monitored-series.resolver";
 import {MissingChaptersComponent} from "@mnema/features/monitored-series/missing-chapters/missing-chapters.component";
+import {DroppedContentComponent} from "@mnema/features/dropped-content/dropped-content/dropped-content.component";
 
 export const routes: Routes = [
   {
@@ -36,5 +37,9 @@ export const routes: Routes = [
   {
     path: 'missing-chapters',
     component: MissingChaptersComponent,
+  },
+  {
+    path: 'dropped-content',
+    component: DroppedContentComponent
   }
 ]

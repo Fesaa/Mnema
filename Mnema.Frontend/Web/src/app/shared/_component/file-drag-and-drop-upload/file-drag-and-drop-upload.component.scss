@@ -1,0 +1,51 @@
+/* Deep target ngx-file-drop custom classes */
+::ng-deep .upload-zone {
+  border: 2px dashed var(--bs-border-color, #dee2e6) !important;
+  border-radius: 0.75rem !important;
+  background-color: var(--bs-body-bg, #ffffff);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  overflow: hidden;
+
+  &:hover {
+    border-color: var(--primary-color, #0d6efd) !important;
+    background-color: var(--primary-color-lighter, #f8f9fa);
+  }
+}
+
+::ng-deep .upload-zone-content {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: auto !important;
+  min-height: 180px;
+  padding: 0 !important;
+}
+
+/* Icon styling */
+.upload-icon-wrapper {
+  color: var(--primary-color, #0d6efd);
+
+  .icon-upload {
+    font-size: 2.25rem;
+  }
+}
+
+/* Dots and utility tweaks */
+.dot-separator {
+  user-select: none;
+  font-size: 0.75rem;
+}
+
+.tracking-wide {
+  letter-spacing: 0.05em;
+}
+
+/* Clean up inside item hover state */
+.file-item {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  }
+}

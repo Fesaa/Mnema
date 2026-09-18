@@ -32,7 +32,7 @@ public class ExternalDownload: IEntityDate, IDatabaseEntity
     public DateTime LastModifiedUtc { get; set; }
 
     [JsonColumn]
-    public required List<ExternalDownloadFile> Files { get; set; }
+    public required List<DownloadFile> Files { get; set; }
 
     public T GetKey<T>(IMetadataKey<T> key) => Metadata.GetKey(key);
 
@@ -44,14 +44,4 @@ public class ExternalDownload: IEntityDate, IDatabaseEntity
         .Where(f => f.Selected)
         .Select(f => f.FileSize)
         .Sum();
-}
-
-public class ExternalDownloadFile
-{
-    public required string FileName { get; set; }
-    public required string FullPath { get; set; }
-    public required long FileSize { get; set; }
-    public required string? VolumeMarker { get; set; }
-    public required string? ChapterMarker { get; set; }
-    public required bool Selected { get; set; } = true;
 }

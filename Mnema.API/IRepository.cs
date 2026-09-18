@@ -31,17 +31,21 @@ public interface INavigationalEntityRepository<TEntity, TEntityDto, in TFlags>
     void RemoveRange(IEnumerable<TEntity> entities);
 }
 
-public interface IEntityRepository<TEntity, TEntityDto>
+public interface IEntityRepository<TEntity, TEntityDto>: IDbOnlyEntityRepository<TEntity>
     where TEntity : IDatabaseEntity
     where TEntityDto : IDatabaseEntity
+{
+    Task<TEntityDto?> GetDtoById(Guid id, CancellationToken ct = default);
+    Task<PagedList<TEntityDto>> GetAllDtosPaged(PaginationParams paginationParams, CancellationToken ct = default);
+    Task<List<TEntityDto>> GetAllDtos(CancellationToken ct = default);
+}
+
+public interface IDbOnlyEntityRepository<TEntity>
+    where TEntity : IDatabaseEntity
 {
     Task<TEntity?> GetById(Guid id, CancellationToken ct = default);
     Task<PagedList<TEntity>> GetAllPaged(PaginationParams paginationParams, CancellationToken ct = default);
     Task<List<TEntity>> GetAll(CancellationToken ct = default);
-
-    Task<TEntityDto?> GetDtoById(Guid id, CancellationToken ct = default);
-    Task<PagedList<TEntityDto>> GetAllDtosPaged(PaginationParams paginationParams, CancellationToken ct = default);
-    Task<List<TEntityDto>> GetAllDtos(CancellationToken ct = default);
 
     Task<bool> Exists(Guid id, CancellationToken ct = default);
     Task DeleteById(Guid id, CancellationToken ct = default);
@@ -52,5 +56,4 @@ public interface IEntityRepository<TEntity, TEntityDto>
     void UpdateRange(IEnumerable<TEntity> entities);
     void Remove(TEntity entity);
     void RemoveRange(IEnumerable<TEntity> entities);
-
 }

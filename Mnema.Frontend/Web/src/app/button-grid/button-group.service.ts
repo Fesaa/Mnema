@@ -126,6 +126,11 @@ export class ButtonGroupService {
         navUrl: '/import-scans',
       },
       {
+        title: translate('button-groups.actions.dropped-content'),
+        icon: 'fa fa-upload',
+        navUrl: '/dropped-content',
+      },
+      {
         title: translate('button-groups.settings.logout'),
         icon: 'fa fa-user-minus',
         onClick: () => {

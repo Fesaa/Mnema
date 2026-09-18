@@ -1223,6 +1223,25 @@ public partial class ParserService: IParserService
         bool EmptyOrDefault(string s) =>string.IsNullOrEmpty(s) || IsLooseLeafVolume(s) || IsDefaultChapter(s);
     }
 
+    public IEnumerable<T> Sort<T>(IEnumerable<T> items) where T : IHasPositionMarkers
+    {
+        var groups = items
+            .GroupBy(c => c.VolumeMarker)
+            .OrderBy(g => GetSortKey(g.Key));
+
+        foreach (var group in groups)
+        {
+            foreach (var item in group.OrderBy(c => GetSortKey(c.ChapterMarker)))
+            {
+                yield return item;
+            }
+        }
+
+        yield break;
+
+        float GetSortKey(string f) => float.TryParse(f, out var result) ? result : float.MaxValue;
+    }
+
 
     [GeneratedRegex(SupportedExtensions)]
     private static partial Regex SupportedExtensionsRegex();

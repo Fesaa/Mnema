@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.API.External;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
@@ -16,6 +20,7 @@ using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
+using Mnema.Providers.Managers.Dropped;
 using Mnema.Server.Configuration;
 
 namespace Mnema.Server.Controllers;
@@ -30,9 +35,15 @@ public class MonitoredSeriesController(
     IDownloadService downloadService,
     IConnectionService connectionService,
     IParserService parserService,
-    IMetadataService metadataService
+    IMetadataService metadataService,
+    IFileSystem fileSystem,
+    [FromKeyedServices(ICleanupService.RawFileCleanupServiceKey)] ICleanupService cleanupService,
+    ApplicationConfiguration configuration
 ) : BaseApiController
 {
+
+    private const long MaxFileSizeInBytes = 512 * 1024 * 1024; // 512 MB
+
     [HttpGet("all")]
     public async Task<ActionResult<PagedList<MonitoredSeriesDto>>> GetAll([FromQuery] string query = "",
         [FromQuery] Provider? provider = null,
@@ -232,15 +243,23 @@ public class MonitoredSeriesController(
         if (string.IsNullOrEmpty(series.TitleOverride))
             return BadRequest("Monitored series requires a title override to support metadata changes");
 
-        var chapter = series.Chapters.FirstOrDefault(c => c.Id == chapterId);
-        if (chapter == null) return BadRequest("Chapter not found");
+        MonitoredChapter? chapter = null;
+        if (chapterId != Guid.Empty)
+        {
+            chapter = series.Chapters.FirstOrDefault(c => c.Id == chapterId);
+            if (chapter == null) return BadRequest("Chapter not found");
+        }
 
         var metadata = series.MetadataForDownloadRequest();
         var resolvedSeries = await metadataResolver.ResolveSeriesAsync(series.Provider, metadata, HttpContext.RequestAborted);
         if (resolvedSeries == null) return NotFound();
 
-        var resolvedChapter = parserService.FindMatch(resolvedSeries.Chapters, chapter);
-        if (resolvedChapter == null) return NotFound();
+        Chapter? resolvedChapter = null;
+        if (chapter is not null)
+        {
+            resolvedChapter = parserService.FindMatch(resolvedSeries.Chapters, chapter);
+            if (resolvedChapter == null) return NotFound();
+        }
 
         var preferences = await unitOfWork.SettingsRepository.GetPreferencesAsync(HttpContext.RequestAborted);
 
@@ -277,4 +296,88 @@ public class MonitoredSeriesController(
     {
         return Ok(await monitoredSeriesService.GetMetadataForm(provider, HttpContext.RequestAborted));
     }
+
+    [HttpPost("{id:guid}/upload")]
+    [RequestSizeLimit(MaxFileSizeInBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxFileSizeInBytes)]
+    public async Task<IActionResult> Upload(Guid id, List<IFormFile> files, CancellationToken ct)
+    {
+        if (files.Count <= 0) return BadRequest();
+
+        if (await unitOfWork.DroppedContentRepository.ExistsByMonitoredSeriesIdAsync(id, ct))
+        {
+            return BadRequest("A dropped content import for this monitored series is already running. Please wait");
+        }
+
+        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetById(id, ct: ct);
+        if (monitoredSeries is null) return NotFound();
+
+        var downloadDirectory = fileSystem.Path.Join(configuration.DownloadDir, id.ToString());
+        if (!fileSystem.Directory.Exists(downloadDirectory))
+        {
+            fileSystem.Directory.CreateDirectory(downloadDirectory);
+        }
+
+        List<string> filePaths = [];
+        foreach (var file in files)
+        {
+            if (file.Length == 0) continue;
+
+            var safeFileName = fileSystem.Path.GetFileName(file.FileName);
+            var destinationPath = fileSystem.Path.Combine(downloadDirectory, safeFileName);
+
+            await using var targetStream = fileSystem.File.Create(destinationPath);
+            await file.CopyToAsync(targetStream, ct);
+
+            filePaths.Add(destinationPath);
+        }
+
+        var droppedContent = new DroppedContent
+        {
+            MonitoredSeriesId = id,
+            MonitoredSeries = monitoredSeries,
+            Files = filePaths.Select(path =>
+            {
+                var fileName = fileSystem.Path.GetFileName(path);
+                var parseResult = parserService.FullParse(fileName, monitoredSeries.ContentFormat);
+
+                return new DownloadFile
+                {
+                    FileName = fileName,
+                    FullPath = fileName,
+                    FileSize = fileSystem.FileInfo.New(path).Length,
+                    VolumeMarker = parseResult.VolumeMarker,
+                    ChapterMarker = parseResult.ChapterMarker,
+                    Selected = true,
+                };
+            }).ToList(),
+        };
+
+        unitOfWork.DroppedContentRepository.Add(droppedContent);
+        await unitOfWork.CommitAsync(ct);
+
+        BackgroundJob.Enqueue(() => Cleanup(droppedContent.Id, CancellationToken.None));
+
+        return Ok();
+    }
+
+    [AutomaticRetry(Attempts = 0)]
+    [Queue(HangfireQueue.TorrentCleanup)]
+    [DisableConcurrentExecution(timeoutInSeconds: 86400 * 2)]
+    public async Task Cleanup(Guid id, CancellationToken ct)
+    {
+        var droppedContent = await unitOfWork.DroppedContentRepository.GetById(id, ct);
+        if (droppedContent is null) return;
+
+        await cleanupService.CleanupAsync(new DroppedContentAdaptor(droppedContent), ct);
+
+        var downloadDirectory = fileSystem.Path.Join(configuration.DownloadDir, droppedContent.MonitoredSeriesId.ToString());
+        if (fileSystem.Directory.Exists(downloadDirectory))
+        {
+            fileSystem.Directory.Delete(downloadDirectory, true);
+        }
+
+        await unitOfWork.DroppedContentRepository.DeleteById(id, ct);
+    }
+
 }

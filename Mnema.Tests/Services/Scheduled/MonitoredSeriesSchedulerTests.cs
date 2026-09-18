@@ -37,7 +37,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
         List<MonitoredSeries> monitoredReleases = [series];
         var normalizedTitlesById = monitoredReleases.ToDictionary(
             m => m.Id,
-            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+            m => m.SearchTitles.Select(t => t.NormalizedTitle).ToList());
 
         var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
@@ -55,7 +55,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
         List<MonitoredSeries> monitoredReleases = [series];
         var normalizedTitlesById = monitoredReleases.ToDictionary(
             m => m.Id,
-            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+            m => m.SearchTitles.Select(t => t.NormalizedTitle).ToList());
 
         var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
@@ -75,7 +75,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
         List<MonitoredSeries> monitoredReleases = [series];
         var normalizedTitlesById = monitoredReleases.ToDictionary(
             m => m.Id,
-            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+            m => m.SearchTitles.Select(t => t.NormalizedTitle).ToList());
 
         var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
@@ -93,7 +93,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
         List<MonitoredSeries> monitoredReleases = [series];
         var normalizedTitlesById = monitoredReleases.ToDictionary(
             m => m.Id,
-            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+            m => m.SearchTitles.Select(t => t.NormalizedTitle).ToList());
 
         var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
@@ -106,7 +106,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
         const Format format = Format.Archive;
 
         var series = CreateMonitoredSeries();
-        series.ValidTitles = ["Spice and Wolf"];
+        series.SearchTitles = [new SearchTitle() { Title = "Spice and Wolf", NormalizedTitle = "Spice and Wolf".ToNormalized()}];
         series.Format = format;
         series.Chapters = [new MonitoredChapter { Volume = "1", Status = MonitoredChapterStatus.Missing }];
 
@@ -133,7 +133,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
         List<MonitoredSeries> monitoredReleases = [series];
         var normalizedTitlesById = monitoredReleases.ToDictionary(
             m => m.Id,
-            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+            m => m.SearchTitles.Select(t => t.NormalizedTitle).ToList());
 
         var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
@@ -144,7 +144,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
     public async Task FindMatch_NoTitleMatch_ContinuesAndReturnsNull()
     {
         var series = CreateMonitoredSeries();
-        series.ValidTitles = ["Spice and Wolf"];
+        series.SearchTitles = [new SearchTitle() { Title = "Spice and Wolf", NormalizedTitle = "Spice and Wolf".ToNormalized()}];
 
         var release = CreateRelease(releaseId: "release-1", contentId: null);
         release.ContentName = "A Completely Different Series";
@@ -158,7 +158,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
         List<MonitoredSeries> monitoredReleases = [series];
         var normalizedTitlesById = monitoredReleases.ToDictionary(
             m => m.Id,
-            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+            m => m.SearchTitles.Select(t => t.NormalizedTitle).ToList());
 
         var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
@@ -172,7 +172,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
     public async Task FindMatch_FormatMismatch_ContinuesAndReturnsNull()
     {
         var series = CreateMonitoredSeries();
-        series.ValidTitles = ["Spice and Wolf"];
+        series.SearchTitles = [new SearchTitle() { Title = "Spice and Wolf", NormalizedTitle = "Spice and Wolf".ToNormalized()}];
         series.Format = (Format)1;
         series.Chapters = [new MonitoredChapter { Volume = "1", Status = MonitoredChapterStatus.Missing }];
 
@@ -199,7 +199,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
         List<MonitoredSeries> monitoredReleases = [series];
         var normalizedTitlesById = monitoredReleases.ToDictionary(
             m => m.Id,
-            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+            m => m.SearchTitles.Select(t => t.NormalizedTitle).ToList());
 
         var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
@@ -212,7 +212,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
         const Format format = Format.Archive;
 
         var series = CreateMonitoredSeries();
-        series.ValidTitles = ["Spice and Wolf"];
+        series.SearchTitles = [new SearchTitle() { Title = "Spice and Wolf", NormalizedTitle = "Spice and Wolf".ToNormalized()}];
         series.Format = format;
         series.Chapters =
         [
@@ -244,7 +244,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
         List<MonitoredSeries> monitoredReleases = [series];
         var normalizedTitlesById = monitoredReleases.ToDictionary(
             m => m.Id,
-            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+            m => m.SearchTitles.Select(t => t.NormalizedTitle).ToList());
 
         var match = await MonitoredSeriesScheduler.FindMatch(scope, monitoredReleases, release, normalizedTitlesById, CancellationToken.None);
 
@@ -502,7 +502,7 @@ public class MonitoredSeriesSchedulerTest(ITestOutputHelper testOutputHelper) : 
         MangaBakaId = string.Empty,
         TitleOverride = string.Empty,
         ExternalId = externalId,
-        ValidTitles = [],
+        SearchTitles = [],
         Chapters = [],
         Metadata = new MetadataBag()
     };

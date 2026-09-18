@@ -9,7 +9,7 @@ import {
   TemplateRef,
   viewChild
 } from '@angular/core';
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {
   FileMetadata, MonitoredChapter,
@@ -58,7 +58,7 @@ import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factor
 @Component({
   selector: 'app-monitored-series',
   standalone: true,
-  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe, SentenceCasePipe, NgbTooltip],
+  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe, SentenceCasePipe, NgbTooltip, RouterLink],
   templateUrl: './monitored-series.component.html',
   styleUrl: './monitored-series.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -392,10 +392,7 @@ export class MonitoredSeriesComponent implements OnInit {
         component.double.set(false);
         component.showChanges.set(true);
         component.initialValue.set(fileInfo.metadata ?? {});
-
-        if (this.selectedChapter() != null) {
-          component.descriptionTemplate.set(this.metadataEditorHeader());
-        }
+        component.descriptionTemplate.set(this.metadataEditorHeader());
 
         return this.modalService.onClose$<FileMetadata>(modal);
       }),
@@ -408,13 +405,10 @@ export class MonitoredSeriesComponent implements OnInit {
   }
 
   protected loadUpstreamMetadata(form: FormGroup) {
-    const chapter = this.selectedChapter();
-    if (!chapter) return;
-
     const formDefinition = this.editFileMetadataFormDefinition();
     if (!formDefinition) return;
 
-    this.monitoredSeriesService.getChapterMetadata(this.series().id, chapter.id).pipe(
+    this.monitoredSeriesService.getChapterMetadata(this.series().id, this.selectedChapter()?.id).pipe(
       tap(metadata => {
         this.genericFormFactoryService.extendFormGroupForValue(form, formDefinition.controls, metadata, this.fb);
         form.setValue(metadata);

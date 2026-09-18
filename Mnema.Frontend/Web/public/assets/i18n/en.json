@@ -56,7 +56,8 @@
       "notifications": "Notifications",
       "search-series": "Search Series",
       "missing-chapters": "Missing Chapters",
-      "import-scans": "Import Scans"
+      "import-scans": "Import Scans",
+      "dropped-content": "Upload files"
     },
     "settings": {
       "title": "Settings",
@@ -1526,6 +1527,24 @@
     "Recurrent": "Recurrent",
     "Incidental": "Incidental",
     "Unweighted": "Unweighted"
+  },
+
+  "file-drag-and-drop-upload": {
+    "drag-n-drop": "Drag-n-drop",
+    "upload": "Upload",
+    "enter-an-url-pre-title": "Enter an {{url}}",
+    "url": "url",
+    "url-label": "Url",
+    "back": "Back",
+    "load": "Load",
+    "selected-files": "Selected files {{count}}"
+  },
+
+  "dropped-content": {
+    "title": "Manually upload content",
+    "description": "Manually upload files to be processed by Mnema. Selected a monitored series, and click process!",
+    "monitored-series-selector-label": "Select the Monitored Series to upload files for",
+    "import": "Import"
   }
 
 }

@@ -35,6 +35,7 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<DownloadClient> DownloadClients { get; set; }
     public DbSet<MonitoredSeries> MonitoredSeries { get; set; }
     public DbSet<MonitoredChapter> MonitoredChapters { get; set; }
+    public DbSet<SearchTitle> SearchTitles { get; set; }
     public DbSet<ManualMigrationHistory> ManualMigrationHistory { get; set; }
     public DbSet<AuthKey> AuthKeys { get; set; }
     public DbSet<ProviderSettings> ProviderSettings { get; set; }
@@ -43,6 +44,7 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<ImportScan> ImportScans { get; set; }
     public DbSet<DirectoryImportResult> DirectoryImportResults { get; set; }
     public DbSet<ImportError> ImportErrors { get; set; }
+    public DbSet<DroppedContent> DroppedContent { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -96,6 +98,13 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
             .HasMany(x => x.ImportErrors)
             .WithOne(x => x.ImportScan)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<DroppedContent>()
+            .Navigation(dc => dc.MonitoredSeries)
+            .AutoInclude();
+        builder.Entity<MonitoredSeries>()
+            .Navigation(ms => ms.SearchTitles)
+            .AutoInclude();
     }
 
     private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)

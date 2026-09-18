@@ -64,6 +64,7 @@ public class Program
                 await new SetDefaultNamingPreferences().RunAsync(services, context, logger);
                 await new MetadataFieldMappingsMigration().RunAsync(services, context, logger);
                 await new MigrateLinkPreferences().RunAsync(services, context, logger);
+                await new MigrateValidTitles().RunAsync(services, context, logger);
             }
             catch (Exception ex)
             {

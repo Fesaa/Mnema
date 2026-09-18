@@ -183,6 +183,28 @@ namespace Mnema.Database.SqliteMigrations
                     b.ToTable("DownloadClients");
                 });
 
+            modelBuilder.Entity("Mnema.Models.Entities.Content.DroppedContent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Files")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("[]");
+
+                    b.Property<Guid>("MonitoredSeriesId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MonitoredSeriesId");
+
+                    b.ToTable("DroppedContent");
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.Content.ExternalDownload", b =>
                 {
                     b.Property<Guid>("Id")
@@ -379,6 +401,33 @@ namespace Mnema.Database.SqliteMigrations
                     b.HasKey("Id");
 
                     b.ToTable("MonitoredSeries");
+                });
+
+            modelBuilder.Entity("Mnema.Models.Entities.Content.SearchTitle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("MonitoredSeriesId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedTitle")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MonitoredSeriesId");
+
+                    b.HasIndex("NormalizedTitle")
+                        .IsUnique();
+
+                    b.ToTable("SearchTitles");
                 });
 
             modelBuilder.Entity("Mnema.Models.Entities.Content.Subscription", b =>
@@ -853,6 +902,17 @@ namespace Mnema.Database.SqliteMigrations
                     b.ToTable("ServerSettings");
                 });
 
+            modelBuilder.Entity("Mnema.Models.Entities.Content.DroppedContent", b =>
+                {
+                    b.HasOne("Mnema.Models.Entities.Content.MonitoredSeries", "MonitoredSeries")
+                        .WithMany()
+                        .HasForeignKey("MonitoredSeriesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MonitoredSeries");
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.Content.MonitoredChapter", b =>
                 {
                     b.HasOne("Mnema.Models.Entities.Content.MonitoredSeries", "Series")
@@ -862,6 +922,15 @@ namespace Mnema.Database.SqliteMigrations
                         .IsRequired();
 
                     b.Navigation("Series");
+                });
+
+            modelBuilder.Entity("Mnema.Models.Entities.Content.SearchTitle", b =>
+                {
+                    b.HasOne("Mnema.Models.Entities.Content.MonitoredSeries", null)
+                        .WithMany("SearchTitles")
+                        .HasForeignKey("MonitoredSeriesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Mnema.Models.Entities.Scanner.DirectoryImportResult", b =>
@@ -896,6 +965,8 @@ namespace Mnema.Database.SqliteMigrations
             modelBuilder.Entity("Mnema.Models.Entities.Content.MonitoredSeries", b =>
                 {
                     b.Navigation("Chapters");
+
+                    b.Navigation("SearchTitles");
                 });
 
             modelBuilder.Entity("Mnema.Models.Entities.Scanner.ImportScan", b =>

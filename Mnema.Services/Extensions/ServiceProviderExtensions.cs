@@ -1,11 +1,15 @@
+using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.API.Services;
+using Mnema.Common.Extensions;
 using Mnema.Models.Entities;
 using Mnema.Services.Connections;
 using Mnema.Services.Hubs;
@@ -24,12 +28,12 @@ public static class ServiceProviderExtensions
             services.AddSingleton<ITicketStore, CustomTicketStore>();
         }
 
+        services.AddScheduled();
+
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<IPagesService, PageService>();
         services.AddScoped<ISearchService, SearchService>();
         services.AddScoped<IDownloadService, DownloadService>();
-        services.AddScoped<IScheduled, MonitoredSeriesScheduler>();
-        services.AddScoped<IScheduled, MonitoredSeriesMetadataScheduler>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IDownloadClientService, DownloadClientService>();
@@ -63,5 +67,20 @@ public static class ServiceProviderExtensions
     public static void MapMnema(this IEndpointRouteBuilder builder)
     {
         builder.MapHub<MessageHub>("/ws");
+    }
+
+    private static void AddScheduled(this IServiceCollection services)
+    {
+        var scheduledTypes = Assembly.GetAssembly(typeof(ServiceProviderExtensions))?
+            .GetTypes()
+            .Where(type =>
+                type is { IsClass: true, IsAbstract: false } &&
+                typeof(IScheduled).IsAssignableFrom(type))
+            .ToList();
+
+        foreach (var type in (scheduledTypes ?? []).Where(type => typeof(IScheduled).IsAssignableFrom(type)))
+        {
+            services.AddScoped(typeof(IScheduled), type);
+        }
     }
 }

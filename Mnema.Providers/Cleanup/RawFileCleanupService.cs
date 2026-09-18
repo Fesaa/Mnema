@@ -14,6 +14,7 @@ using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
@@ -43,7 +44,7 @@ internal class RawFileCleanupService(
         var request = content.Request;
         var context = await BuildCleanupContextAsync(request, content);
 
-        logger.LogDebug("[{Title}/{Id}] Cleaning up torrent - {Dir}", content.Title, content.Id, context.DownloadDirectory);
+        logger.LogDebug("[{Title}/{Id}] Cleaning up content - {Dir}", content.Title, content.Id, context.DownloadDirectory);
 
         await ProcessFilesAsync(context);
     }
@@ -121,22 +122,39 @@ internal class RawFileCleanupService(
     private async Task<List<string>> GetFilesToProcessAsync(CleanupContext context)
     {
         var externalDownloadId = context.Request.GetKey(RequestConstants.ExternalDownloadId);
-        if (externalDownloadId == null)
+        if (externalDownloadId is not null)
         {
-            logger.LogWarning("No external download found, what's going on? Falling back to directory parsing");
+            var externalDownload = await unitOfWork.ExternalDownloadRepository.GetById(externalDownloadId.Value);
+            if (externalDownload == null)
+                throw new MnemaException($"Failed to find external download {externalDownloadId.Value} linked to {context.Title}");
 
-            var files = fileSystem.Directory.GetFiles(context.DownloadDirectory, "*", SearchOption.AllDirectories);
-            var allowedExtensions = parserService.FileExtensionsForFormat(context.Format);
+            context.ExternalDownload = externalDownload;
 
-            var validFiles = files.Where(f => Filter(allowedExtensions, f)).ToList();
-            return validFiles;
+            return CreatePaths(externalDownload.Files);
         }
 
-        var externalDownload = await unitOfWork.ExternalDownloadRepository.GetById(externalDownloadId.Value);
-        if (externalDownload == null)
-            throw new MnemaException($"Failed to find external download {externalDownloadId.Value} linked to {context.Title}");
+        var droppedContentId = context.Request.GetKey(RequestConstants.DroppedContentId);
+        if (droppedContentId is not null)
+        {
+            var droppedContent = await unitOfWork.DroppedContentRepository.GetById(droppedContentId.Value);
+            if (droppedContent == null)
+                throw new MnemaException(
+                    $"Failed to find dropped content {droppedContentId.Value} linked to {context.Title}");
 
-        return externalDownload.Files
+            context.DroppedContent = droppedContent;
+
+            return CreatePaths(droppedContent.Files);
+        }
+
+        logger.LogWarning("No linked content found, what's going on? Falling back to directory parsing");
+
+        var files = fileSystem.Directory.GetFiles(context.DownloadDirectory, "*", SearchOption.AllDirectories);
+        var allowedExtensions = parserService.FileExtensionsForFormat(context.Format);
+
+        var validFiles = files.Where(f => Filter(allowedExtensions, f)).ToList();
+        return validFiles;
+
+        List<string> CreatePaths(List<DownloadFile> downloadFiles) => downloadFiles
             .Where(f => f.Selected)
             .Select(f => Path.Join(context.DownloadDirectory, f.FullPath))
             .ToList();
@@ -204,6 +222,17 @@ internal class RawFileCleanupService(
 
         logger.LogDebug("Finished processing file {FileName} -> {DestPath} for cleanup in {Elapsed}",
             sourceFile, destPath, sw.Elapsed.ToReadableString());
+
+
+        var downloadFiles = context.ExternalDownload?.Files ?? context.ExternalDownload?.Files ?? [];
+
+        var searchKey = sourceFile.RemoveSuffix(context.DownloadDirectory);
+        var file = downloadFiles.FirstOrDefault(f => f.FullPath == searchKey);
+        if (file is not null)
+        {
+            file.Processed = true;
+            await unitOfWork.CommitAsync();
+        }
     }
 
     private async Task HandleFormatAsync(
@@ -241,5 +270,9 @@ internal record CleanupContext(
     ContentFormat ContentFormat,
     string Title,
     string DestinationDirectory,
-    string DownloadDirectory
-);
+    string DownloadDirectory)
+{
+    public ExternalDownload? ExternalDownload { get; set; }
+    public DroppedContent? DroppedContent { get; set; }
+
+}

@@ -31,6 +31,9 @@
                         <i class="fa fa-download"></i>
                       </button>
                     }
+                    <button class="btn btn-sm btn-secondary" routerLink="/dropped-content" [queryParams]="{'monitoredSeriesId': s.id}">
+                      <i class="fa fa-upload"></i>
+                    </button>
                     <button class="btn btn-sm btn-secondary" (click)="showResolvedSeries()">
                       <i class="fa fa-eye"></i>
                     </button>
