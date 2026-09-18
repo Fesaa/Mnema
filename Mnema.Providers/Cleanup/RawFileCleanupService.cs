@@ -224,7 +224,7 @@ internal class RawFileCleanupService(
             sourceFile, destPath, sw.Elapsed.ToReadableString());
 
 
-        var downloadFiles = context.ExternalDownload?.Files ?? context.ExternalDownload?.Files ?? [];
+        var downloadFiles = context.ExternalDownload?.Files ?? context.DroppedContent?.Files ?? [];
 
         var searchKey = sourceFile.RemoveSuffix(context.DownloadDirectory);
         var file = downloadFiles.FirstOrDefault(f => f.FullPath == searchKey);
