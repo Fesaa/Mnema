@@ -144,11 +144,13 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
                 .AnyAsync(cancellationToken);
         }
 
+        var normalizedTitles = dto.ValidTitles.Select(t => t.ToNormalized()).ToList();
+
         return ctx.MonitoredSeries
             .Where(s => current == null || s.Id != current)
-            .WhereIf(!string.IsNullOrEmpty(dto.HardcoverId), s => s.HardcoverId == dto.HardcoverId)
-            .WhereIf(!string.IsNullOrEmpty(dto.MangaBakaId), s => s.MangaBakaId == dto.MangaBakaId)
-            .Where(s => s.Format == dto.Format && s.ValidTitles.Intersect(dto.ValidTitles).Any())
+            .Where(s => s.Format == dto.Format && ctx.SearchTitles
+                .Where(t => t.MonitoredSeriesId == s.Id)
+                .Any(t => normalizedTitles.Contains(t.NormalizedTitle)))
             .AnyAsync(cancellationToken);
     }
 

@@ -148,7 +148,7 @@ internal class MonitoredSeriesScheduler(
 
         var normalizedTitlesById = monitoredReleases.ToDictionary(
             m => m.Id,
-            m => m.ValidTitles.Select(t => t.ToNormalized()).ToList());
+            m => m.SearchTitles.Select(t => t.NormalizedTitle).ToList());
 
         var remainingSeries = new List<MonitoredSeries>(monitoredReleases);
 

@@ -53,7 +53,7 @@ public class MonitoredSeriesService(
         series.Provider = dto.Provider;
         series.ContentFormat = dto.ContentFormat;
         series.Format = dto.Format;
-        series.ValidTitles = dto.ValidTitles;
+        series.SearchTitles = [.. dto.ValidTitles.Select(t => new SearchTitle { Title = t })];
         series.TitleOverride = dto.TitleOverride;
         series.HardcoverId = dto.HardcoverId;
         series.MangaBakaId = dto.MangaBakaId;
@@ -86,7 +86,7 @@ public class MonitoredSeriesService(
             ExternalId = dto.ExternalId,
             Metadata = dto.Metadata,
             TitleOverride = dto.TitleOverride,
-            ValidTitles = dto.ValidTitles,
+            SearchTitles = [.. dto.ValidTitles.Select(t => new SearchTitle { Title = t })],
             Summary = string.Empty,
             Chapters = [],
         };

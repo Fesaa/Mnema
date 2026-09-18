@@ -388,6 +388,33 @@ namespace Mnema.Database.Migrations
                     b.ToTable("MonitoredSeries");
                 });
 
+            modelBuilder.Entity("Mnema.Models.Entities.Content.SearchTitle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MonitoredSeriesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("NormalizedTitle")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MonitoredSeriesId");
+
+                    b.HasIndex("NormalizedTitle")
+                        .IsUnique();
+
+                    b.ToTable("SearchTitles");
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.Content.Subscription", b =>
                 {
                     b.Property<Guid>("Id")
@@ -873,6 +900,15 @@ namespace Mnema.Database.Migrations
                     b.Navigation("Series");
                 });
 
+            modelBuilder.Entity("Mnema.Models.Entities.Content.SearchTitle", b =>
+                {
+                    b.HasOne("Mnema.Models.Entities.Content.MonitoredSeries", null)
+                        .WithMany("SearchTitles")
+                        .HasForeignKey("MonitoredSeriesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Mnema.Models.Entities.Scanner.DirectoryImportResult", b =>
                 {
                     b.HasOne("Mnema.Models.Entities.Scanner.ImportScan", "ImportScan")
@@ -905,6 +941,8 @@ namespace Mnema.Database.Migrations
             modelBuilder.Entity("Mnema.Models.Entities.Content.MonitoredSeries", b =>
                 {
                     b.Navigation("Chapters");
+
+                    b.Navigation("SearchTitles");
                 });
 
             modelBuilder.Entity("Mnema.Models.Entities.Scanner.ImportScan", b =>

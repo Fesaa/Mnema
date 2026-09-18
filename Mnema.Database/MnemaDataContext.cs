@@ -35,6 +35,7 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<DownloadClient> DownloadClients { get; set; }
     public DbSet<MonitoredSeries> MonitoredSeries { get; set; }
     public DbSet<MonitoredChapter> MonitoredChapters { get; set; }
+    public DbSet<SearchTitle> SearchTitles { get; set; }
     public DbSet<ManualMigrationHistory> ManualMigrationHistory { get; set; }
     public DbSet<AuthKey> AuthKeys { get; set; }
     public DbSet<ProviderSettings> ProviderSettings { get; set; }

@@ -28,7 +28,7 @@ public sealed record MonitoredSeriesDto: IDatabaseEntity
     public ContentFormat ContentFormat { get; init; }
     public Format Format { get; init; }
 
-    /// <inheritdoc cref="MonitoredSeries.ValidTitles" />
+    /// <inheritdoc cref="MonitoredSeries.SearchTitles" />
     public List<string> ValidTitles { get; init; }
 
     public string HardcoverId { get; init; }
