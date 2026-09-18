@@ -41,19 +41,6 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
   formDefinition = signal<FormDefinition | undefined>(undefined);
   metadataFormDefinition = signal<FormDefinition | undefined>(undefined);
 
-  metadataControls = computed<FormDefinition | undefined>(() => {
-    const f = this.metadataFormDefinition();
-    if (!f) return undefined;
-
-    return {key: f.key, descriptionKey: '', controls: f.controls.filter(c => !c.advanced)}
-  });
-  advancedControls = computed<FormDefinition | undefined>(() => {
-    const f = this.metadataFormDefinition();
-    if (!f) return undefined;
-
-    return {key: f.key, descriptionKey: '', controls: f.controls.filter(c => c.advanced)}
-  });
-
   seriesForm = new FormGroup({});
 
   ngOnInit(): void {
