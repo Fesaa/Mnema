@@ -9,7 +9,7 @@ import {
   TemplateRef,
   viewChild
 } from '@angular/core';
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {
   FileMetadata, MonitoredChapter,
@@ -58,7 +58,7 @@ import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factor
 @Component({
   selector: 'app-monitored-series',
   standalone: true,
-  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe, SentenceCasePipe, NgbTooltip],
+  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe, SentenceCasePipe, NgbTooltip, RouterLink],
   templateUrl: './monitored-series.component.html',
   styleUrl: './monitored-series.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

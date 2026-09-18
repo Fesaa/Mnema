@@ -9,17 +9,19 @@
   </div>
 
   <div class="my-4">
-    <app-type-ahead [settings]="typeaheadConfig" (selectedData)="monitoredSeriesId.set($any($event).id)">
-      <ng-template #label let-ms>
-        {{t('monitored-series-selector-label')}}
-      </ng-template>
-      <ng-template #optionItem let-ms>
-        {{ms.title}}
-      </ng-template>
-      <ng-template #badgeItem let-ms>
-        {{ms.title}}
-      </ng-template>
-    </app-type-ahead>
+    @if (typeaheadConfig(); as config) {
+      <app-type-ahead [settings]="config" (selectedData)="monitoredSeriesId.set($any($event).id)">
+        <ng-template #label let-ms>
+          {{t('monitored-series-selector-label')}}
+        </ng-template>
+        <ng-template #optionItem let-ms>
+          {{ms.title}}
+        </ng-template>
+        <ng-template #badgeItem let-ms>
+          {{ms.title}}
+        </ng-template>
+      </app-type-ahead>
+    }
   </div>
 
   <app-file-drag-and-drop-upload [acceptableExtensions]="extensions" (dropped)="onFileDrop($event)" />
