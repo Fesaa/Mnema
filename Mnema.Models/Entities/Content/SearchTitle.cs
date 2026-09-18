@@ -4,7 +4,7 @@ using Mnema.Models.Entities.Interfaces;
 
 namespace Mnema.Models.Entities.Content;
 
-[Index(nameof(NormalizedTitle), IsUnique = true)]
+[Index(nameof(NormalizedTitle), IsUnique = false)]
 public class SearchTitle: IDatabaseEntity
 {
     public Guid Id { get; set; }

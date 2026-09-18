@@ -431,8 +431,7 @@ namespace Mnema.Database.Migrations
 
                     b.HasIndex("MonitoredSeriesId");
 
-                    b.HasIndex("NormalizedTitle")
-                        .IsUnique();
+                    b.HasIndex("NormalizedTitle");
 
                     b.ToTable("SearchTitles");
                 });
