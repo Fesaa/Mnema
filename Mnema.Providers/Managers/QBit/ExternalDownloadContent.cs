@@ -38,8 +38,21 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
     {
         get
         {
+            var selectedFileCount = externalDownload.Files.Count(f => f.Selected);
+
             var totalSize = externalDownload.TotalFileSize.AsHumanReadableSize();
             var downloadedSize = externalDownload.SelectedFileSize.AsHumanReadableSize();
+
+            double progress;
+            if (State != ContentState.Cleanup)
+            {
+                progress = Math.Floor(torrentInfo.Progress * 100);
+            }
+            else
+            {
+                var processedFileCount = externalDownload.Files.Count(f => f is { Selected: true, Processed: true });
+                progress = Math.Floor((double)processedFileCount / selectedFileCount * 100);
+            }
 
             return new DownloadInfo
             {
@@ -51,10 +64,10 @@ public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentI
                 ImageUrl = Series?.CoverUrl,
                 RefUrl = Series?.RefUrl,
                 ReDownloadSize = string.Empty,
-                Size = $"{downloadedSize} {ToFileSuffix(externalDownload.Files.Count(f => f.Selected))}",
+                Size = $"{downloadedSize} {ToFileSuffix(selectedFileCount)}",
                 TotalSize = $"{totalSize} {ToFileSuffix(externalDownload.Files.Count)}",
                 Downloading = State == ContentState.Downloading,
-                Progress = Math.Floor(torrentInfo.Progress * 100),
+                Progress = progress,
                 Estimated = State == ContentState.Downloading ? torrentInfo.EstimatedTime?.TotalSeconds ?? 0 : 0,
                 SpeedType = SpeedType.Bytes,
                 Speed = torrentInfo.DownloadSpeed,

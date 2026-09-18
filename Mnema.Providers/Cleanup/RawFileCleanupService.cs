@@ -14,6 +14,7 @@ using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities;
+using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
@@ -136,6 +137,8 @@ internal class RawFileCleanupService(
         if (externalDownload == null)
             throw new MnemaException($"Failed to find external download {externalDownloadId.Value} linked to {context.Title}");
 
+        context.ExternalDownload = externalDownload;
+
         return externalDownload.Files
             .Where(f => f.Selected)
             .Select(f => Path.Join(context.DownloadDirectory, f.FullPath))
@@ -204,6 +207,17 @@ internal class RawFileCleanupService(
 
         logger.LogDebug("Finished processing file {FileName} -> {DestPath} for cleanup in {Elapsed}",
             sourceFile, destPath, sw.Elapsed.ToReadableString());
+
+        if (context.ExternalDownload is not null)
+        {
+            var searchKey = sourceFile.RemoveSuffix(context.DownloadDirectory);
+            var file = context.ExternalDownload.Files.FirstOrDefault(f => f.FileName == searchKey);
+            if (file is not null)
+            {
+                file.Processed = true;
+                await unitOfWork.CommitAsync();
+            }
+        }
     }
 
     private async Task HandleFormatAsync(
@@ -241,5 +255,8 @@ internal record CleanupContext(
     ContentFormat ContentFormat,
     string Title,
     string DestinationDirectory,
-    string DownloadDirectory
-);
+    string DownloadDirectory)
+{
+    public ExternalDownload? ExternalDownload { get; set; }
+
+}
