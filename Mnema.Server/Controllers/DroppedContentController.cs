@@ -5,16 +5,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
 using J2N.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Net.Http.Headers;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common.Extensions;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Internal;
-using Mnema.Providers.Cleanup;
 using Mnema.Providers.Managers.Dropped;
 
 namespace Mnema.Server.Controllers;
@@ -33,26 +31,37 @@ public class DroppedContentController(
     [HttpPost("{id:guid}/upload")]
     [RequestSizeLimit(MaxFileSizeInBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = MaxFileSizeInBytes)]
-    public async Task<IActionResult> Upload(Guid id, CancellationToken ct)
+    public async Task<IActionResult> Upload(Guid id, List<IFormFile> files, CancellationToken ct)
     {
-        if (!MediaTypeHeaderValue.TryParse(Request.ContentType, out var mediaTypeHeader) ||
-            !mediaTypeHeader.MediaType.Equals("multipart/form-data", StringComparison.OrdinalIgnoreCase))
-        {
-            return BadRequest("Expected a multipart request.");
-        }
+        if (files.Count <= 0) return BadRequest();
 
-        var boundary = HeaderUtilities.RemoveQuotes(mediaTypeHeader.Boundary).Value;
-        if (string.IsNullOrEmpty(boundary))
+        if (await unitOfWork.DroppedContentRepository.ExistsByMonitoredSeriesIdAsync(id, ct))
         {
-            return BadRequest("Missing multipart boundary.");
+            return BadRequest("A dropped content import for this monitored series is already running. Please wait");
         }
 
         var monitoredSeries = await unitOfWork.MonitoredSeriesRepository.GetById(id, ct: ct);
         if (monitoredSeries is null) return NotFound();
 
         var downloadDirectory = fileSystem.Path.Join(configuration.DownloadDir, id.ToString());
+        if (!fileSystem.Directory.Exists(downloadDirectory))
+        {
+            fileSystem.Directory.CreateDirectory(downloadDirectory);
+        }
 
-        var filePaths = await CopyToDisk(boundary, downloadDirectory, ct);
+        List<string> filePaths = [];
+        foreach (var file in files)
+        {
+            if (file.Length == 0) continue;
+
+            var safeFileName = fileSystem.Path.GetFileName(file.FileName);
+            var destinationPath = fileSystem.Path.Combine(downloadDirectory, safeFileName);
+
+            await using var targetStream = fileSystem.File.Create(destinationPath);
+            await file.CopyToAsync(targetStream, ct);
+
+            filePaths.Add(destinationPath);
+        }
 
         var droppedContent = new DroppedContent
         {
@@ -66,7 +75,7 @@ public class DroppedContentController(
                 return new DownloadFile
                 {
                     FileName = fileName,
-                    FullPath = path.RemovePrefix(configuration.DownloadDir),
+                    FullPath = fileName,
                     FileSize = fileSystem.FileInfo.New(path).Length,
                     VolumeMarker = parseResult.VolumeMarker,
                     ChapterMarker = parseResult.ChapterMarker,
@@ -78,39 +87,25 @@ public class DroppedContentController(
         unitOfWork.DroppedContentRepository.Add(droppedContent);
         await unitOfWork.CommitAsync(ct);
 
-        BackgroundJob.Enqueue(() =>
-            cleanupService.CleanupAsync(new DroppedContentAdaptor(droppedContent), CancellationToken.None));
+        BackgroundJob.Enqueue(() => Cleanup(droppedContent.Id, CancellationToken.None));
 
         return Ok();
     }
 
-    private async Task<List<string>> CopyToDisk(string boundary,string downloadDirectory, CancellationToken ct)
+    public async Task Cleanup(Guid id, CancellationToken ct)
     {
-        List<string> files = [];
+        var droppedContent = await unitOfWork.DroppedContentRepository.GetById(id, ct);
+        if (droppedContent is null) return;
 
-        var reader = new MultipartReader(boundary, Request.Body);
+        await cleanupService.CleanupAsync(new DroppedContentAdaptor(droppedContent), ct);
 
-        while (await reader.ReadNextSectionAsync(ct) is { } section)
+        var downloadDirectory = fileSystem.Path.Join(configuration.DownloadDir, droppedContent.MonitoredSeriesId.ToString());
+        if (fileSystem.Directory.Exists(downloadDirectory))
         {
-            if (!ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var contentDisposition))
-            {
-                continue;
-            }
-
-            if (!contentDisposition.DispositionType.Equals("form-data") ||
-                string.IsNullOrEmpty(contentDisposition.FileName.Value)) continue;
-
-            // Prevent directory traversal attacks by taking only the filename
-            var safeFileName = fileSystem.Path.GetFileName(contentDisposition.FileName.Value);
-            var destinationPath = fileSystem.Path.Combine(downloadDirectory, safeFileName);
-
-            await using var targetStream = fileSystem.File.Create(destinationPath);
-            await section.Body.CopyToAsync(targetStream, ct);
-
-            files.Add(destinationPath);
+            fileSystem.Directory.Delete(downloadDirectory, true);
         }
 
-        return files;
+        await unitOfWork.DroppedContentRepository.DeleteById(id, ct);
     }
 
 }

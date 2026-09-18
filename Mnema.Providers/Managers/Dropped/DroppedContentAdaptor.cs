@@ -11,18 +11,27 @@ public class DroppedContentAdaptor(DroppedContent content): IContent
 {
     public string Id => content.Id.ToString();
     public string Title => content.MonitoredSeries.Title;
-    public string DownloadDir => string.Empty;
+    public string DownloadDir => content.MonitoredSeriesId.ToString();
     /// Is always in cleanup, as the files are uploaded by the user
     public ContentState State => ContentState.Cleanup;
 
-    public DownloadRequestDto Request => new()
+    public DownloadRequestDto Request
     {
-        Provider = Provider.GenericFile,
-        Id = Id,
-        BaseDir = content.MonitoredSeries.BaseDir,
-        TempTitle = content.MonitoredSeries.Title,
-        Metadata = content.MonitoredSeries.MetadataForDownloadRequest()
-    };
+        get
+        {
+            var metadata = content.MonitoredSeries.MetadataForDownloadRequest();
+            metadata.SetKey(RequestConstants.DroppedContentId, content.Id);
+
+            return new DownloadRequestDto
+            {
+                Provider = Provider.GenericFile,
+                Id = Id,
+                BaseDir = content.MonitoredSeries.BaseDir,
+                TempTitle = content.MonitoredSeries.Title,
+                Metadata = metadata,
+            };
+        }
+    }
 
     public DownloadInfo DownloadInfo => new()
     {

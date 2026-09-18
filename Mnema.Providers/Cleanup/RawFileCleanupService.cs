@@ -44,7 +44,7 @@ internal class RawFileCleanupService(
         var request = content.Request;
         var context = await BuildCleanupContextAsync(request, content);
 
-        logger.LogDebug("[{Title}/{Id}] Cleaning up torrent - {Dir}", content.Title, content.Id, context.DownloadDirectory);
+        logger.LogDebug("[{Title}/{Id}] Cleaning up content - {Dir}", content.Title, content.Id, context.DownloadDirectory);
 
         await ProcessFilesAsync(context);
     }

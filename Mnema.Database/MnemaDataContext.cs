@@ -44,6 +44,7 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
     public DbSet<ImportScan> ImportScans { get; set; }
     public DbSet<DirectoryImportResult> DirectoryImportResults { get; set; }
     public DbSet<ImportError> ImportErrors { get; set; }
+    public DbSet<DroppedContent> DroppedContent { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -97,6 +98,13 @@ public class MnemaDataContext : DbContext, IDataProtectionKeyContext
             .HasMany(x => x.ImportErrors)
             .WithOne(x => x.ImportScan)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<DroppedContent>()
+            .Navigation(dc => dc.MonitoredSeries)
+            .AutoInclude();
+        builder.Entity<MonitoredSeries>()
+            .Navigation(ms => ms.SearchTitles)
+            .AutoInclude();
     }
 
     private static void OnEntityTracked(object? sender, EntityTrackedEventArgs e)
