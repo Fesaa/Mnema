@@ -263,7 +263,7 @@ internal class MangabakaMetadataService(
                 .ToList() ?? [],
             AgeRating = FromMangaBakaContentRating(contentRating),
             People = publishers.Concat(writers).Concat(artists).ToList(),
-            Links = CollectLinks(series, settings, preferences),
+            Links = CollectLinks(series, preferences),
             CoverUrl = series.CoverX350X3,
             Year = series.StartDate?.Year,
             HighestVolumeNumber = series.Status.HasFinalCount() ? series.FinalVolume.AsFloat() : null,
@@ -292,16 +292,17 @@ internal class MangabakaMetadataService(
     private static readonly StringFormatter<string> NativeLanguagePlaceholder = new StringFormatter<string>()
         .WithVariable("Native", s => s);
 
-    private static List<string> CollectLinks(MangabakaSeries series, MetadataProviderSettings settings, Preferences preferences)
+    internal static List<string> CollectLinks(MangabakaSeries series, Preferences preferences)
     {
-        var filters = preferences.LinkFilters;
-
         var nativeLanguage = series.NativeLanguage;
-        if (!string.IsNullOrEmpty(nativeLanguage))
-        {
-            foreach (var linkFilter in filters.Where(f => f.Type == LinkFilterType.Language))
-                linkFilter.Value = NativeLanguagePlaceholder.Apply(linkFilter.Value, nativeLanguage);
-        }
+
+        // Resolve {Native} into copies instead of the preference itself: one Preferences instance is shared
+        // by every series in a search, so rewriting the value would pin the filter to the first series seen.
+        var filters = preferences.LinkFilters
+            .Select(f => f.Type == LinkFilterType.Language && !string.IsNullOrEmpty(nativeLanguage)
+                ? new LinkFilter(f.Mode, f.Type, NativeLanguagePlaceholder.Apply(f.Value, nativeLanguage))
+                : f)
+            .ToList();
 
         var links = (series.LinksV2 ?? [])
             .Where(link => LinkFilter.IsAllowed(link, filters))
