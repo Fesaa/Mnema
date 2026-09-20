@@ -22,14 +22,9 @@
             <a class="nav-link" [class.active]="activeTab() === 'general'">{{t('tabs.general')}}</a>
           </li>
         }
-        @if (metadataControls()?.controls && metadataControls()!.controls.length > 0) {
+        @if (metadataFormDefinition()) {
           <li class="nav-item" (click)="activeTab.set('metadata')">
             <a class="nav-link" [class.active]="activeTab() === 'metadata'">{{t('tabs.metadata')}}</a>
-          </li>
-        }
-        @if (advancedControls()?.controls && advancedControls()!.controls.length > 0) {
-          <li class="nav-item" (click)="activeTab.set('advanced')">
-            <a class="nav-link" [class.active]="activeTab() === 'advanced'">{{t('tabs.advanced')}}</a>
           </li>
         }
       </ul>
@@ -46,19 +41,9 @@
         </div>
 
         <div class="tab-pane" [class.active]="activeTab() === 'metadata'">
-          @if (metadataControls()) {
+          @if (metadataFormDefinition()) {
             <app-generic-form
-              [formDefinition]="metadataControls()!"
-              [supplyFormGroup]="seriesForm"
-              [initialValue]="series()"
-            ></app-generic-form>
-          }
-        </div>
-
-        <div class="tab-pane" [class.active]="activeTab() === 'advanced'">
-          @if (advancedControls()) {
-            <app-generic-form
-              [formDefinition]="advancedControls()!"
+              [formDefinition]="metadataFormDefinition()!"
               [supplyFormGroup]="seriesForm"
               [initialValue]="series()"
             ></app-generic-form>

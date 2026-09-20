@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mnema.Common.Extensions;
 using Mnema.Models.Enums;
 
 namespace Mnema.Models.Entities;
@@ -25,7 +24,7 @@ public class LinkFilter(LinkFilterMode mode, LinkFilterType type, string value)
             LinkFilterType.Language => link.Language == Value,
             LinkFilterType.Hostname =>
                 Uri.TryCreate(link.Url, UriKind.Absolute, out var uri) &&
-                uri.Host == Value,
+                IsSameHostname(uri.Host, Value),
             _ => false
         };
     }
@@ -42,11 +41,9 @@ public class LinkFilter(LinkFilterMode mode, LinkFilterType type, string value)
 
     public static bool IsHostnameAllowed(string hostname, IEnumerable<LinkFilter> filters)
     {
-        hostname = hostname.RemovePrefix("www");
-
         var matching = filters
             .Where(f => f.Type == LinkFilterType.Hostname)
-            .Where(f => f.Value.Equals(hostname, StringComparison.OrdinalIgnoreCase))
+            .Where(f => IsSameHostname(hostname, f.Value))
             .ToList();
 
         if (matching.Any(f => f.Mode == LinkFilterMode.Include))
@@ -55,4 +52,19 @@ public class LinkFilter(LinkFilterMode mode, LinkFilterType type, string value)
         return matching.Count == 0;
     }
 
+    /// <summary>
+    /// Hostnames are case insensitive, and a filter value copied from the address bar may or may not
+    /// carry the www. prefix, so both sides are normalized before comparing.
+    /// </summary>
+    private static bool IsSameHostname(string first, string second)
+    {
+        return NormalizeHostname(first).Equals(NormalizeHostname(second), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeHostname(string hostname)
+    {
+        var trimmed = hostname.Trim();
+
+        return trimmed.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ? trimmed[4..] : trimmed;
+    }
 }

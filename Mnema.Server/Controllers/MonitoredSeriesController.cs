@@ -378,6 +378,9 @@ public class MonitoredSeriesController(
         }
 
         await unitOfWork.DroppedContentRepository.DeleteById(id, ct);
+
+        BackgroundJob.Enqueue<IMonitoredSeriesService>(s
+            => s.EnrichWithMetadata(droppedContent.MonitoredSeriesId, CancellationToken.None));
     }
 
 }

@@ -262,6 +262,11 @@ public class MonitoredSeriesService(
                     Key = RequestConstants.ExternalIdKey.Key,
                     Field = "externalId",
                 },
+                new SwitchFieldDefinition
+                {
+                    Key = RequestConstants.DisableScheduledDownloading.Key,
+                    Advanced = true,
+                }
             ]
         };
     }

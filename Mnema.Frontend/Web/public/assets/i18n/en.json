@@ -1314,7 +1314,9 @@
     "external_id-title": "External ID",
     "external_id-tooltip": "Used to identify this series UpStream",
     "ignore_non_matched_volumes-title": "{{provider-metadata.ignore_non_matched_volumes-title}}",
-    "ignore_non_matched_volumes-tooltip": "{{provider-metadata.ignore_non_matched_volumes-tooltip}}"
+    "ignore_non_matched_volumes-tooltip": "{{provider-metadata.ignore_non_matched_volumes-tooltip}}",
+    "disable_shedulded_downloading-title": "Disable scheduled downloading",
+    "disable_shedulded_downloading-tooltip": "Won't be matched against in the automatic download loop. Can be used for import only series."
   },
 
   "input": {
