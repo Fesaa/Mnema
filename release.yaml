@@ -26,6 +26,10 @@ BuildServer:
   Rids:
     Stable: ["linux-x64", "linux-arm64", "win-x64", "osx-arm64"]
     Nightly: ["linux-x64", "linux-arm64"]
+  RenameFiles:
+    - { From: "config/appsettings.json", To: "config/appsettings.docker.json"}
+  CopyFiles:
+    - { From: "Mnema.Server/config/appsettings.native.json", To: "config/appsettings.native.json"}
   DeletePaths: ["BuildHost-net472", "BuildHost-netcore", "config/appsettings.Development.json", "bin"]
 
 Docker:
@@ -40,7 +44,4 @@ Docker:
 CreateGitHubRelease:
   ReleaseTypes: [Stable]
   AssetPath: "_output/"
-
-NotifyDiscord:
-  Username: "Mnema Release Bot"
 

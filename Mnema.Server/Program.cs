@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -32,6 +33,7 @@ public class Program
             .Information()
             .CreateBootstrapLogger();
 
+        HandleFirstRunConfiguration();
         PrintStartUp();
         InitNetVips();
 
@@ -103,6 +105,19 @@ public class Program
                     .ListenAnyIP(8080,
                         listenOptions => { listenOptions.Protocols = HttpProtocols.Http1; }))
                 .UseStartup<Startup>());
+    }
+
+    private static void HandleFirstRunConfiguration()
+    {
+        var cwd = Directory.GetCurrentDirectory();
+        var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+
+        var seedName = isDocker ? "appsettings.docker.json" : "appsettings.native.json";
+        var seed = Path.Join(cwd, "config", seedName);
+        var actual = Path.Join(cwd, "config/appsettings.json");
+
+        if (File.Exists(seed) && !File.Exists(actual))
+            File.Move(seed, actual);
     }
 
     /// <summary>

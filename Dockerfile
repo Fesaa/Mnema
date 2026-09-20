@@ -24,5 +24,7 @@ RUN chmod +x /entrypoint.sh
 
 EXPOSE 8080
 
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+
 ENTRYPOINT [ "/bin/bash" ]
 CMD ["/entrypoint.sh"]
