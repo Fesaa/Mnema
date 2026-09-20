@@ -1,6 +1,5 @@
 # yaml-language-server: $schema=../GitHubActions/Kavita.ReleaseTools.schema.json
 
-DryRun: true
 CsprojPath: "Mnema.Server/Mnema.Server.csproj"
 
 VersionBump:
@@ -32,14 +31,13 @@ BuildServer:
   DeletePaths: ["BuildHost-net472", "BuildHost-netcore"] # Ef.Core stuff
 
 Docker:
-  Load: true
-  LogLevel: Trace
+  Push: true
   Platforms: ["linux/amd64"]
   Images:
     - "ghcr.io/fesaa/mnema"
   Tags:
     Nightly: ["nightly", "nightly-{Version}"]
-    Stable: ["latest", "{Version}"]
+    Stable: ["latest", "{Version}", "nightly", "nightly-{Version}"]
 
 CreateGitHubRelease:
   ReleaseTypes: [Stable]
