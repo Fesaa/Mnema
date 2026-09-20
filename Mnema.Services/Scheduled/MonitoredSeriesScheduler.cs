@@ -65,7 +65,9 @@ internal class MonitoredSeriesScheduler(
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         var searchService = scope.ServiceProvider.GetRequiredService<ISearchService>();
 
-        var entities = await unitOfWork.MonitoredSeriesRepository.GetAll(MonitoredSeriesIncludes.Chapters, cancellationToken);
+        var entities = (await unitOfWork.MonitoredSeriesRepository.GetAll(MonitoredSeriesIncludes.Chapters, cancellationToken))
+            .Where(ms => !ms.Metadata.GetKey(RequestConstants.DisableScheduledDownloading))
+            .ToList();
 
         if (entities.Count == 0)
             return;

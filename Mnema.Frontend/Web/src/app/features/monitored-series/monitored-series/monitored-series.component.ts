@@ -235,7 +235,6 @@ export class MonitoredSeriesComponent implements OnInit {
       imageUrl: this.series().coverUrl ?? '',
       url: this.series().refUrl ?? '',
       provider: this.series().provider,
-      monitoredSeriesId: [],
     });
     component.defaultDir.set(this.series().baseDir);
     component.rootDir.set('');

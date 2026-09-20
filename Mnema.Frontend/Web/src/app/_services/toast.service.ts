@@ -12,44 +12,44 @@ export class ToastService {
 
 
   infoLoco(key: string, titleValues?: any, summaryValues?: any) {
-    this.info(
+    return this.info(
       this.loco.translate(key+".summary", summaryValues),
       this.loco.translate(key+".title", titleValues),
     )
   }
 
   private info(title: string, message?: string) {
-    this.toastr.info(title, message);
+    return this.toastr.info(title, message);
   }
 
   successLoco(key: string, titleValues?: any, summaryValues?: any) {
-    this.success(
+    return this.success(
       this.loco.translate(key+".summary", summaryValues),
       this.loco.translate(key+".title", titleValues),
     )
   }
 
   private success(title: string, message?: string) {
-    this.toastr.success(title, message);
+    return this.toastr.success(title, message);
   }
 
   warningLoco(key: string, titleValues?: any, summaryValues?: any) {
-    this.warning(
+    return this.warning(
       this.loco.translate(key+".summary", summaryValues),
       this.loco.translate(key+".title", titleValues),
     )
   }
 
   private warning(title: string, message?: string) {
-    this.toastr.warning(title, message);
+    return this.toastr.warning(title, message);
   }
 
   genericError(msg: string) {
-    this.errorLoco("shared.toasts.generic-error", {}, {msg: msg});
+    return this.errorLoco("shared.toasts.generic-error", {}, {msg: msg});
   }
 
   errorLoco(key: string, titleValues?: any, summaryValues?: any) {
-    this.error(
+    return this.error(
       this.loco.translate(key+".summary", summaryValues),
       this.loco.translate(key+".title", titleValues),
     )
@@ -57,7 +57,7 @@ export class ToastService {
 
   private error(title: string, message?: string) {
     console.debug(`An error occurred${title}:\n ${message}`);
-    this.toastr.error(title, message);
+    return this.toastr.error(title, message);
   }
 
 }

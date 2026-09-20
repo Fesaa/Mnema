@@ -8,6 +8,7 @@ import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factory.service";
 import {FormDefinition} from "@mnema/generic-form/form";
 import {catchError, EMPTY, forkJoin, tap} from "rxjs";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-edit-monitored-series-modal',
@@ -26,6 +27,7 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
   private readonly monitoredSeriesService = inject(MonitoredSeriesService);
   private readonly modal = inject(NgbActiveModal);
   private readonly genericFormFactoryService = inject(GenericFormFactoryService);
+  private readonly router = inject(Router);
 
   series = model.required<MonitoredSeries>();
   /**
@@ -38,19 +40,6 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
 
   formDefinition = signal<FormDefinition | undefined>(undefined);
   metadataFormDefinition = signal<FormDefinition | undefined>(undefined);
-
-  metadataControls = computed<FormDefinition | undefined>(() => {
-    const f = this.metadataFormDefinition();
-    if (!f) return undefined;
-
-    return {key: f.key, descriptionKey: '', controls: f.controls.filter(c => !c.advanced)}
-  });
-  advancedControls = computed<FormDefinition | undefined>(() => {
-    const f = this.metadataFormDefinition();
-    if (!f) return undefined;
-
-    return {key: f.key, descriptionKey: '', controls: f.controls.filter(c => c.advanced)}
-  });
 
   seriesForm = new FormGroup({});
 
@@ -94,9 +83,11 @@ export class EditMonitoredSeriesModalComponent implements OnInit {
 
     action$.pipe(
       tap(() => this.saving.set(false)),
-      tap(() => {
-        this.toastService.successLoco(`monitored-series.toasts.${kind}.success`, {name: seriesValue.title});
-        this.modal.close();
+      tap(ms => {
+        const toast = this.toastService.successLoco(`monitored-series.toasts.${kind}.success`, {name: seriesValue.title});
+        toast.onTap.subscribe(() => this.router.navigateByUrl('/monitored-series-detail/' + ms.id).catch(console.error));
+
+        this.modal.close(ms);
       }),
       catchError(err => {
         this.toastService.errorLoco(`monitored-series.toasts.${kind}.error`, {name: seriesValue.title}, {msg: err.error.message});

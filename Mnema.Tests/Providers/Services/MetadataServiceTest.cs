@@ -4,9 +4,13 @@ using System.IO.Abstractions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Models.DTOs;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.User;
+using Mnema.Models.Enums;
+using Mnema.Models.External;
 using Mnema.Models.Publication;
 using Mnema.Providers.Services;
 using Mnema.Services;
@@ -164,6 +168,124 @@ public class MetadataServiceTest
         var rating = _metadataService.GetAgeRating(preferences, tags);
 
         Assert.Equal(AgeRating.AdultsOnly, rating);
+    }
+
+    #endregion
+
+    #region CollectLinks (ComicInfo.Web) Tests
+
+    private static Preferences CreatePreferencesWithFilters(params LinkFilter[] filters)
+    {
+        var preferences = CreateDefaultPreferences();
+        preferences.LinkFilters = filters;
+
+        return preferences;
+    }
+
+    private static DownloadRequestDto CreateRequest()
+    {
+        return new DownloadRequestDto
+        {
+            Provider = Provider.Mangadex,
+            Id = "series-id",
+            BaseDir = "Manga",
+            TempTitle = "Example Series",
+            Metadata = new MetadataBag(),
+        };
+    }
+
+    private static Series CreateSeries(params string[] links)
+    {
+        return new Series
+        {
+            Id = "series-id",
+            Title = "Example Series",
+            Summary = string.Empty,
+            Status = PublicationStatus.Ongoing,
+            Tags = [],
+            People = [],
+            Links = links,
+            Chapters = [],
+        };
+    }
+
+    private ComicInfo? CreateComicInfo(Preferences preferences, Series series)
+    {
+        return _metadataService.CreateComicInfo(preferences, CreateRequest(), series.Title, series, null);
+    }
+
+    [Fact]
+    public void CreateComicInfo_ExcludesLinkMatchingHostnameFilter()
+    {
+        var preferences = CreatePreferencesWithFilters(
+            new LinkFilter(LinkFilterMode.Exclude, LinkFilterType.Hostname, "mangaupdates.com"));
+        var series = CreateSeries("https://mangaupdates.com/series/abc", "https://anilist.co/manga/123");
+
+        var ci = CreateComicInfo(preferences, series);
+
+        Assert.Equal("https://anilist.co/manga/123", ci!.Web);
+    }
+
+    [Fact]
+    public void CreateComicInfo_ExcludesWwwLinkWithMixedCaseFilter()
+    {
+        var preferences = CreatePreferencesWithFilters(
+            new LinkFilter(LinkFilterMode.Exclude, LinkFilterType.Hostname, "MangaUpdates.com"));
+        var series = CreateSeries("https://www.mangaupdates.com/series/abc", "https://anilist.co/manga/123");
+
+        var ci = CreateComicInfo(preferences, series);
+
+        Assert.Equal("https://anilist.co/manga/123", ci!.Web);
+    }
+
+    [Fact]
+    public void CreateComicInfo_ExcludesSeriesRefUrl()
+    {
+        var preferences = CreatePreferencesWithFilters(
+            new LinkFilter(LinkFilterMode.Exclude, LinkFilterType.Hostname, "mangabaka.org"));
+        var series = CreateSeries("https://anilist.co/manga/123");
+        series.RefUrl = "https://mangabaka.org/123";
+
+        var ci = CreateComicInfo(preferences, series);
+
+        Assert.Equal("https://anilist.co/manga/123", ci!.Web);
+    }
+
+    [Fact]
+    public void CreateComicInfo_KeepsLinksWhenNoFilterMatches()
+    {
+        var preferences = CreatePreferencesWithFilters(
+            new LinkFilter(LinkFilterMode.Exclude, LinkFilterType.Hostname, "blocked.com"));
+        var series = CreateSeries("https://anilist.co/manga/123");
+
+        var ci = CreateComicInfo(preferences, series);
+
+        Assert.Equal("https://anilist.co/manga/123", ci!.Web);
+    }
+
+    [Fact]
+    public void CreateComicInfo_IgnoresLanguageFilters()
+    {
+        // Web links carry no language, so language filters cannot apply to them
+        var preferences = CreatePreferencesWithFilters(
+            new LinkFilter(LinkFilterMode.Exclude, LinkFilterType.Language, "jp"));
+        var series = CreateSeries("https://anilist.co/manga/123");
+
+        var ci = CreateComicInfo(preferences, series);
+
+        Assert.Equal("https://anilist.co/manga/123", ci!.Web);
+    }
+
+    [Fact]
+    public void CreateComicInfo_EmptyWebWhenAllLinksAreFiltered()
+    {
+        var preferences = CreatePreferencesWithFilters(
+            new LinkFilter(LinkFilterMode.Exclude, LinkFilterType.Hostname, "anilist.co"));
+        var series = CreateSeries("https://anilist.co/manga/123");
+
+        var ci = CreateComicInfo(preferences, series);
+
+        Assert.Equal(string.Empty, ci!.Web);
     }
 
     #endregion

@@ -95,7 +95,7 @@ internal class ArchiveFormatHandler(
             ? $"!0000 cover{destExt}"
             : fileSystem.Path.GetFileNameWithoutExtension(fileName) + destExt;
 
-        var destEntry = destArchive.CreateEntry(destImageName, CompressionLevel.SmallestSize);
+        var destEntry = destArchive.CreateEntry(destImageName, CompressionLevel.Optimal);
 
         await using var sourceStream = await sourceEntry.OpenAsync();
         await using var destStream = await destEntry.OpenAsync();
@@ -107,7 +107,7 @@ internal class ArchiveFormatHandler(
 
     private static async Task CopyEntryAsync(ZipArchiveEntry sourceEntry, string fileName, ZipArchive destArchive)
     {
-        var destEntry = destArchive.CreateEntry(fileName, CompressionLevel.SmallestSize);
+        var destEntry = destArchive.CreateEntry(fileName, CompressionLevel.Optimal);
 
         await using var sourceStream = await sourceEntry.OpenAsync();
         await using var destStream = await destEntry.OpenAsync();
@@ -131,7 +131,7 @@ internal class ArchiveFormatHandler(
         if (string.IsNullOrEmpty(context.CoverUrl)) return;
 
         var ext = fileSystem.Path.GetExtension(context.CoverUrl);
-        var entry = destArchive.CreateEntry($"!0000 cover{ext}", CompressionLevel.SmallestSize);
+        var entry = destArchive.CreateEntry($"!0000 cover{ext}", CompressionLevel.Optimal);
 
         await using var coverStream = await httpClient.GetStreamAsync(context.CoverUrl);
         await using var entryStream = await entry.OpenAsync();
