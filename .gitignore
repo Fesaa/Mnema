@@ -17,3 +17,4 @@ Mnema.Metadata.Mangabaka.Lucene
 *.db-wal
 *.db-shm
 Mnema.Server/wwwroot/*
+_output/*

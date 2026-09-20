@@ -28,7 +28,7 @@ BuildServer:
   Rids:
     Stable: ["linux-x64", "win-x64"]
     Nightly: ["linux-x64"]
-  DeletePaths: ["BuildHost-net472", "BuildHost-netcore"] # Ef.Core stuff
+  DeletePaths: ["BuildHost-net472", "BuildHost-netcore", "config/appsettings.Development.json", "bin"]
 
 Docker:
   Push: true
