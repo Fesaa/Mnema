@@ -4,14 +4,12 @@ CsprojPath: "Mnema.Server/Mnema.Server.csproj"
 
 VersionBump:
   ComponentToBump: Build
-  ReleaseTypes:
-    - Nightly
+  ReleaseTypes: [Nightly]
 
 FlushGitChanges:
   Files:
     - "Mnema.Server/Mnema.Server.csproj"
-  ReleaseTypes:
-    - Nightly
+  ReleaseTypes: [Nightly]
 
 BuildFrontend:
   BuildScript: "build"
@@ -26,13 +24,13 @@ BuildServer:
   SlnPath: "Mnema.sln"
   OutputPath: "_output/"
   Rids:
-    Stable: ["linux-x64", "win-x64"]
-    Nightly: ["linux-x64"]
+    Stable: ["linux-x64", "linux-arm64", "win-x64", "osx-arm64"]
+    Nightly: ["linux-x64", "linux-arm64"]
   DeletePaths: ["BuildHost-net472", "BuildHost-netcore", "config/appsettings.Development.json", "bin"]
 
 Docker:
   Push: true
-  Platforms: ["linux/amd64"]
+  Platforms: ["linux/amd64", "linux/arm64"]
   Images:
     - "ghcr.io/fesaa/mnema"
   Tags:
