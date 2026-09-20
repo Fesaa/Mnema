@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Kareadita/GitHubActions/refs/heads/main/Kavita.ReleaseTools.schema.json
+
+DryRun: true
+
+VersionBump:
+  CsprojPath: "Mnema.Server/Mnema.Server.csproj"
+  ComponentToBump: Build
+  ReleaseTypes:
+    - Nightly
+
+FlushGitChanges:
+  Files:
+    - "Mnema.Server/Mnema.Server.csproj"
+  ReleaseTypes:
+    - Nightly
+
+BuildFrontend:
+  BuildScript: "build"
+  Path: "Mnema.Frontend/Web"
+  OutputPath: "dist/web/browser"
+  CopyTo: "Mnema.Server/wwwroot"
+  FullReplace: true
+
+BuildServer:
+  AppName: "Mnema"
+  CsprojPath: "Mnema.Server/Mnema.Server.csproj"
+  SlnPath: "Mnema.sln"
+  OutputPath: "_output/"
+  Rids: ["linux-arm64"]
+  DeletePaths: ["BuildHost-net472", "BuildHost-netcore"] # Ef.Core stuff
+
+Docker:
+  Load: true
+  LogLevel: Trace
+  Platforms: ["linux/arm64"]
+  Images:
+    - "ghcr.io/fesaa/mnema"
+  Tags:
+    Nightly: ["nightly", "nightly-{Version}"]
+    Stable: ["latest", "{Version}"]
+
+NotifyDiscord:
+  Username: "Mnema Release Bot"
+

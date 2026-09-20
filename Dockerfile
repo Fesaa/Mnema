@@ -1,43 +1,3 @@
-FROM node:24 AS npm-stage
-
-WORKDIR /Mnema
-
-COPY Mnema.Frontend/Web/package.json Mnema.Frontend/Web/package-lock.json ./
-RUN npm ci
-
-COPY Mnema.Frontend/Web ./
-
-RUN npm run build
-
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS dotnet-stage
-
-WORKDIR /Mnema
-
-COPY Mnema.sln ./
-COPY Mnema.API/Mnema.API.csproj Mnema.API/
-COPY Mnema.Server/Mnema.Server.csproj Mnema.Server/
-COPY Mnema.Common/Mnema.Common.csproj Mnema.Common/
-COPY Mnema.Database/Mnema.Database.csproj Mnema.Database/
-COPY Mnema.Models/Mnema.Models.csproj Mnema.Models/
-COPY Mnema.Providers/Mnema.Providers.csproj Mnema.Providers/
-COPY Mnema.Services/Mnema.Services.csproj Mnema.Services/
-COPY Mnema.Metadata/Mnema.Metadata.csproj Mnema.Metadata/
-
-RUN dotnet restore Mnema.Server/Mnema.Server.csproj
-
-COPY Mnema.API/. Mnema.API/
-COPY Mnema.Server/. Mnema.Server/
-COPY Mnema.Common/. Mnema.Common/
-COPY Mnema.Database/. Mnema.Database/
-COPY Mnema.Models/. Mnema.Models/
-COPY Mnema.Providers/. Mnema.Providers/
-COPY Mnema.Services/. Mnema.Services/
-COPY Mnema.Metadata/. Mnema.Metadata/
-
-RUN dotnet publish Mnema.Server/Mnema.Server.csproj -c Release -o /Mnema/publish \
-                 /p:SourceRevisionId=$SOURCE_REVISION_ID \
-                 /p:IncludeSourceRevisionInInformationalVersion=true
-
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 
 RUN apt-get update \
@@ -46,11 +6,23 @@ RUN apt-get update \
 
 WORKDIR /Mnema
 
-COPY --from=npm-stage /Mnema/dist/web/browser/ /Mnema/wwwroot
-COPY --from=dotnet-stage /Mnema/publish /Mnema
+RUN mkdir /files
+COPY _output/*.tar.gz /files/
 
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
+ARG TARGETPLATFORM
+RUN set -eux; \
+    case "$TARGETPLATFORM" in \
+      "linux/amd64")   RID=linux-x64   ;; \
+      "linux/arm64")   RID=linux-arm64 ;; \
+      "linux/arm/v7")  RID=linux-arm   ;; \
+      *) echo "Unsupported platform: $TARGETPLATFORM" >&2; exit 1 ;; \
+    esac; \
+    tar xzf "/files/mnema-${RID}.tar.gz" -C /Mnema --strip-components=1
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 8080
 
-CMD [ "/Mnema/Mnema" ]
+ENTRYPOINT [ "/bin/bash" ]
+CMD ["/entrypoint.sh"]
