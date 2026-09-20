@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=../GitHubActions/Kavita.ReleaseTools.schema.json
+
+CsprojPath: "Mnema.Server/Mnema.Server.csproj"
+
+VersionBump:
+  ComponentToBump: Build
+  ReleaseTypes: [Nightly]
+
+FlushGitChanges:
+  Files:
+    - "Mnema.Server/Mnema.Server.csproj"
+  ReleaseTypes: [Nightly]
+
+BuildFrontend:
+  BuildScript: "build"
+  Path: "Mnema.Frontend/Web"
+  OutputPath: "dist/web/browser"
+  CopyTo: "Mnema.Server/wwwroot"
+  FullReplace: true
+
+BuildServer:
+  AppName: "Mnema"
+  CsprojPath: "Mnema.Server/Mnema.Server.csproj"
+  SlnPath: "Mnema.sln"
+  OutputPath: "_output/"
+  Rids:
+    Stable: ["linux-x64", "linux-arm64", "win-x64", "osx-arm64"]
+    Nightly: ["linux-x64", "linux-arm64"]
+  RenameFiles:
+    - { From: "config/appsettings.json", To: "config/appsettings.docker.json"}
+  CopyFiles:
+    - { From: "Mnema.Server/config/appsettings.native.json", To: "config/appsettings.native.json"}
+  DeletePaths: ["BuildHost-net472", "BuildHost-netcore", "config/appsettings.Development.json", "bin"]
+
+Docker:
+  Push: true
+  Platforms: ["linux/amd64", "linux/arm64"]
+  Images:
+    - "ghcr.io/fesaa/mnema"
+  Tags:
+    Nightly: ["nightly", "nightly-{Version}"]
+    Stable: ["latest", "{Version}", "nightly", "nightly-{Version}"]
+
+CreateGitHubRelease:
+  ReleaseTypes: [Stable]
+  AssetPath: "_output/"
+
