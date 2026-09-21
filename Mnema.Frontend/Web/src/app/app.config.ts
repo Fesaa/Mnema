@@ -4,7 +4,7 @@ import {
   inject,
   isDevMode,
   provideAppInitializer,
-  provideZoneChangeDetection
+  provideZonelessChangeDetection
 } from '@angular/core';
 import {provideRouter, withComponentInputBinding} from '@angular/router';
 
@@ -54,7 +54,7 @@ export const appConfig: ApplicationConfig = {
     SubscriptionExternalUrlPipe,
 
     importProvidersFrom(BrowserAnimationsModule), provideAnimationsAsync(),
-    provideZoneChangeDetection({eventCoalescing: true}),
+    provideZonelessChangeDetection(),
     provideRouter(routes, withComponentInputBinding()),
 
     provideHttpClient(withXhr(), withInterceptors([errorHandlerInterceptor])),

@@ -28,9 +28,7 @@ BuildServer:
     Nightly: ["linux-x64", "linux-arm64"]
   RenameFiles:
     - { From: "config/appsettings.json", To: "config/appsettings.docker.json"}
-  CopyFiles:
-    - { From: "Mnema.Server/config/appsettings.native.json", To: "config/appsettings.native.json"}
-  DeletePaths: ["BuildHost-net472", "BuildHost-netcore", "config/appsettings.Development.json", "bin"]
+  DeletePaths: ["BuildHost-net472", "BuildHost-netcore", "bin"]
 
 Docker:
   Push: true
