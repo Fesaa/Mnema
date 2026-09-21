@@ -49,6 +49,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Content Update="config/appsettings.native.json" CopyToPublishDirectory="Always" />
         <Content Update="config/appsettings.Development.json" CopyToPublishDirectory="Never" />
     </ItemGroup>
 
