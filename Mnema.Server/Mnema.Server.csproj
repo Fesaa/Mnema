@@ -4,7 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
-        <AssemblyVersion>0.1.0</AssemblyVersion>
+        <AssemblyVersion>0.1.1</AssemblyVersion>
         <AssemblyName>Mnema</AssemblyName>
     </PropertyGroup>
 
