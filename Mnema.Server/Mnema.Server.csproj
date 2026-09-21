@@ -48,4 +48,8 @@
         <ProjectReference Include="..\Mnema.Services\Mnema.Services.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Update="config/appsettings.Development.json" CopyToPublishDirectory="Never" />
+    </ItemGroup>
+
 </Project>
