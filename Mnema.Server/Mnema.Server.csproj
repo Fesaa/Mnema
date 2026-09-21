@@ -8,6 +8,10 @@
         <AssemblyName>Mnema</AssemblyName>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Hangfire" Version="1.8.24"/>
         <PackageReference Include="Hangfire.AspNetCore" Version="1.8.24"/>
