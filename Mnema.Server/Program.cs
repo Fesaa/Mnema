@@ -100,11 +100,16 @@ public class Program
                         true, false)
                     .AddEnvironmentVariables();
             })
-            .ConfigureWebHostDefaults(builder => builder
-                .UseKestrel(options => options
-                    .ListenAnyIP(8080,
-                        listenOptions => { listenOptions.Protocols = HttpProtocols.Http1; }))
-                .UseStartup<Startup>());
+            .ConfigureWebHostDefaults(builder =>
+            {
+                builder.ConfigureKestrel((ctx, options) =>
+                {
+                    var port = ctx.Configuration.GetValue<int?>("Kestrel:Port") ?? 8080;
+
+                    options.ListenAnyIP(port, lo => lo.Protocols = HttpProtocols.Http1);
+                });
+                builder.UseStartup<Startup>();
+            });
     }
 
     private static void HandleFirstRunConfiguration()
