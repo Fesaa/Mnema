@@ -213,5 +213,10 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         );
 
         logger.LogInformation("Mnema starting up, stay tuned!");
+
+        var config = configuration.GetSection("Application").Get<ApplicationConfiguration>()!;
+        logger.LogInformation("Application configuration:");
+        logger.LogInformation("  BaseDir: {BaseDir}", config.BaseDir);
+        logger.LogInformation("  DownloadDir: {DownloadDir}", config.DownloadDir);
     }
 }
