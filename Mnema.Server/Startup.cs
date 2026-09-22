@@ -43,6 +43,10 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment env)
         if (appConfig == null) throw new MnemaException("Application config must be set with key Application");
 
         services.AddSingleton(appConfig);
+        services.AddOptions<ApplicationConfiguration>()
+            .Bind(configuration.GetSection("Application"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddTransient<AutomaticRateLimitRetryHandler>();
         services.AddTransient<ConnectResetRetryHandler>();
