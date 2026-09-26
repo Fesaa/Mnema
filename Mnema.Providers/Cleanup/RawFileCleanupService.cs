@@ -231,7 +231,20 @@ internal class RawFileCleanupService(
         if (file is not null)
         {
             file.Processed = true;
-            await unitOfWork.CommitAsync();
+
+            if (context.ExternalDownload is not null)
+                unitOfWork.ExternalDownloadRepository.Update(context.ExternalDownload);
+            else if (context.DroppedContent is not null)
+                unitOfWork.DroppedContentRepository.Update(context.DroppedContent);
+
+            try
+            {
+                await unitOfWork.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An error occured updating download progress");
+            }
         }
     }
 
