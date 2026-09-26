@@ -29,6 +29,7 @@ You can use both at the same time
 | **System & Libs**               |   |                                                                                                                                                                               |
 | `TZ`                            |   | Sets the system timezone for the runtime (e.g., `Europe/Brussels`).                                                                                                           |
 | `AutoMapperLicense`             |   | Optional license key. Displays a warning on start if missing and not suppressed.                                                                                              |
+| `Kerstel:Port`                  |   | Optionally set a custom port (default sot 8080)                                                                                                                               | |
 
 
 <warning>
@@ -39,7 +40,7 @@ You can use both at the same time
 
 ### Key Mapping Rules
 
-* **Nesting:** Use `__` (double underscore) to represent nested JSON objects in environment variables (e.g., `OpenIdConnect__Secret`).
+* **Nesting:** Use `__` (double underscore) to represent nested JSON objects in environment variables (e.g., `Authentication__Hardcover`).
 * **Secrets:** Sensitive values like PostgreSQL strings and OIDC secrets should be injected via a secret management system.
 
 ## Docker compose example
@@ -59,6 +60,7 @@ services:
     volumes:
       - ./data/mnema:/persistent
       - /path/to/your/media:/media
+        #If you are planning to use qBit this must point to its download location
       - /path/to/your/downloads:/downloads
      - ./appsettings.json:/Mnema/config/appsettings.json # Optional
     restart: unless-stopped
