@@ -148,7 +148,8 @@ internal class MangadexRepository : IRepository
             People = [],
             TranslationGroups = chapter.RelationShips
                 .Where(r => r.Type is "scanlation_group" or "user")
-                .Select(r => r.Id)
+                .Select(r => r.Attributes.TryGetValue("name", out var value) ? value.GetString() : r.Id)
+                .WhereNotNull()
                 .ToList()
         }).ToList();
 
