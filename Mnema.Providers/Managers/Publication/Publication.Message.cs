@@ -79,11 +79,22 @@ internal partial class Publication
                 return (a.ChapterNumber() ?? -1).CompareTo(b.ChapterNumber() ?? -1);
             });
 
-            return volumeChapters.Select(chapter => new ListContentData
+            return volumeChapters.Select(chapter =>
             {
-                SubContentId = chapter.Id,
-                Selected = WillBeDownloaded(chapter),
-                Label = (_namingService.GetChapterFileName(Preferences, Title, chapter) + " " + chapter.Title).Trim()
+                var label =
+                    (_namingService.GetChapterFileName(Preferences, Title, chapter) + " " + chapter.Title).Trim();
+
+                if (chapter is { IsOneShot: true, TranslationGroups.Count: > 0 })
+                {
+                    label += $" ({string.Join(',', chapter.TranslationGroups)})";
+                }
+
+                return new ListContentData
+                {
+                    SubContentId = chapter.Id,
+                    Selected = WillBeDownloaded(chapter),
+                    Label = label
+                };
             }).ToList();
         }
 
