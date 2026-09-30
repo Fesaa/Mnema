@@ -57,6 +57,14 @@ internal partial class Publication
 
         FilterAlreadyDownloadedContent(cancellationToken);
 
+        var allOneShots = Series!.Chapters.All(c => c.IsOneShot);
+        if (allOneShots && !Request.GetKey(RequestConstants.DownloadOneShotKey) && Request.StartImmediately)
+        {
+            _connectionService.CommunicateDownloadInfo(DownloadInfo, "One-Shot Download",
+                "All chapters in this series are One-Shots, but you've decided to not download one shots. Paused download, double check your decision!");
+            Request.StartImmediately = false;
+        }
+
         if (QueuedChapters.Count == 0 && Request.StartImmediately)
         {
             _logger.LogDebug("[{Title}/{Id}] No chapters to download, stopping download", Title, Id);
@@ -69,14 +77,6 @@ internal partial class Publication
             (QueuedChapters.Count > 10 || QueuedChapters.Count - ReDownloads == Series!.Chapters.Count))
         {
             _connectionService.CommunicateTooManyForAutomatedDownload(_monitoredSeries!, QueuedChapters.Count);
-            Request.StartImmediately = false;
-        }
-
-        var allOneShots = Series!.Chapters.All(c => c.IsOneShot);
-        if (allOneShots && !Request.GetKey(RequestConstants.DownloadOneShotKey) && Request.StartImmediately)
-        {
-            _connectionService.CommunicateDownloadInfo(DownloadInfo, "One-Shot Download",
-                "All chapters in this series are One-Shots, but you've decided to not download one shots. Paused download, double check your decision!");
             Request.StartImmediately = false;
         }
 

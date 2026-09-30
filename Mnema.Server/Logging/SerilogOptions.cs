@@ -21,6 +21,7 @@ public static class SerilogOptions
             .ReadFrom.Configuration(context.Configuration)
             .MinimumLevel.Override("Mnema.Server.Middleware.NoAuthAuthenticationHandler", LogEventLevel.Error)
             .MinimumLevel.Override("Mnema.Server.Middleware.AuthKeyAuthenticationHandler", LogEventLevel.Error)
+            .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
             .Enrich.FromLogContext()
             .WriteTo.Console(new ExpressionTemplate(OutputTemplate))
             .WriteTo.File(LogFile, rollingInterval: RollingInterval.Day)
