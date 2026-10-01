@@ -37,7 +37,6 @@ internal class RawFileCleanupService(
     IMessageService messageService
 ) : ICleanupService
 {
-    private static readonly ParallelOptions ParallelOptions = new() { MaxDegreeOfParallelism = 2 };
     private readonly Dictionary<Format, IFormatHandler> _handlers = formatHandlers.ToDictionary(h => h.SupportedFormat);
     private readonly SemaphoreSlim _progressLock = new(1, 1);
 
@@ -119,7 +118,15 @@ internal class RawFileCleanupService(
             return;
         }
 
-        await Parallel.ForEachAsync(validFiles, ParallelOptions,
+        var amountOfProcessors = Environment.ProcessorCount;
+        var usingCount = Math.Max(1, amountOfProcessors / 2);
+
+        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = usingCount };
+
+        logger.LogDebug("[{Title}/{Id}] Going to use {Cores} / {TotalCores} to cleanup {FileCount} files",
+            context.Title, context.Series?.Id, usingCount, amountOfProcessors, validFiles.Count);
+
+        await Parallel.ForEachAsync(validFiles, parallelOptions,
             async (f, _) => await ProcessSingleFileAsync(context, f));
     }
 
