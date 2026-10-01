@@ -19,6 +19,7 @@ using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
+using Mnema.Providers.Managers.Dropped;
 using Mnema.Providers.Managers.QBit;
 
 namespace Mnema.Providers.Cleanup;
@@ -32,7 +33,8 @@ internal class RawFileCleanupService(
     ApplicationConfiguration configuration,
     IUnitOfWork unitOfWork,
     IEnumerable<IFormatHandler> formatHandlers,
-    IMetadataResolver metadataResolver
+    IMetadataResolver metadataResolver,
+    IMessageService messageService
 ) : ICleanupService
 {
     private static readonly ParallelOptions ParallelOptions = new() { MaxDegreeOfParallelism = 2 };
@@ -75,6 +77,7 @@ internal class RawFileCleanupService(
         }
 
         return new CleanupContext(
+            content,
             Request: request,
             Series: series,
             Preferences: preferences,
@@ -250,6 +253,8 @@ internal class RawFileCleanupService(
                 unitOfWork.DroppedContentRepository.Update(context.DroppedContent);
 
             await unitOfWork.CommitAsync();
+
+            await messageService.UpdateContent(context.Content.DownloadInfo);
         }
         catch (Exception ex)
         {
@@ -289,6 +294,7 @@ internal class RawFileCleanupService(
 
 
 internal record CleanupContext(
+    IContent Content,
     DownloadRequestDto Request,
     Series? Series,
     Preferences Preferences,

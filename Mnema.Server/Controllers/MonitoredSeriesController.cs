@@ -360,6 +360,8 @@ public class MonitoredSeriesController(
         unitOfWork.DroppedContentRepository.Add(droppedContent);
         await unitOfWork.CommitAsync(ct);
 
+        await messageService.AddContent(new DroppedContentAdaptor(droppedContent).DownloadInfo);
+
         BackgroundJob.Enqueue(() => Cleanup(droppedContent.Id, CancellationToken.None));
 
         return Ok();
@@ -373,9 +375,11 @@ public class MonitoredSeriesController(
         var droppedContent = await unitOfWork.DroppedContentRepository.GetById(id, ct);
         if (droppedContent is null) return;
 
+        var adaptor = new DroppedContentAdaptor(droppedContent);
+
         var sw = Stopwatch.StartNew();
 
-        await cleanupService.CleanupAsync(new DroppedContentAdaptor(droppedContent), ct);
+        await cleanupService.CleanupAsync(adaptor, ct);
 
         var downloadDirectory = fileSystem.Path.Join(configuration.DownloadDir, droppedContent.MonitoredSeriesId.ToString());
         if (fileSystem.Directory.Exists(downloadDirectory))
@@ -387,6 +391,9 @@ public class MonitoredSeriesController(
 
         logger.LogInformation("Imported {FileCount} for {SeriesName} in {Time}",
             droppedContent.Files.Count, droppedContent.MonitoredSeries.Title, sw.Elapsed.ToReadableString());
+
+        await messageService.DeleteContent(adaptor.Id);
+        connectionService.CommunicateDownloadFinished(adaptor.DownloadInfo);
 
         BackgroundJob.Enqueue<IMonitoredSeriesService>(s
             => s.EnrichWithMetadata(droppedContent.MonitoredSeriesId, CancellationToken.None));
