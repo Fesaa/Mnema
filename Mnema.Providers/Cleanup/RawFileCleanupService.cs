@@ -37,6 +37,7 @@ internal class RawFileCleanupService(
 {
     private static readonly ParallelOptions ParallelOptions = new() { MaxDegreeOfParallelism = 2 };
     private readonly Dictionary<Format, IFormatHandler> _handlers = formatHandlers.ToDictionary(h => h.SupportedFormat);
+    private readonly SemaphoreSlim _progressLock = new(1, 1);
 
     public async Task CleanupAsync(IContent content, CancellationToken cancellationToken = default)
     {
@@ -223,12 +224,23 @@ internal class RawFileCleanupService(
         logger.LogDebug("Finished processing file {FileName} -> {DestPath} for cleanup in {Elapsed}",
             sourceFile, destPath, sw.Elapsed.ToReadableString());
 
+        await MarkFileProcessedAsync(context, sourceFile);
+    }
 
-        var downloadFiles = context.ExternalDownload?.Files ?? context.DroppedContent?.Files ?? [];
+    private async Task MarkFileProcessedAsync(CleanupContext context, string sourceFile)
+    {
+        var downloadFiles = context.ExternalDownload?.Files ?? context.DroppedContent?.Files;
+        if (downloadFiles is null) return;
 
-        var searchKey = sourceFile.RemoveSuffix(context.DownloadDirectory);
-        var file = downloadFiles.FirstOrDefault(f => f.FullPath == searchKey);
-        if (file is not null)
+        var file = downloadFiles.FirstOrDefault(f => Path.Join(context.DownloadDirectory, f.FullPath) == sourceFile);
+        if (file is null)
+        {
+            logger.LogWarning("Failed to find download file record for {FileName}, cannot update cleanup progress", sourceFile);
+            return;
+        }
+
+        await _progressLock.WaitAsync();
+        try
         {
             file.Processed = true;
 
@@ -237,14 +249,15 @@ internal class RawFileCleanupService(
             else if (context.DroppedContent is not null)
                 unitOfWork.DroppedContentRepository.Update(context.DroppedContent);
 
-            try
-            {
-                await unitOfWork.CommitAsync();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "An error occured updating download progress");
-            }
+            await unitOfWork.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occured updating download progress");
+        }
+        finally
+        {
+            _progressLock.Release();
         }
     }
 
