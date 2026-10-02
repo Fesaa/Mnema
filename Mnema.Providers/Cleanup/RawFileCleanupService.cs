@@ -19,6 +19,7 @@ using Mnema.Models.Enums;
 using Mnema.Models.External;
 using Mnema.Models.Internal;
 using Mnema.Models.Publication;
+using Mnema.Providers.Managers.Dropped;
 using Mnema.Providers.Managers.QBit;
 
 namespace Mnema.Providers.Cleanup;
@@ -32,11 +33,12 @@ internal class RawFileCleanupService(
     ApplicationConfiguration configuration,
     IUnitOfWork unitOfWork,
     IEnumerable<IFormatHandler> formatHandlers,
-    IMetadataResolver metadataResolver
+    IMetadataResolver metadataResolver,
+    IMessageService messageService
 ) : ICleanupService
 {
-    private static readonly ParallelOptions ParallelOptions = new() { MaxDegreeOfParallelism = 2 };
     private readonly Dictionary<Format, IFormatHandler> _handlers = formatHandlers.ToDictionary(h => h.SupportedFormat);
+    private readonly SemaphoreSlim _progressLock = new(1, 1);
 
     public async Task CleanupAsync(IContent content, CancellationToken cancellationToken = default)
     {
@@ -74,6 +76,7 @@ internal class RawFileCleanupService(
         }
 
         return new CleanupContext(
+            content,
             Request: request,
             Series: series,
             Preferences: preferences,
@@ -115,7 +118,15 @@ internal class RawFileCleanupService(
             return;
         }
 
-        await Parallel.ForEachAsync(validFiles, ParallelOptions,
+        var amountOfProcessors = Environment.ProcessorCount;
+        var usingCount = Math.Max(1, amountOfProcessors / 2);
+
+        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = usingCount };
+
+        logger.LogDebug("[{Title}/{Id}] Going to use {Cores} / {TotalCores} to cleanup {FileCount} files",
+            context.Title, context.Series?.Id, usingCount, amountOfProcessors, validFiles.Count);
+
+        await Parallel.ForEachAsync(validFiles, parallelOptions,
             async (f, _) => await ProcessSingleFileAsync(context, f));
     }
 
@@ -223,12 +234,23 @@ internal class RawFileCleanupService(
         logger.LogDebug("Finished processing file {FileName} -> {DestPath} for cleanup in {Elapsed}",
             sourceFile, destPath, sw.Elapsed.ToReadableString());
 
+        await MarkFileProcessedAsync(context, sourceFile);
+    }
 
-        var downloadFiles = context.ExternalDownload?.Files ?? context.DroppedContent?.Files ?? [];
+    private async Task MarkFileProcessedAsync(CleanupContext context, string sourceFile)
+    {
+        var downloadFiles = context.ExternalDownload?.Files ?? context.DroppedContent?.Files;
+        if (downloadFiles is null) return;
 
-        var searchKey = sourceFile.RemoveSuffix(context.DownloadDirectory);
-        var file = downloadFiles.FirstOrDefault(f => f.FullPath == searchKey);
-        if (file is not null)
+        var file = downloadFiles.FirstOrDefault(f => Path.Join(context.DownloadDirectory, f.FullPath) == sourceFile);
+        if (file is null)
+        {
+            logger.LogWarning("Failed to find download file record for {FileName}, cannot update cleanup progress", sourceFile);
+            return;
+        }
+
+        await _progressLock.WaitAsync();
+        try
         {
             file.Processed = true;
 
@@ -237,14 +259,17 @@ internal class RawFileCleanupService(
             else if (context.DroppedContent is not null)
                 unitOfWork.DroppedContentRepository.Update(context.DroppedContent);
 
-            try
-            {
-                await unitOfWork.CommitAsync();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "An error occured updating download progress");
-            }
+            await unitOfWork.CommitAsync();
+
+            await messageService.UpdateContent(context.Content.DownloadInfo);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occured updating download progress");
+        }
+        finally
+        {
+            _progressLock.Release();
         }
     }
 
@@ -276,6 +301,7 @@ internal class RawFileCleanupService(
 
 
 internal record CleanupContext(
+    IContent Content,
     DownloadRequestDto Request,
     Series? Series,
     Preferences Preferences,

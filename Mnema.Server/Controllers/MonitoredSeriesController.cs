@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
@@ -10,10 +11,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.API.External;
 using Mnema.Common;
+using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Entities.Content;
@@ -27,6 +30,7 @@ namespace Mnema.Server.Controllers;
 
 [Authorize(Roles.Subscriptions)]
 public class MonitoredSeriesController(
+    ILogger<MonitoredSeriesController> logger,
     IUnitOfWork unitOfWork,
     IMonitoredSeriesService monitoredSeriesService,
     IMetadataResolver metadataResolver,
@@ -356,6 +360,8 @@ public class MonitoredSeriesController(
         unitOfWork.DroppedContentRepository.Add(droppedContent);
         await unitOfWork.CommitAsync(ct);
 
+        await messageService.AddContent(new DroppedContentAdaptor(droppedContent).DownloadInfo);
+
         BackgroundJob.Enqueue(() => Cleanup(droppedContent.Id, CancellationToken.None));
 
         return Ok();
@@ -369,7 +375,11 @@ public class MonitoredSeriesController(
         var droppedContent = await unitOfWork.DroppedContentRepository.GetById(id, ct);
         if (droppedContent is null) return;
 
-        await cleanupService.CleanupAsync(new DroppedContentAdaptor(droppedContent), ct);
+        var adaptor = new DroppedContentAdaptor(droppedContent);
+
+        var sw = Stopwatch.StartNew();
+
+        await cleanupService.CleanupAsync(adaptor, ct);
 
         var downloadDirectory = fileSystem.Path.Join(configuration.DownloadDir, droppedContent.MonitoredSeriesId.ToString());
         if (fileSystem.Directory.Exists(downloadDirectory))
@@ -378,6 +388,12 @@ public class MonitoredSeriesController(
         }
 
         await unitOfWork.DroppedContentRepository.DeleteById(id, ct);
+
+        logger.LogInformation("Imported {FileCount} for {SeriesName} in {Time}",
+            droppedContent.Files.Count, droppedContent.MonitoredSeries.Title, sw.Elapsed.ToReadableString());
+
+        await messageService.DeleteContent(adaptor.Id);
+        connectionService.CommunicateDownloadFinished(adaptor.DownloadInfo);
 
         BackgroundJob.Enqueue<IMonitoredSeriesService>(s
             => s.EnrichWithMetadata(droppedContent.MonitoredSeriesId, CancellationToken.None));
