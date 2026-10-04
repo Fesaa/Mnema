@@ -90,7 +90,10 @@ internal class ArchiveFormatHandler(
         ZipArchive destArchive)
     {
         var isCover = !foundCover && parserService.IsCoverImage(fileName);
+
+        var srcExt = fileSystem.Path.GetExtension(fileName);
         var destExt = context.Preferences.ImageFormat.GetFileExtension(fileName);
+
         var destImageName = isCover
             ? $"!0000 cover{destExt}"
             : fileSystem.Path.GetFileNameWithoutExtension(fileName) + destExt;
@@ -100,7 +103,7 @@ internal class ArchiveFormatHandler(
         await using var sourceStream = await sourceEntry.OpenAsync();
         await using var destStream = await destEntry.OpenAsync();
 
-        await imageService.Convert(sourceStream, context.Preferences.ImageFormat, destStream);
+        await imageService.Convert(sourceStream, context.Preferences.ImageFormat, destStream, srcExt);
 
         return isCover;
     }

@@ -32,7 +32,7 @@ internal class ImageIoWorker(ILogger<ImageIoWorker> logger, IImageService imageS
                 format = ImageFormat.Upstream;
             }
 
-            await imageService.ConvertAndSave(ioWork.Stream, format, filePath, tokenSource.Token);
+            await imageService.ConvertAndSave(ioWork.Stream, format, filePath, realFileType, tokenSource.Token);
 
             logger.LogTrace("[{Title}/{Id}] Wrote {FilePath} / {Idx} to disk", title, id, filePath, ioWork.Idx);
         }

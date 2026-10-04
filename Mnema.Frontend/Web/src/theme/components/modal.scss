@@ -47,7 +47,24 @@
   }
 }
 
+.modal-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+
+  .modal-header,
+  .modal-footer {
+    flex-shrink: 0;
+  }
+
+  .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
 .scrollable-modal {
-  max-height: calc(var(--vh) * 100 - 198px);
-  overflow: auto;
+  overflow-y: auto;
 }

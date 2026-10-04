@@ -23,6 +23,7 @@ public enum Provider
     /// Used for dropped fils. Cannot be searched against
     /// </summary>
     GenericFile = 10,
+    TopManhuaFan = 11,
 }
 
 public static class ProviderExtensions

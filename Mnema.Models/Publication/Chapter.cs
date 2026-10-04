@@ -28,6 +28,11 @@ public sealed record Chapter: IHasPositionMarkers
 
     public bool IsOneShot => string.IsNullOrEmpty(ChapterMarker) && string.IsNullOrEmpty(VolumeMarker);
 
+    public override string ToString()
+    {
+        return $"Chapter(Volume={VolumeMarker},Chapter={ChapterMarker},Id={Id})";
+    }
+
     private const NumberStyles NumberStyle = NumberStyles.AllowDecimalPoint
                                              | NumberStyles.AllowLeadingSign
                                              | NumberStyles.Float;
