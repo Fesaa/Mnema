@@ -273,8 +273,8 @@ internal partial class Publication
             {
                 if (isRetry) throw;
 
-                _logger.LogWarning("[{Title}/{Id}] Task {Idx} on {Url} has failed failed for the first time, retrying later: {Message}",
-                    Title, Id, task.Idx, url, ex.Message);
+                _logger.LogWarning("[{Title}/{Id}] Task {Idx} on {Url} for {Chapter} has failed failed for the first time, retrying later: {Message}",
+                    Title, Id, task.Idx, url, ctx.Chapter, ex.Message);
                 failedTasks.Add(task);
             }
         }
