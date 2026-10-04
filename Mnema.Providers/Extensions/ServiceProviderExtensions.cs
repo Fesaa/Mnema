@@ -182,7 +182,8 @@ public static class ServiceProviderExtensions
         return client =>
         {
             client.BaseAddress = new Uri(uri);
-            client.Timeout = TimeSpan.FromSeconds(30);
+            // Higher than 30s, so it's higher than default wait time for rate limit retry
+            client.Timeout = TimeSpan.FromSeconds(45);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, userAgent ?? BuildInfo.AppIdentifier);
             if (referer != null)
                 client.DefaultRequestHeaders.Add(HeaderNames.Referer, referer);
