@@ -24,6 +24,7 @@ export enum Provider {
   KAGANE = 7,
   Madokami = 8,
   AthreaScans = 9,
+  TopManhuaFan = 11,
 }
 
 export const InUseProviders: Provider[] = [
@@ -33,4 +34,5 @@ export const InUseProviders: Provider[] = [
   Provider.DYNASTY,
   Provider.Madokami,
   Provider.AthreaScans,
+  Provider.TopManhuaFan,
 ]

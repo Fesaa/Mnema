@@ -13,6 +13,7 @@ using Mnema.Providers.Managers.Dropped;
 using Mnema.Providers.Managers.Publication;
 using Mnema.Providers.Managers.QBit;
 using Mnema.Providers.Mangadex;
+using Mnema.Providers.Repositories;
 using Mnema.Providers.Repositories.AthreaScans;
 using Mnema.Providers.Repositories.Madokami;
 using Mnema.Providers.Repositories.Nyaa;
@@ -151,6 +152,17 @@ public static class ServiceProviderExtensions
 
             #endregion
 
+            #region TopManhuaFan
+
+            services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.TopManhuaFan);
+            services.AddRepository<TopManhuaFanRepository>(Provider.TopManhuaFan);
+            services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.TopManhuaFan);
+            services.AddHttpClient(nameof(Provider.TopManhuaFan), ConfigureDefaultClient("https://www.topmanhua.fan/",
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:157.0) Gecko/20100101 Firefox/157.0",
+                "https://www.topmanhua.fan/"));
+
+            #endregion
+
             services.AddKeyedScoped<IContentManager, DroppedContentManager>(Provider.GenericFile);
         }
 
@@ -165,13 +177,15 @@ public static class ServiceProviderExtensions
         }
     }
 
-    private static Action<HttpClient> ConfigureDefaultClient(string uri, string? userAgent = null)
+    private static Action<HttpClient> ConfigureDefaultClient(string uri, string? userAgent = null, string? referer = null)
     {
         return client =>
         {
             client.BaseAddress = new Uri(uri);
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, userAgent ?? BuildInfo.AppIdentifier);
+            if (referer != null)
+                client.DefaultRequestHeaders.Add(HeaderNames.Referer, referer);
         };
     }
 }

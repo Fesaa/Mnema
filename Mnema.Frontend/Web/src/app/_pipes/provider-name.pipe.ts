@@ -29,6 +29,8 @@ export class ProviderNamePipe implements PipeTransform {
         return "Madokami"
       case Provider.AthreaScans:
         return "Athrea Scans"
+      case Provider.TopManhuaFan:
+        return "TopManhuaFan"
       default:
         return "Unknown";
     }

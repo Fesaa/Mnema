@@ -19,7 +19,9 @@ public interface IParserService
     string ParseVolume(string filename, ContentFormat type);
     string ParseChapter(string filename, ContentFormat type);
     bool IsDefaultChapter(string? chapterNumber);
+    string EmptyIfDefaultChapter(string? val);
     bool IsLooseLeafVolume(string? volumeNumber);
+    string EmptyIfLooseLeafVolume(string? volumeNumber);
     bool IsCoverImage(string filename);
     bool IsImage(string filePath);
     bool IsSupportedFile(string filePath);

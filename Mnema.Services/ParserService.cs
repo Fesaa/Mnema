@@ -1254,8 +1254,18 @@ public partial class ParserService: IParserService
         return !string.IsNullOrEmpty(chapterNumber) && (chapterNumber.Equals(DefaultChapter) || chapterNumber.Equals(DefaultChapter + ".0"));
     }
 
+    public string EmptyIfDefaultChapter(string? val)
+    {
+        return string.IsNullOrEmpty(val) || IsDefaultChapter(val) ? string.Empty : val;
+    }
+
     public bool IsLooseLeafVolume(string? volumeNumber)
     {
         return !string.IsNullOrEmpty(volumeNumber) && (volumeNumber.Equals(LooseLeafVolume) || volumeNumber.Equals(LooseLeafVolume + ".0"));
+    }
+
+    public string EmptyIfLooseLeafVolume(string? volumeNumber)
+    {
+        return string.IsNullOrEmpty(volumeNumber) || IsLooseLeafVolume(volumeNumber) ? string.Empty : volumeNumber;
     }
 }
