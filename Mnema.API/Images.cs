@@ -8,9 +8,9 @@ namespace Mnema.API;
 public interface IImageService
 {
 
-    Task ConvertAndSave(Stream stream, ImageFormat format, string filePath,
+    Task ConvertAndSave(Stream stream, ImageFormat format, string filePath, string originalFormat,
         CancellationToken cancellationToken = default);
 
-    Task Convert(Stream stream, ImageFormat format, Stream outputStream);
+    Task Convert(Stream stream, ImageFormat format, Stream outputStream, string originalFormat, CancellationToken cancellationToken = default);
 
 }

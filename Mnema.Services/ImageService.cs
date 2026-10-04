@@ -15,7 +15,10 @@ internal sealed record ImageConversionSettings(bool Lossless, int Quality);
 
 public class ImageService(ILogger<ImageService> logger, ISettingsService settingsService): IImageService
 {
-    public async Task ConvertAndSave(Stream stream, ImageFormat format, string filePath, CancellationToken cancellationToken = default)
+
+    private const int WebpMaxDimension = 16383;
+
+    public async Task ConvertAndSave(Stream stream, ImageFormat format, string filePath, string originalFormat, CancellationToken cancellationToken = default)
     {
         if (stream.CanSeek)
             stream.Position = 0;
@@ -44,6 +47,15 @@ public class ImageService(ILogger<ImageService> logger, ISettingsService setting
                 using var image = Image.NewFromStream(stream, access: Enums.Access.Sequential);
                 if (cancellationToken.IsCancellationRequested) return;
 
+                if (image.Width > WebpMaxDimension || image.Height > WebpMaxDimension)
+                {
+                    logger.LogWarning("Image saving to {Path} is too large {W}x{H}. Will be saved as {Format} instead",
+                        filePath, image.Width, image.Height, originalFormat);
+
+                    image.WriteToFile(Path.ChangeExtension(filePath, originalFormat));
+                    return;
+                }
+
                 image.Webpsave(filePath, lossless: settings.Lossless, q: settings.Quality);
                 break;
             }
@@ -53,7 +65,8 @@ public class ImageService(ILogger<ImageService> logger, ISettingsService setting
         }
     }
 
-    public async Task Convert(Stream stream, ImageFormat format, Stream outputStream)
+    public async Task Convert(Stream stream, ImageFormat format, Stream outputStream, string originalFormat,
+        CancellationToken cancellationToken = default)
     {
         if (stream.CanSeek)
             stream.Position = 0;
@@ -61,13 +74,22 @@ public class ImageService(ILogger<ImageService> logger, ISettingsService setting
         switch (format)
         {
             case ImageFormat.Upstream:
-                await stream.CopyToAsync(outputStream);
+                await stream.CopyToAsync(outputStream, cancellationToken);
                 break;
             case ImageFormat.Webp:
             {
-                var settings = await GetImageConversionSettings();
+                var settings = await GetImageConversionSettings(cancellationToken);
 
                 using var image = Image.NewFromStream(stream);
+
+                if (image.Width > WebpMaxDimension || image.Height > WebpMaxDimension)
+                {
+                    logger.LogWarning("Image is too large {Width}x{Height}. Will be saved as {Format} instead",
+                        image.Width, image.Height, originalFormat);
+
+                    image.WriteToStream(outputStream, originalFormat);
+                    return;
+                }
 
                 image.WebpsaveStream(outputStream, lossless: settings.Lossless, q: settings.Quality);
                 break;
