@@ -39,7 +39,14 @@ Docker:
     Nightly: ["nightly", "nightly-{Version}"]
     Stable: ["latest", "{Version}", "nightly", "nightly-{Version}"]
 
+GitHubComments:
+  ReleaseComponent: Minor
+  ReleaseTypes: [Nightly]
+
 CreateGitHubRelease:
   ReleaseTypes: [Stable]
   AssetPath: "_output/"
+
+NotifyDiscord:
+  ReleaseTypes: [Nightly]
 
