@@ -1,5 +1,5 @@
 on:
-  pull_request:
+  pull_request_target:
     types: [closed]
     branches: ["main"]
 
@@ -12,6 +12,7 @@ jobs:
   run-release-tool:
     if: github.event.pull_request.merged == true
     uses: Kareadita/GitHubActions/.github/workflows/release-tools.base.yml@main
-    secrets: inherit
+    secrets:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
     with:
       config-path: release.yaml
