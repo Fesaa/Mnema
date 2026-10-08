@@ -42,13 +42,13 @@ internal partial class Publication
         scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
     private readonly IIoHandler _ioHandler = scope.ServiceProvider.GetRequiredKeyedService<IIoHandler>(provider);
 
-    public Task DownloadContentAsync(CancellationTokenSource tokenSource)
+    public async Task DownloadContentAsync(CancellationTokenSource tokenSource)
     {
         if (State != ContentState.Waiting && State != ContentState.Ready)
         {
             _logger.LogWarning("[{Title}/{Id}] Publication is not in a valid state ({State}) to start, ignoring request",
                 Title, Id, State.ToString());
-            return Task.CompletedTask;
+            return;
         }
 
         State = ContentState.Downloading;
@@ -57,12 +57,16 @@ internal partial class Publication
 
         try
         {
-            return Download();
+            await Download();
+        }
+        catch (TaskCanceledException)
+        {
+            /* Swallow */
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[{Title}/{Id}] An exception occurring download", Title, Id);
-            return Cancel(ex);
+            await Cancel(ex);
         }
     }
 
@@ -120,6 +124,8 @@ internal partial class Publication
         _ = Task.Run(SignalRUpdateLoop, _tokenSource.Token);
 
         await ProcessDownloads();
+
+        if (_tokenSource.IsCancellationRequested) return;
 
         _logger.LogInformation("[{Title}/{Id}] Downloaded all chapters in {Elapsed}", Title, Id, sw.Elapsed.ToReadableString());
 
@@ -256,7 +262,7 @@ internal partial class Publication
 
             try
             {
-                await using var stream = await client.GetStreamAsync(url);
+                await using var stream = await client.GetStreamAsync(url, _tokenSource.Token);
                 var work = new IoWork(
                     Preferences,
                     stream,
@@ -269,8 +275,14 @@ internal partial class Publication
 
                 _speedTracker!.IncrementIntermediate();
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
+                if (_tokenSource.IsCancellationRequested) return failedTasks;
+
                 if (isRetry) throw;
 
                 _logger.LogWarning("[{Title}/{Id}] Task {Idx} on {Url} for {Chapter} has failed failed for the first time, retrying later: {Message}",
