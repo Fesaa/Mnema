@@ -1396,6 +1396,7 @@
     "chapters": "Chapters",
     "unmatched-chapters": "UnMatched Chapters",
     "no-chapters": "No chapters found",
+    "no-unmatched-chapters": "No unmatched chapters found",
     "confirm-delete": "Are you sure you want to stop monitoring {{name}}",
     "select-status": "Set chapter status",
     "confirm-refresh-metadata": "Refresh metadata for {{name}}?",
