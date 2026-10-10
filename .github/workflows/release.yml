@@ -19,4 +19,4 @@ jobs:
       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
     with:
       config-path: release.yaml
-      uses-docker: 'true'
+      uses-docker: true
