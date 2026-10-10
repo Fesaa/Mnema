@@ -1,8 +1,7 @@
 name: Release Workflow
 
 on:
-  pull_request_target:
-    types: [closed]
+  push:
     branches: ["main"]
 
 permissions:
@@ -13,8 +12,7 @@ permissions:
 
 jobs:
   run-release-tool:
-    if: github.event.pull_request.merged == true
-    uses: Kareadita/GitHubActions/.github/workflows/release-tools.base.yml@main
+    uses: Kareadita/GitHubActions/.github/workflows/release-tools.base.yml@feature/no-pr-deps
     secrets:
       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
     with:
