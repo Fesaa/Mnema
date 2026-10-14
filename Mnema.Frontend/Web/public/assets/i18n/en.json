@@ -895,7 +895,7 @@
         "followedEvents-title": "Followed Events",
         "followedEvents-tooltip": "Events to act on",
         "AbortOnNoSeriesMatch-title": "Abort on no series match",
-        "AbortOnNoSeriesMatch-tooltip": "Should a library scan be started if Kavita can't map to a series"
+        "AbortOnNoSeriesMatch-tooltip": "If enabled, a library scan will NOT be started if a series match cannot be found"
       },
       "Native": {
         "name-title": "Name",
