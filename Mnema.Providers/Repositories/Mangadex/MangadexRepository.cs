@@ -162,6 +162,7 @@ internal class MangadexRepository : IRepository
             Title = manga.Attributes.LangTitle(language),
             LocalizedSeries = string.IsNullOrEmpty(originalLanguage) ? null : manga.Attributes.LangTitle(originalLanguage),
             Summary = manga.Attributes.Description.GetValueOrDefault(language, string.Empty),
+            OriginalLanguage = originalLanguage,
             Status = manga.Attributes.Status.AsPublicationStatus(),
             AgeRating = manga.Attributes.ContentRating.AsAgeRating(),
             Year = manga.Attributes.Year,

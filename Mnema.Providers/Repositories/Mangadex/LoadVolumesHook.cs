@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.Content;
+using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.User;
 using Mnema.Models.Enums;
@@ -25,10 +27,11 @@ internal class LoadVolumesHook : IPreDownloadHook
 
         var coverImages = await mangadexRepository.GetCoverImages(publication.Series.Id, cancellationToken);
 
-        var lang = publication.Request.GetKey(RequestConstants.LanguageKey);
+        var requestLanguage = publication.Request.GetKey(RequestConstants.LanguageKey);
+        var seriesLanguage = publication.Series.OriginalLanguage;
 
-        var firstCover = coverImages.Data.FirstOrDefault(LangFilter) ?? coverImages.Data.FirstOrDefault();
-        var lastCover = coverImages.Data.LastOrDefault(LangFilter) ?? coverImages.Data.LastOrDefault();
+        var firstCover = SortedCovers().FirstOrDefault();
+        var lastCover = SortedCovers().LastOrDefault();
 
         var coversByVolume = coverImages.Data
             .GroupBy(c => string.IsNullOrEmpty(c.Attributes.Volume) ? string.Empty : c.Attributes.Volume)
@@ -39,7 +42,9 @@ internal class LoadVolumesHook : IPreDownloadHook
             if (!string.IsNullOrEmpty(chapter.VolumeMarker) &&
                 coversByVolume.TryGetValue(chapter.VolumeMarker, out var covers))
             {
-                var cover = covers.FirstOrDefault(LangFilter) ?? covers.FirstOrDefault();
+                var cover = covers.FirstOrDefault(LangFilter(requestLanguage))
+                            ?? covers.FirstOrDefault(LangFilter(seriesLanguage))
+                            ?? covers.FirstOrDefault();
                 if (cover != null)
                 {
                     chapter.CoverUrl = cover.Url(publication.Series.Id);
@@ -64,9 +69,16 @@ internal class LoadVolumesHook : IPreDownloadHook
 
         return;
 
-        bool LangFilter(CoverData data)
+        IOrderedEnumerable<CoverData> SortedCovers()
         {
-            return data.Attributes.Locale == lang;
+            return coverImages.Data.OrderBy(c => c.Attributes.Volume.AsFloat(int.MaxValue))
+                .ThenBy(c => c.Attributes.Locale == requestLanguage)
+                .ThenBy(c => c.Attributes.Volume == seriesLanguage);
+        }
+
+        Func<CoverData, bool> LangFilter(string lang)
+        {
+            return data => string.IsNullOrEmpty(lang) || data.Attributes.Locale == lang;
         }
     }
 }
