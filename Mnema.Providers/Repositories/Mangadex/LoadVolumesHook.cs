@@ -39,6 +39,11 @@ internal class LoadVolumesHook : IPreDownloadHook
 
         foreach (var chapter in publication.Series.Chapters)
         {
+            if (!string.IsNullOrEmpty(chapter.CoverUrl))
+            {
+                continue;
+            }
+
             if (!string.IsNullOrEmpty(chapter.VolumeMarker) &&
                 coversByVolume.TryGetValue(chapter.VolumeMarker, out var covers))
             {
