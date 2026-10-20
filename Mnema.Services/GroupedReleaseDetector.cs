@@ -15,7 +15,7 @@ public class GroupedReleaseDetector: IGroupedReleaseDetector
     private static readonly IReadOnlyList<Regex> NyaaGroupedReleasesRegex = [
         new(
             @"^(?:\(Partial\)\s*)?(?:Weekly|Monthly)\s+.+?\s+(?:Chapter|Volume)s?\s+Updates?\s*-\s*" +
-            @"(?:Week\s+\d+(?:[+\-]\d+)*|[A-Za-z]+)\s+\d{4}" +
+            @"(?:Week\s+\d+(?:[+\-]\d+)*|[A-Za-z]+(?:\s*[-–]\s*[A-Za-z]+)*)\s+\d{4}" +
             @"(?:\s*\(Digital\))?(?:\s*\([^)]+\))?$",
             MatchOptions, RegexTimeout),
     ];
