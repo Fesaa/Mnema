@@ -12,6 +12,7 @@ public class GroupedReleaseDetectorTests
     [InlineData("Monthly Viz Manga & Shonen Jump Volumes Update - July 2026 (Digital) (Rillant)", true)]
     [InlineData("Weekly Alpha Manga Chapter Updates - Week 30 2026 (Digital) (Anon)", true)]
     [InlineData("Weekly Manga UP! Chapter Updates - Week 30 2026 (Digital) (Oak)", true)]
+    [InlineData("Monthly Square Enix Manga Volumes Update - September-October 2026 (Digital) (Rillant)", true)]
     public void NyaaGroupedReleasesTest(string input, bool expected)
     {
         var detector = new GroupedReleaseDetector();
