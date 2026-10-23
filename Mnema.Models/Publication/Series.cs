@@ -9,6 +9,7 @@ public record Series
     public required string Title { get; set; }
     public string? LocalizedSeries { get; set; }
     public required string Summary { get; set; }
+    public string OriginalLanguage { get; set; } = string.Empty;
 
     public string? CoverUrl { get; set; }
     public string? NonProxiedCoverUrl { get; set; }

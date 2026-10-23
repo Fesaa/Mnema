@@ -91,7 +91,13 @@ internal class QBitClient(
         {
             await action(client);
         }
-        catch (Exception ex) when (ex is HttpRequestException or QBittorrentClientRequestException)
+        catch (QBittorrentClientRequestException ex) when ((int)ex.StatusCode != 403)
+        {
+            logger.LogWarning(ex, "qBittorrent request failed. Invalidating client.");
+            await HandleFailure(ex);
+            throw;
+        }
+        catch (HttpRequestException ex) when((int?) ex.StatusCode != 403)
         {
             logger.LogWarning(ex, "qBittorrent request failed. Invalidating client.");
             await HandleFailure(ex);

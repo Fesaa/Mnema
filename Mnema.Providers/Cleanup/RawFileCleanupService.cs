@@ -114,7 +114,7 @@ internal class RawFileCleanupService(
         if (validFiles.Count == 0)
         {
             logger.LogWarning("[{Title}/{Id}] No files found in directory {Directory} that match the format",
-                context.Title, context.Series?.Id, context.DownloadDirectory);
+                context.Title, context.Content.Id, context.DownloadDirectory);
             return;
         }
 
@@ -124,7 +124,7 @@ internal class RawFileCleanupService(
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = usingCount };
 
         logger.LogDebug("[{Title}/{Id}] Going to use {Cores} / {TotalCores} to cleanup {FileCount} files",
-            context.Title, context.Series?.Id, usingCount, amountOfProcessors, validFiles.Count);
+            context.Title, context.Content.Id, usingCount, amountOfProcessors, validFiles.Count);
 
         await Parallel.ForEachAsync(validFiles, parallelOptions,
             async (f, _) => await ProcessSingleFileAsync(context, f));
