@@ -12,7 +12,7 @@ internal class TorrentWatcherService(ILogger<TorrentWatcherService> logger, QBit
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(15));
 
         do
         {
