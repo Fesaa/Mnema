@@ -77,7 +77,7 @@ internal class QBitClient(
         catch (Exception ex) when (ex is HttpRequestException or QBittorrentClientRequestException)
         {
             logger.LogWarning(ex, "qBittorrent request failed. Invalidating client.");
-            await HandleFailure(ex);
+            await HandleFailure();
             throw;
         }
     }
@@ -91,34 +91,32 @@ internal class QBitClient(
         {
             await action(client);
         }
-        catch (QBittorrentClientRequestException ex) when ((int)ex.StatusCode != 403)
+        catch (Exception ex) when (ex is HttpRequestException or QBittorrentClientRequestException)
         {
             logger.LogWarning(ex, "qBittorrent request failed. Invalidating client.");
-            await HandleFailure(ex);
-            throw;
-        }
-        catch (HttpRequestException ex) when((int?) ex.StatusCode != 403)
-        {
-            logger.LogWarning(ex, "qBittorrent request failed. Invalidating client.");
-            await HandleFailure(ex);
+            await HandleFailure();
             throw;
         }
     }
 
-    private async Task HandleFailure(Exception ex)
+    private async Task HandleFailure()
     {
-        Guid? clientId = null;
-        lock (_semaphore)
+        await _semaphore.WaitAsync();
+        try
         {
-            clientId = _downloadClientMetadata?.Id;
+            var clientId = _downloadClientMetadata?.Id;
             Invalidate();
-        }
 
-        if (clientId.HasValue)
+            if (clientId.HasValue)
+            {
+                using var scope = scopeFactory.CreateScope();
+                var downloadClientService = scope.ServiceProvider.GetRequiredService<IDownloadClientService>();
+                await downloadClientService.MarkAsFailed(clientId.Value, CancellationToken.None);
+            }
+        }
+        finally
         {
-            using var scope = scopeFactory.CreateScope();
-            var downloadClientService = scope.ServiceProvider.GetRequiredService<IDownloadClientService>();
-            await downloadClientService.MarkAsFailed(clientId.Value, CancellationToken.None);
+            _semaphore.Release();
         }
     }
 

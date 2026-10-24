@@ -24,6 +24,20 @@ internal partial class QBitContentManager
 
     public async Task TorrentWatcher(CancellationToken cancellationToken)
     {
+        using var scope = scopeFactory.CreateScope();
+
+        var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        var downloads = (await unitOfWork.ExternalDownloadRepository.GetAll(cancellationToken))
+            .GroupBy(d => d.ExternalId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        if (downloads.Count == 0)
+        {
+            return;
+        }
+
         IReadOnlyList<TorrentInfo> torrents;
         try
         {
@@ -39,15 +53,6 @@ internal partial class QBitContentManager
         {
             return;
         }
-
-        using var scope = scopeFactory.CreateScope();
-
-        var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-        var downloads = (await unitOfWork.ExternalDownloadRepository.GetAll(cancellationToken))
-            .GroupBy(d => d.ExternalId)
-            .ToDictionary(g => g.Key, g => g.ToList());
 
         var content = torrents
             .Where(t => downloads.ContainsKey(t.Hash))
