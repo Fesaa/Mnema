@@ -17,15 +17,15 @@
         <PackageReference Include="Hangfire.AspNetCore" Version="1.8.25" />
         <PackageReference Include="Hangfire.InMemory" Version="1.0.0" />
         <PackageReference Include="Hangfire.PostgreSql" Version="1.21.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.13" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.13" />
-        <PackageReference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" Version="10.0.13" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.13">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.14" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
+        <PackageReference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" Version="10.0.14" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.14">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.3.0"/>
-        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.13" />
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.14" />
         <PackageReference Include="NeoSmart.Caching.Sqlite" Version="9.0.3" />
         <PackageReference Include="NeoSmart.Caching.Sqlite.AspNetCore" Version="9.0.3" />
         <PackageReference Include="Scalar.AspNetCore" Version="2.18.3" />
