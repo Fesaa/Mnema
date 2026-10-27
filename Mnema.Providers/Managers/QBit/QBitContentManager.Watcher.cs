@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Common.Exceptions;
 using Mnema.Models.DTOs.Content;
-using QBittorrent.Client;
 
 namespace Mnema.Providers.Managers.QBit;
 
@@ -44,7 +43,7 @@ internal partial class QBitContentManager
             var listQuery = new TorrentListQuery { Category = MnemaCategory };
             torrents = await qBitClient.GetTorrentsAsync(listQuery, cancellationToken);
         }
-        catch (Exception ex) when (ex is HttpRequestException or QBittorrentClientRequestException or MnemaException)
+        catch (Exception ex) when (ex is HttpRequestException or MnemaException)
         {
             return;
         }

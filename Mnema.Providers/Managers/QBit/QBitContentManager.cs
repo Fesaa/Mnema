@@ -15,7 +15,6 @@ using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
-using QBittorrent.Client;
 
 namespace Mnema.Providers.Managers.QBit;
 

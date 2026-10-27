@@ -13,7 +13,6 @@ using Mnema.Models.Enums;
 using Mnema.Providers.Managers.QBit;
 using Mnema.Services;
 using NSubstitute;
-using QBittorrent.Client;
 
 namespace Mnema.Tests.Providers.Managers;
 
