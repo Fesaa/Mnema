@@ -15,7 +15,6 @@ using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
-using QBittorrent.Client;
 using BuildInfo = Mnema.Common.BuildInfo;
 
 namespace Mnema.Providers.Managers.QBit;

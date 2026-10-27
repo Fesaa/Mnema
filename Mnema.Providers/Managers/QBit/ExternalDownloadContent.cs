@@ -5,11 +5,10 @@ using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Publication;
-using QBittorrent.Client;
 
 namespace Mnema.Providers.Managers.QBit;
 
-public class ExternalDownloadContent(ExternalDownload externalDownload, TorrentInfo torrentInfo) : IContent
+internal sealed class ExternalDownloadContent(ExternalDownload externalDownload, TorrentInfo torrentInfo) : IContent
 {
     public string Id => torrentInfo.Hash;
     public string Title => externalDownload.Title;
