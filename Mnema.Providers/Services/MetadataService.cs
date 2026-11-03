@@ -53,12 +53,10 @@ internal class MetadataService(
 
         if (chapter != null)
         {
-            if (chapter.VolumeNumber() != null) ci.Volume = chapter.VolumeMarker;
+            if (chapter.VolumeNumber() != null)
+                ci.Volume = parserService.EmptyIfLooseLeafVolume(chapter.VolumeMarker);
 
-            if (chapter.IsOneShot)
-                ci.Format = "Special";
-            else
-                ci.Number = chapter.ChapterMarker;
+            ci.Format = chapter.IsOneShot ? "Special" : parserService.EmptyIfDefaultChapter(chapter.ChapterMarker);
 
             if (!string.IsNullOrEmpty(chapter.Isbn))
                 ci.Isbn = chapter.Isbn;
