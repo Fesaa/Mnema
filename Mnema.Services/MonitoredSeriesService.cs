@@ -433,7 +433,7 @@ public class MonitoredSeriesService(
         return MonitoredChapterStatus.Missing;
     }
 
-    private static void PatchChapterMetadata(MonitoredChapter? mChapter, Chapter chapter)
+    private void PatchChapterMetadata(MonitoredChapter? mChapter, Chapter chapter)
     {
         if (mChapter == null)
             return;
@@ -441,8 +441,8 @@ public class MonitoredSeriesService(
         mChapter.ExternalId = chapter.Id;
         mChapter.Title = chapter.Title;
         mChapter.Summary = chapter.Summary;
-        mChapter.Volume = chapter.VolumeMarker;
-        mChapter.Chapter = chapter.ChapterMarker;
+        mChapter.Volume = parserService.EmptyIfLooseLeafVolume(chapter.VolumeMarker);
+        mChapter.Chapter = parserService.EmptyIfDefaultChapter(chapter.ChapterMarker);
         mChapter.CoverUrl = chapter.CoverUrl;
         mChapter.RefUrl = chapter.RefUrl;
         mChapter.ReleaseDate = chapter.ReleaseDate?.ToUniversalTime();
