@@ -1413,6 +1413,27 @@
     "deleted": {
       "title": "Deleted {{name}}",
       "summary": ""
+    },
+    "update-cover": "Update cover",
+    "edit-metadata": "Edit metadata",
+    "update-covers": "Update covers",
+    "select-cover": "Select a cover",
+    "volume-label": "Vol. {{volume}}",
+    "no-volume": "No volume",
+    "selected-count": "{{count}} selected",
+    "select-chapter": "Select {{title}}",
+    "clear": "Clear",
+    "no-covers": {
+      "title": "No covers found",
+      "summary": "No provider or metadata source returned a cover for this series."
+    },
+    "cover-updated": {
+      "title": "Cover updated",
+      "summary": ""
+    },
+    "same-volume-required": {
+      "title": "Select chapters of one volume",
+      "summary": "Bulk cover updates only work when all selected chapters are in the same volume."
     }
   },
 

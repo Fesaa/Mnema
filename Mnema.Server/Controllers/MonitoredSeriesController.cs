@@ -5,11 +5,13 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
@@ -42,11 +44,15 @@ public class MonitoredSeriesController(
     IMetadataService metadataService,
     IFileSystem fileSystem,
     [FromKeyedServices(ICleanupService.RawFileCleanupServiceKey)] ICleanupService cleanupService,
+    ICoverService coverService,
+    IMapper mapper,
     ApplicationConfiguration configuration
 ) : BaseApiController
 {
 
     private const long MaxFileSizeInBytes = 512 * 1024 * 1024; // 512 MB
+
+    private static readonly FileExtensionContentTypeProvider FileTypeProvider = new();
 
     [HttpGet("all")]
     public async Task<ActionResult<PagedList<MonitoredSeriesDto>>> GetAll([FromQuery] string query = "",
@@ -191,6 +197,50 @@ public class MonitoredSeriesController(
         chapter.Status = status;
 
         await unitOfWork.CommitAsync();
+
+        return Ok();
+    }
+
+    [HttpGet("{id:guid}/covers")]
+    public async Task<ActionResult<List<CoverDto>>> GetCovers(Guid id)
+    {
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
+        if (series == null) return NotFound();
+
+        var covers = await coverService.GetCovers(series, HttpContext.RequestAborted);
+
+        return Ok(mapper.Map<List<CoverDto>>(covers));
+    }
+
+    [HttpGet("{id:guid}/{chapterId:guid}/cover")]
+    [OutputCache(PolicyName = CacheProfiles.OneWeek, VaryByRouteValueNames = ["id", "chapterId"], VaryByQueryKeys = ["v"])]
+    public async Task<IActionResult> GetCover(Guid id, Guid chapterId)
+    {
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
+        if (series == null) return NotFound();
+
+        var chapter = series.Chapters.FirstOrDefault(c => c.Id == chapterId);
+        if (chapter == null) return NotFound();
+
+        var cover = await coverService.GetArchiveCover(chapter, HttpContext.RequestAborted);
+        if (cover == null) return NotFound();
+
+        FileTypeProvider.TryGetContentType(cover.Extension, out var contentType);
+
+        return File(cover.Data, contentType ?? "image/jpeg");
+    }
+
+    [HttpPost("{id:guid}/covers")]
+    public async Task<IActionResult> UpdateCovers(Guid id, [FromBody] UpdateCoversDto updateCoversDto)
+    {
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, HttpContext.RequestAborted);
+        if (series == null) return NotFound();
+
+        var chapterIds = updateCoversDto.ChapterIds.Distinct().ToHashSet();
+        var chapters = series.Chapters.Where(c => chapterIds.Contains(c.Id)).ToList();
+        if (chapters.Count != chapterIds.Count) return BadRequest("One or more chapters were not found");
+
+        await coverService.UpdateCovers(series, chapters, updateCoversDto.CoverUrl, HttpContext.RequestAborted);
 
         return Ok();
     }

@@ -136,15 +136,38 @@
         </ul>
 
         @if (activeChapterTab() === 'chapters') {
+          @if (selectedChapters.ids().length > 0) {
+            <div class="chapter-selection-toolbar d-flex flex-wrap align-items-center gap-2 p-2 mb-2">
+              <span class="small text-muted">{{t('selected-count', {count: selectedChapters.ids().length})}}</span>
+              <button type="button" class="btn btn-sm btn-primary" [disabled]="coverUpdateInProgress()" (click)="bulkUpdateCovers()">
+                <i class="fa fa-image"></i> {{t('update-covers')}}
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary" (click)="clearChapterSelection()">
+                {{t('clear')}}
+              </button>
+            </div>
+          }
+
           @if (s.chapters && s.chapters.length > 0) {
             <div class="chapters-list">
               @for (chapter of s.chapters; track chapter.id) {
                 <div class="chapter-row">
                   <div class="d-flex gap-2 align-items-start">
 
+                    @if (series().format === Format.Archive && chapter.status === MonitoredChapterStatus.Available && chapter.filePath) {
+                      <div class="flex-shrink-0 pt-1">
+                        <input
+                          type="checkbox"
+                          class="form-check-input"
+                          [checked]="isChapterSelected(chapter.id)"
+                          (change)="toggleChapter(chapter)"
+                          [attr.aria-label]="t('select-chapter', {title: chapter.title})">
+                      </div>
+                    }
+
                     <div class="chapter-thumb-wrap flex-shrink-0">
-                      @if (chapter.coverUrl) {
-                        <img [src]="chapter.coverUrl" [alt]="chapter.title" class="chapter-thumb">
+                      @if (chapterCoverUrl(chapter); as coverUrl) {
+                        <img [src]="coverUrl" [alt]="chapter.title" class="chapter-thumb" loading="lazy" (error)="onCoverError(chapter.id)">
                       } @else {
                         <div class="chapter-thumb-placeholder">
                           <i class="fa fa-file"></i>
@@ -165,8 +188,26 @@
                           }
                         </div>
                         @if (chapter.filePath) {
-                          <div>
-                            <i class="fa fa-pencil clickable text-primary" (click)="editFile(chapter.filePath, chapter)"></i>
+                          <div class="d-flex align-items-center gap-2">
+                            @if (series().format === Format.Archive && chapter.status === MonitoredChapterStatus.Available) {
+                              <button
+                                type="button"
+                                class="btn btn-link p-0 border-0 lh-1 text-primary text-decoration-none d-inline-flex align-items-center"
+                                [ngbTooltip]="t('update-cover')"
+                                [attr.aria-label]="t('update-cover')"
+                                [disabled]="coverUpdateInProgress()"
+                                (click)="updateCover(chapter)">
+                                <i class="fa fa-image"></i>
+                              </button>
+                            }
+                            <button
+                              type="button"
+                              class="btn btn-link p-0 border-0 lh-1 text-primary text-decoration-none d-inline-flex align-items-center"
+                              [ngbTooltip]="t('edit-metadata')"
+                              [attr.aria-label]="t('edit-metadata')"
+                              (click)="editFile(chapter.filePath, chapter)">
+                              <i class="fa fa-pencil"></i>
+                            </button>
                           </div>
                         }
                       </div>
@@ -279,6 +320,18 @@
         </a>
       }
     </div>
+
+    @if (selectedItems && selectedItems.includes(item)) {
+      <span class="pill p-1 ms-1">{{t('common.selected')}}</span>
+    }
+  </div>
+</ng-template>
+
+<ng-template #coverPreview let-item let-selectedItems="selectedItems">
+  <div class="d-flex gap-2 align-items-center" *transloco="let t;">
+    <img [src]="item.value.url" [alt]="item.label" class="cover-option-thumb rounded" loading="lazy">
+
+    <span class="fw-bold">{{item.label}}</span>
 
     @if (selectedItems && selectedItems.includes(item)) {
       <span class="pill p-1 ms-1">{{t('common.selected')}}</span>

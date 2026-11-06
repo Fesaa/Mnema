@@ -64,6 +64,14 @@ export type MonitoredChapter = {
   refUrl?: string;
   filePath?: string;
   releaseDate?: string;
+  lastModifiedUtc: string;
+}
+
+export type Cover = {
+  url: string;
+  extension: string;
+  volume: string;
+  chapter: string;
 }
 
 export enum MonitoredChapterStatus {
@@ -178,6 +186,24 @@ export class MonitoredSeriesService {
 
   setChapterStatus(id: string, chapterId: string, status: MonitoredChapterStatus) {
     return this.httpClient.post(`${this.baseUrl}/${id}/${chapterId}/set-status?status=${status}`, {});
+  }
+
+  covers(id: string) {
+    return this.httpClient.get<Cover[]>(`${this.baseUrl}/${id}/covers`);
+  }
+
+  updateCovers(id: string, chapterIds: string[], coverUrl: string) {
+    return this.httpClient.post(`${this.baseUrl}/${id}/covers`, {chapterIds, coverUrl});
+  }
+
+  coverUrl(id: string, chapterId: string, version?: string) {
+    let url = `${this.baseUrl}/${id}/${chapterId}/cover`;
+
+    if (version) {
+      url += `?v=${encodeURIComponent(version)}`;
+    }
+
+    return url;
   }
 
   getMetadataForm(provider: Provider) {

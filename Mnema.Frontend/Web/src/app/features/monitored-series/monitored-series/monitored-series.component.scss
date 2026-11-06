@@ -241,6 +241,19 @@
   width: 16px;
 }
 
+.chapter-selection-toolbar {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.5rem;
+}
+
+.cover-option-thumb {
+  width: 3.5rem;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border: 1px solid var(--surface-border);
+}
+
 .search-preview-wrap {
   position: relative;
   width: 100%;
