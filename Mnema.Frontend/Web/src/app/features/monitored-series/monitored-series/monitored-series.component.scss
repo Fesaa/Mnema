@@ -165,17 +165,6 @@
       }
     }
 
-    .chapter-filepath {
-      max-width: 160px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-
-      @media (min-width: 768px) {
-        max-width: 300px;
-      }
-    }
-
     .chapter-row-footer {
       display: flex;
       align-items: center;

@@ -75,6 +75,15 @@ public static class StringExtensions
             return string.IsNullOrEmpty(s) ? defaultValue : float.Parse(s, CultureInfo.InvariantCulture);
         }
 
+        public string NormalizeVolumeMarker()
+        {
+            if (string.IsNullOrWhiteSpace(s)) return string.Empty;
+
+            return float.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
+                ? value.ToString(CultureInfo.InvariantCulture)
+                : s.Trim().ToLowerInvariant();
+        }
+
         public string GetUrlExtension(string? fallback = null)
         {
             if (string.IsNullOrWhiteSpace(s)) return string.Empty;

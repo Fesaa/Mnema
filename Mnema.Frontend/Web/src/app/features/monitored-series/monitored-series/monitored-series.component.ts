@@ -95,6 +95,7 @@ export class MonitoredSeriesComponent implements OnInit {
 
   protected failedCovers = signal<Set<string>>(new Set());
   protected coverUpdateInProgress = signal(false);
+  protected combineInProgress = signal(false);
   protected readonly selectedChapters = new Tracker<MonitoredChapter, string>(chapter => chapter.id);
 
   protected series = linkedSignal(() => this.data()!['series'] as MonitoredSeries);
@@ -264,6 +265,45 @@ export class MonitoredSeriesComponent implements OnInit {
         );
       }),
       finalize(() => this.coverUpdateInProgress.set(false)),
+    ).subscribe();
+  }
+
+  protected combineChapters() {
+    const chapters = this.selectedChapters.items();
+    if (chapters.length < 2) {
+      this.toastR.errorLoco('monitored-series-detail.combine-min-two');
+      return;
+    }
+
+    const volume = chapters[0].volume;
+    if (!volume?.trim()) {
+      this.toastR.errorLoco('monitored-series-detail.combine-volume-required');
+      return;
+    }
+
+    const normalizedVolume = this.normalizeVolume(volume);
+    if (chapters.some(c => this.normalizeVolume(c.volume) !== normalizedVolume)) {
+      this.toastR.errorLoco('monitored-series-detail.combine-same-volume');
+      return;
+    }
+
+    if (this.combineInProgress()) return;
+
+    this.combineInProgress.set(true);
+    this.modalService.confirm$({
+      question: this.transLoco.translate('monitored-series-detail.confirm-combine', {
+        count: chapters.length,
+        volume: volume,
+      }),
+    }, true).pipe(
+      switchMap(() => this.monitoredSeriesService.combine(this.series().id, chapters.map(c => c.id))),
+      switchMap(() => this.monitoredSeriesService.get(this.series().id)),
+      tap(series => {
+        this.series.set(series);
+        this.clearChapterSelection();
+        this.toastR.successLoco('monitored-series-detail.combined');
+      }),
+      finalize(() => this.combineInProgress.set(false)),
     ).subscribe();
   }
 

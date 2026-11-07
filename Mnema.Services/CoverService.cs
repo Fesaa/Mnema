@@ -147,8 +147,8 @@ public class CoverService(
             throw new BadRequestException("No chapters selected");
         }
 
-        var volume = NormalizeVolume(chapters[0].Volume);
-        if (chapters.Any(c => NormalizeVolume(c.Volume) != volume))
+        var volume = chapters[0].Volume.NormalizeVolumeMarker();
+        if (chapters.Any(c => c.Volume.NormalizeVolumeMarker() != volume))
         {
             throw new BadRequestException("Select chapters of a single volume to update covers in bulk");
         }
@@ -301,14 +301,5 @@ public class CoverService(
         return float.TryParse(volume, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
             ? value
             : null;
-    }
-
-    private static string NormalizeVolume(string? volume)
-    {
-        if (string.IsNullOrWhiteSpace(volume)) return string.Empty;
-
-        return float.TryParse(volume, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
-            ? value.ToString(CultureInfo.InvariantCulture)
-            : volume.Trim().ToLowerInvariant();
     }
 }

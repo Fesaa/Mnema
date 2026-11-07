@@ -196,6 +196,10 @@ export class MonitoredSeriesService {
     return this.httpClient.post(`${this.baseUrl}/${id}/covers`, {chapterIds, coverUrl});
   }
 
+  combine(id: string, chapterIds: string[]) {
+    return this.httpClient.post(`${this.baseUrl}/${id}/combine`, {chapterIds});
+  }
+
   coverUrl(id: string, chapterId: string, version?: string) {
     let url = `${this.baseUrl}/${id}/${chapterId}/cover`;
 

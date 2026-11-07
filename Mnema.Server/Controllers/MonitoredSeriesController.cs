@@ -245,6 +245,16 @@ public class MonitoredSeriesController(
         return Ok();
     }
 
+    [HttpPost("{id:guid}/combine")]
+    public async Task<IActionResult> Combine(Guid id, [FromBody] CombineChaptersDto combineDto)
+    {
+        if (combineDto?.ChapterIds is null) return BadRequest();
+
+        await monitoredSeriesService.CombineChapters(id, combineDto.ChapterIds, HttpContext.RequestAborted);
+
+        return Ok();
+    }
+
     [HttpGet("missing-chapters")]
     public async Task<ActionResult<PagedList<MonitoredChapterDto>>> GetMissingChapters(
         [FromQuery] PaginationParams pagination)
