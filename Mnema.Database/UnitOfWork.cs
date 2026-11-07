@@ -13,7 +13,7 @@ namespace Mnema.Database;
 public class UnitOfWork(ILogger<UnitOfWork> logger, MnemaDataContext ctx, IMapper mapper) : IUnitOfWork
 {
     public IPagesRepository PagesRepository { get; } = new PagesRepository(ctx, mapper);
-    public ISettingsRepository SettingsRepository { get; } = new SettingsRepository(ctx, mapper);
+    public ISettingsRepository SettingsRepository { get; } = new SettingsRepository(ctx);
     public INotificationRepository NotificationRepository { get; } = new NotificationRepository(ctx, mapper);
     public IConnectionRepository ConnectionRepository { get; } = new ConnectionRepository(ctx, mapper);
     public IContentReleaseRepository ContentReleaseRepository { get; } = new ContentReleaseRepository(ctx, mapper);

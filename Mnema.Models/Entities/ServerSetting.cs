@@ -4,7 +4,7 @@ namespace Mnema.Models.Entities;
 
 public class ServerSetting
 {
-    [Key] public required ServerSettingKey Key { get; set; }
+    [Key] public required string Key { get; set; }
 
     public required string Value { get; set; }
 }

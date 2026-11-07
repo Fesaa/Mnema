@@ -29,7 +29,7 @@ public class SettingsController(
     [HttpGet]
     public async Task<ActionResult<ServerSettingsDto>> GetSettings()
     {
-        var dto = await settingsService.GetSettingsAsync();
+        var dto = await settingsService.GetSettingsAsync(HttpContext.RequestAborted);
 
         return Ok(dto);
     }
@@ -38,9 +38,9 @@ public class SettingsController(
     [Authorize(Roles.ManageSettings)]
     public async Task<ActionResult<ServerSettingsDto>> UpdateSettings([FromBody] UpdateServerSettingsDto dto)
     {
-        await settingsService.SaveSettingsAsync(dto);
+        await settingsService.SaveSettingsAsync(dto, HttpContext.RequestAborted);
 
-        var settings = await settingsService.GetSettingsAsync();
+        var settings = await settingsService.GetSettingsAsync(HttpContext.RequestAborted);
         return Ok(settings);
     }
 
@@ -160,8 +160,8 @@ public class SettingsController(
         var noAuthScheme = await authenticationSchemeProvider.GetSchemeAsync(NoAuthAuthenticationSchemeOptions.SchemeName);
         if (noAuthScheme != null) return true;
 
-        var passwordSetting = await unitOfWork.SettingsRepository.GetSettingsAsync(ServerSettingKey.Password);
-        return !string.IsNullOrEmpty(passwordSetting.Value);
+        var password = await settingsService.GetSettingAsync(ServerSettingKeys.Password, HttpContext.RequestAborted);
+        return !string.IsNullOrEmpty(password);
     }
 
     [AllowAnonymous]
@@ -184,12 +184,11 @@ public class SettingsController(
         var password = passwordValues.FirstOrDefault();
         if (string.IsNullOrEmpty(password)) return BadRequest();
 
-        var passwordSetting = await unitOfWork.SettingsRepository.GetSettingsAsync(ServerSettingKey.Password);
-        if (!string.IsNullOrEmpty(passwordSetting.Value)) return BadRequest();
+        var currentPassword = await settingsService.GetSettingAsync(ServerSettingKeys.Password, HttpContext.RequestAborted);
+        if (!string.IsNullOrEmpty(currentPassword)) return BadRequest();
 
-        passwordSetting.Value = passwordService.HashPassword(password);
-        unitOfWork.SettingsRepository.Update(passwordSetting);
-        await unitOfWork.CommitAsync();
+        await settingsService.SetSettingAsync(
+            ServerSettingKeys.Password, passwordService.HashPassword(password), HttpContext.RequestAborted);
 
         return Redirect("/");
     }

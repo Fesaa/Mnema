@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Mnema.API;
 using Mnema.Common;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
@@ -13,40 +14,52 @@ namespace Mnema.Database.ManualMigrations;
 
 public class MigrateMetadataProviderSettings: ManualMigration
 {
+    private const string LegacyKey = "metadataProviderSettings";
+
     protected override string MigrationName => nameof(MigrateMetadataProviderSettings);
     protected override async Task ExecuteAsync(IServiceProvider serviceProvider, MnemaDataContext ctx, ILogger logger)
     {
-        var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
+        var row = await ctx.ServerSettings.SingleOrDefaultAsync(s => s.Key == LegacyKey);
+        if (row == null) return;
+
         var oldMetadataProviderSettings =
-            await settingsService.GetSettingsAsync<Dictionary<MetadataProvider, MetadataProviderSettingsDto>>(ServerSettingKey.MetadataProviderSettings);
+            JsonSerializer.Deserialize<Dictionary<MetadataProvider, MetadataProviderSettingsDto>>(row.Value) ?? [];
+        var existing = await ctx.MetadataProviderSettings.ToListAsync();
 
         foreach (var kv in oldMetadataProviderSettings)
         {
-            var metadataProvider = kv.Key;
+            var metadataProvider = kv.Key == MetadataProvider.Upsteam ? MetadataProvider.Upstream : kv.Key;
             var settings = kv.Value;
 
-            ctx.MetadataProviderSettings.Add(new MetadataProviderSettings
+            var target = existing.FirstOrDefault(s => s.MetadataProvider == metadataProvider);
+            if (target == null)
             {
-                MetadataProvider = metadataProvider == MetadataProvider.Upsteam ? MetadataProvider.Upstream : metadataProvider,
-                Priority = settings.Priority,
-                Enabled = settings.Enabled,
-                SeriesTitle = settings.SeriesSettings.Title,
-                SeriesSummary = settings.SeriesSettings.Summary,
-                SeriesLocalizedName = settings.SeriesSettings.LocalizedSeries,
-                SeriesCoverUrl = settings.SeriesSettings.CoverUrl,
-                SeriesPublicationStatus = settings.SeriesSettings.PublicationStatus,
-                SeriesYear = settings.SeriesSettings.Year,
-                SeriesTags = settings.SeriesSettings.Tags,
-                SeriesPeople = settings.SeriesSettings.People,
-                SeriesLinks = settings.SeriesSettings.Links,
-                Chapters = settings.SeriesSettings.Chapters,
-                ChapterTitle = settings.SeriesSettings.ChapterSettings.Summary,
-                ChapterSummary = settings.SeriesSettings.ChapterSettings.Summary,
-                ChapterReleaseDate = settings.SeriesSettings.ChapterSettings.ReleaseDate,
-                ChapterPeople = settings.SeriesSettings.ChapterSettings.People,
-                ChapterTags = settings.SeriesSettings.ChapterSettings.Tags,
-                MetadataProviderSpecific = new MetadataBag(),
-            });
+                target = new MetadataProviderSettings
+                {
+                    MetadataProvider = metadataProvider,
+                    MetadataProviderSpecific = new MetadataBag(),
+                };
+                ctx.MetadataProviderSettings.Add(target);
+                existing.Add(target);
+            }
+
+            target.Priority = settings.Priority;
+            target.Enabled = settings.Enabled;
+            target.SeriesTitle = settings.SeriesSettings.Title;
+            target.SeriesSummary = settings.SeriesSettings.Summary;
+            target.SeriesLocalizedName = settings.SeriesSettings.LocalizedSeries;
+            target.SeriesCoverUrl = settings.SeriesSettings.CoverUrl;
+            target.SeriesPublicationStatus = settings.SeriesSettings.PublicationStatus;
+            target.SeriesYear = settings.SeriesSettings.Year;
+            target.SeriesTags = settings.SeriesSettings.Tags;
+            target.SeriesPeople = settings.SeriesSettings.People;
+            target.SeriesLinks = settings.SeriesSettings.Links;
+            target.Chapters = settings.SeriesSettings.Chapters;
+            target.ChapterTitle = settings.SeriesSettings.ChapterSettings.Summary;
+            target.ChapterSummary = settings.SeriesSettings.ChapterSettings.Summary;
+            target.ChapterReleaseDate = settings.SeriesSettings.ChapterSettings.ReleaseDate;
+            target.ChapterPeople = settings.SeriesSettings.ChapterSettings.People;
+            target.ChapterTags = settings.SeriesSettings.ChapterSettings.Tags;
         }
 
         await ctx.SaveChangesAsync();

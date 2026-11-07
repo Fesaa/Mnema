@@ -889,8 +889,8 @@ namespace Mnema.Database.SqliteMigrations
 
             modelBuilder.Entity("Mnema.Models.Entities.ServerSetting", b =>
                 {
-                    b.Property<int>("Key")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Key")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
                         .IsRequired()
