@@ -165,17 +165,6 @@
       }
     }
 
-    .chapter-filepath {
-      max-width: 160px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-
-      @media (min-width: 768px) {
-        max-width: 300px;
-      }
-    }
-
     .chapter-row-footer {
       display: flex;
       align-items: center;
@@ -239,6 +228,19 @@
 .logo {
   height: 16px;
   width: 16px;
+}
+
+.chapter-selection-toolbar {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.5rem;
+}
+
+.cover-option-thumb {
+  width: 3.5rem;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border: 1px solid var(--surface-border);
 }
 
 .search-preview-wrap {

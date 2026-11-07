@@ -23,7 +23,7 @@ using Mnema.Providers.Extensions;
 
 namespace Mnema.Providers.Mangadex;
 
-internal class MangadexRepository : IRepository
+internal class MangadexRepository : IRepository, ICoverRepository
 {
     public static readonly ConcurrentDictionary<string, string> LinkFormats =
         new(StringComparer.OrdinalIgnoreCase)
@@ -200,6 +200,18 @@ internal class MangadexRepository : IRepository
             var fallbackUrl = $"https://uploads.mangadex.org/data/{hash}/{image}";
 
             return new DownloadUrl(preferredUrl, fallbackUrl);
+        }).ToList();
+    }
+
+    public async Task<List<Cover>> GetCovers(DownloadRequestDto request, CancellationToken cancellationToken)
+    {
+        var coverImages = await GetCoverImages(request.Id, cancellationToken);
+
+        return coverImages.Data.Select(cover => new Cover
+        {
+            Url = cover.Url(request.Id),
+            Extension = "jpg",
+            Volume = cover.Attributes.Volume ?? string.Empty,
         }).ToList();
     }
 

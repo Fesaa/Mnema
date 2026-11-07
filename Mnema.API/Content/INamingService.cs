@@ -19,6 +19,8 @@ public interface INamingService
     [Obsolete("Do not use for new stuff, only for MP compat")]
     string GetVolumeDirectoryName(string title, string volumeMarker);
 
+    string GetVolumeFileName(string title, string volumeMarker);
+
     string GetChapterFilePath(string baseDir, string title, string fileName);
 
     string GetChapterFileName(Preferences preferences, string title, Chapter chapter, IReadOnlyCollection<string>? existingPaths = null);

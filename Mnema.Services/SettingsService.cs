@@ -1,22 +1,18 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
-using Mnema.Models.Enums;
 
 namespace Mnema.Services;
 
-internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unitOfWork, INamingService namingService) : ISettingsService
+internal class SettingsService(IUnitOfWork unitOfWork, INamingService namingService) : ISettingsService
 {
     public async Task UpdatePreferences(PreferencesDto dto, CancellationToken cancellationToken)
     {
@@ -70,170 +66,120 @@ internal class SettingsService(ILogger<SettingsService> logger, IUnitOfWork unit
         }
     }
 
-    public async Task<T> GetSettingsAsync<T>(ServerSettingKey key)
+    public async Task<T> GetSettingAsync<T>(IMetadataKey<T> key, CancellationToken ct = default)
     {
-        if (!ServerSettingTypeMap.KeyToType.TryGetValue(key, out var expectedType) || expectedType != typeof(T))
-            throw new ArgumentException(
-                $"Invalid type {typeof(T).Name} for key {key}. Expected {expectedType?.Name ?? "unknown"}");
+        var setting = await unitOfWork.SettingsRepository.GetSettingAsync(key.Key, ct);
 
-        var setting = await unitOfWork.SettingsRepository.GetSettingsAsync(key);
-        return DeserializeSetting<T>(setting);
-    }
-
-    public async Task<ServerSettingsDto> GetSettingsAsync()
-    {
-        var settings = await unitOfWork.SettingsRepository.GetSettingsAsync();
-        var dto = new ServerSettingsDto();
-
-        foreach (var serverSetting in settings)
-            switch (serverSetting.Key)
-            {
-                case ServerSettingKey.MaxConcurrentImages:
-                    dto.MaxConcurrentImages = DeserializeSetting<int>(serverSetting);
-                    break;
-                case ServerSettingKey.InstalledVersion:
-                    dto.InstalledVersion = DeserializeSetting<string>(serverSetting);
-                    break;
-                case ServerSettingKey.FirstInstalledVersion:
-                    dto.FirstInstalledVersion = DeserializeSetting<string>(serverSetting);
-                    break;
-                case ServerSettingKey.InstallDate:
-                    dto.InstallDate = DeserializeSetting<DateTime>(serverSetting);
-                    break;
-                case ServerSettingKey.LastUpdateDate:
-                    dto.InstallDate = DeserializeSetting<DateTime>(serverSetting);
-                    break;
-                case ServerSettingKey.AutoDisableAfter:
-                    dto.AutoDisableProviderAfter = DeserializeSetting<int>(serverSetting);
-                    break;
-                case ServerSettingKey.ImageConversionLossLess:
-                    dto.ImageConversionLossless = DeserializeSetting<bool>(serverSetting);
-                    break;
-                case ServerSettingKey.ImageConversionQuality:
-                    dto.ImageConversionQuality = DeserializeSetting<int>(serverSetting);
-                    break;
-                case ServerSettingKey.Password:
-                case ServerSettingKey.MaxConcurrentTorrents:
-                case ServerSettingKey.SubscriptionRefreshHour:
-                case ServerSettingKey.MetadataProviderSettings:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
-                        "Unknown server settings key");
-            }
-
-        return dto;
-    }
-
-    public async Task SaveSettingsAsync(UpdateServerSettingsDto dto)
-    {
-        var settings = await unitOfWork.SettingsRepository.GetSettingsAsync();
-
-        foreach (var serverSetting in settings)
+        var bag = new MetadataBag();
+        if (setting != null)
         {
-            object? value = serverSetting.Key switch
-            {
-                ServerSettingKey.MaxConcurrentTorrents => null,
-                ServerSettingKey.MaxConcurrentImages => dto.MaxConcurrentImages,
-                ServerSettingKey.InstalledVersion => null,
-                ServerSettingKey.FirstInstalledVersion => null,
-                ServerSettingKey.InstallDate => null,
-                ServerSettingKey.SubscriptionRefreshHour => null,
-                ServerSettingKey.LastUpdateDate => null,
-                ServerSettingKey.MetadataProviderSettings => null,
-                ServerSettingKey.AutoDisableAfter => dto.AutoDisableProviderAfter,
-                ServerSettingKey.ImageConversionLossLess => dto.ImageConversionLossless,
-                ServerSettingKey.ImageConversionQuality => dto.ImageConversionQuality,
-                ServerSettingKey.Password => null,
-                _ => throw new ArgumentOutOfRangeException(nameof(serverSetting.Key), serverSetting.Key,
-                    "Unknown server settings key")
-            };
-
-            if (value == null) continue;
-
-            var updated = await UpdateIfDifferent(serverSetting, value);
+            bag.SetValue(setting.Key, setting.Value);
         }
 
-        if (unitOfWork.HasChanges()) await unitOfWork.CommitAsync();
+        return bag.GetKey(key);
     }
 
-    private static T DeserializeSetting<T>(ServerSetting setting)
+    public async Task SetSettingAsync<T>(IMetadataKey<T> key, T value, CancellationToken ct = default)
     {
-        object? result = setting.Key switch
-        {
-            ServerSettingKey.MaxConcurrentTorrents => int.Parse(setting.Value),
-            ServerSettingKey.MaxConcurrentImages => int.Parse(setting.Value),
-            ServerSettingKey.InstalledVersion => setting.Value,
-            ServerSettingKey.FirstInstalledVersion => setting.Value,
-            ServerSettingKey.InstallDate => DateTime.Parse(setting.Value, CultureInfo.InvariantCulture),
-            ServerSettingKey.SubscriptionRefreshHour => int.Parse(setting.Value),
-            ServerSettingKey.LastUpdateDate => DateTime.Parse(setting.Value, CultureInfo.InvariantCulture),
-            ServerSettingKey.MetadataProviderSettings => JsonSerializer.Deserialize<T>(setting.Value),
-            ServerSettingKey.AutoDisableAfter => int.Parse(setting.Value),
-            ServerSettingKey.ImageConversionLossLess => bool.Parse(setting.Value),
-            ServerSettingKey.ImageConversionQuality => int.Parse(setting.Value),
-            ServerSettingKey.Password => setting.Value,
-            _ => default(T)
-        };
+        var setting = await unitOfWork.SettingsRepository.GetSettingAsync(key.Key, ct);
+        var serialized = Serialize(key, value);
 
-        return result switch
+        if (setting == null)
         {
-            null => throw new ArgumentException($"[DeserializeSetting] No converter found for key {setting.Key}"),
-            T typedResult => typedResult,
-            _ => throw new ArgumentException(
-                $"Failed to convert {setting.Key} - {setting.Value} to type {typeof(T).Name}")
-        };
-    }
-
-    private static async Task<string> SerializeSetting(ServerSettingKey key, object setting)
-    {
-        return key switch
+            unitOfWork.SettingsRepository.Add(new ServerSetting { Key = key.Key, Value = serialized });
+        }
+        else if (setting.Value == serialized)
         {
-            ServerSettingKey.MaxConcurrentTorrents => setting.ToString(),
-            ServerSettingKey.MaxConcurrentImages => setting.ToString(),
-            ServerSettingKey.InstalledVersion => setting.ToString(),
-            ServerSettingKey.FirstInstalledVersion => setting.ToString(),
-            ServerSettingKey.InstallDate => setting.ToString(),
-            ServerSettingKey.SubscriptionRefreshHour => setting.ToString(),
-            ServerSettingKey.LastUpdateDate => setting.ToString(),
-            ServerSettingKey.MetadataProviderSettings => JsonSerializer.Serialize(setting),
-            ServerSettingKey.AutoDisableAfter => setting.ToString(),
-            ServerSettingKey.ImageConversionLossLess => setting.ToString(),
-            ServerSettingKey.ImageConversionQuality => setting.ToString(),
-            ServerSettingKey.Password => setting.ToString(),
-            _ => throw new ArgumentException($"[SerializeSetting] No converter found for key {key}")
-        } ?? string.Empty;
-    }
-
-    private async Task<bool> UpdateIfDifferent(ServerSetting setting, object value)
-    {
-        var serialized = await SerializeSetting(setting.Key, value);
-        if (setting.Value != serialized)
+            return;
+        }
+        else
         {
             setting.Value = serialized;
             unitOfWork.SettingsRepository.Update(setting);
-            return true;
         }
 
-        return false;
+        await unitOfWork.CommitAsync(ct);
     }
 
-    private static class ServerSettingTypeMap
+    public async Task<ServerSettingsDto> GetSettingsAsync(CancellationToken ct = default)
     {
-        public static readonly Dictionary<ServerSettingKey, Type> KeyToType = new()
+        var bag = await GetBagAsync(ct);
+
+        return new ServerSettingsDto
         {
-            { ServerSettingKey.MaxConcurrentTorrents, typeof(int) },
-            { ServerSettingKey.MaxConcurrentImages, typeof(int) },
-            { ServerSettingKey.InstalledVersion, typeof(string) },
-            { ServerSettingKey.FirstInstalledVersion, typeof(string) },
-            { ServerSettingKey.InstallDate, typeof(DateTime) },
-            { ServerSettingKey.SubscriptionRefreshHour, typeof(int) },
-            { ServerSettingKey.LastUpdateDate, typeof(DateTime) },
-            { ServerSettingKey.MetadataProviderSettings, typeof(Dictionary<MetadataProvider, MetadataProviderSettingsDto>)},
-            { ServerSettingKey.AutoDisableAfter, typeof(int)},
-            { ServerSettingKey.ImageConversionLossLess, typeof(bool) },
-            { ServerSettingKey.ImageConversionQuality, typeof(int) },
-            { ServerSettingKey.Password, typeof(string) },
+            InstalledVersion = bag.GetKey(ServerSettingKeys.InstalledVersion),
+            FirstInstalledVersion = bag.GetKey(ServerSettingKeys.FirstInstalledVersion),
+            InstallDate = bag.GetKey(ServerSettingKeys.InstallDate),
+            LastUpdateDate = bag.GetKey(ServerSettingKeys.LastUpdateDate),
+            MaxConcurrentImages = bag.GetKey(ServerSettingKeys.MaxConcurrentImages),
+            AutoDisableProviderAfter = bag.GetKey(ServerSettingKeys.AutoDisableProviderAfter),
+            ImageConversionLossless = bag.GetKey(ServerSettingKeys.ImageConversionLossless),
+            ImageConversionQuality = bag.GetKey(ServerSettingKeys.ImageConversionQuality),
         };
+    }
+
+    public async Task SaveSettingsAsync(UpdateServerSettingsDto dto, CancellationToken ct = default)
+    {
+        var bag = await GetBagAsync(ct);
+
+        bag.SetKey(ServerSettingKeys.MaxConcurrentImages, dto.MaxConcurrentImages);
+        bag.SetKey(ServerSettingKeys.AutoDisableProviderAfter, dto.AutoDisableProviderAfter);
+        bag.SetKey(ServerSettingKeys.ImageConversionLossless, dto.ImageConversionLossless);
+        bag.SetKey(ServerSettingKeys.ImageConversionQuality, dto.ImageConversionQuality);
+
+        await SaveBagAsync(bag, ct);
+    }
+
+    private async Task<MetadataBag> GetBagAsync(CancellationToken ct)
+    {
+        var settings = await unitOfWork.SettingsRepository.GetSettingsAsync(ct);
+        var bag = new MetadataBag();
+
+        foreach (var setting in settings)
+        {
+            bag.SetValue(setting.Key, setting.Value);
+        }
+
+        return bag;
+    }
+
+    private async Task SaveBagAsync(MetadataBag bag, CancellationToken ct)
+    {
+        var settings = await unitOfWork.SettingsRepository.GetSettingsAsync(ct);
+        var byKey = settings.ToDictionary(s => s.Key);
+        var changed = false;
+
+        foreach (var (key, values) in bag)
+        {
+            var value = values.Count == 0 ? string.Empty : values[0];
+
+            if (!byKey.TryGetValue(key, out var setting))
+            {
+                unitOfWork.SettingsRepository.Add(new ServerSetting { Key = key, Value = value });
+                changed = true;
+                continue;
+            }
+
+            if (setting.Value == value) continue;
+
+            setting.Value = value;
+            unitOfWork.SettingsRepository.Update(setting);
+            changed = true;
+        }
+
+        if (changed)
+        {
+            await unitOfWork.CommitAsync(ct);
+        }
+    }
+
+    private static string Serialize<T>(IMetadataKey<T> key, T value)
+    {
+        var bag = new MetadataBag();
+        bag.SetKey(key, value);
+
+        return bag.TryGetValue(key.Key, out var values) && values.Count > 0
+            ? values[0]
+            : string.Empty;
     }
 }

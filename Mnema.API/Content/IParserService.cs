@@ -25,6 +25,7 @@ public interface IParserService
     bool IsCoverImage(string filename);
     bool IsImage(string filePath);
     bool IsSupportedFile(string filePath);
+    bool HasBlacklistedFolderInPath(string path);
     float MinNumberFromRange(string range);
     float MaxNumberFromRange(string range);
     ParseResult FullParse(string input, ContentFormat type);

@@ -66,7 +66,8 @@ internal class SearchService(ILogger<SearchService> logger, IServiceScopeFactory
 
                 logger.LogError("{ErrorMessage} - {ConsecutiveFailures} consecutive failures", errorMessage, consecutiveFailures);
 
-                var disableAfter = await settingsService.GetSettingsAsync<int>(ServerSettingKey.AutoDisableAfter);
+                var disableAfter = await settingsService.GetSettingAsync(
+                    ServerSettingKeys.AutoDisableProviderAfter, cancellationToken);
                 if (consecutiveFailures >= disableAfter && disableAfter != 0)
                 {
                     providerSettings.Settings.SetKey(ProviderSettings.Disable, true);

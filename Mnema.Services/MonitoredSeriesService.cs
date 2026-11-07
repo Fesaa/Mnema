@@ -35,6 +35,7 @@ public class MonitoredSeriesService(
     IConnectionService connectionService,
     IMetadataService metadataService,
     INamingService namingService,
+    IChapterCombineService chapterCombineService,
     IFileSystem fileSystem
 ): IMonitoredSeriesService
 {
@@ -190,6 +191,28 @@ public class MonitoredSeriesService(
         await metadataService.WriteComicInfo(ci, path, cancellationToken);
 
         BackgroundJob.Enqueue(() => EnrichWithMetadata(series.Id, CancellationToken.None));
+    }
+
+    public async Task CombineChapters(Guid id, IReadOnlyCollection<Guid> chapterIds, CancellationToken ct = default)
+    {
+        var series = await unitOfWork.MonitoredSeriesRepository.GetById(id, MonitoredSeriesIncludes.Chapters, ct);
+        if (series == null) throw new NotFoundException();
+
+        var ids = chapterIds.Distinct().ToList();
+        if (ids.Count < 2) throw new BadRequestException("Select at least two chapters");
+
+        var chapters = series.Chapters.Where(c => ids.Contains(c.Id)).ToList();
+        if (chapters.Count != ids.Count) throw new BadRequestException("One or more chapters were not found");
+
+        var result = await chapterCombineService.Combine(series, chapters, ct);
+
+        foreach (var chapter in chapters)
+        {
+            chapter.FilePath = result.FilePath;
+            chapter.ComicInfo = result.ComicInfo;
+        }
+
+        await unitOfWork.CommitAsync(ct);
     }
 
     [AutomaticRetry(Attempts = 1)]
@@ -369,7 +392,7 @@ public class MonitoredSeriesService(
         await messageService.MetadataRefreshed(mSeries.Id);
     }
 
-    private void SyncChapters(MonitoredSeries mSeries, IList<Chapter> upstreamChapters, List<OnDiskContent> onDiskContent)
+    internal void SyncChapters(MonitoredSeries mSeries, IList<Chapter> upstreamChapters, List<OnDiskContent> onDiskContent)
     {
         var existingChapters = mSeries.Chapters;
         mSeries.Chapters = [];
@@ -378,13 +401,15 @@ public class MonitoredSeriesService(
         var removedChapters = existingChapters.Where(c => !upstreamIds.Contains(c.ExternalId));
         unitOfWork.MonitoredSeriesRepository.RemoveRange(removedChapters);
 
+        var matchedFiles = new HashSet<OnDiskContent>();
+
         foreach (var upstreamChapter in upstreamChapters)
         {
             var existingChapter = existingChapters.FirstOrDefault(c => c.ExternalId == upstreamChapter.Id);
-            mSeries.Chapters.Add(SyncChapter(existingChapter, upstreamChapter, onDiskContent));
+            mSeries.Chapters.Add(SyncChapter(existingChapter, upstreamChapter, onDiskContent, matchedFiles));
         }
 
-        var unMatchedFiles = onDiskContent.Select(file => new RawFile
+        var unMatchedFiles = onDiskContent.Where(file => !matchedFiles.Contains(file)).Select(file => new RawFile
         {
             Path = file.Path.RemovePrefix(configuration.BaseDir),
             Chapter = file.ChapterMarker,
@@ -399,12 +424,13 @@ public class MonitoredSeriesService(
         }));
     }
 
-    private MonitoredChapter SyncChapter(MonitoredChapter? existingChapter, Chapter upstreamChapter, List<OnDiskContent> onDiskContent)
+    private MonitoredChapter SyncChapter(MonitoredChapter? existingChapter, Chapter upstreamChapter,
+        List<OnDiskContent> onDiskContent, HashSet<OnDiskContent> matchedFiles)
     {
         var matchingFile = parserService.FindMatch(onDiskContent, upstreamChapter);
         if (matchingFile != null)
         {
-            onDiskContent.Remove(matchingFile);
+            matchedFiles.Add(matchingFile);
         }
 
         if (existingChapter?.Status == MonitoredChapterStatus.NotMonitored)

@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Common.Extensions;
-using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
 using Mnema.Models.Entities.User;
 using Mnema.Models.Enums;
@@ -20,18 +19,10 @@ public static class Seed
 {
     private static readonly IList<ServerSetting> DefaultServerSettings =
     [
-        new() { Key = ServerSettingKey.MaxConcurrentTorrents, Value = "5" },
-        new() { Key = ServerSettingKey.MaxConcurrentImages, Value = "5" },
-        new() { Key = ServerSettingKey.InstalledVersion, Value = "" },
-        new() { Key = ServerSettingKey.FirstInstalledVersion, Value = "" },
-        new() { Key = ServerSettingKey.InstallDate, Value = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture) },
-        new() { Key = ServerSettingKey.SubscriptionRefreshHour, Value = "21" },
-        new() { Key = ServerSettingKey.LastUpdateDate, Value = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture) },
-        new() { Key = ServerSettingKey.MetadataProviderSettings, Value = JsonSerializer.Serialize(new Dictionary<MetadataProvider, MetadataProviderSettingsDto>())},
-        new() { Key = ServerSettingKey.AutoDisableAfter, Value = "5"},
-        new() { Key = ServerSettingKey.ImageConversionLossLess, Value = "false"},
-        new() { Key = ServerSettingKey.ImageConversionQuality, Value = "80"},
-        new() { Key = ServerSettingKey.Password, Value = ""},
+        new() { Key = ServerSettingKeys.InstalledVersion.Key, Value = "" },
+        new() { Key = ServerSettingKeys.FirstInstalledVersion.Key, Value = "" },
+        new() { Key = ServerSettingKeys.InstallDate.Key, Value = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture) },
+        new() { Key = ServerSettingKeys.LastUpdateDate.Key, Value = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture) },
     ];
 
     public static async Task SeedDatabase(this MnemaDataContext ctx)

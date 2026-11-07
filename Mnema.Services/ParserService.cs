@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -1208,7 +1209,8 @@ public partial class ParserService: IParserService
         // Matching Chapter-only chapters
         if (EmptyOrDefault(item.VolumeMarker))
         {
-            return items.FirstOrDefault(c => EmptyOrDefault(c.VolumeMarker) && c.ChapterMarker == item.ChapterMarker);
+            var chapterOnly = items.FirstOrDefault(c => EmptyOrDefault(c.VolumeMarker) && c.ChapterMarker == item.ChapterMarker);
+            return chapterOnly ?? FindInRange(items, item);
         }
 
         // Exact Match (both Volume and Chapter set)
@@ -1216,11 +1218,60 @@ public partial class ParserService: IParserService
         if (exactMatch != null)
             return exactMatch;
 
-        // Fallback: single partial match on volume
-        var partialMatches = items.Where(c => c.VolumeMarker == item.VolumeMarker).ToList();
+        var rangeMatch = FindInRange(items, item);
+        if (rangeMatch != null)
+        {
+            return rangeMatch;
+        }
+
+        // Fallback: single partial match on volume. A range file only covers its own range
+        var partialMatches = items
+            .Where(c => c.VolumeMarker == item.VolumeMarker && !IsRangeMarker(c.ChapterMarker))
+            .ToList();
         return partialMatches.Count == 1 ? partialMatches[0] : default;
 
         bool EmptyOrDefault(string s) =>string.IsNullOrEmpty(s) || IsLooseLeafVolume(s) || IsDefaultChapter(s);
+    }
+
+    private T? FindInRange<T>(IList<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers
+    {
+        if (!float.TryParse(item.ChapterMarker, NumberStyles.Float, CultureInfo.InvariantCulture, out var chapter))
+        {
+            return default;
+        }
+
+        var matches = items
+            .Where(c => IsRangeMarker(c.ChapterMarker) && ChapterInRange(c.ChapterMarker, chapter))
+            .ToList();
+
+        var sameVolume = matches.Where(c => c.VolumeMarker == item.VolumeMarker).ToList();
+        if (sameVolume.Count == 1)
+        {
+            return sameVolume[0];
+        }
+
+        if (matches.Count == 1 && (string.IsNullOrEmpty(item.VolumeMarker) || string.IsNullOrEmpty(matches[0].VolumeMarker)))
+        {
+            return matches[0];
+        }
+
+        return default;
+
+        bool ChapterInRange(string marker, float number)
+        {
+            return number >= MinNumberFromRange(marker) && number <= MaxNumberFromRange(marker);
+        }
+    }
+
+    private static bool IsRangeMarker(string marker)
+    {
+        if (!marker.Contains('-')) return false;
+        if (float.TryParse(marker, NumberStyles.Float, CultureInfo.InvariantCulture, out _)) return false;
+
+        var tokens = marker.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        return tokens.Length == 2 &&
+               float.TryParse(tokens[0], NumberStyles.Float, CultureInfo.InvariantCulture, out _) &&
+               float.TryParse(tokens[1], NumberStyles.Float, CultureInfo.InvariantCulture, out _);
     }
 
     public IEnumerable<T> Sort<T>(IEnumerable<T> items) where T : IHasPositionMarkers

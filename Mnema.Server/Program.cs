@@ -57,12 +57,15 @@ public class Program
                     logger.LogInformation("Database has been migrated, starting Mnema");
                 }
 
+                await new MigrateServerSettingsToNamedKeys().RunAsync(services, context, logger);
+
                 await new MigrateSubscriptionsToMonitoredSeries().RunAsync(services, context, logger);
                 await new PinMonitoredSeriesTitles().RunAsync(services, context, logger);
 
                 await context.SeedDatabase();
 
                 await new MigrateMetadataProviderSettings().RunAsync(services, context, logger);
+                await new RemoveObsoleteServerSettings().RunAsync(services, context, logger);
                 await new SetDefaultNamingPreferences().RunAsync(services, context, logger);
                 await new MetadataFieldMappingsMigration().RunAsync(services, context, logger);
                 await new MigrateLinkPreferences().RunAsync(services, context, logger);

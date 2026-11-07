@@ -898,8 +898,8 @@ namespace Mnema.Database.Migrations
 
             modelBuilder.Entity("Mnema.Models.Entities.ServerSetting", b =>
                 {
-                    b.Property<int>("Key")
-                        .HasColumnType("integer");
+                    b.Property<string>("Key")
+                        .HasColumnType("text");
 
                     b.Property<string>("Value")
                         .IsRequired()

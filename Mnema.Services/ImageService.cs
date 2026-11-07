@@ -113,11 +113,11 @@ public class ImageService(ILogger<ImageService> logger, ISettingsService setting
         if (_settings != null)
             return _settings;
 
-        var lossless = await settingsService.GetSettingsAsync<bool>(
-            ServerSettingKey.ImageConversionLossLess);
+        var lossless = await settingsService.GetSettingAsync(
+            ServerSettingKeys.ImageConversionLossless, cancellationToken);
 
-        var quality = await settingsService.GetSettingsAsync<int>(
-            ServerSettingKey.ImageConversionQuality);
+        var quality = await settingsService.GetSettingAsync(
+            ServerSettingKeys.ImageConversionQuality, cancellationToken);
 
         _settings = new ImageConversionSettings(lossless, quality);
         return _settings;

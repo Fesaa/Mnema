@@ -30,6 +30,9 @@ public class NamingService(ILogger<NamingService> logger, ApplicationConfigurati
     public IStringFormatter<ChapterNameContext> OneShotFormatter => ChapterFormatter;
 
     public string GetVolumeDirectoryName(string title, string volumeMarker)
+        => GetVolumeFileName(title, volumeMarker);
+
+    public string GetVolumeFileName(string title, string volumeMarker)
         => $"{title} Vol. {volumeMarker}";
 
     public string GetChapterFilePath(string baseDir, string title, string fileName)

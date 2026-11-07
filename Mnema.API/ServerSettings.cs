@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Mnema.Common;
 using Mnema.Models.DTOs;
 using Mnema.Models.Entities;
 
@@ -8,12 +9,12 @@ namespace Mnema.API;
 
 public interface ISettingsRepository
 {
-    void Update(ServerSetting settings);
-    void Remove(ServerSetting setting);
+    void Add(ServerSetting setting);
+    void Update(ServerSetting setting);
     void Update(Preferences preferences);
 
-    Task<ServerSetting> GetSettingsAsync(ServerSettingKey key);
-    Task<IList<ServerSetting>> GetSettingsAsync();
+    Task<ServerSetting?> GetSettingAsync(string key, CancellationToken ct = default);
+    Task<IList<ServerSetting>> GetSettingsAsync(CancellationToken ct = default);
     Task<Preferences> GetPreferencesAsync(CancellationToken ct = default);
 }
 
@@ -21,14 +22,9 @@ public interface ISettingsService
 {
     Task UpdatePreferences(PreferencesDto dto, CancellationToken cancellationToken);
 
-    /// <summary>
-    ///     You will be required to specify the correct type, there is no compile time checks. Only run time!
-    /// </summary>
-    /// <param name="key"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    Task<T> GetSettingsAsync<T>(ServerSettingKey key);
+    Task<T> GetSettingAsync<T>(IMetadataKey<T> key, CancellationToken ct = default);
+    Task SetSettingAsync<T>(IMetadataKey<T> key, T value, CancellationToken ct = default);
 
-    Task<ServerSettingsDto> GetSettingsAsync();
-    Task SaveSettingsAsync(UpdateServerSettingsDto settings);
+    Task<ServerSettingsDto> GetSettingsAsync(CancellationToken ct = default);
+    Task SaveSettingsAsync(UpdateServerSettingsDto settings, CancellationToken ct = default);
 }

@@ -112,7 +112,7 @@ internal partial class Publication
 
         var sw = Stopwatch.StartNew();
 
-        _settings = await _settingsService.GetSettingsAsync();
+        _settings = await _settingsService.GetSettingsAsync(_tokenSource.Token);
         _limiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
         {
             PermitLimit = _settings.MaxConcurrentImages,

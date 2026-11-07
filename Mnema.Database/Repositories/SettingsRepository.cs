@@ -1,24 +1,22 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Mnema.API;
 using Mnema.Models.Entities;
 
 namespace Mnema.Database.Repositories;
 
-public class SettingsRepository(MnemaDataContext ctx, IMapper mapper) : ISettingsRepository
+public class SettingsRepository(MnemaDataContext ctx) : ISettingsRepository
 {
-    public void Update(ServerSetting settings)
+    public void Add(ServerSetting setting)
     {
-        ctx.Entry(settings).State = EntityState.Modified;
+        ctx.ServerSettings.Add(setting);
     }
 
-    public void Remove(ServerSetting setting)
+    public void Update(ServerSetting setting)
     {
-        ctx.Remove(setting);
+        ctx.Entry(setting).State = EntityState.Modified;
     }
 
     public void Update(Preferences preferences)
@@ -26,16 +24,14 @@ public class SettingsRepository(MnemaDataContext ctx, IMapper mapper) : ISetting
         ctx.Entry(preferences).State = EntityState.Modified;
     }
 
-    public async Task<ServerSetting> GetSettingsAsync(ServerSettingKey key)
+    public Task<ServerSetting?> GetSettingAsync(string key, CancellationToken ct = default)
     {
-        return await ctx.ServerSettings
-            .Where(x => x.Key == key)
-            .SingleAsync();
+        return ctx.ServerSettings.SingleOrDefaultAsync(x => x.Key == key, ct);
     }
 
-    public async Task<IList<ServerSetting>> GetSettingsAsync()
+    public async Task<IList<ServerSetting>> GetSettingsAsync(CancellationToken ct = default)
     {
-        return await ctx.ServerSettings.ToListAsync();
+        return await ctx.ServerSettings.ToListAsync(ct);
     }
 
     public Task<Preferences> GetPreferencesAsync(CancellationToken ct = default)

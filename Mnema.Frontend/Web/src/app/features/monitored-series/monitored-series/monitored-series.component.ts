@@ -12,7 +12,8 @@ import {
 import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {
-  FileMetadata, MonitoredChapter,
+  Cover,
+  FileMetadata, Format, MonitoredChapter,
   MonitoredChapterStatus,
   MonitoredChapterStatuses,
   MonitoredSeries,
@@ -28,7 +29,7 @@ import {translate, TranslocoDirective, TranslocoService} from "@jsverse/transloc
 import {UtcToLocalTimePipe} from "@mnema/_pipes/utc-to-local.pipe";
 import {BadgeComponent} from "@mnema/shared/_component/badge/badge.component";
 import {ModalService} from "@mnema/_services/modal.service";
-import {EMPTY, filter, forkJoin, map, merge, switchMap, tap} from "rxjs";
+import {EMPTY, filter, finalize, forkJoin, map, merge, switchMap, tap} from "rxjs";
 import {SeriesInfoComponent} from "@mnema/page/_components/series-info/series-info.component";
 import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
 import {
@@ -54,6 +55,7 @@ import {GenericFormModalComponent} from "@mnema/generic-form/generic-form-modal/
 import {FormGroup, NonNullableFormBuilder} from "@angular/forms";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factory.service";
+import {Tracker} from "@mnema/shared/data-structures/tracker";
 
 @Component({
   selector: 'app-monitored-series',
@@ -84,8 +86,17 @@ export class MonitoredSeriesComponent implements OnInit {
 
   searchInfoTemplate = viewChild.required<TemplateRef<any>>('searchInfoPreview');
   metadataEditorHeader = viewChild.required<TemplateRef<any>>('metadataEditorHeader');
+  coverPreviewTemplate = viewChild.required<TemplateRef<any>>('coverPreview');
 
   private selectedChapter = signal<MonitoredChapter | null>(null);
+
+  protected readonly Format = Format;
+  protected readonly MonitoredChapterStatus = MonitoredChapterStatus;
+
+  protected failedCovers = signal<Set<string>>(new Set());
+  protected coverUpdateInProgress = signal(false);
+  protected combineInProgress = signal(false);
+  protected readonly selectedChapters = new Tracker<MonitoredChapter, string>(chapter => chapter.id);
 
   protected series = linkedSignal(() => this.data()!['series'] as MonitoredSeries);
   protected provider = computed(() => this.series().provider);
@@ -175,6 +186,186 @@ export class MonitoredSeriesComponent implements OnInit {
       switchMap(() => this.monitoredSeriesService.get(this.series().id)),
       tap(series => this.series.set(series)),
     ).subscribe();
+  }
+
+  protected chapterCoverUrl(chapter: MonitoredChapter): string | null {
+    const useArchiveCover = this.series().format === Format.Archive
+      && chapter.status === MonitoredChapterStatus.Available
+      && !!chapter.filePath
+      && !this.failedCovers().has(chapter.id);
+
+    if (useArchiveCover) {
+      return this.monitoredSeriesService.coverUrl(this.series().id, chapter.id, chapter.lastModifiedUtc);
+    }
+
+    return chapter.coverUrl ?? null;
+  }
+
+  protected onCoverError(chapterId: string) {
+    this.failedCovers.update(failed => {
+      if (failed.has(chapterId)) return failed;
+
+      const next = new Set(failed);
+      next.add(chapterId);
+      return next;
+    });
+  }
+
+  protected updateCover(chapter: MonitoredChapter) {
+    if (this.coverUpdateInProgress()) return;
+
+    this.coverUpdateInProgress.set(true);
+    this.monitoredSeriesService.covers(this.series().id).pipe(
+      switchMap(covers => {
+        if (covers.length === 0) {
+          this.toastR.warningLoco('monitored-series-detail.no-covers');
+          return EMPTY;
+        }
+
+        const match = covers.find(c => this.sameVolume(c.volume, chapter.volume));
+        if (match) {
+          return this.applyCovers([chapter], match);
+        }
+
+        return this.pickCover(covers).pipe(
+          switchMap(cover => this.applyCovers([chapter], cover)),
+        );
+      }),
+      finalize(() => this.coverUpdateInProgress.set(false)),
+    ).subscribe();
+  }
+
+  protected bulkUpdateCovers() {
+    const chapters = this.selectedChapters.items();
+    if (chapters.length === 0) return;
+
+    const volume = this.normalizeVolume(chapters[0].volume);
+    if (chapters.some(c => this.normalizeVolume(c.volume) !== volume)) {
+      this.toastR.errorLoco('monitored-series-detail.same-volume-required');
+      return;
+    }
+
+    if (this.coverUpdateInProgress()) return;
+
+    this.coverUpdateInProgress.set(true);
+    this.monitoredSeriesService.covers(this.series().id).pipe(
+      switchMap(covers => {
+        if (covers.length === 0) {
+          this.toastR.warningLoco('monitored-series-detail.no-covers');
+          return EMPTY;
+        }
+
+        const match = covers.find(c => this.sameVolume(c.volume, chapters[0].volume));
+        if (match) {
+          return this.applyCovers(chapters, match);
+        }
+
+        return this.pickCover(covers).pipe(
+          switchMap(cover => this.applyCovers(chapters, cover)),
+        );
+      }),
+      finalize(() => this.coverUpdateInProgress.set(false)),
+    ).subscribe();
+  }
+
+  protected combineChapters() {
+    const chapters = this.selectedChapters.items();
+    if (chapters.length < 2) {
+      this.toastR.errorLoco('monitored-series-detail.combine-min-two');
+      return;
+    }
+
+    const volume = chapters[0].volume;
+    if (!volume?.trim()) {
+      this.toastR.errorLoco('monitored-series-detail.combine-volume-required');
+      return;
+    }
+
+    const normalizedVolume = this.normalizeVolume(volume);
+    if (chapters.some(c => this.normalizeVolume(c.volume) !== normalizedVolume)) {
+      this.toastR.errorLoco('monitored-series-detail.combine-same-volume');
+      return;
+    }
+
+    if (this.combineInProgress()) return;
+
+    this.combineInProgress.set(true);
+    this.modalService.confirm$({
+      question: this.transLoco.translate('monitored-series-detail.confirm-combine', {
+        count: chapters.length,
+        volume: volume,
+      }),
+    }, true).pipe(
+      switchMap(() => this.monitoredSeriesService.combine(this.series().id, chapters.map(c => c.id))),
+      switchMap(() => this.monitoredSeriesService.get(this.series().id)),
+      tap(series => {
+        this.series.set(series);
+        this.clearChapterSelection();
+        this.toastR.successLoco('monitored-series-detail.combined');
+      }),
+      finalize(() => this.combineInProgress.set(false)),
+    ).subscribe();
+  }
+
+  protected toggleChapter(chapter: MonitoredChapter) {
+    this.selectedChapters.toggle(chapter);
+  }
+
+  protected isChapterSelected(chapterId: string): boolean {
+    return this.selectedChapters.lookup().has(chapterId);
+  }
+
+  protected clearChapterSelection() {
+    this.selectedChapters.reset();
+  }
+
+  private pickCover(covers: Cover[]) {
+    const [modal, component] = this.modalService.open(ListSelectModalComponent<Cover>, {
+      size: "lg", centered: true
+    });
+
+    component.title.set(this.transLoco.translate('monitored-series-detail.select-cover'));
+    component.inputItems.set(covers.map(cover => ({
+      label: cover.volume
+        ? this.transLoco.translate('monitored-series-detail.volume-label', {volume: cover.volume})
+        : this.transLoco.translate('monitored-series-detail.no-volume'),
+      value: cover,
+    })));
+    component.itemTemplate.set(this.coverPreviewTemplate());
+    component.requireConfirmation.set(true);
+    component.isSelectionValidFunc.set(selection => selection.length === 1);
+
+    return this.modalService.onClose$<Cover>(modal, true);
+  }
+
+  private applyCovers(chapters: MonitoredChapter[], cover: Cover) {
+    return this.monitoredSeriesService.updateCovers(this.series().id, chapters.map(c => c.id), cover.url).pipe(
+      switchMap(() => this.monitoredSeriesService.get(this.series().id)),
+      tap(series => {
+        this.series.set(series);
+        this.failedCovers.update(failed => {
+          if (chapters.every(c => !failed.has(c.id))) return failed;
+
+          const next = new Set(failed);
+          chapters.forEach(c => next.delete(c.id));
+          return next;
+        });
+        this.clearChapterSelection();
+        this.toastR.successLoco('monitored-series-detail.cover-updated');
+      }),
+    );
+  }
+
+  private sameVolume(first: string, second: string): boolean {
+    if (!first?.trim() || !second?.trim()) return false;
+
+    return this.normalizeVolume(first) === this.normalizeVolume(second);
+  }
+
+  private normalizeVolume(volume: string): string {
+    const parsed = parseFloat(volume);
+
+    return isNaN(parsed) ? (volume ?? '').trim().toLowerCase() : parsed.toString();
   }
 
   refreshMetadata() {

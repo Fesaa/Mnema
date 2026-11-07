@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text.Json;
@@ -221,6 +222,22 @@ public static class MetadataKeys
                 else
                     m.Remove(key);
             });
+    }
+
+    public static IMetadataKey<DateTime> DateTime(string key, DateTime? fallback = null)
+    {
+        return new MetadataKey<DateTime>(key,
+            m =>
+            {
+                var value = m.GetString(key);
+                if (string.IsNullOrEmpty(value))
+                {
+                    return fallback ?? throw new ArgumentException($"Required datetime value '{key}' not found.");
+                }
+
+                return System.DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+            },
+            (m, value) => m.SetValue(key, value.ToString("o", CultureInfo.InvariantCulture)));
     }
 
     public static IMetadataKey<TEnum> Enum<TEnum>(string key, TEnum? defaultValue = null) where TEnum : struct, Enum

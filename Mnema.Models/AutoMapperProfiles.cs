@@ -9,6 +9,7 @@ using Mnema.Models.Entities.Authentication;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Entities.Scanner;
 using Mnema.Models.Enums;
+using Mnema.Models.Publication;
 
 namespace Mnema.Models;
 
@@ -33,6 +34,7 @@ public class AutoMapperProfiles : Profile
         CreateMap<MonitoredChapter, MonitoredChapterDto>()
             .ForMember(dest => dest.SeriesTitle, opt
                 => opt.MapFrom(src => src.Series.Title));
+        CreateMap<Cover, CoverDto>();
         CreateMap<AuthKey, AuthKeyDto>();
         CreateMap<MetadataProviderSettings, MetadataProviderSettingsV2Dto>();
         CreateMap<ImportScan, ImportScanDto>();
