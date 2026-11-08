@@ -55,6 +55,7 @@
       "monitored-series": "Monitored Series",
       "notifications": "Notifications",
       "search-series": "Search Series",
+      "add-from-url": "Add from URL",
       "missing-chapters": "Missing Chapters",
       "import-scans": "Import Scans",
       "dropped-content": "Upload files"
@@ -1605,6 +1606,27 @@
     "description": "Manually upload files to be processed by Mnema. Selected a monitored series, and click process!",
     "monitored-series-selector-label": "Select the Monitored Series to upload files for",
     "import": "Import"
+  },
+
+  "add-from-url": {
+    "title": "Add from URL",
+    "url-label": "Series URL",
+    "url-placeholder": "Paste a link to a series",
+    "supported": "Supported: Hardcover, MangaBaka, MangaDex, Dynasty, Webtoons",
+    "lookup": "Look up",
+    "looking-up": "Looking up...",
+    "cancel": "{{common.cancel}}",
+    "close": "{{common.close}}",
+    "not-found": "Could not find a series for this link",
+    "lookup-failed": "Something went wrong while looking up this link"
+  },
+
+  "add-from-url-result": {
+    "title": "Series found",
+    "close": "{{common.close}}",
+    "download": "{{shared.download}}",
+    "monitor": "Add as monitored series",
+    "download-unavailable": "Download is only available for MangaDex, Dynasty and Webtoons"
   }
 
 }

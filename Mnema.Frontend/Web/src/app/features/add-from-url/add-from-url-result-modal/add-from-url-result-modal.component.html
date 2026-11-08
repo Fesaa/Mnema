@@ -1,0 +1,48 @@
+<ng-container *transloco="let t; prefix: 'add-from-url-result'">
+  <div class="modal-container">
+
+    <div class="modal-header">
+      <h5 class="modal-title fw-semibold">{{ t('title') }}</h5>
+      <button type="button" class="btn-close" [attr.aria-label]="t('close')" (click)="close()">
+      </button>
+    </div>
+
+    <div class="modal-body scrollable-modal">
+      <h4 class="mb-2">{{ result().seriesName }}</h4>
+
+      <div class="text-muted small mb-3">
+        @if (result().metadataProvider !== null) {
+          {{ result().metadataProvider! | metadataProvider }}
+        } @else if (result().provider !== null) {
+          {{ result().provider! | providerName }}
+        }
+      </div>
+
+      @if (result().description) {
+        <p class="mb-0">{{ result().description }}</p>
+      }
+    </div>
+
+    <div class="modal-footer">
+      @if (!canDownload()) {
+        <small class="text-muted me-auto">{{ t('download-unavailable') }}</small>
+      }
+
+      <button type="button" class="btn btn-secondary" (click)="close()">
+        {{ t('close') }}
+      </button>
+      <button type="button"
+              class="btn btn-outline-primary"
+              [disabled]="!canDownload() || loading()"
+              (click)="download()">
+        <i class="fa fa-download me-1"></i>
+        <span>{{ t('download') }}</span>
+      </button>
+      <button type="button" class="btn btn-primary" [disabled]="!canMonitor()" (click)="monitor()">
+        <i class="fa fa-plus me-1"></i>
+        <span>{{ t('monitor') }}</span>
+      </button>
+    </div>
+
+  </div>
+</ng-container>

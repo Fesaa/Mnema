@@ -33,6 +33,7 @@ public static class ServiceProviderExtensions
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<IPagesService, PageService>();
         services.AddScoped<ISearchService, SearchService>();
+        services.AddScoped<IUrlParserService, UrlParserService>();
         services.AddScoped<IDownloadService, DownloadService>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IImageService, ImageService>();

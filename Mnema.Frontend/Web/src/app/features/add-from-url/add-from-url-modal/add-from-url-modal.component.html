@@ -1,0 +1,45 @@
+<ng-container *transloco="let t; prefix: 'add-from-url'">
+  <div class="modal-container">
+
+    <div class="modal-header">
+      <h5 class="modal-title fw-semibold">{{ t('title') }}</h5>
+      <button type="button" class="btn-close" [attr.aria-label]="t('close')" (click)="close()">
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="lookup()">
+      <div class="modal-body scrollable-modal">
+        <label class="form-label" for="series-url">{{ t('url-label') }}</label>
+        <input
+          id="series-url"
+          class="form-control"
+          type="text"
+          inputmode="url"
+          autocomplete="off"
+          formControlName="url"
+          [placeholder]="t('url-placeholder')"
+        >
+        <div class="form-text">{{ t('supported') }}</div>
+
+        @if (errorKey(); as key) {
+          <div class="alert alert-danger mt-3 mb-0">{{ t(key) }}</div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="close()">
+          {{ t('cancel') }}
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading() || form.invalid">
+          @if (loading()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <span>{{ t('looking-up') }}</span>
+          } @else {
+            <span>{{ t('lookup') }}</span>
+          }
+        </button>
+      </div>
+    </form>
+
+  </div>
+</ng-container>
