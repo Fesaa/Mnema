@@ -58,6 +58,24 @@ export class VolumeGroupComponent {
     && this.allChaptersAvailable()
     && this.group().combineChapters.length >= 2);
 
+  protected readonly isCombined = computed(() => {
+    if (this.series().format !== Format.Archive) {
+      return false;
+    }
+
+    if (!this.allChaptersAvailable()) {
+      return false;
+    }
+
+    const chapters = this.group().availableChapters.filter(chapter => chapter.status === MonitoredChapterStatus.Available);
+    if (chapters.length === 0) {
+      return false;
+    }
+
+    const firstFilePath = chapters[0].filePath;
+    return !chapters.some(chapter => chapter.filePath !== firstFilePath);
+  })
+
   protected chapterCoverUrl(chapter: MonitoredChapter): string | null {
     return resolveChapterCoverUrl(this.monitoredSeriesService, this.series(), chapter, this.failedCoverIds());
   }

@@ -73,7 +73,8 @@
         </button>
       </span>
 
-      <span class="d-inline-block" [ngbTooltip]="combineTooltip">
+      @if (!isCombined()) {
+        <span class="d-inline-block" [ngbTooltip]="combineTooltip">
         <button
           type="button"
           class="btn btn-sm btn-primary"
@@ -82,6 +83,7 @@
           <i class="fa fa-layer-group"></i> {{ t('combine-chapters') }}
         </button>
       </span>
+      }
     </div>
   </div>
 
