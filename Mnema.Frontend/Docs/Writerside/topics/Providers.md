@@ -16,7 +16,7 @@ Downloading from Nyaa requires a download client (QBit) setup, and will parse re
 It is recommended you have `Hardcover` and/or `Mangabaka` ids linked. Leave external id empty
 
 Torrents matching to a list of naming conversions will be considered a grouped release. And will parse the files inside
-as separate series. 
+as separate series. Multi-month grouped releases, such as `Monthly ... Volumes Update - September-October 2026`, are recognized too.
 
 <note>
     If you want to download non-volumes (chapters) from Nyaa. You will need to enable it in advanced settings
@@ -47,6 +47,10 @@ It is important you select the correct (content) format for all features to work
 <warning>
     You must provide your credentials as a download client
 </warning>
+
+### TopManhuaFan
+
+Works, but rate limits tend to mess up large downloads. Might be removed in the future. I do not use it 
 
 ### How to add to support for a new provider
 
