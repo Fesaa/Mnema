@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +8,8 @@ using Mnema.API.Content;
 using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Enums;
+using Mnema.Models.Internal;
+using Mnema.Models.Publication;
 
 namespace Mnema.Services;
 
@@ -37,6 +40,7 @@ internal sealed partial class UrlParserService(IServiceProvider serviceProvider)
             ExternalId = series.Id,
             SeriesName = series.Title,
             Description = series.Summary,
+            CoverUrl = GetCoverUrl(null, series),
         };
     }
 
@@ -64,7 +68,32 @@ internal sealed partial class UrlParserService(IServiceProvider serviceProvider)
             ExternalId = string.IsNullOrEmpty(series.Id) ? externalId : series.Id,
             SeriesName = series.Title,
             Description = series.Summary,
+            CoverUrl = GetCoverUrl(provider, series),
         };
+    }
+
+    private static string? GetCoverUrl(Provider? provider, Series series)
+    {
+        var coverUrl = series.CoverUrl;
+        if (string.IsNullOrEmpty(coverUrl))
+            coverUrl = series.Chapters.FirstOrDefault()?.CoverUrl;
+
+        if (string.IsNullOrEmpty(coverUrl)) return null;
+
+        if (coverUrl.StartsWith("proxy", StringComparison.OrdinalIgnoreCase))
+            return $"api/{coverUrl}";
+
+        if (provider == Provider.Webtoons &&
+            coverUrl.StartsWith(SharedConstants.WebtoonImageBase, StringComparison.OrdinalIgnoreCase))
+        {
+            var path = coverUrl[SharedConstants.WebtoonImageBase.Length..];
+            var queryIndex = path.IndexOf('?');
+            if (queryIndex >= 0) path = path[..queryIndex];
+
+            return $"api/proxy/webtoon/covers/{path}";
+        }
+
+        return coverUrl;
     }
 
     private static UrlTarget? ParseTarget(string url)

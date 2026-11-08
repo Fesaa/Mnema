@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.Content;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Enums;
+using Mnema.Models.Internal;
 using Mnema.Models.Publication;
 using Mnema.Services;
 using NSubstitute;
@@ -28,6 +29,7 @@ public class UrlParserServiceTests
         Assert.Null(result.MetadataProvider);
         Assert.Equal(MangadexId, result.ExternalId);
         Assert.Equal("content summary", result.Description);
+        Assert.Equal($"api/proxy/mangadex/covers/{MangadexId}/cover.jpg", result.CoverUrl);
     }
 
     [Fact]
@@ -52,6 +54,7 @@ public class UrlParserServiceTests
         Assert.NotNull(result);
         Assert.Equal(Provider.Dynasty, result.Provider);
         Assert.Equal("/series/gal_and_gal_yuri", result.ExternalId);
+        Assert.Equal("api/proxy/dynasty/covers/a/b/c/250/cover.jpg", result.CoverUrl);
     }
 
     [Fact]
@@ -64,6 +67,7 @@ public class UrlParserServiceTests
         Assert.NotNull(result);
         Assert.Equal(Provider.Webtoons, result.Provider);
         Assert.Equal("en/fantasy/tower-of-god/list?title_no=95", result.ExternalId);
+        Assert.Equal("api/proxy/webtoon/covers/2024/1/cover.png", result.CoverUrl);
     }
 
     [Fact]
@@ -77,6 +81,7 @@ public class UrlParserServiceTests
         Assert.NotNull(result);
         Assert.Equal(Provider.Webtoons, result.Provider);
         Assert.Equal("en/fantasy/tower-of-god/list?title_no=95", result.ExternalId);
+        Assert.Equal("api/proxy/webtoon/covers/2024/1/cover.png", result.CoverUrl);
     }
 
     [Theory]
@@ -92,6 +97,7 @@ public class UrlParserServiceTests
         Assert.Null(result.Provider);
         Assert.Equal(MetadataProvider.Mangabaka, result.MetadataProvider);
         Assert.Equal("1995", result.ExternalId);
+        Assert.Equal("https://example.com/cover.jpg", result.CoverUrl);
     }
 
     [Theory]
@@ -107,6 +113,7 @@ public class UrlParserServiceTests
         Assert.Null(result.Provider);
         Assert.Equal(MetadataProvider.Hardcover, result.MetadataProvider);
         Assert.Equal(expectedId, result.ExternalId);
+        Assert.Equal("https://example.com/cover.jpg", result.CoverUrl);
     }
 
     [Fact]
@@ -120,6 +127,7 @@ public class UrlParserServiceTests
         Assert.Equal(MetadataProvider.Hardcover, result.MetadataProvider);
         Assert.Equal("1033", result.ExternalId);
         Assert.Equal("metadata summary", result.Description);
+        Assert.Equal("https://example.com/cover.jpg", result.CoverUrl);
     }
 
     [Theory]
@@ -145,16 +153,35 @@ public class UrlParserServiceTests
             .Returns(call =>
             {
                 var request = call.Arg<DownloadRequestDto>();
+
                 return new Series
                 {
                     Id = request.Id,
                     Title = "content series",
                     Summary = "content summary",
                     Status = PublicationStatus.Ongoing,
+                    CoverUrl = request.Provider switch
+                    {
+                        Provider.Mangadex => $"proxy/mangadex/covers/{request.Id}/cover.jpg",
+                        Provider.Dynasty => "api/proxy/dynasty/covers/a/b/c/250/cover.jpg",
+                        _ => null,
+                    },
                     Tags = [],
                     People = [],
                     Links = [],
-                    Chapters = [],
+                    Chapters = request.Provider == Provider.Webtoons
+                        ?
+                        [
+                            new Chapter
+                            {
+                                Id = "1",
+                                Title = "Chapter 1",
+                                VolumeMarker = string.Empty,
+                                ChapterMarker = "1",
+                                CoverUrl = $"{SharedConstants.WebtoonImageBase}2024/1/cover.png?type=f160_151",
+                            }
+                        ]
+                        : [],
                 };
             });
 
@@ -169,6 +196,7 @@ public class UrlParserServiceTests
                     Title = "metadata series",
                     Summary = "metadata summary",
                     Status = PublicationStatus.Ongoing,
+                    CoverUrl = "https://example.com/cover.jpg",
                     Tags = [],
                     People = [],
                     Links = [],

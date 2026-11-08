@@ -7,4 +7,5 @@ export interface ParsedSeriesUrl {
   externalId: string;
   seriesName: string;
   description: string | null;
+  coverUrl: string | null;
 }

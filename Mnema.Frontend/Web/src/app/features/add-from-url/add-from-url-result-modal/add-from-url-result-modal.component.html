@@ -8,19 +8,29 @@
     </div>
 
     <div class="modal-body scrollable-modal">
-      <h4 class="mb-2">{{ result().seriesName }}</h4>
-
-      <div class="text-muted small mb-3">
-        @if (result().metadataProvider !== null) {
-          {{ result().metadataProvider! | metadataProvider }}
-        } @else if (result().provider !== null) {
-          {{ result().provider! | providerName }}
+      <div class="row g-3">
+        @if (result().coverUrl; as coverUrl) {
+          <div class="col-auto">
+            <img [src]="coverUrl" [alt]="result().seriesName" class="rounded result-cover">
+          </div>
         }
-      </div>
 
-      @if (result().description) {
-        <p class="mb-0">{{ result().description }}</p>
-      }
+        <div class="col">
+          <h4 class="mb-2">{{ result().seriesName }}</h4>
+
+          <div class="text-muted small mb-3">
+            @if (result().metadataProvider !== null) {
+              {{ result().metadataProvider! | metadataProvider }}
+            } @else if (result().provider !== null) {
+              {{ result().provider! | providerName }}
+            }
+          </div>
+
+          @if (result().description) {
+            <p class="mb-0">{{ result().description }}</p>
+          }
+        </div>
+      </div>
     </div>
 
     <div class="modal-footer">
