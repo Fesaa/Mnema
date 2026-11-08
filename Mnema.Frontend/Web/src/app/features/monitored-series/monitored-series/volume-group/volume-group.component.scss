@@ -1,0 +1,43 @@
+:host {
+  display: block;
+}
+
+.volume-group {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.volume-group-cover-wrap {
+  width: 2.5rem;
+
+  @media (min-width: 48rem) {
+    width: 3.5rem;
+  }
+}
+
+.volume-group-cover,
+.volume-group-cover-placeholder {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  border: 1px solid var(--surface-border);
+}
+
+.volume-group-cover-placeholder {
+  background: var(--background-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  i {
+    font-size: 1rem;
+    color: var(--text-secondary);
+  }
+}
+
+.volume-group-chapters {
+  border-top: 1px solid var(--surface-border);
+}

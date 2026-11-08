@@ -1,6 +1,6 @@
 import {inject, Injectable} from '@angular/core';
 import {environment} from "../../environments/environment";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpParams} from "@angular/common/http";
 import {map, Observable, of, tap} from "rxjs";
 import {InfoStat} from "../_models/stats";
 import {DownloadRequest, SearchRequest, StopRequest} from "../_models/search";
@@ -9,6 +9,7 @@ import {ListContentData, Message, MessageType} from "../_models/messages";
 import {Provider} from "../_models/page";
 import {PagedList} from "../_models/paged-list";
 import {FormDefinition} from "../generic-form/form";
+import {ParsedSeriesUrl} from "@mnema/_models/parsed-series-url";
 
 @Injectable({
   providedIn: 'root'
@@ -61,6 +62,11 @@ export class ContentService {
 
   search(req: SearchRequest, pageNumber: number = 0, pageSize: number = 20) {
     return this.httpClient.post<PagedList<SearchInfo>>(this.baseUrl + `search?pageNumber=${pageNumber}&pageSize=${pageSize}`, req)
+  }
+
+  parseUrl(url: string) {
+    const params = new HttpParams().set('url', url);
+    return this.httpClient.get<ParsedSeriesUrl>(this.baseUrl + 'parse-url', {params});
   }
 
   download(req: DownloadRequest) {

@@ -19,6 +19,7 @@ namespace Mnema.Server.Controllers;
 public class ContentController(
     IUnitOfWork unitOfWork,
     ISearchService searchService,
+    IUrlParserService urlParserService,
     IDownloadService downloadService,
     IServiceProvider serviceProvider,
     IMetadataService metadataService) : BaseApiController
@@ -86,6 +87,17 @@ public class ContentController(
         };
 
         return Ok(await repository.SeriesInfo(request, HttpContext.RequestAborted));
+    }
+
+    [HttpGet("parse-url")]
+    public async Task<ActionResult<ParsedSeriesUrlDto>> ParseUrl([FromQuery] string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return BadRequest();
+
+        var parsed = await urlParserService.ParseUrl(url, HttpContext.RequestAborted);
+        if (parsed is null) return NotFound();
+
+        return Ok(parsed);
     }
 
     [HttpGet("chapter-urls")]

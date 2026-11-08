@@ -10,6 +10,14 @@ import {filter, tap} from "rxjs";
 import {NotificationService} from "../_services/notification.service";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {ActiveDownloadsService} from "../dashboard/active-downloads/active-downloads.service";
+import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
+import {ParsedSeriesUrl} from "@mnema/_models/parsed-series-url";
+import {
+  AddFromUrlModalComponent
+} from "@mnema/features/add-from-url/add-from-url-modal/add-from-url-modal.component";
+import {
+  AddFromUrlResultModalComponent
+} from "@mnema/features/add-from-url/add-from-url-result-modal/add-from-url-result-modal.component";
 
 export enum SettingsID {
   Server = "server",
@@ -106,6 +114,17 @@ export class ButtonGroupService {
         icon: 'fa fa-magnifying-glass',
         requiredRoles: [Role.Subscriptions],
         navUrl: '/series-search',
+      },
+      {
+        title: translate('button-groups.actions.add-from-url'),
+        icon: 'fa fa-link',
+        onClick: () => {
+          const [modal] = this.modalService.open(AddFromUrlModalComponent, DefaultModalOptions);
+          this.modalService.onClose$<ParsedSeriesUrl>(modal).subscribe(parsed => {
+            const [_, component] = this.modalService.open(AddFromUrlResultModalComponent, DefaultModalOptions);
+            component.result.set(parsed);
+          });
+        },
       },
       {
         title: translate('button-groups.actions.missing-chapters'),

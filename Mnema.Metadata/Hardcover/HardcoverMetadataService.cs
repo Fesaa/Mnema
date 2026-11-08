@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
-using Mnema.Common.Exceptions;
 using Mnema.Common.Helpers;
 using Mnema.Metadata.Extensions;
 using Mnema.Metadata.Hardcover.Generated;
@@ -77,15 +76,23 @@ public class HardcoverMetadataService(
 
     public async Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken)
     {
-        if (!int.TryParse(externalId, out var seriesId))
+        ISeriesDetails? series;
+
+        if (int.TryParse(externalId, out var seriesId))
         {
-            throw new MnemaException($"{nameof(externalId)} is not an integer");
+            var response = await hardcoverClient.GetSeriesById.ExecuteAsync(seriesId, cancellationToken);
+            response.EnsureNoErrors();
+
+            series = response.Data?.Series;
+        }
+        else
+        {
+            var response = await hardcoverClient.GetSeriesBySlug.ExecuteAsync(externalId, cancellationToken);
+            response.EnsureNoErrors();
+
+            series = response.Data?.Series.FirstOrDefault();
         }
 
-        var response = await hardcoverClient.GetSeriesById.ExecuteAsync(seriesId, cancellationToken);
-        response.EnsureNoErrors();
-
-        var series = response.Data?.Series;
         if (series == null) return null;
 
         var monitoredSeriesById = (await unitOfWork.MonitoredSeriesRepository

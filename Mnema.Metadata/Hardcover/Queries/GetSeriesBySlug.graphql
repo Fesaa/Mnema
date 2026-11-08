@@ -1,0 +1,5 @@
+query GetSeriesBySlug($slug: String!) {
+    series(where: { slug: { _eq: $slug } }, limit: 1) {
+        ...SeriesDetails
+    }
+}

@@ -19,7 +19,6 @@ import {
   MonitoredSeries,
   MonitoredSeriesService
 } from "@mnema/features/monitored-series/monitored-series.service";
-import {CommonModule} from "@angular/common";
 import {MonitoredChapterStatusPipe} from "@mnema/features/monitored-series/pipes/monitored-chapter-status.pipe";
 import {ProviderNamePipe} from "@mnema/_pipes/provider-name.pipe";
 import {TagBadgeComponent} from "@mnema/shared/_component/tag-badge/tag-badge.component";
@@ -56,11 +55,19 @@ import {FormGroup, NonNullableFormBuilder} from "@angular/forms";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
 import {GenericFormFactoryService} from "@mnema/generic-form/generic-form-factory.service";
 import {Tracker} from "@mnema/shared/data-structures/tracker";
+import {
+  ChapterRowComponent
+} from "@mnema/features/monitored-series/monitored-series/chapter-row/chapter-row.component";
+import {
+  VolumeGroupComponent
+} from "@mnema/features/monitored-series/monitored-series/volume-group/volume-group.component";
+import {VolumeGroup} from "@mnema/features/monitored-series/monitored-series/volume-group.model";
+import {resolveChapterCoverUrl} from "@mnema/features/monitored-series/monitored-series/chapter-cover";
 
 @Component({
   selector: 'app-monitored-series',
   standalone: true,
-  imports: [CommonModule, MonitoredChapterStatusPipe, ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe, SentenceCasePipe, NgbTooltip, RouterLink],
+  imports: [ProviderNamePipe, TagBadgeComponent, ContentFormatPipe, FormatPipe, TranslocoDirective, UtcToLocalTimePipe, BadgeComponent, SubscriptionExternalUrlPipe, SentenceCasePipe, NgbTooltip, RouterLink, ChapterRowComponent, VolumeGroupComponent],
   templateUrl: './monitored-series.component.html',
   styleUrl: './monitored-series.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -135,8 +142,29 @@ export class MonitoredSeriesComponent implements OnInit {
   protected missingHardcoverId = computed(() => !this.series().hardcoverId);
   protected missingMangabakaId = computed(() => !this.series().mangaBakaId);
 
-  protected activeChapterTab = signal<'chapters' | 'unmatched'>('chapters');
+  protected activeChapterTab = signal<'chapters' | 'volumes' | 'unmatched'>('chapters');
   private chapterTabInitialized = false;
+
+  protected readonly volumeGroups = computed<VolumeGroup[]>(() => {
+    const series = this.series();
+    const failedCoverIds = this.failedCovers();
+    const groups = new Map<string, MonitoredChapter[]>();
+
+    for (const chapter of series.chapters) {
+      const key = this.normalizeVolume(chapter.volume);
+      const group = groups.get(key);
+
+      if (group) {
+        group.push(chapter);
+      } else {
+        groups.set(key, [chapter]);
+      }
+    }
+
+    return [...groups.entries()]
+      .map(([key, chapters]) => this.buildVolumeGroup(key, chapters, series, failedCoverIds))
+      .sort((first, second) => this.compareVolumeGroups(first, second));
+  });
 
 
   constructor() {
@@ -169,6 +197,10 @@ export class MonitoredSeriesComponent implements OnInit {
     this.formService.getEditFileMetadataForm().pipe(
       tap(f => this.editFileMetadataFormDefinition.set(f))
     ).subscribe();
+
+    if (!this.volumeGroups().some(g => g.key === '') && this.volumeGroups().some(g => g.chapters.length > 1)) {
+      this.activeChapterTab.set('volumes');
+    }
   }
 
   setChapterStatus(chapterId: string) {
@@ -189,16 +221,7 @@ export class MonitoredSeriesComponent implements OnInit {
   }
 
   protected chapterCoverUrl(chapter: MonitoredChapter): string | null {
-    const useArchiveCover = this.series().format === Format.Archive
-      && chapter.status === MonitoredChapterStatus.Available
-      && !!chapter.filePath
-      && !this.failedCovers().has(chapter.id);
-
-    if (useArchiveCover) {
-      return this.monitoredSeriesService.coverUrl(this.series().id, chapter.id, chapter.lastModifiedUtc);
-    }
-
-    return chapter.coverUrl ?? null;
+    return resolveChapterCoverUrl(this.monitoredSeriesService, this.series(), chapter, this.failedCovers());
   }
 
   protected onCoverError(chapterId: string) {
@@ -212,35 +235,22 @@ export class MonitoredSeriesComponent implements OnInit {
   }
 
   protected updateCover(chapter: MonitoredChapter) {
-    if (this.coverUpdateInProgress()) return;
+    this.updateCoversFor([chapter]);
+  }
 
-    this.coverUpdateInProgress.set(true);
-    this.monitoredSeriesService.covers(this.series().id).pipe(
-      switchMap(covers => {
-        if (covers.length === 0) {
-          this.toastR.warningLoco('monitored-series-detail.no-covers');
-          return EMPTY;
-        }
-
-        const match = covers.find(c => this.sameVolume(c.volume, chapter.volume));
-        if (match) {
-          return this.applyCovers([chapter], match);
-        }
-
-        return this.pickCover(covers).pipe(
-          switchMap(cover => this.applyCovers([chapter], cover)),
-        );
-      }),
-      finalize(() => this.coverUpdateInProgress.set(false)),
-    ).subscribe();
+  protected updateVolumeCover(group: VolumeGroup) {
+    this.updateCoversFor(group.availableChapters);
   }
 
   protected bulkUpdateCovers() {
-    const chapters = this.selectedChapters.items();
+    this.updateCoversFor(this.selectedChapters.items());
+  }
+
+  private updateCoversFor(chapters: MonitoredChapter[]) {
     if (chapters.length === 0) return;
 
     const volume = this.normalizeVolume(chapters[0].volume);
-    if (chapters.some(c => this.normalizeVolume(c.volume) !== volume)) {
+    if (chapters.some(chapter => this.normalizeVolume(chapter.volume) !== volume)) {
       this.toastR.errorLoco('monitored-series-detail.same-volume-required');
       return;
     }
@@ -255,7 +265,7 @@ export class MonitoredSeriesComponent implements OnInit {
           return EMPTY;
         }
 
-        const match = covers.find(c => this.sameVolume(c.volume, chapters[0].volume));
+        const match = covers.find(cover => this.sameVolume(cover.volume, chapters[0].volume));
         if (match) {
           return this.applyCovers(chapters, match);
         }
@@ -268,8 +278,15 @@ export class MonitoredSeriesComponent implements OnInit {
     ).subscribe();
   }
 
+  protected combineVolume(group: VolumeGroup) {
+    this.combineChaptersFor(group.combineChapters);
+  }
+
   protected combineChapters() {
-    const chapters = this.selectedChapters.items();
+    this.combineChaptersFor(this.selectedChapters.items());
+  }
+
+  private combineChaptersFor(chapters: MonitoredChapter[]) {
     if (chapters.length < 2) {
       this.toastR.errorLoco('monitored-series-detail.combine-min-two');
       return;
@@ -282,7 +299,7 @@ export class MonitoredSeriesComponent implements OnInit {
     }
 
     const normalizedVolume = this.normalizeVolume(volume);
-    if (chapters.some(c => this.normalizeVolume(c.volume) !== normalizedVolume)) {
+    if (chapters.some(chapter => this.normalizeVolume(chapter.volume) !== normalizedVolume)) {
       this.toastR.errorLoco('monitored-series-detail.combine-same-volume');
       return;
     }
@@ -296,7 +313,7 @@ export class MonitoredSeriesComponent implements OnInit {
         volume: volume,
       }),
     }, true).pipe(
-      switchMap(() => this.monitoredSeriesService.combine(this.series().id, chapters.map(c => c.id))),
+      switchMap(() => this.monitoredSeriesService.combine(this.series().id, chapters.map(chapter => chapter.id))),
       switchMap(() => this.monitoredSeriesService.get(this.series().id)),
       tap(series => {
         this.series.set(series);
@@ -305,6 +322,11 @@ export class MonitoredSeriesComponent implements OnInit {
       }),
       finalize(() => this.combineInProgress.set(false)),
     ).subscribe();
+  }
+
+  protected editChapterFile(chapter: MonitoredChapter) {
+    if (!chapter.filePath) return;
+    this.editFile(chapter.filePath, chapter);
   }
 
   protected toggleChapter(chapter: MonitoredChapter) {
@@ -366,6 +388,53 @@ export class MonitoredSeriesComponent implements OnInit {
     const parsed = parseFloat(volume);
 
     return isNaN(parsed) ? (volume ?? '').trim().toLowerCase() : parsed.toString();
+  }
+
+  private buildVolumeGroup(
+    key: string,
+    chapters: MonitoredChapter[],
+    series: MonitoredSeries,
+    failedCoverIds: ReadonlySet<string>,
+  ): VolumeGroup {
+    const availableChapters = chapters.filter(chapter =>
+      chapter.status === MonitoredChapterStatus.Available && !!chapter.filePath);
+    const coverChapter = series.format === Format.Archive
+      ? availableChapters.find(chapter => !failedCoverIds.has(chapter.id))
+        ?? chapters.find(chapter => !!chapter.coverUrl)
+        ?? null
+      : chapters.find(chapter => !!chapter.coverUrl) ?? null;
+
+    return {
+      key,
+      volume: chapters[0]?.volume?.trim() ?? '',
+      hasVolume: key.length > 0,
+      chapters,
+      availableChapters,
+      combineChapters: availableChapters.filter(chapter => !!chapter.chapter),
+      missingCount: chapters.filter(chapter => chapter.status === MonitoredChapterStatus.Missing).length,
+      upcomingCount: chapters.filter(chapter => chapter.status === MonitoredChapterStatus.Upcoming).length,
+      coverChapter,
+    };
+  }
+
+  private compareVolumeGroups(first: VolumeGroup, second: VolumeGroup): number {
+    if (!first.hasVolume) return 1;
+    if (!second.hasVolume) return -1;
+
+    const firstNumber = parseFloat(first.volume);
+    const secondNumber = parseFloat(second.volume);
+    const firstIsNumber = !isNaN(firstNumber);
+    const secondIsNumber = !isNaN(secondNumber);
+
+    if (firstIsNumber && secondIsNumber && firstNumber !== secondNumber) {
+      return firstNumber - secondNumber;
+    }
+
+    if (firstIsNumber !== secondIsNumber) {
+      return firstIsNumber ? -1 : 1;
+    }
+
+    return first.volume.localeCompare(second.volume);
   }
 
   refreshMetadata() {
@@ -463,23 +532,6 @@ export class MonitoredSeriesComponent implements OnInit {
         this.router.navigateByUrl('monitored-series').catch(console.error);
       }),
     ).subscribe();
-  }
-
-  getStatusClass(status: MonitoredChapterStatus): string {
-    switch (status) {
-      case MonitoredChapterStatus.NotMonitored:
-        return 'status-not-monitored';
-      case MonitoredChapterStatus.Missing:
-        return 'status-missing';
-      case MonitoredChapterStatus.Upcoming:
-        return 'status-upcoming';
-      case MonitoredChapterStatus.Importing:
-        return 'status-importing';
-      case MonitoredChapterStatus.Available:
-        return 'status-available';
-      default:
-        return '';
-    }
   }
 
   protected searchHardcover() {

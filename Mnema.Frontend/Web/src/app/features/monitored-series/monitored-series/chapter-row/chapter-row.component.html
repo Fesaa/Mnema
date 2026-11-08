@@ -1,0 +1,100 @@
+<div class="chapter-row" *transloco="let t; prefix: 'monitored-series-detail'">
+  <div class="d-flex gap-2 align-items-start">
+
+    @if (selectable() && series().format === Format.Archive && chapter().status === MonitoredChapterStatus.Available && chapter().filePath) {
+      <div class="flex-shrink-0 pt-1">
+        <input
+          type="checkbox"
+          class="form-check-input"
+          [checked]="selected()"
+          (change)="selectedChange.emit(chapter())"
+          [attr.aria-label]="t('select-chapter', {title: chapter().title})">
+      </div>
+    }
+
+    <div class="chapter-thumb-wrap flex-shrink-0">
+      @if (coverUrl(); as url) {
+        <img [src]="url" [alt]="chapter().title" class="chapter-thumb" loading="lazy" (error)="coverError.emit(chapter().id)">
+      } @else {
+        <div class="chapter-thumb-placeholder">
+          <i class="fa fa-file"></i>
+        </div>
+      }
+    </div>
+
+    <div class="flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between">
+        <div class="chapter-labels mb-1">
+          @if (chapter().volume || chapter().chapter) {
+            @if (chapter().volume) {
+              <span class="text-muted small">{{t('volume-label', {volume: chapter().volume})}}</span>
+            }
+            @if (chapter().chapter) {
+              <span class="text-muted small">{{t('chapter-label', {chapter: chapter().chapter})}}</span>
+            }
+          }
+        </div>
+        @if (chapter().filePath) {
+          <div class="d-flex align-items-center gap-2">
+            @if (series().format === Format.Archive && chapter().status === MonitoredChapterStatus.Available) {
+              <button
+                type="button"
+                class="btn btn-link p-0 border-0 lh-1 text-primary text-decoration-none d-inline-flex align-items-center"
+                [ngbTooltip]="t('update-cover')"
+                [attr.aria-label]="t('update-cover')"
+                [disabled]="coverUpdateInProgress()"
+                (click)="updateCover.emit(chapter())">
+                <i class="fa fa-image"></i>
+              </button>
+            }
+            <button
+              type="button"
+              class="btn btn-link p-0 border-0 lh-1 text-primary text-decoration-none d-inline-flex align-items-center"
+              [ngbTooltip]="t('edit-metadata')"
+              [attr.aria-label]="t('edit-metadata')"
+              (click)="editFile.emit(chapter())">
+              <i class="fa fa-pencil"></i>
+            </button>
+          </div>
+        }
+      </div>
+
+      <p class="chapter-title mb-1">{{ chapter().title }}</p>
+
+      @if (chapter().summary) {
+        <p class="chapter-summary small mb-1">{{ chapter().summary }}</p>
+      }
+
+      <div class="chapter-meta d-flex flex-wrap gap-2">
+        @if (chapter().releaseDate) {
+          <small class="text-muted">
+            <i class="fa fa-calendar"></i>
+            {{ chapter().releaseDate | utcToLocalTime:'shortDate' }}
+          </small>
+        }
+        @if (chapter().filePath) {
+          <small class="text-muted">
+            <i class="fa fa-folder"></i> {{ chapter().filePath }}
+          </small>
+        }
+      </div>
+
+    </div>
+  </div>
+
+  <div class="chapter-row-footer d-flex align-items-center justify-content-between mt-2 pt-2">
+    <div>
+      @if (chapter().refUrl) {
+        <a [href]="chapter().refUrl" target="_blank" class="chapter-source-link small">
+          <i class="fa fa-external-link-alt"></i> {{t('source-label')}}
+        </a>
+      }
+    </div>
+    <span
+      class="badge clickable"
+      (click)="setStatus.emit(chapter())"
+      [ngClass]="getStatusClass(chapter().status)">
+      {{ chapter().status | monitoredChapterStatus }}
+    </span>
+  </div>
+</div>

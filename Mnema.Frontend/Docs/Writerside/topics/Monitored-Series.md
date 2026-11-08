@@ -30,6 +30,12 @@ The chapters tab lists every chapter Mnema knows about, with its status. Switch 
 
 ![chapters_toolbar.png](chapters_toolbar.png)
 
+### Volumes
+
+The Volumes tab groups the same chapters by volume. Use it when you want to work on a whole volume at once. Each group shows the volume's cover, the number of chapters, and how many are available
+
+![volume_tab.png](volume_tab.png)
+
 ### Covers
 
 Chapter thumbnails are read from the archive when the chapter is available on disk
@@ -41,20 +47,24 @@ You can replace/update the cover of an archive chapter from the chapters tab:
 
 Covers are collected from the provider, when the provider supports covers (currently Mangadex), and from the linked MangaBaka and Hardcover entries. If a cover matching the chapter's volume exists it is applied directly, otherwise you choose one from the list.
 
+From the Volumes tab, the **Update cover** button does the same for every available archive chapter in the volume.
+
 <note>
     Bulk cover updates require all selected chapters to be in the same volume. Only archive chapters (`.cbz`, `.zip`) that are available on disk can be updated.
 </note>
 
 ### Combining chapters into a volume
 
-Select two or more chapters of the same volume, then click **Combine into volume**. Mnema creates one file named `Title Vol. N.cbz` next to the chapter files, writes a single ComicInfo with the volume and the chapter range, and deletes the original chapter files.
+You can start this from the Chapters tab by selecting two or more chapters, or from the Volumes tab with the volume's **Combine into volume** button. The volume button selects every chapter file in that volume.
+
+Mnema creates one file named `Title Vol. N.cbz` next to the chapter files, writes a single ComicInfo with the volume and the chapter range, and deletes the original chapter files.
 
 The action requires:
 
 * The series format must be Archive.
-* At least two chapters.
+* At least two chapter files.
 * All chapters in the same volume, with a volume marker.
-* All chapters available on disk.
+* Every selected chapter must be available on disk. The Volumes tab button requires every chapter in the volume to be available.
 
 <warning>
     The original chapter files are deleted. The selected chapter entries all point to the combined file afterwards.
