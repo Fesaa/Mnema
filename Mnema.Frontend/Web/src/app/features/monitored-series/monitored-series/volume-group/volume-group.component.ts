@@ -51,7 +51,7 @@ export class VolumeGroupComponent {
     && this.group().availableChapters.length > 0);
 
   protected readonly allChaptersAvailable = computed(() =>
-    this.group().chapters.every(chapter => chapter.status === MonitoredChapterStatus.Available));
+    this.group().chapters.every(chapter => chapter.status === MonitoredChapterStatus.Available || chapter.status === MonitoredChapterStatus.NotMonitored));
 
   protected readonly canCombine = computed(() => this.series().format === Format.Archive
     && this.group().hasVolume
