@@ -3,6 +3,7 @@ import {MonitoredChapterStatus} from "@mnema/features/monitored-series/monitored
 
 @Pipe({
   name: 'monitoredChapterStatus',
+  standalone: true
 })
 export class MonitoredChapterStatusPipe implements PipeTransform {
 

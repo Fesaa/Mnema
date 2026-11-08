@@ -127,6 +127,16 @@
             <button
               class="nav-link d-flex align-items-center gap-2"
               type="button"
+              [class.active]="activeChapterTab() === 'volumes'"
+              (click)="activeChapterTab.set('volumes')">
+              <i class="fa fa-layer-group"></i> {{t('volumes')}}
+              <app-badge padding="p-1 px-2" colour="secondary">{{ volumeGroups().length }}</app-badge>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button
+              class="nav-link d-flex align-items-center gap-2"
+              type="button"
               [class.active]="activeChapterTab() === 'unmatched'"
               (click)="activeChapterTab.set('unmatched')">
               <i class="fa fa-question-circle"></i> {{t('unmatched-chapters')}}
@@ -154,106 +164,41 @@
           @if (s.chapters && s.chapters.length > 0) {
             <div class="chapters-list">
               @for (chapter of s.chapters; track chapter.id) {
-                <div class="chapter-row">
-                  <div class="d-flex gap-2 align-items-start">
-
-                    @if (series().format === Format.Archive && chapter.status === MonitoredChapterStatus.Available && chapter.filePath) {
-                      <div class="flex-shrink-0 pt-1">
-                        <input
-                          type="checkbox"
-                          class="form-check-input"
-                          [checked]="isChapterSelected(chapter.id)"
-                          (change)="toggleChapter(chapter)"
-                          [attr.aria-label]="t('select-chapter', {title: chapter.title})">
-                      </div>
-                    }
-
-                    <div class="chapter-thumb-wrap flex-shrink-0">
-                      @if (chapterCoverUrl(chapter); as coverUrl) {
-                        <img [src]="coverUrl" [alt]="chapter.title" class="chapter-thumb" loading="lazy" (error)="onCoverError(chapter.id)">
-                      } @else {
-                        <div class="chapter-thumb-placeholder">
-                          <i class="fa fa-file"></i>
-                        </div>
-                      }
-                    </div>
-
-                    <div class="flex-grow-1 min-w-0">
-                      <div class="d-flex justify-content-between">
-                        <div class="chapter-labels mb-1">
-                          @if (chapter.volume || chapter.chapter) {
-                            @if (chapter.volume) {
-                              <span class="text-muted small">Vol. {{ chapter.volume }}</span>
-                            }
-                            @if (chapter.chapter) {
-                              <span class="text-muted small">Ch. {{ chapter.chapter }}</span>
-                            }
-                          }
-                        </div>
-                        @if (chapter.filePath) {
-                          <div class="d-flex align-items-center gap-2">
-                            @if (series().format === Format.Archive && chapter.status === MonitoredChapterStatus.Available) {
-                              <button
-                                type="button"
-                                class="btn btn-link p-0 border-0 lh-1 text-primary text-decoration-none d-inline-flex align-items-center"
-                                [ngbTooltip]="t('update-cover')"
-                                [attr.aria-label]="t('update-cover')"
-                                [disabled]="coverUpdateInProgress()"
-                                (click)="updateCover(chapter)">
-                                <i class="fa fa-image"></i>
-                              </button>
-                            }
-                            <button
-                              type="button"
-                              class="btn btn-link p-0 border-0 lh-1 text-primary text-decoration-none d-inline-flex align-items-center"
-                              [ngbTooltip]="t('edit-metadata')"
-                              [attr.aria-label]="t('edit-metadata')"
-                              (click)="editFile(chapter.filePath, chapter)">
-                              <i class="fa fa-pencil"></i>
-                            </button>
-                          </div>
-                        }
-                      </div>
-
-                      <p class="chapter-title mb-1">{{ chapter.title }}</p>
-
-                      @if (chapter.summary) {
-                        <p class="chapter-summary small mb-1">{{ chapter.summary }}</p>
-                      }
-
-                      <div class="chapter-meta d-flex flex-wrap gap-2">
-                        @if (chapter.releaseDate) {
-                          <small class="text-muted">
-                            <i class="fa fa-calendar"></i>
-                            {{ chapter.releaseDate | utcToLocalTime:'shortDate' }}
-                          </small>
-                        }
-                        @if (chapter.filePath) {
-                          <small class="text-muted chapter-filepath">
-                            <i class="fa fa-folder"></i> {{ chapter.filePath }}
-                          </small>
-                        }
-                      </div>
-
-                    </div>
-                  </div>
-
-                  <div class="chapter-row-footer d-flex align-items-center justify-content-between mt-2 pt-2">
-                    <div>
-                      @if (chapter.refUrl) {
-                        <a [href]="chapter.refUrl" target="_blank" class="chapter-source-link small">
-                          <i class="fa fa-external-link-alt"></i> Source
-                        </a>
-                      }
-                    </div>
-                    <span
-                      class="badge clickable"
-                      (click)="setChapterStatus(chapter.id)"
-                      [ngClass]="getStatusClass(chapter.status)">
-                  {{ chapter.status | monitoredChapterStatus }}
-                </span>
-                  </div>
-                </div>
+                <app-chapter-row
+                  [series]="s"
+                  [chapter]="chapter"
+                  [coverUrl]="chapterCoverUrl(chapter)"
+                  [selectable]="true"
+                  [selected]="isChapterSelected(chapter.id)"
+                  [coverUpdateInProgress]="coverUpdateInProgress()"
+                  (selectedChange)="toggleChapter($event)"
+                  (updateCover)="updateCover($event)"
+                  (editFile)="editChapterFile($event)"
+                  (setStatus)="setChapterStatus($event.id)"
+                  (coverError)="onCoverError($event)" />
+              }
+            </div>
+          } @else {
+            <div class="alert alert-info">
+              <i class="fa fa-info-circle"></i> {{t('no-chapters')}}
+            </div>
+          }
+        } @else if (activeChapterTab() === 'volumes') {
+          @if (volumeGroups().length > 0) {
+            <div class="d-flex flex-column gap-2">
+              @for (group of volumeGroups(); track group.key) {
+                <app-volume-group
+                  [series]="s"
+                  [group]="group"
+                  [failedCoverIds]="failedCovers()"
+                  [coverUpdateInProgress]="coverUpdateInProgress()"
+                  [combineInProgress]="combineInProgress()"
+                  (updateCover)="updateVolumeCover(group)"
+                  (combine)="combineVolume(group)"
+                  (updateChapterCover)="updateCover($event)"
+                  (editChapterFile)="editChapterFile($event)"
+                  (setChapterStatus)="setChapterStatus($event.id)"
+                  (coverError)="onCoverError($event)" />
               }
             </div>
           } @else {
@@ -265,17 +210,17 @@
           @if (s.unMatchedChapters && s.unMatchedChapters.length > 0) {
             <div class="chapters-list">
               @for (file of s.unMatchedChapters; track file.path) {
-                <div class="chapter-row">
+                <div class="unmatched-row">
                   <div class="d-flex gap-2 align-items-start">
                     <div class="flex-grow-1 min-w-0">
                       <div class="d-flex justify-content-between">
                         <div class="chapter-labels mb-1">
                           @if (file.volume || file.chapter) {
                             @if (file.volume) {
-                              <span class="text-muted small">Vol. {{ file.volume }}</span>
+                              <span class="text-muted small">{{t('volume-label', {volume: file.volume})}}</span>
                             }
                             @if (file.chapter) {
-                              <span class="text-muted small">Ch. {{ file.chapter }}</span>
+                              <span class="text-muted small">{{t('chapter-label', {chapter: file.chapter})}}</span>
                             }
                           }
                         </div>

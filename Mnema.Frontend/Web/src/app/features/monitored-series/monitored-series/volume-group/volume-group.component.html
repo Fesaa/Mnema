@@ -1,0 +1,104 @@
+<div class="volume-group" *transloco="let t; prefix: 'monitored-series-detail'">
+
+  <ng-template #coverTooltip>
+    @if (canUpdateCover()) {
+      {{ t('volume-update-cover') }}
+    } @else if (series().format !== Format.Archive) {
+      {{ t('volume-cover-disabled-archive') }}
+    } @else if (!group().hasVolume) {
+      {{ t('volume-cover-disabled-no-volume') }}
+    } @else {
+      {{ t('volume-cover-disabled-no-available') }}
+    }
+  </ng-template>
+
+  <ng-template #combineTooltip>
+    @if (canCombine()) {
+      {{ t('combine-chapters') }}
+    } @else if (series().format !== Format.Archive) {
+      {{ t('volume-combine-disabled-archive') }}
+    } @else if (!group().hasVolume) {
+      {{ t('volume-combine-disabled-no-volume') }}
+    } @else if (!allChaptersAvailable()) {
+      {{ t('volume-combine-disabled-unavailable') }}
+    } @else {
+      {{ t('volume-combine-disabled-needs-two') }}
+    }
+  </ng-template>
+
+  <div class="volume-group-header d-flex flex-wrap align-items-center gap-2 p-2">
+    <button
+      type="button"
+      class="btn btn-link p-0 border-0 lh-1 text-reset"
+      (click)="toggleExpanded()"
+      [attr.aria-expanded]="expanded()"
+      [attr.aria-label]="expanded() ? t('collapse-volume') : t('expand-volume')">
+      <i class="fa" [class.fa-chevron-down]="expanded()" [class.fa-chevron-right]="!expanded()"></i>
+    </button>
+
+    <div class="volume-group-cover-wrap flex-shrink-0">
+      @if (coverUrl(); as url) {
+        <img [src]="url" [alt]="group().hasVolume ? t('volume-cover-alt', {volume: group().volume}) : series().title" class="volume-group-cover" loading="lazy" (error)="onCoverError()">
+      } @else {
+        <div class="volume-group-cover-placeholder">
+          <i class="fa fa-book"></i>
+        </div>
+      }
+    </div>
+
+    <div class="d-flex flex-column min-w-0">
+      <span class="fw-bold">
+        {{ group().hasVolume ? t('volume-label', {volume: group().volume}) : t('no-volume') }}
+      </span>
+      <div class="small text-muted d-flex flex-wrap gap-2">
+        <span>{{ t('volume-chapter-count', {count: group().chapters.length}) }}</span>
+        <span>{{ t('volume-available-count', {count: group().availableChapters.length}) }}</span>
+        @if (group().missingCount > 0) {
+          <span>{{ t('volume-missing-count', {count: group().missingCount}) }}</span>
+        }
+        @if (group().upcomingCount > 0) {
+          <span>{{ t('volume-upcoming-count', {count: group().upcomingCount}) }}</span>
+        }
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 ms-auto">
+      <span class="d-inline-block" [ngbTooltip]="coverTooltip">
+        <button
+          type="button"
+          class="btn btn-sm btn-primary"
+          [disabled]="!canUpdateCover() || coverUpdateInProgress()"
+          (click)="updateCover.emit()">
+          <i class="fa fa-image"></i> {{ t('volume-update-cover') }}
+        </button>
+      </span>
+
+      <span class="d-inline-block" [ngbTooltip]="combineTooltip">
+        <button
+          type="button"
+          class="btn btn-sm btn-primary"
+          [disabled]="!canCombine() || combineInProgress()"
+          (click)="combine.emit()">
+          <i class="fa fa-layer-group"></i> {{ t('combine-chapters') }}
+        </button>
+      </span>
+    </div>
+  </div>
+
+  @if (expanded()) {
+    <div class="volume-group-chapters">
+      @for (chapter of group().chapters; track chapter.id) {
+        <app-chapter-row
+          [series]="series()"
+          [chapter]="chapter"
+          [coverUrl]="chapterCoverUrl(chapter)"
+          [selectable]="false"
+          [coverUpdateInProgress]="coverUpdateInProgress()"
+          (updateCover)="updateChapterCover.emit($event)"
+          (editFile)="editChapterFile.emit($event)"
+          (setStatus)="setChapterStatus.emit($event)"
+          (coverError)="coverError.emit($event)" />
+      }
+    </div>
+  }
+</div>
