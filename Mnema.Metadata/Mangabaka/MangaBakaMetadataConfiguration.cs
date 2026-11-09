@@ -10,6 +10,7 @@ internal class MangaBakaMetadataConfiguration: IConfigurationProvider
     internal static readonly IMetadataKey<IEnumerable<string>> SeriesNameLanguagePriority = MetadataKeys.Strings(nameof(SeriesNameLanguagePriority));
     internal static readonly IMetadataKey<IEnumerable<string>> LocalizedSeriesNameLanguagePriority = MetadataKeys.Strings(nameof(LocalizedSeriesNameLanguagePriority));
     internal static readonly IMetadataKey<MangabakaTagWeight> MinimumTagWeight = MetadataKeys.Enum<MangabakaTagWeight>(nameof(MinimumTagWeight), MangabakaTagWeight.Recurrent);
+    internal static readonly IMetadataKey<MangabakaCollectionMedium> CollectionMedium = MetadataKeys.Enum<MangabakaCollectionMedium>(nameof(CollectionMedium), MangabakaCollectionMedium.PreferPhysical);
 
     public Task<List<FormFieldDefinition>> GetFormControls(CancellationToken cancellationToken)
     {
@@ -34,6 +35,10 @@ internal class MangaBakaMetadataConfiguration: IConfigurationProvider
             FormFieldDefinitions.EnumMetadataDropDown(MinimumTagWeight, "minimum-tag-weight-pipe") with
             {
                 DefaultValue = MangabakaTagWeight.Recurrent
+            },
+            FormFieldDefinitions.EnumMetadataDropDown(CollectionMedium, "mangabaka-collection-medium-pipe") with
+            {
+                DefaultValue = MangabakaCollectionMedium.PreferPhysical
             }
         });
     }

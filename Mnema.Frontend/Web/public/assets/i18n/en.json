@@ -1075,6 +1075,8 @@
       "LocalizedSeriesNameLanguagePriority-tooltip": "Determines the order in which localized series names are prioritized. Separate languages with a comma. I.e. ja,ja-Latn,fr. Use {Native} for the series language.",
       "MinimumTagWeight-title": "Minimum Tag Weight",
       "MinimumTagWeight-tooltip": "The minimum weight a tag must have to be included. Defaults to Recurrent",
+      "CollectionMedium-title": "Collection medium",
+      "CollectionMedium-tooltip": "Which edition's volumes or chapters to use. Physical prefers paperback and hardcover, and falls back to digital when no physical collection exists.",
 
       "OnlyUseSubtitleAsChapterTitle-title": "Only use subtitle as chapter title",
       "OnlyUseSubtitleAsChapterTitle-tooltip": "If enabled, will not fallback to book title as chapter title (I.e; SeriesName Vol. X)"
@@ -1588,6 +1590,12 @@
     "Recurrent": "Recurrent",
     "Incidental": "Incidental",
     "Unweighted": "Unweighted"
+  },
+
+  "mangabaka-collection-medium-pipe": {
+    "PreferPhysical": "Prefer physical",
+    "PreferDigital": "Prefer digital",
+    "Any": "Any"
   },
 
   "file-drag-and-drop-upload": {
