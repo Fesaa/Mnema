@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
@@ -27,6 +29,7 @@ public class MetadataResolverTests(ITestOutputHelper testOutputHelper) : Databas
         bool enrichWithCovers = false,
         List<Cover>? hardCoverCovers = null,
         List<Cover>? mangabakaCovers = null,
+        Series? upstreamSeries = null,
         CancellationToken ct = default
         )
     {
@@ -49,11 +52,22 @@ public class MetadataResolverTests(ITestOutputHelper testOutputHelper) : Databas
             metadata.SetKey(MetadataResolverOptions.EnrichWithCovers, true);
         }
 
+        var services = new ServiceCollection();
+        if (upstreamSeries != null)
+        {
+            var upstreamRepository = Substitute.For<IRepository>();
+            upstreamRepository.SeriesInfo(Arg.Any<DownloadRequestDto>(), Arg.Any<CancellationToken>())
+                .Returns(upstreamSeries);
+
+            services.AddKeyedSingleton<IRepository>(Provider.Nyaa, upstreamRepository);
+            metadata.SetKey(RequestConstants.ExternalIdKey, "upstream-1");
+        }
+
         return new MetadataResolver(
             new ParserService(),
             metadataProviderService,
             metadataProviderService,
-            Substitute.For<IServiceProvider>(),
+            services.BuildServiceProvider(),
             unitOfWork
         ).ResolveSeriesAsync(Provider.Nyaa, metadata, ct);
     }
@@ -926,5 +940,242 @@ public class MetadataResolverTests(ITestOutputHelper testOutputHelper) : Databas
         var chapter = Assert.Single(result.Chapters);
         Assert.Equal("https://hardcover.example/1.jpg", chapter.CoverUrl);
         Assert.Equal(".jpg", chapter.CoverFileFormat);
+    }
+
+    [Fact]
+    public async Task ResolveSeriesAsync_UpstreamOverridesChapterIdentity()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 1));
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 2, metadataProvider: MetadataProvider.Upstream));
+        await ctx.SaveChangesAsync();
+
+        var hardCover = new Series
+        {
+            Id = "hardcover-series",
+            Title = "Spice and Wolf (Hardcover)",
+            Summary = "Hardcover summary",
+            Status = PublicationStatus.Ongoing,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>
+            {
+                new()
+                {
+                    Id = "hardcover-ch1",
+                    Title = "Spice and Wolf Chapter 1",
+                    VolumeMarker = "1",
+                    ChapterMarker = "1",
+                    RefUrl = "https://hardcover.example/ch1",
+                    Tags = new List<Tag>(),
+                    People = new List<Person>(),
+                    TranslationGroups = new List<string>()
+                }
+            }
+        };
+
+        var upstream = new Series
+        {
+            Id = "upstream-series",
+            Title = "Spice and Wolf (Upstream)",
+            Summary = "Upstream summary",
+            OriginalLanguage = "ja",
+            Status = PublicationStatus.Ongoing,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>
+            {
+                new()
+                {
+                    Id = "upstream-ch1",
+                    Title = "Spice and Wolf Chapter 1",
+                    VolumeMarker = "1",
+                    ChapterMarker = "1",
+                    RefUrl = "https://provider.example/ch1",
+                    Tags = new List<Tag>(),
+                    People = new List<Person>(),
+                    TranslationGroups = new List<string>()
+                }
+            }
+        };
+
+        var result = await ResolveSeriesAsync(unitOfWork, hardCover, null, upstreamSeries: upstream);
+
+        Assert.NotNull(result);
+        Assert.Equal("upstream-series", result.Id);
+        Assert.Equal("Spice and Wolf (Hardcover)", result.Title);
+        Assert.Equal("ja", result.OriginalLanguage);
+
+        var chapter = Assert.Single(result.Chapters);
+        Assert.Equal("upstream-ch1", chapter.Id);
+        Assert.Equal("https://provider.example/ch1", chapter.RefUrl);
+        Assert.Equal(MetadataProvider.Upstream, chapter.MetadataProvider);
+    }
+
+    [Fact]
+    public async Task ResolveSeriesAsync_DisabledUpstream_StillAttachesChapters()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 1));
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 2, metadataProvider: MetadataProvider.Upstream, enabled: false));
+        await ctx.SaveChangesAsync();
+
+        var hardCover = new Series
+        {
+            Id = "hardcover-series",
+            Title = "Spice and Wolf",
+            Summary = "Hardcover summary",
+            Status = PublicationStatus.Ongoing,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>()
+        };
+
+        var upstream = new Series
+        {
+            Id = "upstream-series",
+            Title = "Spice and Wolf (Upstream)",
+            Summary = "Upstream summary",
+            Status = PublicationStatus.Ongoing,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>
+            {
+                new()
+                {
+                    Id = "upstream-ch2",
+                    Title = "Spice and Wolf Chapter 2",
+                    VolumeMarker = "2",
+                    ChapterMarker = "3",
+                    Tags = new List<Tag>(),
+                    People = new List<Person>(),
+                    TranslationGroups = new List<string>()
+                }
+            }
+        };
+
+        var result = await ResolveSeriesAsync(unitOfWork, hardCover, null, upstreamSeries: upstream);
+
+        Assert.NotNull(result);
+        Assert.Equal("upstream-series", result.Id);
+        Assert.Equal("Spice and Wolf", result.Title);
+
+        var chapter = Assert.Single(result.Chapters);
+        Assert.Equal("upstream-ch2", chapter.Id);
+        Assert.Equal(MetadataProvider.Upstream, chapter.MetadataProvider);
+    }
+
+    [Fact]
+    public async Task ResolveSeriesAsync_DisabledUpstream_ProvidesTitleFallback()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 2, metadataProvider: MetadataProvider.Upstream, enabled: false));
+        await ctx.SaveChangesAsync();
+
+        var upstream = new Series
+        {
+            Id = "upstream-series",
+            Title = "Spice and Wolf",
+            Summary = "Upstream summary",
+            Status = PublicationStatus.Ongoing,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>
+            {
+                new()
+                {
+                    Id = "upstream-ch1",
+                    Title = "Spice and Wolf Chapter 1",
+                    VolumeMarker = "1",
+                    ChapterMarker = "1",
+                    Tags = new List<Tag>(),
+                    People = new List<Person>(),
+                    TranslationGroups = new List<string>()
+                }
+            }
+        };
+
+        var result = await ResolveSeriesAsync(unitOfWork, null, null, upstreamSeries: upstream);
+
+        Assert.NotNull(result);
+        Assert.Equal("Spice and Wolf", result.Title);
+        Assert.Single(result.Chapters);
+    }
+
+    [Fact]
+    public async Task ResolveSeriesAsync_KeepsMetadataOnlyChaptersMarked()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 1));
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 2, metadataProvider: MetadataProvider.Upstream));
+        await ctx.SaveChangesAsync();
+
+        var hardCover = new Series
+        {
+            Id = "hardcover-series",
+            Title = "Spice and Wolf",
+            Summary = "",
+            Status = PublicationStatus.Ongoing,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>
+            {
+                new()
+                {
+                    Id = "hardcover-volume-1",
+                    Title = "Spice and Wolf, Vol. 1",
+                    VolumeMarker = "1",
+                    ChapterMarker = "",
+                    Tags = new List<Tag>(),
+                    People = new List<Person>(),
+                    TranslationGroups = new List<string>()
+                }
+            }
+        };
+
+        var upstream = new Series
+        {
+            Id = "upstream-series",
+            Title = "Spice and Wolf",
+            Summary = "",
+            Status = PublicationStatus.Ongoing,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>
+            {
+                new()
+                {
+                    Id = "upstream-ch1",
+                    Title = "Spice and Wolf Chapter 1",
+                    VolumeMarker = "1",
+                    ChapterMarker = "1",
+                    Tags = new List<Tag>(),
+                    People = new List<Person>(),
+                    TranslationGroups = new List<string>()
+                }
+            }
+        };
+
+        var result = await ResolveSeriesAsync(unitOfWork, hardCover, null, upstreamSeries: upstream);
+
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Chapters.Count);
+
+        var volume = Assert.Single(result.Chapters.Where(c => c.MetadataProvider == MetadataProvider.Hardcover));
+        Assert.Equal("hardcover-volume-1", volume.Id);
+
+        var chapter = Assert.Single(result.Chapters.Where(c => c.MetadataProvider == MetadataProvider.Upstream));
+        Assert.Equal("upstream-ch1", chapter.Id);
     }
 }

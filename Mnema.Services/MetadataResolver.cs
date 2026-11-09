@@ -60,7 +60,7 @@ public class MetadataResolver(
 
         var settings = await unitOfWork.MetadataProviderSettingsRepository.GetAll(cancellationToken);
 
-        var mergedSeries = MergeSeries(series, settings, metadata);
+        var mergedSeries = MergeSeries(series, settings);
         if (mergedSeries == null || !metadata.GetKey(MetadataResolverOptions.EnrichWithCovers))
             return mergedSeries;
 
@@ -102,7 +102,7 @@ public class MetadataResolver(
         return mergedSeries;
     }
 
-    private Series? MergeSeries(Dictionary<MetadataProvider, Series?> series, List<MetadataProviderSettings> settings, MetadataBag metadata)
+    private Series? MergeSeries(Dictionary<MetadataProvider, Series?> series, List<MetadataProviderSettings> settings)
     {
         if (series.All(kv => kv.Value == null))
             return null;
@@ -119,16 +119,8 @@ public class MetadataResolver(
             Chapters = []
         };
 
-        var mergedIntoUpstream = metadata.GetKey(MetadataResolverOptions.MergeIntoUpstream);
-
-        if (mergedIntoUpstream && series.TryGetValue(MetadataProvider.Upstream, out var upstreamSeries))
-        {
-            mergedSeries = upstreamSeries;
-        }
-
         var sorted = settings
             .Where(s => s.Enabled)
-            .Where(s => !(mergedIntoUpstream && s.MetadataProvider == MetadataProvider.Upstream))
             .OrderBy(s => s.Priority);
 
         foreach (var setting in sorted)
@@ -138,13 +130,34 @@ public class MetadataResolver(
                 continue;
             }
 
-            Merge(setting, mergedSeries!, seriesEntity);
+            Merge(setting, mergedSeries, seriesEntity, setting.MetadataProvider == MetadataProvider.Upstream);
+        }
+
+        if (series.TryGetValue(MetadataProvider.Upstream, out var upstreamSeries) && upstreamSeries != null)
+        {
+            var upstreamSettings = settings.FirstOrDefault(s => s.MetadataProvider == MetadataProvider.Upstream);
+            if (upstreamSettings?.Enabled != true)
+            {
+                upstreamSettings ??= new MetadataProviderSettings
+                {
+                    MetadataProvider = MetadataProvider.Upstream,
+                    Chapters = true,
+                    ChapterTitle = true,
+                    ChapterSummary = true,
+                    ChapterCoverUrl = true,
+                    ChapterReleaseDate = true,
+                    ChapterPeople = true,
+                    ChapterTags = true,
+                };
+
+                Merge(upstreamSettings, mergedSeries, upstreamSeries, isUpstream: true, mergeSeriesFields: false);
+            }
         }
 
         return mergedSeries;
     }
 
-    private void Merge(MetadataProviderSettings settings, Series into, Series from)
+    private void MergeSeriesFields(MetadataProviderSettings settings, Series into, Series from)
     {
         if (string.IsNullOrEmpty(into.Id) && !string.IsNullOrEmpty(from.Id))
         {
@@ -233,37 +246,63 @@ public class MetadataResolver(
         }
 
         into.ContentFormat ??= from.ContentFormat;
+    }
 
-        if (settings.Chapters)
+    private void Merge(MetadataProviderSettings settings, Series into, Series from, bool isUpstream,
+        bool mergeSeriesFields = true)
+    {
+        if (mergeSeriesFields)
         {
-            foreach (var fromChapter in from.Chapters)
+            MergeSeriesFields(settings, into, from);
+        }
+
+        MergeChapters(settings, into, from, isUpstream);
+
+        if (!isUpstream)
+            return;
+
+        if (!string.IsNullOrEmpty(from.Id))
+            into.Id = from.Id;
+
+        if (!string.IsNullOrEmpty(from.OriginalLanguage))
+            into.OriginalLanguage = from.OriginalLanguage;
+
+        if (string.IsNullOrWhiteSpace(into.Title) && !string.IsNullOrWhiteSpace(from.Title))
+            into.Title = from.Title;
+    }
+
+    private void MergeChapters(MetadataProviderSettings settings, Series into, Series from, bool isUpstream)
+    {
+        if (!isUpstream && !settings.Chapters)
+            return;
+
+        foreach (var fromChapter in from.Chapters)
+        {
+            var match = parserService.FindMatch(into.Chapters, fromChapter, allowPartialVolumeMatch: false);
+
+            if (match != null)
             {
-                var match = parserService.FindMatch(into.Chapters, fromChapter, allowPartialVolumeMatch: false);
-
-                if (match != null)
-                {
-                    MergeChapter(match, fromChapter, settings);
-                    continue;
-                }
-
-                match = new Chapter
-                {
-                    Id = string.Empty,
-                    Title = string.Empty,
-                    VolumeMarker = string.Empty,
-                    ChapterMarker = string.Empty,
-                    Tags = [],
-                    People = [],
-                    TranslationGroups = []
-                };
-
-                MergeChapter(match, fromChapter, settings);
-                into.Chapters.Add(match);
+                MergeChapter(match, fromChapter, settings, isUpstream);
+                continue;
             }
+
+            match = new Chapter
+            {
+                Id = string.Empty,
+                Title = string.Empty,
+                VolumeMarker = string.Empty,
+                ChapterMarker = string.Empty,
+                Tags = [],
+                People = [],
+                TranslationGroups = []
+            };
+
+            MergeChapter(match, fromChapter, settings, isUpstream);
+            into.Chapters.Add(match);
         }
     }
 
-    private static void MergeChapter(Chapter into, Chapter from, MetadataProviderSettings settings)
+    private static void MergeChapter(Chapter into, Chapter from, MetadataProviderSettings settings, bool isUpstream)
     {
 
         if (string.IsNullOrEmpty(into.Id))
@@ -331,6 +370,28 @@ public class MetadataResolver(
         {
             into.Isbn = from.Isbn;
         }
+
+        if (isUpstream)
+        {
+            if (!string.IsNullOrEmpty(from.Id))
+            {
+                into.Id = from.Id;
+                into.MetadataProvider = MetadataProvider.Upstream;
+            }
+
+            if (!string.IsNullOrEmpty(from.RefUrl))
+                into.RefUrl = from.RefUrl;
+
+            into.VolumeMarker = from.VolumeMarker;
+            into.ChapterMarker = from.ChapterMarker;
+
+            if (from.SortOrder != null)
+                into.SortOrder = from.SortOrder;
+
+            return;
+        }
+
+        into.MetadataProvider ??= settings.MetadataProvider;
     }
 
     private static void InsertCovers(Series series, List<Cover> covers)
