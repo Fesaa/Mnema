@@ -24,6 +24,9 @@ public class MetadataResolverTests(ITestOutputHelper testOutputHelper) : Databas
         IUnitOfWork unitOfWork,
         Series? hardCoverSeries,
         Series? mangabakaSeries,
+        bool enrichWithCovers = false,
+        List<Cover>? hardCoverCovers = null,
+        List<Cover>? mangabakaCovers = null,
         CancellationToken ct = default
         )
     {
@@ -32,13 +35,22 @@ public class MetadataResolverTests(ITestOutputHelper testOutputHelper) : Databas
             .Returns(hardCoverSeries);
         metadataProviderService.GetSeries("2", CancellationToken.None)
             .Returns(mangabakaSeries);
+        metadataProviderService.GetCovers("1", CancellationToken.None)
+            .Returns(hardCoverCovers ?? []);
+        metadataProviderService.GetCovers("2", CancellationToken.None)
+            .Returns(mangabakaCovers ?? []);
 
         var metadata = new MetadataBag();
         metadata.SetValue(RequestConstants.HardcoverSeriesIdKey.Key, "1");
         metadata.SetValue(RequestConstants.MangaBakaKey.Key, "2");
 
+        if (enrichWithCovers)
+        {
+            metadata.SetKey(MetadataResolverOptions.EnrichWithCovers, true);
+        }
+
         return new MetadataResolver(
-            Substitute.For<IParserService>(),
+            new ParserService(),
             metadataProviderService,
             metadataProviderService,
             Substitute.For<IServiceProvider>(),
@@ -609,5 +621,310 @@ public class MetadataResolverTests(ITestOutputHelper testOutputHelper) : Databas
 
         Assert.NotNull(result);
         Assert.Equal("", result.Summary);
+    }
+
+    [Fact]
+    public async Task ResolveSeriesAsync_MergesVolumeOnlyChapters()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 1));
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 2, metadataProvider: MetadataProvider.Mangabaka));
+        await ctx.SaveChangesAsync();
+
+        var hardCover = new Series
+        {
+            Id = "hc1",
+            Title = "Series",
+            Summary = "",
+            Status = PublicationStatus.Ongoing,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>
+            {
+                new()
+                {
+                    Id = "hc-vol-1",
+                    Title = "HardCover Volume 1",
+                    VolumeMarker = "1",
+                    ChapterMarker = "",
+                    Isbn = "9780000000001",
+                    Tags = new List<Tag>(),
+                    People = new List<Person>(),
+                    TranslationGroups = new List<string>()
+                }
+            }
+        };
+
+        var mangabaka = new Series
+        {
+            Id = "mb1",
+            Title = "Series",
+            Summary = "",
+            Status = PublicationStatus.Ongoing,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>
+            {
+                new()
+                {
+                    Id = "mb-vol-1",
+                    Title = "Mangabaka Volume 1",
+                    VolumeMarker = "1",
+                    ChapterMarker = "",
+                    Tags = new List<Tag>(),
+                    People = new List<Person>(),
+                    TranslationGroups = new List<string>()
+                }
+            }
+        };
+
+        var result = await ResolveSeriesAsync(unitOfWork, hardCover, mangabaka);
+
+        Assert.NotNull(result);
+        var volume = Assert.Single(result.Chapters);
+        Assert.Equal("hc-vol-1", volume.Id);
+        Assert.Equal("HardCover Volume 1", volume.Title);
+        Assert.Equal("9780000000001", volume.Isbn);
+    }
+
+    [Fact]
+    public async Task ResolveSeriesAsync_DoesNotMergeAgeRating_WhenDisabled()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 1));
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 2, metadataProvider: MetadataProvider.Mangabaka, ageRating: false));
+        await ctx.SaveChangesAsync();
+
+        var hardCover = new Series
+        {
+            Id = "hc1",
+            Title = "Series",
+            Summary = "",
+            Status = PublicationStatus.Ongoing,
+            AgeRating = AgeRating.Unknown,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>()
+        };
+
+        var mangabaka = new Series
+        {
+            Id = "mb1",
+            Title = "Series",
+            Summary = "",
+            Status = PublicationStatus.Ongoing,
+            AgeRating = AgeRating.Mature,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>()
+        };
+
+        var result = await ResolveSeriesAsync(unitOfWork, hardCover, mangabaka);
+
+        Assert.NotNull(result);
+        Assert.Equal(AgeRating.Unknown, result.AgeRating);
+    }
+
+    [Fact]
+    public async Task ResolveSeriesAsync_MergesHighestCounts_WhenStatusIsAlreadySet()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 1));
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 2, metadataProvider: MetadataProvider.Mangabaka));
+        await ctx.SaveChangesAsync();
+
+        var hardCover = new Series
+        {
+            Id = "hc1",
+            Title = "Series",
+            Summary = "",
+            Status = PublicationStatus.Ongoing,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>()
+        };
+
+        var mangabaka = new Series
+        {
+            Id = "mb1",
+            Title = "Series",
+            Summary = "",
+            Status = PublicationStatus.Completed,
+            HighestVolumeNumber = 10,
+            HighestChapterNumber = 100,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>()
+        };
+
+        var result = await ResolveSeriesAsync(unitOfWork, hardCover, mangabaka);
+
+        Assert.NotNull(result);
+        Assert.Equal(PublicationStatus.Ongoing, result.Status);
+        Assert.Equal(10, result.HighestVolumeNumber);
+        Assert.Equal(100, result.HighestChapterNumber);
+    }
+
+    [Fact]
+    public async Task ResolveSeriesAsync_MergesCoverUrlAndNonProxiedCoverUrlTogether()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 1));
+        await ctx.SaveChangesAsync();
+
+        var hardCover = new Series
+        {
+            Id = "hc1",
+            Title = "Series",
+            Summary = "",
+            Status = PublicationStatus.Ongoing,
+            CoverUrl = "https://cover.example/1.jpg",
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>()
+        };
+
+        var result = await ResolveSeriesAsync(unitOfWork, hardCover, null);
+
+        Assert.NotNull(result);
+        Assert.Equal("https://cover.example/1.jpg", result.CoverUrl);
+        Assert.Equal("https://cover.example/1.jpg", result.NonProxiedCoverUrl);
+    }
+
+    [Fact]
+    public async Task ResolveSeriesAsync_MergesOriginalLanguage()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 1));
+        await ctx.SaveChangesAsync();
+
+        var hardCover = new Series
+        {
+            Id = "hc1",
+            Title = "Series",
+            Summary = "",
+            Status = PublicationStatus.Ongoing,
+            OriginalLanguage = "ja",
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>()
+        };
+
+        var result = await ResolveSeriesAsync(unitOfWork, hardCover, null);
+
+        Assert.NotNull(result);
+        Assert.Equal("ja", result.OriginalLanguage);
+    }
+
+    [Fact]
+    public async Task ResolveSeriesAsync_DoesNotOverwriteExistingChapterCover_WithEnrichedCovers()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 1));
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 2, metadataProvider: MetadataProvider.Mangabaka));
+        await ctx.SaveChangesAsync();
+
+        var hardCover = new Series
+        {
+            Id = "hc1",
+            Title = "Series",
+            Summary = "",
+            Status = PublicationStatus.Ongoing,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>
+            {
+                new()
+                {
+                    Id = "ch1",
+                    Title = "Chapter 1",
+                    VolumeMarker = "1",
+                    ChapterMarker = "1",
+                    CoverUrl = "https://provider.example/1.jpg",
+                    Tags = new List<Tag>(),
+                    People = new List<Person>(),
+                    TranslationGroups = new List<string>()
+                }
+            }
+        };
+
+        var mangabakaCovers = new List<Cover>
+        {
+            new() { Url = "https://mangabaka.example/1.jpg", Extension = "jpg", Volume = "1" }
+        };
+
+        var result = await ResolveSeriesAsync(unitOfWork, hardCover, null,
+            enrichWithCovers: true, mangabakaCovers: mangabakaCovers);
+
+        Assert.NotNull(result);
+        var chapter = Assert.Single(result.Chapters);
+        Assert.Equal("https://provider.example/1.jpg", chapter.CoverUrl);
+    }
+
+    [Fact]
+    public async Task ResolveSeriesAsync_AppliesEnrichedCovers_InPriorityOrder()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 1));
+        ctx.MetadataProviderSettings.Add(CreateSettings(priority: 2, metadataProvider: MetadataProvider.Mangabaka));
+        await ctx.SaveChangesAsync();
+
+        var hardCover = new Series
+        {
+            Id = "hc1",
+            Title = "Series",
+            Summary = "",
+            Status = PublicationStatus.Ongoing,
+            Tags = new List<Tag>(),
+            People = new List<Person>(),
+            Links = new List<string>(),
+            Chapters = new List<Chapter>
+            {
+                new()
+                {
+                    Id = "ch1",
+                    Title = "Chapter 1",
+                    VolumeMarker = "1",
+                    ChapterMarker = "1",
+                    Tags = new List<Tag>(),
+                    People = new List<Person>(),
+                    TranslationGroups = new List<string>()
+                }
+            }
+        };
+
+        var hardCoverCovers = new List<Cover>
+        {
+            new() { Url = "https://hardcover.example/1.jpg", Extension = "jpg", Volume = "1" }
+        };
+
+        var mangabakaCovers = new List<Cover>
+        {
+            new() { Url = "https://mangabaka.example/1.jpg", Extension = "jpg", Volume = "1" }
+        };
+
+        var result = await ResolveSeriesAsync(unitOfWork, hardCover, null,
+            enrichWithCovers: true, hardCoverCovers: hardCoverCovers, mangabakaCovers: mangabakaCovers);
+
+        Assert.NotNull(result);
+        var chapter = Assert.Single(result.Chapters);
+        Assert.Equal("https://hardcover.example/1.jpg", chapter.CoverUrl);
+        Assert.Equal(".jpg", chapter.CoverFileFormat);
     }
 }

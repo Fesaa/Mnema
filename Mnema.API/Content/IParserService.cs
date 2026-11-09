@@ -31,7 +31,7 @@ public interface IParserService
     ParseResult FullParse(string input, ContentFormat type);
     Format ParseFormat(string filePath);
 
-    T? FindMatch<T>(IList<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers;
+    T? FindMatch<T>(IList<T> items, IHasPositionMarkers item, bool allowPartialVolumeMatch = true) where T : IHasPositionMarkers;
     IEnumerable<T> Sort<T>(IEnumerable<T> items) where T : IHasPositionMarkers;
 }
 

@@ -64,16 +64,37 @@ public class MetadataResolver(
         if (mergedSeries == null || !metadata.GetKey(MetadataResolverOptions.EnrichWithCovers))
             return mergedSeries;
 
-        if (!string.IsNullOrEmpty(mangaBakaId))
+        var metadataIds = new Dictionary<MetadataProvider, string?>
         {
-            var covers = await mangabakaMetadataProvider.GetCovers(mangaBakaId, cancellationToken);
+            [MetadataProvider.Mangabaka] = mangaBakaId,
+            [MetadataProvider.Hardcover] = hardCoverId,
+        };
 
-            InsertCovers(mergedSeries, covers);
-        }
+        var coverProviders = settings
+            .Where(s => s.Enabled)
+            .OrderBy(s => s.Priority)
+            .Select(s => s.MetadataProvider);
 
-        if (!string.IsNullOrEmpty(hardCoverId))
+        foreach (var metadataProvider in coverProviders)
         {
-            var covers = await hardcoverMetadataProvider.GetCovers(hardCoverId, cancellationToken);
+            if (!metadataIds.TryGetValue(metadataProvider, out var metadataExternalId) ||
+                string.IsNullOrEmpty(metadataExternalId))
+            {
+                continue;
+            }
+
+            List<Cover> covers;
+            switch (metadataProvider)
+            {
+                case MetadataProvider.Mangabaka:
+                    covers = await mangabakaMetadataProvider.GetCovers(metadataExternalId, cancellationToken);
+                    break;
+                case MetadataProvider.Hardcover:
+                    covers = await hardcoverMetadataProvider.GetCovers(metadataExternalId, cancellationToken);
+                    break;
+                default:
+                    continue;
+            }
 
             InsertCovers(mergedSeries, covers);
         }
@@ -81,7 +102,7 @@ public class MetadataResolver(
         return mergedSeries;
     }
 
-    private static Series? MergeSeries(Dictionary<MetadataProvider, Series?> series, List<MetadataProviderSettings> settings, MetadataBag metadata)
+    private Series? MergeSeries(Dictionary<MetadataProvider, Series?> series, List<MetadataProviderSettings> settings, MetadataBag metadata)
     {
         if (series.All(kv => kv.Value == null))
             return null;
@@ -123,7 +144,7 @@ public class MetadataResolver(
         return mergedSeries;
     }
 
-    private static void Merge(MetadataProviderSettings settings, Series into, Series from)
+    private void Merge(MetadataProviderSettings settings, Series into, Series from)
     {
         if (string.IsNullOrEmpty(into.Id) && !string.IsNullOrEmpty(from.Id))
         {
@@ -145,9 +166,17 @@ public class MetadataResolver(
             into.LocalizedSeries = from.LocalizedSeries;
         }
 
-        if (settings.SeriesCoverUrl && string.IsNullOrEmpty(into.CoverUrl))
+        if (settings.SeriesCoverUrl && string.IsNullOrEmpty(into.CoverUrl) && !string.IsNullOrEmpty(from.CoverUrl))
         {
             into.CoverUrl = from.CoverUrl;
+            into.NonProxiedCoverUrl = string.IsNullOrEmpty(from.NonProxiedCoverUrl)
+                ? from.CoverUrl
+                : from.NonProxiedCoverUrl;
+        }
+
+        if (string.IsNullOrEmpty(into.OriginalLanguage) && !string.IsNullOrEmpty(from.OriginalLanguage))
+        {
+            into.OriginalLanguage = from.OriginalLanguage;
         }
 
         if (string.IsNullOrEmpty(into.RefUrl))
@@ -159,11 +188,16 @@ public class MetadataResolver(
             into.Links.Add(from.RefUrl);
         }
 
-        if (settings.SeriesPublicationStatus && into.Status == PublicationStatus.Unknown)
+        if (settings.SeriesPublicationStatus)
         {
-            into.Status = from.Status;
+            if (into.Status == PublicationStatus.Unknown)
+            {
+                into.Status = from.Status;
+            }
+
             into.HighestVolumeNumber ??= from.HighestVolumeNumber;
             into.HighestChapterNumber ??= from.HighestChapterNumber;
+            into.TranslationStatus ??= from.TranslationStatus;
         }
 
         if (settings.SeriesYear && into.Year == null)
@@ -171,7 +205,7 @@ public class MetadataResolver(
             into.Year = from.Year;
         }
 
-        if (settings.SeriesAgeRating && into.AgeRating == null || into.AgeRating == AgeRating.Unknown)
+        if (settings.SeriesAgeRating && (into.AgeRating == null || into.AgeRating == AgeRating.Unknown))
         {
             into.AgeRating = from.AgeRating;
         }
@@ -204,11 +238,7 @@ public class MetadataResolver(
         {
             foreach (var fromChapter in from.Chapters)
             {
-                var match = into.Chapters.FirstOrDefault(c
-                        => !string.IsNullOrEmpty(c.ChapterMarker)
-                           && !string.IsNullOrEmpty(c.VolumeMarker)
-                           && c.VolumeMarker == fromChapter.VolumeMarker
-                           && c.ChapterMarker == fromChapter.ChapterMarker);
+                var match = parserService.FindMatch(into.Chapters, fromChapter, allowPartialVolumeMatch: false);
 
                 if (match != null)
                 {
@@ -216,7 +246,7 @@ public class MetadataResolver(
                     continue;
                 }
 
-                match ??= new Chapter
+                match = new Chapter
                 {
                     Id = string.Empty,
                     Title = string.Empty,
@@ -297,6 +327,10 @@ public class MetadataResolver(
             into.RefUrl = from.RefUrl;
         }
 
+        if (string.IsNullOrEmpty(into.Isbn) && !string.IsNullOrEmpty(from.Isbn))
+        {
+            into.Isbn = from.Isbn;
+        }
     }
 
     private static void InsertCovers(Series series, List<Cover> covers)
@@ -313,6 +347,11 @@ public class MetadataResolver(
 
             foreach (var chapter in chapters)
             {
+                if (!string.IsNullOrEmpty(chapter.CoverUrl))
+                {
+                    continue;
+                }
+
                 chapter.CoverUrl = cover.Url;
                 chapter.CoverFileFormat = "." + cover.Extension;
             }

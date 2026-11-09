@@ -1187,7 +1187,7 @@ public partial class ParserService: IParserService
         return AsinRegex.Match(asin).Success;
     }
 
-    public T? FindMatch<T>(IList<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers
+    public T? FindMatch<T>(IList<T> items, IHasPositionMarkers item, bool allowPartialVolumeMatch = true) where T : IHasPositionMarkers
     {
         // If both markers are missing, no match can be made
         if (EmptyOrDefault(item.VolumeMarker) && EmptyOrDefault(item.ChapterMarker))
@@ -1222,6 +1222,11 @@ public partial class ParserService: IParserService
         if (rangeMatch != null)
         {
             return rangeMatch;
+        }
+
+        if (!allowPartialVolumeMatch)
+        {
+            return default;
         }
 
         // Fallback: single partial match on volume. A range file only covers its own range
