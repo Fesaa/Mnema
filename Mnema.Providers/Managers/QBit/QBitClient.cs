@@ -78,8 +78,52 @@ internal class QBitClient(
                 parameters["stopped"] = "true";
             }
 
-            await SendAsync(client, HttpMethod.Post, "api/v2/torrents/add", parameters, token);
+            string body;
+            try
+            {
+                body = await SendAsync(client, HttpMethod.Post, "api/v2/torrents/add", parameters, token);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+            {
+                throw new BadRequestException("qBittorrent refused to add the torrent. It may already be present, or the download client rejected it.");
+            }
+
+            ThrowIfAddFailed(body);
         });
+    }
+
+    private static void ThrowIfAddFailed(string body)
+    {
+        var trimmed = body.Trim();
+        if (trimmed.Equals("Fails.", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new BadRequestException("qBittorrent failed to add the torrent");
+        }
+
+        // 4.X
+        if (trimmed.Length == 0 || trimmed.Equals("Ok.", StringComparison.OrdinalIgnoreCase)) return;
+
+        // 5.X
+        JsonDocument document;
+        try
+        {
+            document = JsonDocument.Parse(trimmed);
+        }
+        catch (JsonException)
+        {
+            return;
+        }
+
+        using (document)
+        {
+            if (document.RootElement.ValueKind == JsonValueKind.Object
+                && document.RootElement.TryGetProperty("failure_count", out var failureCount)
+                && failureCount.TryGetInt32(out var failures)
+                && failures > 0)
+            {
+                throw new BadRequestException("qBittorrent failed to add the torrent");
+            }
+        }
     }
 
     public async Task DeleteTorrentsAsync(IEnumerable<string> hashes, bool deleteFiles, CancellationToken token = default)
@@ -142,6 +186,19 @@ internal class QBitClient(
 
     public void Invalidate()
     {
+        _semaphore.Wait();
+        try
+        {
+            InvalidateCore();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    private void InvalidateCore()
+    {
         _isInitialized = false;
         _client?.Dispose();
         _client = null;
@@ -160,12 +217,31 @@ internal class QBitClient(
         {
             return await action(client);
         }
-        catch (Exception ex) when (ex is HttpRequestException or MnemaException)
+        catch (HttpRequestException ex) when (IsClientFailure(ex))
         {
             logger.LogWarning(ex, "qBittorrent request failed. Invalidating client.");
             await HandleFailure();
             throw;
         }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex, "qBittorrent rejected the request");
+            throw;
+        }
+        catch (MnemaException ex)
+        {
+            logger.LogWarning(ex, "qBittorrent request failed. Invalidating client.");
+            await HandleFailure();
+            throw;
+        }
+    }
+
+    private static bool IsClientFailure(HttpRequestException exception)
+    {
+        if (exception.StatusCode is not { } status) return true;
+
+        return status is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
+            || (int)status >= (int)HttpStatusCode.InternalServerError;
     }
 
     private async Task ExecuteAsync(Func<HttpClient, Task> action)
@@ -262,7 +338,7 @@ internal class QBitClient(
         try
         {
             var clientId = _downloadClientMetadata?.Id;
-            Invalidate();
+            InvalidateCore();
 
             if (clientId.HasValue)
             {
