@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Threading.RateLimiting;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
@@ -11,6 +12,7 @@ using Mnema.API;
 using Mnema.API.Content;
 using Mnema.API.Metadata;
 using Mnema.Common;
+using Mnema.Common.Http;
 using Mnema.Metadata.Hardcover;
 using Mnema.Metadata.Hardcover.Generated;
 using Mnema.Metadata.Mangabaka;
@@ -19,6 +21,7 @@ using Mnema.Models.Internal;
 using Serilog;
 using Directory = System.IO.Directory;
 using IConfigurationProvider = Mnema.API.IConfigurationProvider;
+using RateLimiter = System.Threading.RateLimiting.RateLimiter;
 
 namespace Mnema.Metadata.Extensions;
 
@@ -102,12 +105,25 @@ public static class ServiceProviderExtensions
                 return new SearcherManager(fsDir, null);
             });
 
+            services.AddKeyedSingleton<RateLimiter>(MetadataProvider.Mangabaka, (_, _) =>
+                new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 20,
+                    TokensPerPeriod = 2,
+                    ReplenishmentPeriod = TimeSpan.FromSeconds(1),
+                    AutoReplenishment = true,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 500,
+                }));
+
             services.AddHttpClient(nameof(MetadataProvider.Mangabaka), client =>
-            {
-                client.BaseAddress = new Uri("https://api.mangabaka.org");
-                client.Timeout = TimeSpan.FromSeconds(30);
-                client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, BuildInfo.AppIdentifier);
-            });
+                {
+                    client.BaseAddress = new Uri("https://api.mangabaka.org");
+                    client.Timeout = TimeSpan.FromSeconds(30);
+                    client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, BuildInfo.AppIdentifier);
+                })
+                .AddHttpMessageHandler(sp => new RateLimitingHandler(
+                    sp.GetRequiredKeyedService<RateLimiter>(MetadataProvider.Mangabaka)));
 
             return services;
         }

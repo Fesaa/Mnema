@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 
-namespace Mnema.Providers.Extensions;
+namespace Mnema.Common.Http;
 
 public class RateLimitingHandler(RateLimiter limiter) : DelegatingHandler
 {
