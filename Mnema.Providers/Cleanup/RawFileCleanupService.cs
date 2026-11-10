@@ -166,7 +166,7 @@ internal class RawFileCleanupService(
         return validFiles;
 
         List<string> CreatePaths(List<DownloadFile> downloadFiles) => downloadFiles
-            .Where(f => f.Selected)
+            .Where(f => f is { Selected: true, Processed: false })
             .Select(f => Path.Join(context.DownloadDirectory, f.FullPath))
             .ToList();
 
