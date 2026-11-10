@@ -71,6 +71,77 @@ public class ParserServiceTests
         Assert.Same(file, match);
     }
 
+    [Fact]
+    public void FindMatch_MatchesFileWithVolumeMarker_ForLooseLeafChapter()
+    {
+        var file = new OnDiskContent { Volume = "4", Chapter = "16.5" };
+        var chapter = CreateChapter(string.Empty, "16.5");
+
+        var match = _parserService.FindMatch(new List<OnDiskContent> { file }, chapter);
+
+        Assert.Same(file, match);
+    }
+
+    [Fact]
+    public void FindMatch_MatchesLooseLeafFile_ForChapterWithVolume()
+    {
+        var file = new OnDiskContent { Volume = string.Empty, Chapter = "16.5" };
+        var chapter = CreateChapter("4", "16.5");
+
+        var match = _parserService.FindMatch(new List<OnDiskContent> { file }, chapter);
+
+        Assert.Same(file, match);
+    }
+
+    [Fact]
+    public void FindMatch_PrefersLooseLeafChapter_OverPartialVolumeMatch()
+    {
+        var looseLeaf = new OnDiskContent { Volume = string.Empty, Chapter = "16.5" };
+        var otherChapterInVolume = new OnDiskContent { Volume = "4", Chapter = "16.4" };
+        var chapter = CreateChapter("4", "16.5");
+
+        var match = _parserService.FindMatch(new List<OnDiskContent> { otherChapterInVolume, looseLeaf }, chapter);
+
+        Assert.Same(looseLeaf, match);
+    }
+
+    [Fact]
+    public void FindMatch_DoesNotMatchDifferentNonEmptyVolumes()
+    {
+        var file = new OnDiskContent { Volume = "5", Chapter = "16.5" };
+        var chapter = CreateChapter("4", "16.5");
+
+        var match = _parserService.FindMatch(new List<OnDiskContent> { file }, chapter);
+
+        Assert.Null(match);
+    }
+
+    [Fact]
+    public void FindMatch_DoesNotMatchAmbiguousVolumeMarkers_ForLooseLeafChapter()
+    {
+        var files = new List<OnDiskContent>
+        {
+            new() { Volume = "4", Chapter = "16.5" },
+            new() { Volume = "5", Chapter = "16.5" },
+        };
+        var chapter = CreateChapter(string.Empty, "16.5");
+
+        var match = _parserService.FindMatch(files, chapter);
+
+        Assert.Null(match);
+    }
+
+    [Fact]
+    public void FindMatch_DoesNotMatchVolumeMarkers_WhenPartialVolumeMatchDisallowed()
+    {
+        var file = new OnDiskContent { Volume = "4", Chapter = "16.5" };
+        var chapter = CreateChapter(string.Empty, "16.5");
+
+        var match = _parserService.FindMatch(new List<OnDiskContent> { file }, chapter, allowPartialVolumeMatch: false);
+
+        Assert.Null(match);
+    }
+
     private static Chapter CreateChapter(string volume, string chapter)
     {
         return new Chapter
