@@ -16,6 +16,11 @@ public class ParserServiceTests
 
     [Theory]
     [InlineData(" Escape from the Seventh Night 001-005 as v01 (Digital-Compilation) (Oak)", "Escape from the Seventh Night")]
+    [InlineData("The Executioner and Her Way of Life [Yen Press] [Stick]", "The Executioner and Her Way of Life")]
+    [InlineData("The Executioner and Her Way of Life [Yen Press] [Stick].epub", "The Executioner and Her Way of Life")]
+    [InlineData("The Long Summer of August.rar", "The Long Summer of August")]
+    [InlineData("Hippos_the_Great [Digital]", "Hippos the Great")]
+    [InlineData("[Yen Press] [Stick]", "")]
     public void ParserMangaSeries(string input, string expected)
     {
         var parsedSeries = _parserService.ParseSeries(input, ContentFormat.Manga);
