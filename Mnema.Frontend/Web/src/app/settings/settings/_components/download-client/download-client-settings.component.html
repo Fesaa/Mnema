@@ -1,39 +1,45 @@
 <div *transloco="let t; prefix: 'settings.download-clients'">
+  <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap px-3 mb-3">
+    <h3 class="h4 mb-0">{{ t('title') }}</h3>
 
-  <div class="d-flex justify-content-end mb-3">
-    <button type="button" class="btn btn-primary" (click)="edit(null)">
-      <i class="fa fa-plus"></i>
-    </button>
+    <div ngbDropdown class="d-inline-block">
+      <button type="button" class="btn btn-primary" ngbDropdownToggle>
+        <i class="fa fa-plus me-2"></i>{{ t('add') }}
+      </button>
+
+      <div ngbDropdownMenu>
+        @for (type of freeTypes(); track type) {
+          <button type="button" ngbDropdownItem (click)="edit(null, type)">
+            {{ type | downloadClientType }}
+          </button>
+        }
+
+        @if (freeTypes().length === 0) {
+          <span class="dropdown-item-text text-muted">{{ t('all-types-in-use') }}</span>
+        }
+      </div>
+    </div>
   </div>
 
-  <app-table
+  <app-item-list
     [pageLoader]="pageLoader()"
     [trackByIdFunc]="trackBy"
-    [noMobileCards]="true"
     [reloader]="pageReloader"
   >
-    <ng-template #header>
-      <tr>
-        <th class="table-header-cell">{{ t('header.name') }}</th>
-        <th class="table-header-cell" style="width: 15%">{{ t('header.type') }}</th>
-        <th class="table-header-cell" style="width: 15%">{{ t('header.actions') }}</th>
-      </tr>
-    </ng-template>
+    <ng-template #row let-item>
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="fw-semibold">{{ item.name }}</span>
+        <span class="badge bg-secondary">{{ item.type | downloadClientType }}</span>
 
-    <ng-template #cell let-item>
-      <td class="table-cell">
-        {{ item.name }}
-      </td>
+        @if (item.isFailed) {
+          <span class="badge bg-warning text-dark">{{ t('locked') }}</span>
+        }
 
-      <td class="table-cell">
-        {{ item.type | downloadClientType }}
-      </td>
-
-      <td class="table-cell">
-        <div class="d-flex align-items-center gap-2 justify-end">
+        <div class="d-flex align-items-center gap-2 ms-auto">
           <button
             type="button"
             class="btn btn-small"
+            [attr.aria-label]="t('edit-alt')"
             (click)="edit(item)"
           >
             <i class="fa fa-edit"></i>
@@ -42,6 +48,7 @@
           <button
             type="button"
             class="btn btn-small"
+            [attr.aria-label]="t('release-lock-alt')"
             (click)="releaseLock(item)"
             [disabled]="!item.isFailed"
           >
@@ -51,27 +58,20 @@
           <button
             type="button"
             class="btn btn-small text-danger"
+            [attr.aria-label]="t('delete-alt')"
             (click)="remove(item)"
           >
             <i class="fa fa-trash"></i>
           </button>
         </div>
-      </td>
+      </div>
     </ng-template>
 
     <ng-template #empty>
-      <tr>
-        <td colspan="4" class="py-5">
-          <div class="d-flex flex-column align-items-center text-center gap-3 text-muted">
-            <h5 class="mb-1">
-              {{ t('empty.title') }}
-            </h5>
-
-            <p class="mb-0" [innerHtml]="t('empty.description')">
-            </p>
-          </div>
-        </td>
-      </tr>
+      <div class="py-5 text-center text-muted">
+        <h5 class="mb-1">{{ t('empty.title') }}</h5>
+        <p class="mb-0" [innerHtml]="t('empty.description')"></p>
+      </div>
     </ng-template>
-  </app-table>
+  </app-item-list>
 </div>

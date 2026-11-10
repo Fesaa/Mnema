@@ -1,27 +1,3 @@
-
-<div class="p-sm-2 p-md-5">
-  @defer (when selected() === SettingsID.Preferences; prefetch on idle) {
-    @if (selected() === SettingsID.Preferences && canSee(SettingsID.Preferences)) {
-      <app-preference-settings />
-    }
-  }
-
-  @defer (when selected() === SettingsID.Pages; prefetch on idle) {
-    @if (selected() === SettingsID.Pages && canSee(SettingsID.Pages)) {
-      <app-pages-settings />
-    }
-  }
-
-  @defer (when selected() === SettingsID.Server; prefetch on idle) {
-    @if (selected() === SettingsID.Server && canSee(SettingsID.Server)) {
-      <app-server-settings />
-    }
-  }
-
-  @defer (when selected() === SettingsID.Releases; prefetch on idle) {
-    @if (selected() === SettingsID.Releases && canSee(SettingsID.Releases)) {
-      <app-release-browser />
-    }
-  }
-
+<div class="px-sm-2 px-md-5 pb-sm-2 pb-md-5">
+  <router-outlet />
 </div>

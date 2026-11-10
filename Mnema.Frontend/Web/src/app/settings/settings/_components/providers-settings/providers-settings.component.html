@@ -1,0 +1,15 @@
+<div class="d-flex w-100 flex-grow-1 flex-column" *transloco="let t; prefix: 'settings.providers'">
+  <h2 class="h2 fw-bold mb-3">{{ t('title') }}</h2>
+  <p class="text-muted mb-0">{{ t('description') }}</p>
+
+  <section class="mt-4">
+    <h3 class="h4">{{ t('metadata-title') }}</h3>
+    <app-metadata-provider-settings />
+  </section>
+
+  <section class="mt-5">
+    <h3 class="h4">{{ t('content-title') }}</h3>
+    <p class="text-muted">{{ t('content-description') }}</p>
+    <app-provider-settings />
+  </section>
+</div>

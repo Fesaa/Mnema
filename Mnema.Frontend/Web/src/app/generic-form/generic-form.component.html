@@ -1,16 +1,24 @@
 <form class="row" [class.flex-nowrap]="inline() && utilityService.breakPoint() > Breakpoint.Mobile">
 
-  @for (control of toShowControl(); track $index) {
-    <ng-container
-      *ngTemplateOutlet="renderControl; context: {
-        $implicit: control,
-        containerClass: inline()
-          ? 'col pt-4'
-          : ((double() && !control.forceSingle && control.fieldType !== FormType.Array)
-              ? 'col-md-6'
-              : 'col-md-12') + ' col-sm-12 pt-4'
-      }"
-    />
+  @for (group of groupedControls(); track $index) {
+    @if (group.key) {
+      <div class="col-12 mt-4" *transloco="let t; prefix: formDefinition().key">
+        <h3 class="h5 fw-semibold mb-0">{{ t('groups.' + group.key) }}</h3>
+      </div>
+    }
+
+    @for (control of group.controls; track $index) {
+      <ng-container
+        *ngTemplateOutlet="renderControl; context: {
+          $implicit: control,
+          containerClass: inline()
+            ? 'col pt-4'
+            : ((double() && !control.forceSingle && control.fieldType !== FormType.Array)
+                ? 'col-md-6'
+                : 'col-md-12') + ' col-sm-12 pt-4'
+        }"
+      />
+    }
   }
 
 </form>

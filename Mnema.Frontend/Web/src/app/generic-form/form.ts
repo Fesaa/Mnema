@@ -20,6 +20,7 @@ export type FormControlDefinition = {
   hideText: boolean;
   wikiLink?: string;
   hidden: boolean;
+  groupKey?: string;
 
   defaultValue: any;
   options?: FormControlOption[];

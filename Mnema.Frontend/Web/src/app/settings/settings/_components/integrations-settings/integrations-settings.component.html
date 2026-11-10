@@ -1,0 +1,12 @@
+<div class="d-flex w-100 flex-grow-1 flex-column" *transloco="let t; prefix: 'settings.integrations'">
+  <h2 class="h2 fw-bold mb-3">{{ t('title') }}</h2>
+  <p class="text-muted mb-0">{{ t('description') }}</p>
+
+  <section class="mt-4">
+    <app-external-connection-settings />
+  </section>
+
+  <section class="mt-5">
+    <app-download-client-settings />
+  </section>
+</div>

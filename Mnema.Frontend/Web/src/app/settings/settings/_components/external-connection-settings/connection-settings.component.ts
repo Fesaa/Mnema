@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, Component, computed, EventEmitter, inject} from '@angular/core';
 import {ModalService} from "../../../../_services/modal.service";
-import {Connection, ConnectionService, ConnectionType, ConnectionTypes} from "./connection.service";
-import {TableComponent} from "../../../../shared/_component/table/table.component";
+import {Connection, ConnectionEvent, ConnectionService, ConnectionType, ConnectionTypes} from "./connection.service";
 import {PageLoader} from "../../../../shared/_component/paginator/paginator.component";
 import {ConnectionTypePipe} from "./_pipes/connection-type.pipe";
 import {ConnectionEventPipe} from "./_pipes/connection-event.pipe";
@@ -9,16 +8,19 @@ import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {GenericFormModalComponent} from "../../../../generic-form/generic-form-modal/generic-form-modal.component";
 import {DefaultModalOptions} from "../../../../_models/default-modal-options";
 import {filter, finalize, map, of, switchMap} from "rxjs";
-import {ListSelectModalComponent} from "../../../../shared/_component/list-select-modal/list-select-modal.component";
 import {NotificationService} from "@mnema/_services/notification.service";
+import {NgbDropdownModule, NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
+import {ItemListComponent} from "@mnema/shared/_component/item-list/item-list.component";
 
 @Component({
   selector: 'app-external-connection-settings',
   imports: [
-    TableComponent,
     ConnectionTypePipe,
     ConnectionEventPipe,
-    TranslocoDirective
+    TranslocoDirective,
+    NgbDropdownModule,
+    NgbTooltip,
+    ItemListComponent,
   ],
   templateUrl: './connection-settings.component.html',
   styleUrl: './connection-settings.component.scss',
@@ -29,7 +31,9 @@ export class ConnectionSettingsComponent {
   private readonly connectionService = inject(ConnectionService);
   private readonly notificationService = inject(NotificationService);
   private readonly modalService = inject(ModalService);
+  private readonly connectionEventPipe = new ConnectionEventPipe();
 
+  protected readonly ConnectionTypes = ConnectionTypes;
   protected pageReloader = new EventEmitter<void>();
 
   pageLoader = computed<PageLoader<Connection>>(() => {
@@ -42,15 +46,31 @@ export class ConnectionSettingsComponent {
     return connection.id;
   }
 
-  edit(connection: Connection | null) {
-    const type$ = connection == null
-      ? this.promptForConnectionType() : of(connection.type);
+  protected visibleEvents(connection: Connection): ConnectionEvent[] {
+    const count = connection.followedEvents.length > 3 ? 2 : connection.followedEvents.length;
+    return connection.followedEvents.slice(0, count);
+  }
+
+  protected extraEvents(connection: Connection): ConnectionEvent[] {
+    return connection.followedEvents.slice(this.visibleEvents(connection).length);
+  }
+
+  protected extraEventsLabel(connection: Connection): string {
+    return this.extraEvents(connection)
+      .map(event => this.connectionEventPipe.transform(event))
+      .join(', ');
+  }
+
+  edit(connection: Connection | null, type?: ConnectionType) {
+    if (connection == null && type == null) return;
+
+    const type$ = connection == null ? of(type!) : of(connection.type);
 
     type$.pipe(
-    switchMap(type => this.connectionService.getConnectionForm(type).pipe(
-      map(form => ({form, type}))
-    )),
-    switchMap(({form, type}) => {
+      switchMap(type => this.connectionService.getConnectionForm(type).pipe(
+        map(form => ({form, type}))
+      )),
+      switchMap(({form, type}) => {
         const [modal, component] = this.modalService.open(GenericFormModalComponent, DefaultModalOptions);
 
         component.double.set(true);
@@ -60,26 +80,12 @@ export class ConnectionSettingsComponent {
 
         return this.modalService.onClose$<Connection>(modal);
       }),
-      switchMap(c => this.connectionService.updateConnection(c)),
-      filter(() => connection?.type === ConnectionType.Native),
-      switchMap(() => this.notificationService.enabled()),
+      switchMap(c => this.connectionService.updateConnection(c).pipe(
+        filter(() => c.type === ConnectionType.Native),
+        switchMap(() => this.notificationService.enabled()),
+      )),
       finalize(() => this.pageReloader.emit()),
     ).subscribe()
-  }
-
-  private promptForConnectionType() {
-    const typePipe = new ConnectionTypePipe();
-
-    const [modal, component] = this.modalService.open(ListSelectModalComponent<ConnectionType>, {
-      size: "lg", centered: true,
-    });
-    component.title.set(translate('settings.connections.edit.select-type-title'));
-    component.inputItems.set(ConnectionTypes.map(type => ({
-      label: typePipe.transform(type),
-      value: type
-    })));
-
-    return this.modalService.onClose$<ConnectionType>(modal);
   }
 
   remove(connection: Connection) {
@@ -88,8 +94,6 @@ export class ConnectionSettingsComponent {
       .pipe(
         switchMap(() => this.connectionService.deleteConnection(connection.id)),
         finalize(() => this.pageReloader.emit()),
-    ).subscribe();
-
+      ).subscribe();
   }
-
 }
