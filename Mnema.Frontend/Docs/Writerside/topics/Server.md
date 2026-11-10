@@ -12,9 +12,13 @@ one has a summary the others' summary won't be used
 
 ## Mangabaka
 
-Mangabaka has a ton of Metadata, not all of it may interest you. Tags & Genres can be configured in [](Preferences.md), the following extra options are avaible.
+Mangabaka has a ton of Metadata, not all of it may interest you. Tags & Genres can be configured in [](Preferences.md), the following extra options are available.
 
 ![mangabaka-metadata-settings.png](mangabaka-metadata-settings.png)
+
+### Collection medium
+
+Mangabaka groups its volume and chapter records into collections (Paperback, hardcover, digital). You can pick a preference.
 
 ### Series Name and Localized Series Name
 
