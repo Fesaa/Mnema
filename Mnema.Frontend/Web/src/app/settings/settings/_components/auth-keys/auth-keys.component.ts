@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, Component, computed, EventEmitter, inject} from '@angular/core';
 import {AuthKey, AuthKeyService} from "@mnema/settings/settings/_components/auth-keys/auth-key.service";
-import {TableComponent} from "@mnema/shared/_component/table/table.component";
-import {TranslocoDirective} from "@jsverse/transloco";
+import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {ModalService} from "@mnema/_services/modal.service";
 import {PageLoader} from "@mnema/shared/_component/paginator/paginator.component";
 import {finalize, switchMap} from "rxjs";
@@ -9,12 +8,13 @@ import {GenericFormModalComponent} from "@mnema/generic-form/generic-form-modal/
 import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
 import {Clipboard} from "@angular/cdk/clipboard";
 import {ToastService} from "@mnema/_services/toast.service";
+import {ItemListComponent} from "@mnema/shared/_component/item-list/item-list.component";
 
 @Component({
   selector: 'app-auth-keys',
   imports: [
-    TableComponent,
-    TranslocoDirective
+    TranslocoDirective,
+    ItemListComponent,
   ],
   templateUrl: './auth-keys.component.html',
   styleUrl: './auth-keys.component.scss',
@@ -27,13 +27,13 @@ export class AuthKeysComponent {
   private readonly clipboard = inject(Clipboard);
   private readonly toastService = inject(ToastService);
 
-
   protected pageReloader = new EventEmitter<void>();
   protected pageLoader = computed<PageLoader<AuthKey>>(() => {
     return (pageNumber: number, pageSize: number) => {
       return this.authKeyService.all(pageNumber, pageSize);
     }
   });
+
   protected trackBy(_: number, authKey: AuthKey) {
     return authKey.id;
   }
@@ -57,7 +57,7 @@ export class AuthKeysComponent {
 
   remove(authKey: AuthKey) {
     this.modalService.confirm$(
-      {question: 'Are you sure you want to delete this auth key?'}, true)
+      {question: translate('settings.auth-keys.confirm-delete')}, true)
       .pipe(
         switchMap(() => this.authKeyService.delete(authKey.id)),
         finalize(() => this.pageReloader.emit()),
@@ -68,5 +68,4 @@ export class AuthKeysComponent {
     this.clipboard.copy(authKey.key);
     this.toastService.infoLoco('settings.auth-keys.copy', {}, {key: authKey.name})
   }
-
 }

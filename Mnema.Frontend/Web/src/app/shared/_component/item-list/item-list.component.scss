@@ -1,0 +1,29 @@
+.item-list {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.item-list-row {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--surface-border);
+  transition: background-color 0.15s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--surface-hover);
+  }
+}
+
+.cdk-drag-preview {
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px var(--shadow-medium);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.4;
+}

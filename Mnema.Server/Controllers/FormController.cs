@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,77 +44,95 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.Enabled).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.Enabled).ToCamelCase(),
+                    GroupKey = "general",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.SeriesTitle).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.SeriesTitle).ToCamelCase(),
+                    GroupKey = "series",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.SeriesSummary).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.SeriesSummary).ToCamelCase(),
+                    GroupKey = "series",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.SeriesLocalizedName).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.SeriesLocalizedName).ToCamelCase(),
+                    GroupKey = "series",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.SeriesCoverUrl).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.SeriesCoverUrl).ToCamelCase(),
+                    GroupKey = "series",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.SeriesPublicationStatus).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.SeriesPublicationStatus).ToCamelCase(),
+                    GroupKey = "series",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.SeriesAgeRating).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.SeriesAgeRating).ToCamelCase(),
+                    GroupKey = "series",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.SeriesYear).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.SeriesYear).ToCamelCase(),
+                    GroupKey = "series",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.SeriesTags).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.SeriesTags).ToCamelCase(),
+                    GroupKey = "series",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.SeriesPeople).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.SeriesPeople).ToCamelCase(),
+                    GroupKey = "series",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.SeriesLinks).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.SeriesLinks).ToCamelCase(),
+                    GroupKey = "series",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.Chapters).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.Chapters).ToCamelCase(),
+                    GroupKey = "chapters",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.ChapterTitle).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.ChapterTitle).ToCamelCase(),
+                    GroupKey = "chapters",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.ChapterSummary).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.ChapterSummary).ToCamelCase(),
+                    GroupKey = "chapters",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.ChapterReleaseDate).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.ChapterReleaseDate).ToCamelCase(),
+                    GroupKey = "chapters",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.ChapterPeople).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.ChapterPeople).ToCamelCase(),
+                    GroupKey = "chapters",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.ChapterTags).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.ChapterTags).ToCamelCase(),
+                    GroupKey = "chapters",
                 },
                 new SwitchFieldDefinition
                 {
-                    Field = nameof(MetadataProviderSettings.ChapterCoverUrl).ToCamelCase()
+                    Field = nameof(MetadataProviderSettings.ChapterCoverUrl).ToCamelCase(),
+                    GroupKey = "chapters",
                 },
-                ..specificFormControls
+                ..specificFormControls.Select(c => c with { GroupKey = "provider" })
             ]
         });
     }
@@ -137,6 +156,7 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
             new TextFieldDefinition
             {
                 Field = nameof(Preferences.ChapterFileFormat).ToCamelCase(),
+                GroupKey = "naming",
                 DefaultValue = INamingService.DefaultChapterFormat,
                 ForceSingle = true,
                 Validators = new FormValidatorsBuilder()
@@ -148,6 +168,7 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
             new TextFieldDefinition
             {
                 Field = nameof(Preferences.OneShotFileFormat).ToCamelCase(),
+                GroupKey = "naming",
                 DefaultValue = INamingService.DefaultOneShotFormat,
                 ForceSingle = true,
                 Validators = new FormValidatorsBuilder()
@@ -158,27 +179,31 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
             },
             FormFieldDefinitions.EnumDropDown<ImageFormat>(
                 nameof(Preferences.ImageFormat).ToCamelCase(),
-                "image-format-pipe"),
+                "image-format-pipe") with { GroupKey = "images" },
             FormFieldDefinitions.EnumDropDown<CoverFallbackMethod>(
                 nameof(Preferences.CoverFallbackMethod).ToCamelCase(),
-                "cover-fallback-method-pipe"),
+                "cover-fallback-method-pipe") with { GroupKey = "images" },
             new SwitchFieldDefinition
             {
                 Field = nameof(Preferences.PinSubscriptionTitles).ToCamelCase(),
+                GroupKey = "subscriptions",
             },
             new CommaSeparatedValuesFieldDefinition
             {
                 Field = nameof(Preferences.BlackListedTags).ToCamelCase(),
+                GroupKey = "tags",
                 ForceSingle = true,
             },
             new CommaSeparatedValuesFieldDefinition
             {
                 Field = nameof(Preferences.WhiteListedTags).ToCamelCase(),
+                GroupKey = "tags",
                 ForceSingle = true,
             },
             new ArrayFieldDefinition
             {
                 Field = nameof(Preferences.AgeRatingMappings).ToCamelCase(),
+                GroupKey = "mappings",
                 Controls =
                 [
                     new TextFieldDefinition
@@ -196,6 +221,7 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
             new ArrayFieldDefinition
             {
                 Field = nameof(Preferences.MetadataFieldMappings).ToCamelCase(),
+                GroupKey = "mappings",
                 Inline = true,
                 Controls =
                 [
@@ -231,6 +257,7 @@ public class FormController(IProviderSettingsService providerSettingsService, IS
             new ArrayFieldDefinition
             {
                 Field = nameof(Preferences.LinkFilters).ToCamelCase(),
+                GroupKey = "mappings",
                 Inline = true,
                 WikiLink = WikiLinks.MetadataProvidersMangaBaka,
                 Controls = [

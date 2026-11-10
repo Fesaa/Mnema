@@ -31,7 +31,9 @@ internal partial class Publication
                 Type = MessageType.ListContent
             });
 
-        var data = Series.Chapters.GroupBy(c => c.VolumeMarker)
+        var data = Series.Chapters
+            .Where(IsUpstreamChapter)
+            .GroupBy(c => c.VolumeMarker)
             .ToDictionary(g => g.Key, g => g.ToList());
 
         var sortSlice = data.Keys.ToList();

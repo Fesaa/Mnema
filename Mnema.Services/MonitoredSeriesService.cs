@@ -326,6 +326,7 @@ public class MonitoredSeriesService(
         if (mSeries == null) return;
 
         var metadata = mSeries.MetadataForDownloadRequest();
+        metadata.SetKey(MetadataResolverOptions.EnrichWithCovers, true);
 
         var series = await metadataResolver.ResolveSeriesAsync(mSeries.Provider, metadata, ct);
         if (series == null)

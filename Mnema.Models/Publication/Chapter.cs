@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Mnema.Models.Enums;
 
 namespace Mnema.Models.Publication;
 
@@ -25,6 +26,8 @@ public sealed record Chapter: IHasPositionMarkers
     public IList<Person> People { get; set; } = [];
 
     public IList<string> TranslationGroups { get; set; } = [];
+
+    public MetadataProvider? MetadataProvider { get; set; }
 
     public bool IsOneShot => string.IsNullOrEmpty(ChapterMarker) && string.IsNullOrEmpty(VolumeMarker);
 

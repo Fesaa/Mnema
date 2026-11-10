@@ -1,43 +1,65 @@
 <div *transloco="let t; prefix: 'settings.metadata-provider'">
+  <p class="text-muted">{{ t('description') }}</p>
 
-  <span class="text-muted">{{t('description')}}</span>
-  <div class="mt-4"></div>
-
-  <app-table
-    [trackByIdFunc]="trackBy"
-    [items]="sortedMetadataProviders()"
-    [noMobileCards]="true"
+  <app-item-list
     [dragAble]="true"
     (onDrop)="drop($event)"
+    [items]="sortedMetadataProviders()"
+    [trackByIdFunc]="trackBy"
   >
+    <ng-template #row let-provider>
+      <div class="d-flex align-items-center gap-3">
+        <span class="fas fa-grip-lines drag-handle" cdkDragHandle aria-hidden="true"></span>
 
-    <ng-template #header>
-      <tr>
-        <th class="table-header-cell" style="width: 10%"></th>
-        <th class="table-header-cell">{{ t('header.name') }}</th>
-        <th class="table-header-cell" style="width: 15%">{{ t('header.edit') }}</th>
-      </tr>
-    </ng-template>
-
-    <ng-template #cell let-provider>
-      <td class="table-cell">
-        <span class="fas fa-grip-lines drag-handle" cdkDragHandle></span>
-      </td>
-      <td class="table-cell">
-        {{ provider | metadataProvider }}
-      </td>
-
-      <td class="table-cell">
         <button
           type="button"
-          class="btn btn-small"
-          (click)="edit(provider)"
+          class="btn btn-link text-start p-0 flex-grow-1 fw-semibold"
+          [attr.aria-expanded]="expandedProvider() === provider"
+          (click)="toggle(provider)"
         >
-          <i class="fa fa-edit"></i>
+          <span>{{ provider | metadataProvider }}</span>
+
+          <i
+            class="fa ms-auto"
+            [class.fa-chevron-down]="expandedProvider() === provider"
+            [class.fa-chevron-right]="expandedProvider() !== provider"
+            aria-hidden="true"
+          ></i>
         </button>
-      </td>
+      </div>
+
+      @if (expandedProvider() === provider) {
+        <div class="mt-3">
+          @if (loading()) {
+            <app-loading-spinner />
+          } @else if (formDefinition(); as formDefinition) {
+            @if (initialValue(); as initialValue) {
+              @if (formGroup(); as formGroup) {
+                <app-generic-form
+                  [formDefinition]="formDefinition"
+                  [initialValue]="initialValue"
+                  [supplyFormGroup]="formGroup"
+                />
+
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                  <button type="button" class="btn btn-secondary" (click)="collapse()">
+                    {{ t('cancel') }}
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    [disabled]="!formGroup.valid"
+                    (click)="save()"
+                  >
+                    {{ t('save') }}
+                  </button>
+                </div>
+              }
+            }
+          }
+        </div>
+      }
     </ng-template>
-
-  </app-table>
-
+  </app-item-list>
 </div>

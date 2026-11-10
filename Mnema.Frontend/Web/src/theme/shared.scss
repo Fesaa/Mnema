@@ -63,6 +63,20 @@ a:hover {
 }
 
 .btn-secondary {
+  --bs-btn-color: var(--text-light);
+  --bs-btn-bg: var(--secondary-color);
+  --bs-btn-border-color: var(--secondary-color);
+  --bs-btn-hover-color: var(--text-light);
+  --bs-btn-hover-bg: var(--secondary-color-light);
+  --bs-btn-hover-border-color: var(--secondary-color-light);
+  --bs-btn-active-color: var(--text-light);
+  --bs-btn-active-bg: var(--secondary-color-light);
+  --bs-btn-active-border-color: var(--secondary-color-light);
+  --bs-btn-disabled-color: var(--text-light);
+  --bs-btn-disabled-bg: var(--secondary-color);
+  --bs-btn-disabled-border-color: var(--secondary-color);
+  --bs-btn-focus-shadow-rgb: 58, 124, 124;
+
   background-color: var(--secondary-color);
   color: var(--text-light);
   box-shadow: 0 2px 4px var(--shadow-medium);
@@ -83,6 +97,20 @@ a:hover {
 }
 
 .btn-primary {
+  --bs-btn-color: var(--text-light);
+  --bs-btn-bg: var(--primary-color);
+  --bs-btn-border-color: var(--primary-color);
+  --bs-btn-hover-color: var(--text-light);
+  --bs-btn-hover-bg: var(--primary-color-light);
+  --bs-btn-hover-border-color: var(--primary-color-light);
+  --bs-btn-active-color: var(--text-light);
+  --bs-btn-active-bg: var(--primary-color-light);
+  --bs-btn-active-border-color: var(--primary-color-light);
+  --bs-btn-disabled-color: var(--text-light);
+  --bs-btn-disabled-bg: var(--primary-color);
+  --bs-btn-disabled-border-color: var(--primary-color);
+  --bs-btn-focus-shadow-rgb: 126, 58, 89;
+
   background-color: var(--primary-color);
   color: var(--text-light);
   box-shadow: 0 2px 4px var(--shadow-medium);
@@ -103,6 +131,20 @@ a:hover {
 }
 
 .btn-error {
+  --bs-btn-color: var(--text-light);
+  --bs-btn-bg: var(--error-color);
+  --bs-btn-border-color: var(--error-color);
+  --bs-btn-hover-color: var(--text-light);
+  --bs-btn-hover-bg: var(--error-color-light);
+  --bs-btn-hover-border-color: var(--error-color-light);
+  --bs-btn-active-color: var(--text-light);
+  --bs-btn-active-bg: var(--error-color-light);
+  --bs-btn-active-border-color: var(--error-color-light);
+  --bs-btn-disabled-color: var(--text-light);
+  --bs-btn-disabled-bg: var(--error-color);
+  --bs-btn-disabled-border-color: var(--error-color);
+  --bs-btn-focus-shadow-rgb: 165, 66, 66;
+
   background-color: var(--error-color);
   color: var(--text-light);
   box-shadow: 0 2px 4px var(--shadow-medium);
@@ -123,6 +165,20 @@ a:hover {
 }
 
 .btn-warning {
+  --bs-btn-color: var(--text-primary);
+  --bs-btn-bg: var(--warning-color);
+  --bs-btn-border-color: var(--warning-color);
+  --bs-btn-hover-color: var(--text-primary);
+  --bs-btn-hover-bg: var(--warning-color-light);
+  --bs-btn-hover-border-color: var(--warning-color-light);
+  --bs-btn-active-color: var(--text-primary);
+  --bs-btn-active-bg: var(--warning-color-light);
+  --bs-btn-active-border-color: var(--warning-color-light);
+  --bs-btn-disabled-color: var(--text-primary);
+  --bs-btn-disabled-bg: var(--warning-color);
+  --bs-btn-disabled-border-color: var(--warning-color);
+  --bs-btn-focus-shadow-rgb: 194, 157, 45;
+
   background-color: var(--warning-color);
   color: var(--text-primary);
   box-shadow: 0 2px 4px var(--shadow-medium);
@@ -154,6 +210,49 @@ a:hover {
 
   & > .pi {
     font-size: 0.75rem;
+  }
+}
+
+.btn-link {
+  --bs-btn-color: var(--primary-color);
+  --bs-btn-hover-color: var(--primary-color-light);
+  --bs-btn-active-color: var(--primary-color-light);
+  --bs-btn-disabled-color: var(--text-secondary);
+  --bs-btn-focus-shadow-rgb: 126, 58, 89;
+  color: var(--primary-color);
+  text-decoration: none;
+
+  &:hover:not(:disabled) {
+    color: var(--primary-color-light);
+    text-decoration: underline;
+  }
+}
+
+.dropdown-menu {
+  --bs-dropdown-bg: var(--surface-card);
+  --bs-dropdown-border-color: var(--surface-border);
+  --bs-dropdown-link-color: var(--text-primary);
+  --bs-dropdown-link-hover-color: var(--text-primary);
+  --bs-dropdown-link-hover-bg: var(--surface-hover);
+  --bs-dropdown-link-active-color: var(--text-light);
+  --bs-dropdown-link-active-bg: var(--primary-color);
+  background-color: var(--surface-card);
+  border-color: var(--surface-border);
+}
+
+.dropdown-item {
+  color: var(--bs-dropdown-link-color);
+
+  &:hover,
+  &:focus {
+    background-color: var(--bs-dropdown-link-hover-bg);
+    color: var(--bs-dropdown-link-hover-color);
+  }
+
+  &:active,
+  &.active {
+    background-color: var(--bs-dropdown-link-active-bg);
+    color: var(--bs-dropdown-link-active-color);
   }
 }
 

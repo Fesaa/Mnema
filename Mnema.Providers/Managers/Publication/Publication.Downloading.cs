@@ -84,7 +84,11 @@ internal partial class Publication
         {
             var initialSize = QueuedChapters.Count;
 
-            QueuedChapters = Series.Chapters.Select(c => c.Id).Where(_userSelectedIds.Contains).ToHashSet();
+            QueuedChapters = Series.Chapters
+                .Where(IsUpstreamChapter)
+                .Select(c => c.Id)
+                .Where(_userSelectedIds.Contains)
+                .ToHashSet();
 
             _logger.LogDebug("[{Title}/{Id}] Chapters filtered after user selection. Old: {Old}, New: {New}", Title, Id, initialSize,
                 QueuedChapters.Count);

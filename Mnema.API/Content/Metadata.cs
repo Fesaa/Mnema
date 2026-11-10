@@ -73,7 +73,6 @@ public interface IMetadataResolver
 
 public static class MetadataResolverOptions
 {
-    public static readonly IMetadataKey<bool> MergeIntoUpstream = MetadataKeys.Bool("merge-into-upstream");
     public static readonly IMetadataKey<bool> EnrichWithCovers = MetadataKeys.Bool("enrich-with-covers");
 }
 

@@ -19,15 +19,7 @@ import {
   AddFromUrlResultModalComponent
 } from "@mnema/features/add-from-url/add-from-url-result-modal/add-from-url-result-modal.component";
 
-export enum SettingsID {
-  Server = "server",
-  Preferences = "preferences",
-  Pages = "pages",
-  Releases = "releases",
-}
-
 export interface Button {
-  id?: any;
   icon: string;
   title: string;
   navUrl?: string;
@@ -181,30 +173,32 @@ export class ButtonGroupService {
         {
           title: translate('button-groups.settings.preferences'),
           icon: 'fa fa-heart',
-          navUrl: '/settings',
-          navExtras: { fragment: SettingsID.Preferences },
-          id: SettingsID.Preferences
+          navUrl: '/settings/preferences',
         },
         {
           title: translate('button-groups.settings.pages'),
           icon: 'fa fa-thumbtack',
-          navUrl: '/settings',
-          navExtras: { fragment: SettingsID.Pages },
-          id: SettingsID.Pages
+          navUrl: '/settings/pages',
+        },
+        {
+          title: translate('button-groups.settings.providers'),
+          icon: 'fa fa-database',
+          navUrl: '/settings/providers',
+        },
+        {
+          title: translate('button-groups.settings.integrations'),
+          icon: 'fa fa-plug',
+          navUrl: '/settings/integrations',
         },
         {
           title: translate('button-groups.settings.server'),
           icon: 'fa fa-server',
-          navUrl: '/settings',
-          navExtras: { fragment: SettingsID.Server },
-          id: SettingsID.Server
+          navUrl: '/settings/server',
         },
         {
           title: translate('button-groups.settings.releases'),
           icon: 'fa fa-box-open',
-          navUrl: '/settings',
-          navExtras: { fragment: SettingsID.Releases },
-          id: SettingsID.Releases
+          navUrl: '/settings/releases',
         },
       ],
     };

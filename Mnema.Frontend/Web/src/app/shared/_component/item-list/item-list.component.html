@@ -1,0 +1,40 @@
+<app-paginator
+  [pageLoader]="finalPageLoader()"
+  [successKey]="null"
+  [noResultsKey]="null"
+  (currentItems)="currentItems.emit($event)"
+  [reloader]="reloader()"
+  [pageSize]="pageSize()"
+  [handleEmpty]="false"
+  [hideOnLoading]="true"
+>
+  <ng-template #items let-items>
+    <div class="item-list">
+      @if (dragAble()) {
+        <div cdkDropList [cdkDropListData]="items" (cdkDropListDropped)="onDrop.emit($event)">
+          @for (item of items; track trackByIdFunc()($index, item)) {
+            <div class="item-list-row" cdkDrag [cdkDragData]="item">
+              <ng-container
+                [ngTemplateOutlet]="rowTemplate"
+                [ngTemplateOutletContext]="{$implicit: item, idx: $index}"
+              />
+            </div>
+          }
+        </div>
+      } @else {
+        @for (item of items; track trackByIdFunc()($index, item)) {
+          <div class="item-list-row">
+            <ng-container
+              [ngTemplateOutlet]="rowTemplate"
+              [ngTemplateOutletContext]="{$implicit: item, idx: $index}"
+            />
+          </div>
+        }
+      }
+
+      @if (items.length === 0 && emptyTemplate) {
+        <ng-container [ngTemplateOutlet]="emptyTemplate" />
+      }
+    </div>
+  </ng-template>
+</app-paginator>

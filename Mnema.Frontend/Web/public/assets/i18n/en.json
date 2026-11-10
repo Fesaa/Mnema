@@ -64,6 +64,8 @@
       "title": "Settings",
       "preferences": "Preferences",
       "pages": "Pages",
+      "providers": "Providers",
+      "integrations": "Integrations",
       "server": "Server",
       "connections": "Connections",
       "download-clients": "Download Clients",
@@ -663,6 +665,11 @@
     "settings": "Settings",
     "pages": {
       "title": "Pages",
+      "description": "Custom pages shown in the navigation.",
+      "add": "Add page",
+      "edit-alt": "Edit page",
+      "edit-defaults-alt": "Edit page defaults",
+      "delete-alt": "Delete page",
       "icon": "Icon",
       "name": "Name",
       "edit-defaults-tooltip": "Edit search modifier defaults",
@@ -739,8 +746,30 @@
         "description": "Configure pages by provider to setup search points"
       }
     },
+    "providers": {
+      "title": "Providers",
+      "description": "Where series metadata and content come from.",
+      "metadata-title": "Metadata providers",
+      "content-title": "Content providers",
+      "content-description": "Configure the sources used to search and download series.",
+      "configure": "Configure",
+      "save": "{{common.save}}",
+      "cancel": "{{common.cancel}}"
+    },
+    "integrations": {
+      "title": "Integrations",
+      "description": "Services Mnema talks to for notifications and downloads."
+    },
     "preferences": {
       "title": "Preferences",
+
+      "groups": {
+        "naming": "Naming",
+        "images": "Images",
+        "subscriptions": "Subscriptions",
+        "tags": "Tags",
+        "mappings": "Mappings"
+      },
 
       "sync-title": "Kavita Sync",
       "sync-description": "Import or Export your preferences to Kavita Metadata Management settings",
@@ -816,6 +845,7 @@
     },
     "server": {
       "title": "Server",
+      "description": "Limits and access for this Mnema instance.",
       "root-dir": "Root directory",
       "base-url": "Base Url",
       "downloader": "Downloader",
@@ -849,6 +879,13 @@
     },
     "connections": {
       "title": "Connections",
+      "add": "Add connection",
+      "edit-alt": "Edit connection",
+      "delete-alt": "Delete connection",
+      "delete": {
+        "title": "Are you sure you want to delete this connection?"
+      },
+      "more-events-alt": "{{count}} more events: {{events}}",
       "no-events": "No events",
       "header": {
         "name": "Name",
@@ -907,6 +944,18 @@
     },
     "download-clients": {
       "title": "Download Clients",
+      "add": "Add download client",
+      "locked": "Locked",
+      "all-types-in-use": "All client types are already configured",
+      "edit-alt": "Edit download client",
+      "release-lock-alt": "Release download client lock",
+      "delete-alt": "Delete download client",
+      "delete": {
+        "title": "Are you sure you want to delete this download client?"
+      },
+      "release-lock": {
+        "title": "Release the failed lock on this download client?"
+      },
       "header": {
         "name": "Name",
         "type": "Type",
@@ -965,6 +1014,12 @@
     },
     "auth-keys": {
       "title": "Auth Keys",
+      "add": "Add auth key",
+      "confirm-delete": "Are you sure you want to delete this auth key?",
+      "no-roles": "No roles",
+      "copy-alt": "Copy auth key",
+      "edit-alt": "Edit auth key",
+      "delete-alt": "Delete auth key",
       "header": {
         "name": "Name",
         "key": "Key",
@@ -1004,9 +1059,16 @@
     },
     "metadata-provider": {
       "description": "Manage what data is allowed to be used from which source. Data is only merged if it wasn't present already. The source at the top of the list is thus the most important. Upstream is metadata from the provider (Mangadex, ...) itself.",
+      "groups": {
+        "general": "General",
+        "series": "Series metadata",
+        "chapters": "Chapter metadata",
+        "provider": "Provider specific"
+      },
       "title": "Edit Metadata Provider Settings",
       "close": "{{common.close}}",
       "save": "{{common.save}}",
+      "cancel": "{{common.cancel}}",
       "header": {
         "name": "Metadata Provider",
         "edit": "Edit"
@@ -1075,6 +1137,8 @@
       "LocalizedSeriesNameLanguagePriority-tooltip": "Determines the order in which localized series names are prioritized. Separate languages with a comma. I.e. ja,ja-Latn,fr. Use {Native} for the series language.",
       "MinimumTagWeight-title": "Minimum Tag Weight",
       "MinimumTagWeight-tooltip": "The minimum weight a tag must have to be included. Defaults to Recurrent",
+      "CollectionMedium-title": "Collection medium",
+      "CollectionMedium-tooltip": "Which edition's volumes or chapters to use. Physical prefers paperback and hardcover, and falls back to digital when no physical collection exists.",
 
       "OnlyUseSubtitleAsChapterTitle-title": "Only use subtitle as chapter title",
       "OnlyUseSubtitleAsChapterTitle-tooltip": "If enabled, will not fallback to book title as chapter title (I.e; SeriesName Vol. X)"
@@ -1588,6 +1652,12 @@
     "Recurrent": "Recurrent",
     "Incidental": "Incidental",
     "Unweighted": "Unweighted"
+  },
+
+  "mangabaka-collection-medium-pipe": {
+    "PreferPhysical": "Prefer physical",
+    "PreferDigital": "Prefer digital",
+    "Any": "Any"
   },
 
   "file-drag-and-drop-upload": {

@@ -1,56 +1,20 @@
 <div class="d-flex w-100 flex-grow-1 flex-column" *transloco="let t; prefix: 'settings.server'">
+  <h2 class="h2 fw-bold mb-3">{{ t('title') }}</h2>
+  <p class="text-muted mb-0">{{ t('description') }}</p>
 
-  <ul class="nav nav-tabs">
-    <li class="nav-item" (click)="tab = 'general'">
-      <a class="nav-link" [class.active]="tab === 'general'">{{t('general')}}</a>
-    </li>
-    <li class="nav-item" (click)="tab = 'metadata-provider'">
-      <a class="nav-link" [class.active]="tab === 'metadata-provider'">{{t('metadata-provider')}}</a>
-    </li>
-    <li class="nav-item" (click)="tab = 'providers'">
-      <a class="nav-link" [class.active]="tab === 'providers'">{{t('providers')}}</a>
-    </li>
-    <li class="nav-item" (click)="tab = 'connections'">
-      <a class="nav-link" [class.active]="tab === 'connections'">{{t('connections')}}</a>
-    </li>
-    <li class="nav-item" (click)="tab = 'download-clients'">
-      <a class="nav-link" [class.active]="tab === 'download-clients'">{{t('download-clients')}}</a>
-    </li>
-    <li class="nav-item" (click)="tab = 'auth-keys'">
-      <a class="nav-link" [class.active]="tab === 'auth-keys'">{{t('auth-keys')}}</a>
-    </li>
-  </ul>
+  <section class="mt-4">
+    <h3 class="h4">{{ t('general') }}</h3>
+    @if (serverSettingsFormDefinition(); as formDefinition) {
+      <app-generic-form
+        [formDefinition]="formDefinition"
+        [supplyFormGroup]="serverSettingsForm"
+        [initialValue]="settingsService.config()"
+      />
+    }
+  </section>
 
-  <div class="tab-content mt-2">
-    <div class="tab-pane" [class.active]="tab === 'general'">
-      @if (serverSettingsFormDefinition(); as formDefinition) {
-        <app-generic-form
-          [formDefinition]="formDefinition"
-          [supplyFormGroup]="serverSettingsForm"
-          [initialValue]="settingsService.config()"
-        ></app-generic-form>
-      }
-    </div>
-
-    <div class="tab-pane" [class.active]="tab === 'metadata-provider'">
-      <app-metadata-provider-settings />
-    </div>
-
-    <div class="tab-pane" [class.active]="tab === 'providers'">
-      <app-provider-settings />
-    </div>
-
-    <div class="tab-pane" [class.active]="tab === 'connections'">
-      <app-external-connection-settings />
-    </div>
-
-    <div class="tab-pane" [class.active]="tab === 'download-clients'">
-      <app-download-client-settings />
-    </div>
-
-    <div class="tab-pane" [class.active]="tab === 'auth-keys'">
-      <app-auth-keys />
-    </div>
-
-  </div>
+  <section class="mt-5">
+    <h3 class="h4">{{ t('auth-keys') }}</h3>
+    <app-auth-keys />
+  </section>
 </div>

@@ -99,6 +99,8 @@ public partial class ParserService: IParserService
         MatchOptions, RegexTimeout);
     private static readonly Regex CoverImageRegex = new(@"(?<!back[\s_-])(?<!\(back )(?<!back)(?:^|[^a-zA-Z0-9])(!?cover|folder)(?![a-zA-Z0-9]|s\b)",
         MatchOptions, RegexTimeout);
+    private static readonly Regex FileExtensionSuffixRegex = new($@"(?:{SupportedExtensions})$",
+        MatchOptions, RegexTimeout);
 
     /// <summary>
     /// Recognizes the Special token only
@@ -829,13 +831,17 @@ public partial class ParserService: IParserService
 
     public string ParseSeries(string filename, ContentFormat type)
     {
-        return type switch
+        var series = type switch
         {
             ContentFormat.Manga => ParseMangaSeries(filename),
             ContentFormat.Comic => ParseComicSeries(filename),
             ContentFormat.Book or ContentFormat.LightNovel => ParseMangaSeries(filename),
             _ => string.Empty
         };
+
+        if (!string.IsNullOrEmpty(series)) return series;
+
+        return CleanTitle(FileExtensionSuffixRegex.Replace(filename, string.Empty));
     }
 
     public List<string> ParseSeriesCollection(string series)
@@ -852,7 +858,11 @@ public partial class ParserService: IParserService
             matchedSeries.AddRange(split);
         }
 
-        return matchedSeries.Append(series).Distinct().ToList();
+        return matchedSeries
+            .Append(series)
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Distinct()
+            .ToList();
     }
 
     public string ParseVolume(string filename, ContentFormat type)
@@ -1187,7 +1197,7 @@ public partial class ParserService: IParserService
         return AsinRegex.Match(asin).Success;
     }
 
-    public T? FindMatch<T>(IList<T> items, IHasPositionMarkers item) where T : IHasPositionMarkers
+    public T? FindMatch<T>(IList<T> items, IHasPositionMarkers item, bool allowPartialVolumeMatch = true) where T : IHasPositionMarkers
     {
         // If both markers are missing, no match can be made
         if (EmptyOrDefault(item.VolumeMarker) && EmptyOrDefault(item.ChapterMarker))
@@ -1222,6 +1232,11 @@ public partial class ParserService: IParserService
         if (rangeMatch != null)
         {
             return rangeMatch;
+        }
+
+        if (!allowPartialVolumeMatch)
+        {
+            return default;
         }
 
         // Fallback: single partial match on volume. A range file only covers its own range

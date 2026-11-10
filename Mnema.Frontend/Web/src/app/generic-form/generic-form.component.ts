@@ -63,6 +63,23 @@ export class GenericFormComponent<T> {
 
   protected toShowControl = computed(() => this.formDefinition().controls.filter(c => !c.hidden));
 
+  protected groupedControls = computed(() => {
+    const groups: { key: string | null; controls: FormControlDefinition[] }[] = [];
+
+    for (const control of this.toShowControl()) {
+      const key = control.groupKey ?? null;
+      const current = groups[groups.length - 1];
+
+      if (current && current.key === key) {
+        current.controls.push(control);
+      } else {
+        groups.push({key, controls: [control]});
+      }
+    }
+
+    return groups;
+  });
+
   protected formGroupBuilder = computed(() =>
     this.nullable() ? this.nullableFormGroupBuilder : this.nonNullableFormGroupBuilder);
 

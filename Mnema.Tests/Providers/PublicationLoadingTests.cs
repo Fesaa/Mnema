@@ -183,4 +183,59 @@ public class PublicationLoadingTests
         Assert.Single(pub.ToRemovePaths);
     }
 
+    [Fact]
+    public void TestSkipsChaptersNotFromUpstream()
+    {
+        var (pub, scope) = CreateSut(Provider.Mangadex, CreateRequest());
+
+        var scanner = scope.ServiceProvider.GetRequiredService<IScannerService>();
+        scanner.ScanDirectory(
+                Arg.Any<string>(),
+                Arg.Any<ContentFormat>(),
+                Arg.Any<Format>(),
+                Arg.Any<CancellationToken>())
+            .ReturnsForAnyArgs([]);
+
+        pub.Series!.Chapters.Add(new Chapter
+        {
+            Id = "metadata-chapter",
+            Title = string.Empty,
+            VolumeMarker = "1",
+            ChapterMarker = "1",
+            MetadataProvider = MetadataProvider.Hardcover,
+            Tags = [],
+            People = [],
+            TranslationGroups = []
+        });
+
+        pub.Series!.Chapters.Add(new Chapter
+        {
+            Id = "upstream-chapter",
+            Title = string.Empty,
+            VolumeMarker = "2",
+            ChapterMarker = "1",
+            MetadataProvider = MetadataProvider.Upstream,
+            Tags = [],
+            People = [],
+            TranslationGroups = []
+        });
+
+        pub.Series!.Chapters.Add(new Chapter
+        {
+            Id = "legacy-chapter",
+            Title = string.Empty,
+            VolumeMarker = "3",
+            ChapterMarker = "1",
+            Tags = [],
+            People = [],
+            TranslationGroups = []
+        });
+
+        pub.FilterAlreadyDownloadedContent(CancellationToken.None);
+
+        Assert.Equal(2, pub.QueuedChapters.Count);
+        Assert.Contains("upstream-chapter", pub.QueuedChapters);
+        Assert.Contains("legacy-chapter", pub.QueuedChapters);
+        Assert.DoesNotContain("metadata-chapter", pub.QueuedChapters);
+    }
 }

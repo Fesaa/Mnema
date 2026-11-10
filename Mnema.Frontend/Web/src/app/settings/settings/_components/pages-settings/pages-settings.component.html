@@ -1,53 +1,42 @@
-<div class="mt-4" *transloco="let t; prefix: 'settings.pages'">
+<div *transloco="let t; prefix: 'settings.pages'">
+  <div class="d-flex justify-content-between align-items-start gap-3 mb-3 flex-wrap">
+    <div>
+      <h2 class="h2 fw-bold mb-1">{{ t('title') }}</h2>
+      <p class="text-muted mb-0">{{ t('description') }}</p>
+    </div>
 
-  <h2 class="h2 fw-bold mt-4 mb-3">{{ t('title') }}</h2>
-
-  <div class="d-flex justify-content-end mb-3">
     <button type="button" class="btn btn-primary" (click)="edit(null)">
-      <i class="fa fa-plus"></i>
+      <i class="fa fa-plus me-2"></i>{{ t('add') }}
     </button>
   </div>
 
-  <app-table
+  <app-item-list
     [dragAble]="true"
     (onDrop)="drop($event)"
     [items]="pages()"
     [trackByIdFunc]="trackBy"
-    [noMobileCards]="true"
   >
-    <ng-template #header>
-      <tr>
-        <th class="table-header-cell" style="width: 10%"></th>
-        <th class="table-header-cell" style="width: 10%">{{ t('header.icon') }}</th>
-        <th class="table-header-cell">{{ t('header.title') }}</th>
-        <th class="table-header-cell">{{ t('header.actions') }}</th>
-      </tr>
-    </ng-template>
+    <ng-template #row let-item>
+      <div class="d-flex align-items-center gap-3">
+        <span class="fas fa-grip-lines drag-handle" cdkDragHandle aria-hidden="true"></span>
 
-    <ng-template #cell let-item>
-      <td class="table-cell">
-        <span class="fas fa-grip-lines drag-handle" cdkDragHandle></span>
-      </td>
+        <span class="page-icon text-center">
+          <i [class]="'fa ' + item.icon"></i>
+        </span>
 
-      <td class="table-cell w-16 text-center">
-        <span [class]="'fa ' + item.icon"></span>
-      </td>
-
-      <td class="table-cell">
         <a
+          class="flex-grow-1"
           [routerLink]="'/page'"
           [queryParams]="{ id: item.id }"
-          class="hover:cursor-pointer"
         >
           {{ item.title }}
         </a>
-      </td>
 
-      <td class="table-cell">
-        <div class="d-flex align-items-center gap-2 justify-end">
+        <div class="d-flex align-items-center gap-2">
           <button
             type="button"
             class="btn btn-small"
+            [attr.aria-label]="t('edit-alt')"
             (click)="edit(item)"
           >
             <i class="fa fa-edit"></i>
@@ -57,6 +46,7 @@
             type="button"
             class="btn btn-small"
             [ngbTooltip]="t('edit-defaults-tooltip')"
+            [attr.aria-label]="t('edit-defaults-alt')"
             (click)="editDefaults(item)"
             [disabled]="item.modifiers.length === 0"
           >
@@ -66,28 +56,20 @@
           <button
             type="button"
             class="btn btn-small text-danger"
+            [attr.aria-label]="t('delete-alt')"
             (click)="remove(item)"
           >
             <i class="fa fa-trash"></i>
           </button>
         </div>
-      </td>
+      </div>
     </ng-template>
 
     <ng-template #empty>
-      <tr>
-        <td colspan="4" class="py-5">
-          <div class="d-flex flex-column align-items-center text-center gap-3 text-muted">
-            <h5 class="mb-1">
-              {{t('empty.title')}}
-            </h5>
-
-            <p class="mb-0" [innerHtml]="t('empty.description')">
-            </p>
-
-          </div>
-        </td>
-      </tr>
+      <div class="py-5 text-center text-muted">
+        <h5 class="mb-1">{{ t('empty.title') }}</h5>
+        <p class="mb-0" [innerHtml]="t('empty.description')"></p>
+      </div>
     </ng-template>
-  </app-table>
+  </app-item-list>
 </div>

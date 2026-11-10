@@ -174,7 +174,7 @@
         color: var(--primary-color);
       }
 
-      &.active:not(.settings) {
+      &.active {
         background-color: var(--primary-color-lighter);
       }
 

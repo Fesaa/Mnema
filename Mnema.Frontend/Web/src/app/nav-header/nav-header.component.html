@@ -45,7 +45,6 @@
                     [fragment]="$safeNavigationMigration(btn.navExtras?.fragment)"
                     [state]="$safeNavigationMigration(btn.navExtras?.state)"
                     routerLinkActive="active"
-                    [class.settings]="group.key === ButtonGroupKey.Settings"
                     [routerLinkActiveOptions]="{ exact: true }"
                   >
                     <ng-container *ngTemplateOutlet="buttonTemplate; context: { $implicit: btn }"></ng-container>

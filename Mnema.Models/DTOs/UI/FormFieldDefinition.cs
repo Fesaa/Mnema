@@ -43,6 +43,8 @@ public abstract record FormFieldDefinition
 
     public bool Hidden { get; init; }
 
+    public string? GroupKey { get; init; } = null;
+
     public string? WikiLink { get; init; } = null;
 
     public abstract FormFieldType FieldType { get; }

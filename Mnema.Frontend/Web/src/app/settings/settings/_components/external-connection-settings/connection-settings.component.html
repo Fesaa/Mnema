@@ -1,82 +1,84 @@
 <div *transloco="let t; prefix: 'settings.connections'">
+  <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap px-3 mb-3">
+    <h3 class="h4 mb-0">{{ t('title') }}</h3>
 
-  <div class="d-flex justify-content-end mb-3">
-    <button type="button" class="btn btn-primary" (click)="edit(null)">
-      <i class="fa fa-plus"></i>
-    </button>
+    <div ngbDropdown class="d-inline-block">
+      <button type="button" class="btn btn-primary" ngbDropdownToggle>
+        <i class="fa fa-plus me-2"></i>{{ t('add') }}
+      </button>
+
+      <div ngbDropdownMenu>
+        @for (type of ConnectionTypes; track type) {
+          <button type="button" ngbDropdownItem (click)="edit(null, type)">
+            {{ type | connectionType }}
+          </button>
+        }
+      </div>
+    </div>
   </div>
 
-  <app-table
+  <app-item-list
     [pageLoader]="pageLoader()"
     [trackByIdFunc]="trackBy"
-    [noMobileCards]="true"
     [reloader]="pageReloader"
   >
-    <ng-template #header>
-      <tr>
-        <th class="table-header-cell">{{ t('header.name') }}</th>
-        <th class="table-header-cell" style="width: 15%">{{ t('header.type') }}</th>
-        <th class="table-header-cell" style="width: 30%">{{ t('header.events') }}</th>
-        <th class="table-header-cell" style="width: 15%">{{ t('header.actions') }}</th>
-      </tr>
-    </ng-template>
+    <ng-template #row let-item>
+      <div class="d-flex flex-column gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <span class="fw-semibold">{{ item.name }}</span>
+          <span class="badge bg-secondary">{{ item.type | connectionType }}</span>
 
-    <ng-template #cell let-item>
-      <td class="table-cell">
-        {{ item.name }}
-      </td>
+          <div class="d-flex align-items-center gap-2 ms-auto">
+            <button
+              type="button"
+              class="btn btn-small"
+              [attr.aria-label]="t('edit-alt')"
+              (click)="edit(item)"
+            >
+              <i class="fa fa-edit"></i>
+            </button>
 
-      <td class="table-cell">
-        {{ item.type | connectionType }}
-      </td>
+            <button
+              type="button"
+              class="btn btn-small text-danger"
+              [attr.aria-label]="t('delete-alt')"
+              (click)="remove(item)"
+            >
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
 
-      <td class="table-cell">
         <div class="d-flex flex-wrap gap-1">
-          @for (event of item.followedEvents; track event) {
+          @for (event of visibleEvents(item); track event) {
             <span class="badge bg-secondary">
               {{ event | ConnectionEvent }}
             </span>
           }
+
+          @if (extraEvents(item).length > 0) {
+            <span
+              class="badge bg-secondary"
+              tabindex="0"
+              [ngbTooltip]="extraEventsLabel(item)"
+              [attr.aria-label]="t('more-events-alt', {count: extraEvents(item).length, events: extraEventsLabel(item)})"
+            >
+              +{{ extraEvents(item).length }}
+            </span>
+          }
+
           @if (item.followedEvents.length === 0) {
             <span class="text-muted">{{ t('no-events') }}</span>
           }
         </div>
-      </td>
-
-      <td class="table-cell">
-        <div class="d-flex align-items-center gap-2 justify-end">
-          <button
-            type="button"
-            class="btn btn-small"
-            (click)="edit(item)"
-          >
-            <i class="fa fa-edit"></i>
-          </button>
-
-          <button
-            type="button"
-            class="btn btn-small text-danger"
-            (click)="remove(item)"
-          >
-            <i class="fa fa-trash"></i>
-          </button>
-        </div>
-      </td>
+      </div>
     </ng-template>
 
     <ng-template #empty>
-      <tr>
-        <td colspan="4" class="py-5">
-          <div class="d-flex flex-column align-items-center text-center gap-3 text-muted">
-            <h5 class="mb-1">
-              {{ t('empty.title') }}
-            </h5>
-
-            <p class="mb-0" [innerHtml]="t('empty.description')">
-            </p>
-          </div>
-        </td>
-      </tr>
+      <div class="py-5 text-center text-muted">
+        <h5 class="mb-1">{{ t('empty.title') }}</h5>
+        <p class="mb-0" [innerHtml]="t('empty.description')"></p>
+      </div>
     </ng-template>
-  </app-table>
+  </app-item-list>
 </div>

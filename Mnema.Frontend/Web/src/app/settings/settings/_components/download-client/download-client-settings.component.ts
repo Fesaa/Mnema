@@ -1,22 +1,31 @@
-import {ChangeDetectionStrategy, Component, computed, EventEmitter, inject} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  EventEmitter,
+  inject,
+  signal
+} from '@angular/core';
 import {ModalService} from "../../../../_services/modal.service";
 import {PageLoader} from "../../../../shared/_component/paginator/paginator.component";
-import {filter, finalize, map, of, switchMap} from "rxjs";
+import {finalize, map, of, switchMap} from "rxjs";
 import {GenericFormModalComponent} from "../../../../generic-form/generic-form-modal/generic-form-modal.component";
 import {DefaultModalOptions} from "../../../../_models/default-modal-options";
-import {ListSelectModalComponent} from "../../../../shared/_component/list-select-modal/list-select-modal.component";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {DownloadClient, DownloadClientService, DownloadClientType} from "./download-client.service";
 import {DownloadClientTypePipe} from "./_pipes/download-client-type.pipe";
-import {TableComponent} from "../../../../shared/_component/table/table.component";
-import {ToastService} from "@mnema/_services/toast.service";
+import {NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
+import {ItemListComponent} from "@mnema/shared/_component/item-list/item-list.component";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-download-client-settings',
   imports: [
-    TableComponent,
     DownloadClientTypePipe,
-    TranslocoDirective
+    TranslocoDirective,
+    NgbDropdownModule,
+    ItemListComponent,
   ],
   templateUrl: './download-client-settings.component.html',
   styleUrl: './download-client-settings.component.scss',
@@ -26,9 +35,10 @@ export class DownloadClientSettingsComponent {
 
   private readonly downloadClientService = inject(DownloadClientService);
   private readonly modalService = inject(ModalService);
-  private readonly toastService = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected pageReloader = new EventEmitter<void>();
+  protected freeTypes = signal<DownloadClientType[]>([]);
 
   pageLoader = computed<PageLoader<DownloadClient>>(() => {
     return (pageNumber: number, pageSize: number) => {
@@ -36,13 +46,18 @@ export class DownloadClientSettingsComponent {
     };
   });
 
+  constructor() {
+    this.refreshFreeTypes();
+  }
+
   trackBy(_: number, client: DownloadClient) {
     return client.id;
   }
 
-  edit(client: DownloadClient | null) {
-    const type$ = client == null
-      ? this.promptForConnectionType() : of(client.type);
+  edit(client: DownloadClient | null, type?: DownloadClientType) {
+    if (client == null && type == null) return;
+
+    const type$ = client == null ? of(type!) : of(client.type);
 
     type$.pipe(
       switchMap(type => this.downloadClientService.getForm(type).pipe(
@@ -54,40 +69,20 @@ export class DownloadClientSettingsComponent {
         component.double.set(true);
         component.formDefinition.set(form);
         component.initialValue.set(client ?? {type: type, metadata: {}});
-        component.translationKey.set('settings.connections.edit');
+        component.translationKey.set('settings.download-clients.edit');
 
         return this.modalService.onClose$<DownloadClient>(modal);
       }),
       switchMap(c => this.downloadClientService.updateDownloadClient(c)),
-      finalize(() => this.pageReloader.emit()),
+      finalize(() => {
+        this.refreshFreeTypes();
+        this.pageReloader.emit();
+      }),
     ).subscribe()
   }
 
-  private promptForConnectionType() {
-    const typePipe = new DownloadClientTypePipe();
-
-    return this.downloadClientService.getFreeTypes().pipe(
-      map(types => types.map(type =>
-        ({label: typePipe.transform(type), value: type}))),
-      filter(types => {
-        if (types.length === 0)
-          this.toastService.warningLoco('settings.download-clients.toasts.all-in-use');
-        return types.length > 0;
-      }),
-      switchMap(types => {
-        const [modal, component] = this.modalService.open(ListSelectModalComponent<DownloadClientType>, {
-          size: "lg", centered: true,
-        });
-        component.title.set(translate('settings.connections.edit.select-type-title'));
-        component.inputItems.set(types);
-
-      return this.modalService.onClose$<DownloadClientType>(modal);
-      })
-    );
-  }
-
   releaseLock(client: DownloadClient) {
-    this.modalService.confirm$({question: translate('settings.connections.release-lock.title'),
+    this.modalService.confirm$({question: translate('settings.download-clients.release-lock.title'),
     }, true)
       .pipe(
         switchMap(() => this.downloadClientService.releaseLock(client.id)),
@@ -96,12 +91,20 @@ export class DownloadClientSettingsComponent {
   }
 
   remove(client: DownloadClient) {
-    this.modalService.confirm$({question: translate('settings.connections.delete.title'),
+    this.modalService.confirm$({question: translate('settings.download-clients.delete.title'),
     }, true)
       .pipe(
         switchMap(() => this.downloadClientService.deleteDownloadClient(client.id)),
-        finalize(() => this.pageReloader.emit()),
+        finalize(() => {
+          this.refreshFreeTypes();
+          this.pageReloader.emit();
+        }),
       ).subscribe();
   }
 
+  private refreshFreeTypes() {
+    this.downloadClientService.getFreeTypes().pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(types => this.freeTypes.set(types));
+  }
 }

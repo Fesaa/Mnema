@@ -109,8 +109,19 @@ internal partial class Publication
             _logger.LogWarning("[{Title}/{Id}] Checking for existing content took a long time: {Elapsed}", Title, Id, sw.Elapsed.ToReadableString());
     }
 
+    private static bool IsUpstreamChapter(Chapter chapter)
+    {
+        return chapter.MetadataProvider is null or MetadataProvider.Upstream;
+    }
+
     private bool ShouldDownloadChapter(Chapter chapter, Format format)
     {
+        if (!IsUpstreamChapter(chapter))
+        {
+            _logger.LogTrace("Ignoring chapter {ChapterId} as it did not come from upstream", chapter.Id);
+            return false;
+        }
+
         if (_monitoredSeries != null)
         {
             var monitoredChapter = _parserService.FindMatch(_monitoredSeries.Chapters, chapter);
@@ -170,7 +181,6 @@ internal partial class Publication
         var sw = Stopwatch.StartNew();
 
         var metadata = Request.Metadata;
-        metadata.SetKey(MetadataResolverOptions.MergeIntoUpstream, true);
         metadata.SetKey(MetadataResolverOptions.EnrichWithCovers, true);
         metadata.SetKey(RequestConstants.ExternalIdKey, Id);
 

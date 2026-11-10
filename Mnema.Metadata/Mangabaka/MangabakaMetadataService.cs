@@ -33,6 +33,16 @@ internal class MangabakaMetadataService(
 {
     private HttpClient HttpClient => httpClientFactory.CreateClient(nameof(MetadataProvider.Mangabaka));
 
+    private static readonly DistributedCacheEntryOptions CollectionCacheOptions = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(7)
+    };
+
+    private static readonly DistributedCacheEntryOptions WorksCacheOptions = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
+    };
+
     public async Task<PagedList<MetadataSearchResult>> Search(MetadataSearchDto search, PaginationParams paginationParams,
         CancellationToken cancellationToken)
     {
@@ -78,7 +88,7 @@ internal class MangabakaMetadataService(
 
             var sortedResults = seriesData
                 .OrderByDescending(s => results[s.Id])
-                .Select(s => ConvertToSeries(s, monitoredSeriesById, metadataPreferences, preferences))
+                .Select(s => ConvertToSeries(s, monitoredSeriesById, metadataPreferences, preferences, []))
                 .ToList();
 
             return new PagedList<MetadataSearchResult>(sortedResults, totalHits, paginationParams.PageNumber, paginationParams.PageSize);
@@ -162,13 +172,186 @@ internal class MangabakaMetadataService(
         var metadataPreferences = await unitOfWork.MetadataProviderSettingsRepository.GetMetadataProviderSettings(MetadataProvider.Mangabaka, ct);
 
         var series = await ctx.Series.FirstOrDefaultAsync(s => s.Id == seriesId, ct);
+        if (series == null) return null;
 
-        var monitoredSeriesById = series != null ? (await unitOfWork.MonitoredSeriesRepository
+        var monitoredSeriesById = (await unitOfWork.MonitoredSeriesRepository
                 .GetByMangaBakaIds([series.Id.ToString()], ct))
             .GroupBy(s => s.MangaBakaId)
-            .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList()) : [];
+            .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList());
 
-        return series == null ? null : ConvertToSeries(series, monitoredSeriesById, metadataPreferences, preferences);
+        List<Chapter> chapters = [];
+        if (metadataPreferences.Chapters)
+        {
+            chapters = await GetChapters(series, metadataPreferences, ct);
+        }
+
+        return ConvertToSeries(series, monitoredSeriesById, metadataPreferences, preferences, chapters);
+    }
+
+    private async Task<List<Chapter>> GetChapters(MangabakaSeries series, MetadataProviderSettings settings,
+        CancellationToken cancellationToken)
+    {
+        var collections = await GetCollections(series.Id, cancellationToken);
+        var collection = SelectCollection(collections,
+            settings.GetKey(MangaBakaMetadataConfiguration.CollectionMedium), series.NativeLanguage);
+
+        if (collection == null)
+            return [];
+
+        var works = await GetWorks(collection.Id, cancellationToken);
+
+        return works
+            .Select(work => ToChapter(work, collection))
+            .ToList();
+    }
+
+    private async Task<List<MangabakaCollection>> GetCollections(int seriesId, CancellationToken cancellationToken)
+    {
+        var collections = new List<MangabakaCollection>();
+        var pagination = new Pagination
+        {
+            Next = $"/v1/series/{seriesId}/collections?page=1&limit=50"
+        };
+
+        while (!string.IsNullOrEmpty(pagination?.Next))
+        {
+            var response = await HttpClient.GetCachedAsync<PaginatedResponse<MangabakaCollection>>(pagination.Next,
+                cache, CollectionCacheOptions, cancellationToken);
+
+            if (response.IsErr)
+            {
+                logger.LogWarning("Failed to load Mangabaka collections for series {SeriesId}: {Error}", seriesId,
+                    response.Error?.Message);
+                return collections;
+            }
+
+            var paginatedResponse = response.Unwrap();
+            if (paginatedResponse.Status != 200)
+            {
+                logger.LogWarning("Failed to load Mangabaka collections for series {SeriesId}: {Status} - {Reason}",
+                    seriesId, paginatedResponse.Status, paginatedResponse.Reason);
+                return collections;
+            }
+
+            if (paginatedResponse.Data != null)
+                collections.AddRange(paginatedResponse.Data);
+
+            pagination = paginatedResponse.Pagination;
+
+            if (!string.IsNullOrEmpty(pagination?.Next))
+                await Task.Delay(100, cancellationToken);
+        }
+
+        return collections;
+    }
+
+    private async Task<List<MangabakaWork>> GetWorks(string collectionId, CancellationToken cancellationToken)
+    {
+        var response = await HttpClient.GetCachedAsync<MangabakaCollectionFullResponse>(
+            $"/v1/collections/{collectionId}/full", cache, WorksCacheOptions, cancellationToken);
+
+        if (response.IsErr)
+        {
+            logger.LogWarning("Failed to load Mangabaka works for collection {CollectionId}: {Error}", collectionId,
+                response.Error?.Message);
+            return [];
+        }
+
+        var fullResponse = response.Unwrap();
+        if (fullResponse.Status != 200)
+        {
+            logger.LogWarning("Failed to load Mangabaka works for collection {CollectionId}: {Status}", collectionId,
+                fullResponse.Status);
+            return [];
+        }
+
+        return fullResponse.Data?.Works ?? [];
+    }
+
+    internal static MangabakaCollection? SelectCollection(IEnumerable<MangabakaCollection> collections,
+        MangabakaCollectionMedium medium, string? nativeLanguage)
+    {
+        return collections
+            .Where(c => c.CountMain + c.CountExtra + c.CountOther > 0)
+            .OrderBy(c => MediumRank(c.Medium, medium))
+            .ThenBy(c => TypeRank(c.Type))
+            .ThenBy(c => LanguageRank(c.Language?.Iso, nativeLanguage))
+            .ThenByDescending(c => c.CountMain + c.CountExtra + c.CountOther)
+            .FirstOrDefault();
+    }
+
+    internal static Chapter ToChapter(MangabakaWork work, MangabakaCollection collection)
+    {
+        var volumeMarker = collection.Type switch
+        {
+            "volume" => work.SequenceString ?? string.Empty,
+            "chapter" => work.PartOfVolume ?? string.Empty,
+            "one-shot" => string.Empty,
+            _ => work.PartOfVolume ?? work.SequenceString ?? string.Empty,
+        };
+
+        var chapterMarker = collection.Type == "chapter" ? work.SequenceString ?? string.Empty : string.Empty;
+
+        var image = work.Images?.FirstOrDefault(i => i.Type == "volume");
+        var imageFormat = image?.Image?.RawImage?.Format;
+
+        return new Chapter
+        {
+            Id = work.Id,
+            Title = work.SubTitle ?? string.Empty,
+            Summary = work.Description?.Desc ?? string.Empty,
+            VolumeMarker = volumeMarker,
+            ChapterMarker = chapterMarker,
+            SortOrder = work.SequenceNumeric,
+            ReleaseDate = work.ReleaseDate is { } releaseDate
+                ? DateTime.SpecifyKind(releaseDate.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc)
+                : null,
+            CoverUrl = image?.Image?.RawImage?.Url,
+            CoverFileFormat = string.IsNullOrEmpty(imageFormat) ? null : "." + imageFormat,
+            Isbn = work.Identifiers?.FirstOrDefault(i => i.Name == "isbn")?.Id,
+            Tags = [],
+            People = [],
+            TranslationGroups = [],
+        };
+    }
+
+    private static int MediumRank(string? medium, MangabakaCollectionMedium preference)
+    {
+        var isPhysical = medium is "paperback" or "hardcover";
+        var isDigital = medium == "digital";
+
+        return preference switch
+        {
+            MangabakaCollectionMedium.PreferPhysical when isPhysical => 0,
+            MangabakaCollectionMedium.PreferPhysical when isDigital => 1,
+            MangabakaCollectionMedium.PreferDigital when isDigital => 0,
+            MangabakaCollectionMedium.PreferDigital when isPhysical => 1,
+            MangabakaCollectionMedium.Any => 0,
+            _ => 2,
+        };
+    }
+
+    private static int TypeRank(string? type)
+    {
+        return type switch
+        {
+            "volume" => 0,
+            "chapter" => 1,
+            "one-shot" => 2,
+            _ => 3,
+        };
+    }
+
+    private static int LanguageRank(string? language, string? nativeLanguage)
+    {
+        if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
+            return 0;
+
+        if (!string.IsNullOrEmpty(nativeLanguage) &&
+            string.Equals(language, nativeLanguage, StringComparison.OrdinalIgnoreCase))
+            return 1;
+
+        return 2;
     }
 
     public async Task<List<Cover>> GetCovers(string externalId, CancellationToken cancellationToken)
@@ -232,7 +415,7 @@ internal class MangabakaMetadataService(
         }).WhereNotNull().ToList();
     }
 
-    private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, List<Guid>> monitoredSeriesIds, MetadataProviderSettings settings, Preferences preferences)
+    private static MetadataSearchResult ConvertToSeries(MangabakaSeries series, Dictionary<string, List<Guid>> monitoredSeriesIds, MetadataProviderSettings settings, Preferences preferences, IList<Chapter> chapters)
     {
         var publishers = series.Publishers?
             .Where(p => p.Type == MangabakaPublisher.Original || p.Type == MangabakaPublisher.English)
@@ -268,7 +451,7 @@ internal class MangabakaMetadataService(
             Year = series.StartDate?.Year,
             HighestVolumeNumber = series.Status.HasFinalCount() ? series.FinalVolume.AsFloat() : null,
             HighestChapterNumber = series.Status.HasFinalCount() ? series.FinalChapter.AsFloat() : null,
-            Chapters = [],
+            Chapters = chapters,
             ContentFormat = series.Type switch
             {
                 MangabakaType.Manga or MangabakaType.Manhua or MangabakaType.Manhwa => ContentFormat.Manga,

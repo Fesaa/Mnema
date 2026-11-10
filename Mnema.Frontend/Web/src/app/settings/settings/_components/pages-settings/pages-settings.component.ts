@@ -1,13 +1,10 @@
-import {Component, effect, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, effect, inject, signal} from '@angular/core';
 import {Page, Provider} from "../../../../_models/page";
 import {PageService} from "../../../../_services/page.service";
 import {RouterLink} from "@angular/router";
-import {dropAnimation} from "../../../../_animations/drop-animation";
-import {ReactiveFormsModule} from "@angular/forms";
 import {ToastService} from "../../../../_services/toast.service";
 import {translate, TranslocoDirective} from "@jsverse/transloco";
 import {CdkDragDrop, CdkDragHandle, moveItemInArray} from "@angular/cdk/drag-drop";
-import {TableComponent} from "../../../../shared/_component/table/table.component";
 import {ModalService} from "../../../../_services/modal.service";
 import {EditPageModalComponent} from "./_components/edit-page-modal/edit-page-modal.component";
 import {DefaultModalOptions} from "../../../../_models/default-modal-options";
@@ -17,20 +14,20 @@ import {
 } from "@mnema/settings/settings/_components/pages-settings/_components/edit-page-defaults-modal/edit-page-defaults-modal.component";
 import {MetadataBag} from "@mnema/_models/search";
 import {NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
+import {ItemListComponent} from "@mnema/shared/_component/item-list/item-list.component";
 
 @Component({
   selector: 'app-pages-settings',
   imports: [
     RouterLink,
-    ReactiveFormsModule,
     TranslocoDirective,
     CdkDragHandle,
-    TableComponent,
     NgbTooltip,
+    ItemListComponent,
   ],
   templateUrl: './pages-settings.component.html',
   styleUrl: './pages-settings.component.scss',
-  animations: [dropAnimation]
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PagesSettingsComponent {
 
@@ -39,7 +36,6 @@ export class PagesSettingsComponent {
   private readonly pageService = inject(PageService);
 
   pages = signal<Page[]>([]);
-  loading = signal(true);
 
   constructor() {
     effect(() => {
