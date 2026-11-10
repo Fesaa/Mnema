@@ -42,6 +42,12 @@ internal partial class QBitContentManager
             return;
         }
 
+        if (await HasDuplicateDownloadAsync(services.UnitOfWork, request, ct))
+        {
+            logger.LogDebug("[{Title}/{Id}] A download for this content is already queued, skipping", title, request.Id);
+            return;
+        }
+
         var mSeries = request.GetKey(RequestConstants.MonitoredSeriesId) is { } monitoredSeriesId
             ? await services.UnitOfWork.MonitoredSeriesRepository.GetById(monitoredSeriesId, ct: ct)
             : null;
@@ -72,25 +78,28 @@ internal partial class QBitContentManager
         logger.LogDebug("[{Title}/{Id}] Found {Count}/{TotalCount} files to download",
             title, request.Id, toDownload.Count, seriesFiles.Count);
 
-        var newDownload = await EnsureTorrentAddedAsync(request, title, ct);
-
-        var externalDownload = await SaveExternalDownloadRecord(services.UnitOfWork, request, title, seriesFiles, toDownload, ct);
-
-        if (hasNoDownloadsBecauseMissingMetadata)
-        {
-            var info = BuildDownloadInfo(request, series, externalDownload);
-            services.ConnectionService.CommunicateDownloadInfo(info,
-                "Missing upstream Metadata",
-                "This download is not automatically starting as all volumes were skipped because no match could be found." +
-                $" Update upstream (Hardcover: {mSeries?.HardcoverId}, MangaBaka: {mSeries?.MangaBakaId}) metadata, and manually select volumes to download." +
-                " Metadata will be reloading on cleanup.");
-        }
+        ExternalDownload? externalDownload = null;
 
         try
         {
+            var newDownload = await EnsureTorrentAddedAsync(request, title, ct);
+
+            externalDownload = await SaveExternalDownloadRecord(services.UnitOfWork, request, title, seriesFiles, toDownload, ct);
+
+            if (hasNoDownloadsBecauseMissingMetadata)
+            {
+                var info = BuildDownloadInfo(request, series, externalDownload);
+                services.ConnectionService.CommunicateDownloadInfo(info,
+                    "Missing upstream Metadata",
+                    "This download is not automatically starting as all volumes were skipped because no match could be found." +
+                    $" Update upstream (Hardcover: {mSeries?.HardcoverId}, MangaBaka: {mSeries?.MangaBakaId}) metadata, and manually select volumes to download." +
+                    " Metadata will be reloading on cleanup.");
+            }
+
             if (toDownload.Count != torrentInfo.Files.Count)
             {
-                await ApplyTorrentFileFiltersAsync(request.Id, seriesFiles, toDownload, newDownload, ct);
+                await ApplyTorrentFileFiltersAsync(request.Id, seriesFiles, toDownload, newDownload, ct,
+                    required: !hasNoDownloadsBecauseMissingMetadata);
             }
 
             if (request.StartImmediately)
@@ -106,7 +115,11 @@ internal partial class QBitContentManager
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "[{Title}/{Id}] Failed to filter or start download. Aborting", title, request.Id);
+            logger.LogError(ex, "[{Title}/{Id}] Failed to start download. Aborting", title, request.Id);
+
+            if (externalDownload == null) throw;
+
+            services.ConnectionService.CommunicateDownloadFailure(BuildDownloadInfo(request, series, externalDownload), ex);
 
             await services.UnitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id, ct);
         }
@@ -244,6 +257,7 @@ internal partial class QBitContentManager
     {
         var externalDownload = new ExternalDownload
         {
+            Id = Guid.NewGuid(),
             ExternalId = request.Id,
             Title = title,
             Provider = request.Provider,
@@ -261,24 +275,22 @@ internal partial class QBitContentManager
             }).ToList(),
         };
 
-        uow.ExternalDownloadRepository.Add(externalDownload);
-        await uow.CommitAsync(ct);
-
         externalDownload.Metadata.SetKey(RequestConstants.ExternalDownloadId, externalDownload.Id);
-        uow.ExternalDownloadRepository.Update(externalDownload);
+
+        uow.ExternalDownloadRepository.Add(externalDownload);
         await uow.CommitAsync(ct);
 
         return externalDownload;
     }
 
-    internal async Task ApplyTorrentFileFiltersAsync(string requestId, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload, bool newDownload, CancellationToken ct)
+    internal async Task ApplyTorrentFileFiltersAsync(string requestId, List<ParsedTorrentFile> seriesFiles, List<ParsedTorrentFile> toDownload, bool newDownload, CancellationToken ct, bool required = true)
     {
         // Give qbit time to parse .torrent metadata
         await Task.Delay(TimeSpan.FromSeconds(2), ct);
 
         var pathsToDownload = toDownload.Select(c => c.File.FilePath).ToList();
 
-        await FilterContent(requestId, currentlySelected =>
+        var applied = await FilterContent(requestId, currentlySelected =>
         {
             if (newDownload) return pathsToDownload;
 
@@ -289,6 +301,11 @@ internal partial class QBitContentManager
                 .Concat(pathsToDownload)
                 .ToList();
         }, ct);
+
+        if (!applied && required)
+        {
+            throw new MnemaException($"qBittorrent did not return any files for torrent {requestId}. Refusing to start an unfiltered download");
+        }
     }
 
     internal static DownloadInfo BuildDownloadInfo(DownloadRequestDto request, Series? series, ExternalDownload externalDownload)

@@ -30,7 +30,8 @@ public static class HangFireExtensions
                             {
                                 SchemaName = "HangFire",
                                 PrepareSchemaIfNecessary = true,
-                                QueuePollInterval = TimeSpan.FromSeconds(15)
+                                QueuePollInterval = TimeSpan.FromSeconds(15),
+                                UseSlidingInvisibilityTimeout = true,
                             })
                         .UseSerilogLogProvider();
                     return;

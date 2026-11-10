@@ -1220,7 +1220,27 @@ public partial class ParserService: IParserService
         if (EmptyOrDefault(item.VolumeMarker))
         {
             var chapterOnly = items.FirstOrDefault(c => EmptyOrDefault(c.VolumeMarker) && c.ChapterMarker == item.ChapterMarker);
-            return chapterOnly ?? FindInRange(items, item);
+            if (chapterOnly != null)
+            {
+                return chapterOnly;
+            }
+
+            var chapterRangeMatch = FindInRange(items, item);
+            if (chapterRangeMatch != null)
+            {
+                return chapterRangeMatch;
+            }
+
+            if (!allowPartialVolumeMatch)
+            {
+                return default;
+            }
+
+            // The other side carries a volume marker the chapter doesn't (volume removed or never set)
+            var chapterMatches = items
+                .Where(c => !EmptyOrDefault(c.VolumeMarker) && c.ChapterMarker == item.ChapterMarker)
+                .ToList();
+            return chapterMatches.Count == 1 ? chapterMatches[0] : default;
         }
 
         // Exact Match (both Volume and Chapter set)
@@ -1237,6 +1257,15 @@ public partial class ParserService: IParserService
         if (!allowPartialVolumeMatch)
         {
             return default;
+        }
+
+        // The chapter has no volume marker while the other side does (volume removed or never set)
+        var looseLeafMatches = items
+            .Where(c => EmptyOrDefault(c.VolumeMarker) && c.ChapterMarker == item.ChapterMarker)
+            .ToList();
+        if (looseLeafMatches.Count == 1)
+        {
+            return looseLeafMatches[0];
         }
 
         // Fallback: single partial match on volume. A range file only covers its own range

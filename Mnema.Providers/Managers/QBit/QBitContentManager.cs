@@ -43,35 +43,38 @@ internal partial class QBitContentManager(
         using var scope = scopeFactory.CreateScope();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        if (!request.GetKey(RequestConstants.IsGroupedDownload) && await unitOfWork.ExternalDownloadRepository.ExistsByExternalId(request.Id))
+        if (await HasDuplicateDownloadAsync(unitOfWork, request))
         {
-            throw new MnemaException($"Torrent with hash {request.Id} has already been added");
-        }
+            if (request.GetKey(RequestConstants.IsGroupedDownload))
+            {
+                var hardcoverId = request.GetKey(RequestConstants.HardcoverSeriesIdKey);
+                var mangaBakaId = request.GetKey(RequestConstants.MangaBakaKey);
 
-        if (request.GetKey(RequestConstants.IsGroupedDownload))
-        {
-            await ValidateNoDuplicateSeriesInGroupedTorrent(request);
+                throw new BadRequestException($"A download for Hardcover({hardcoverId}) or MangaBaka({mangaBakaId}) is already being downloaded. Cannot queue the same series");
+            }
+
+            throw new MnemaException($"Torrent with hash {request.Id} has already been added");
         }
 
         BackgroundJob.Enqueue((Expression<Func<Task>>)(() => DownloadTorrent(request, CancellationToken.None)));
     }
 
-    private async Task ValidateNoDuplicateSeriesInGroupedTorrent(DownloadRequestDto request)
+    internal static async Task<bool> HasDuplicateDownloadAsync(IUnitOfWork unitOfWork, DownloadRequestDto request, CancellationToken ct = default)
     {
-        using var scope = scopeFactory.CreateScope();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        if (!request.GetKey(RequestConstants.IsGroupedDownload))
+            return await unitOfWork.ExternalDownloadRepository.ExistsByExternalId(request.Id, ct);
 
         var hardcoverId = request.GetKey(RequestConstants.HardcoverSeriesIdKey);
         var mangaBakaId = request.GetKey(RequestConstants.MangaBakaKey);
 
         if (string.IsNullOrEmpty(hardcoverId) && string.IsNullOrEmpty(mangaBakaId))
         {
-            throw new BadRequestException($"Grouped downloads must contain external metadata");
+            throw new BadRequestException("Grouped downloads must contain external metadata");
         }
 
-        var externalDownloads = await unitOfWork.ExternalDownloadRepository.GetByExternalId(request.Id);
+        var externalDownloads = await unitOfWork.ExternalDownloadRepository.GetByExternalId(request.Id, ct);
 
-        var alreadyBeingDownloaded = externalDownloads.Any(ed =>
+        return externalDownloads.Any(ed =>
         {
             var edHardcoverId = ed.GetKey(RequestConstants.HardcoverSeriesIdKey);
             var edMangaBakaId = ed.GetKey(RequestConstants.MangaBakaKey);
@@ -79,11 +82,6 @@ internal partial class QBitContentManager(
             return (!string.IsNullOrEmpty(edHardcoverId) && edHardcoverId == hardcoverId)
                 || (!string.IsNullOrEmpty(edMangaBakaId) && edMangaBakaId == mangaBakaId);
         });
-
-        if (alreadyBeingDownloaded)
-        {
-            throw new BadRequestException($"A download for Hardcover({hardcoverId}) or MangaBaka({mangaBakaId}) is already being downloaded. Cannot queue the same series");
-        }
     }
 
     public async Task StopDownload(StopRequestDto request)

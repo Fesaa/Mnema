@@ -349,6 +349,90 @@ public partial class QBitContentManagerTest
             .SetFilePriorityAsync(default!, default!, default, default);
     }
 
+    [Fact]
+    public async Task ApplyTorrentFileFiltersAsync_RetriesWhenFileListIsEmpty()
+    {
+        var (unitOfWork, _, _) = await CreateDatabase();
+        var services = CreateServices(unitOfWork);
+
+        var calls = 0;
+        services.QBitClient
+            .GetTorrentContentsAsync(SpiceAndWolfHash, Arg.Any<CancellationToken>())
+            .Returns(_ => Interlocked.Increment(ref calls) == 1
+                ? Task.FromResult<IReadOnlyList<TorrentContent>>([])
+                : Task.FromResult<IReadOnlyList<TorrentContent>>([
+                    new TorrentContent { Index = 0, Name = "Vol1.cbz", Priority = TorrentContentPriority.Minimal },
+                    new TorrentContent { Index = 1, Name = "Vol2.cbz", Priority = TorrentContentPriority.Minimal }
+                ]));
+
+        var allFiles = new List<QBitContentManager.ParsedTorrentFile>
+        {
+            new(new TorrentFile("Vol1.cbz", "Vol1.cbz", 0), null!),
+            new(new TorrentFile("Vol2.cbz", "Vol2.cbz", 0), null!)
+        };
+
+        await services.QBitContentManager.ApplyTorrentFileFiltersAsync(
+            SpiceAndWolfHash,
+            allFiles,
+            [allFiles[0]],
+            newDownload: true,
+            CancellationToken.None);
+
+        await services.QBitClient.Received()
+            .SetFilePriorityAsync(
+                SpiceAndWolfHash,
+                Arg.Is<IEnumerable<int>>(x => x.SequenceEqual(new[] { 1 })),
+                TorrentContentPriority.Skip,
+                CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task ApplyTorrentFileFiltersAsync_ThrowsWhenFileListStaysEmpty()
+    {
+        var (unitOfWork, _, _) = await CreateDatabase();
+        var services = CreateServices(unitOfWork);
+
+        services.QBitClient
+            .GetTorrentContentsAsync(SpiceAndWolfHash, Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        var allFiles = new List<QBitContentManager.ParsedTorrentFile>
+        {
+            new(new TorrentFile("Vol1.cbz", "Vol1.cbz", 0), null!)
+        };
+
+        await Assert.ThrowsAsync<MnemaException>(() => services.QBitContentManager.ApplyTorrentFileFiltersAsync(
+            SpiceAndWolfHash,
+            allFiles,
+            [allFiles[0]],
+            newDownload: true,
+            CancellationToken.None));
+    }
+
     #endregion
+
+    [Fact]
+    public async Task DownloadTorrent_ExistingDownload_DoesNotAddSecondRow()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+        var services = CreateServices(unitOfWork);
+
+        unitOfWork.ExternalDownloadRepository.Add(new ExternalDownload
+        {
+            ExternalId = SpiceAndWolfHash,
+            Title = "Spice and Wolf",
+            BaseDir = "Manga",
+            Provider = Provider.Nyaa,
+            State = ContentState.Queued,
+            Metadata = new MetadataBag(),
+            Files = []
+        });
+        await unitOfWork.CommitAsync();
+
+        await services.QBitContentManager.DownloadTorrent(CreateDownloadRequestDto(), CancellationToken.None);
+
+        Assert.Equal(1, await ctx.ExternalDownloads.CountAsync());
+        await services.QBitClient.DidNotReceiveWithAnyArgs().AddTorrentsAsync(null!, default);
+    }
 
 }

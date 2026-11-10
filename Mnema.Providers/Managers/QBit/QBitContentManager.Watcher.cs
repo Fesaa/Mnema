@@ -69,6 +69,16 @@ internal partial class QBitContentManager
         await messageService.BulkContentInfoUpdate(content.Select(t => t.DownloadInfo).ToArray());
 
         foreach (var id in toProcessFinishedContentHashes.Where(id => _cleanupTorrents.TryAdd(id, true)))
-            BackgroundJob.Enqueue(() => CleanupTorrent(id, CancellationToken.None));
+        {
+            try
+            {
+                BackgroundJob.Enqueue(() => CleanupTorrent(id, CancellationToken.None));
+            }
+            catch (Exception ex)
+            {
+                _cleanupTorrents.TryRemove(id, out _);
+                logger.LogError(ex, "Failed to enqueue cleanup for torrent {Hash}", id);
+            }
+        }
     }
 }

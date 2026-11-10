@@ -27,47 +27,49 @@ internal partial class QBitContentManager
     [DisableConcurrentExecution(timeoutInSeconds: 86400 * 2)]
     public async Task CleanupTorrent(string hash, CancellationToken ct)
     {
-        var (torrentInfo, externalDownloads) = await GetLinkedDownloads(hash, ct);
-        if (externalDownloads.Count == 0)
+        try
+        {
+            var (torrentInfo, externalDownloads) = await GetLinkedDownloads(hash, ct);
+            if (externalDownloads.Count == 0)
+                return;
+
+            using var scope = scopeFactory.CreateScope();
+            var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
+            var connectionService = scope.GetRequiredService<IConnectionService>();
+
+            foreach (var externalDownload in externalDownloads)
+            {
+                if (externalDownload.IsErrored)
+                {
+                    logger.LogTrace("Skipping over {Title} as it's in an errored state", externalDownload.Title);
+                    continue;
+                }
+
+                var sw = Stopwatch.StartNew();
+
+                try
+                {
+                    await CleanupExternalDownload(torrentInfo, externalDownload, ct);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to cleanup external download {Title} - {TorrentHash}", externalDownload.Title, externalDownload.ExternalId);
+
+                    var downloadInfo = new ExternalDownloadContent(externalDownload, torrentInfo).DownloadInfo;
+                    connectionService.CommunicateDownloadFailure(downloadInfo, ex);
+                }
+                finally
+                {
+                    await unitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id, ct);
+                }
+
+                logger.LogInformation("[{Title}/{Id}] Cleaned up in {Elapsed}",  externalDownload.Title, externalDownload.ExternalId, sw.Elapsed.ToReadableString());
+            }
+        }
+        finally
         {
             _cleanupTorrents.TryRemove(hash, out _);
-            return;
         }
-
-        using var scope = scopeFactory.CreateScope();
-        var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
-        var connectionService = scope.GetRequiredService<IConnectionService>();
-
-        foreach (var externalDownload in externalDownloads)
-        {
-            if (externalDownload.IsErrored)
-            {
-                logger.LogTrace("Skipping over {Title} as it's in an errored state", externalDownload.Title);
-                continue;
-            }
-
-            var sw = Stopwatch.StartNew();
-
-            try
-            {
-                await CleanupExternalDownload(torrentInfo, externalDownload, ct);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to cleanup external download {Title} - {TorrentHash}", externalDownload.Title, externalDownload.ExternalId);
-
-                var downloadInfo = new ExternalDownloadContent(externalDownload, torrentInfo).DownloadInfo;
-                connectionService.CommunicateDownloadFailure(downloadInfo, ex);
-            }
-            finally
-            {
-                await unitOfWork.ExternalDownloadRepository.DeleteById(externalDownload.Id, ct);
-            }
-
-            logger.LogInformation("[{Title}/{Id}] Cleaned up in {Elapsed}",  externalDownload.Title, externalDownload.ExternalId, sw.Elapsed.ToReadableString());
-        }
-
-        _cleanupTorrents.TryRemove(torrentInfo.Hash, out _);
     }
 
     internal async Task CleanupExternalDownload(TorrentInfo torrent, ExternalDownload externalDownload, CancellationToken ct)

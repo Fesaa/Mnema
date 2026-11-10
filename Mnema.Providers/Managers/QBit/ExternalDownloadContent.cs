@@ -50,7 +50,9 @@ internal sealed class ExternalDownloadContent(ExternalDownload externalDownload,
             else
             {
                 var processedFileCount = externalDownload.Files.Count(f => f is { Selected: true, Processed: true });
-                progress = Math.Floor((double)processedFileCount / selectedFileCount * 100);
+                progress = selectedFileCount == 0
+                    ? 0
+                    : Math.Floor((double)processedFileCount / selectedFileCount * 100);
             }
 
             return new DownloadInfo

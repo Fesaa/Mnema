@@ -56,7 +56,12 @@ public class ScannerService(
     public List<OnDiskContent> ScanDirectory(string path, ContentFormat contentFormat, Format format,
         CancellationToken cancellationToken)
     {
-        var fullPath = Path.Join(configuration.BaseDir, path);
+        return ScanDirectoryInternal(Path.Join(configuration.BaseDir, path), contentFormat, format, cancellationToken);
+    }
+
+    private List<OnDiskContent> ScanDirectoryInternal(string fullPath, ContentFormat contentFormat, Format format,
+        CancellationToken cancellationToken)
+    {
         if (!fileSystem.Directory.Exists(fullPath)) return [];
 
         var extensions = parserService.FileExtensionsForFormat(format);
@@ -68,7 +73,7 @@ public class ScannerService(
 
             if (fileSystem.Directory.Exists(entry))
             {
-                contents.AddRange(ScanDirectory(entry, contentFormat, format, cancellationToken));
+                contents.AddRange(ScanDirectoryInternal(entry, contentFormat, format, cancellationToken));
                 continue;
             }
 

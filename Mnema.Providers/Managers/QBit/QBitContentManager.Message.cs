@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
@@ -47,7 +48,7 @@ internal partial class QBitContentManager
 
         var externalDownload = await GetExternalDownload(message.ContentId, ct);
 
-        await FilterContent(externalDownload.ExternalId, currentlyEnabled =>
+        var applied = await FilterContent(externalDownload.ExternalId, currentlyEnabled =>
         {
             var allSeriesPaths = externalDownload.Files.Select(f => f.FullPath);
 
@@ -56,6 +57,11 @@ internal partial class QBitContentManager
                 .Concat(selectedIds)
                 .ToList();
         }, ct);
+
+        if (!applied)
+        {
+            throw new BadRequestException("qBittorrent did not return any files for this torrent. Try again once it has parsed the torrent");
+        }
 
         using var scope = scopeFactory.CreateScope();
         var unitOfWork = scope.GetRequiredService<IUnitOfWork>();
@@ -71,13 +77,19 @@ internal partial class QBitContentManager
         return null;
     }
 
-    private async Task FilterContent(string hash, Func<List<string>, List<string>> idsFunc, CancellationToken ct = default)
+    private async Task<bool> FilterContent(string hash, Func<List<string>, List<string>> idsFunc, CancellationToken ct = default)
     {
         var files = await qBitClient.GetTorrentContentsAsync(hash, ct);
-        if (files == null)
+        if (files == null || files.Count == 0)
         {
             await Task.Delay(TimeSpan.FromSeconds(5), ct);
             files = await qBitClient.GetTorrentContentsAsync(hash, ct);
+        }
+
+        if (files == null || files.Count == 0)
+        {
+            logger.LogWarning("[{Hash}] qBittorrent returned no files, cannot update priorities", hash);
+            return false;
         }
 
         var currentEnabled = files
@@ -110,6 +122,8 @@ internal partial class QBitContentManager
 
         if (toSkip.Count > 0)
             await qBitClient.SetFilePriorityAsync(hash, toSkip, TorrentContentPriority.Skip, ct);
+
+        return true;
     }
 
     private async Task<object?> StartDownload(MessageDto message, CancellationToken ct)

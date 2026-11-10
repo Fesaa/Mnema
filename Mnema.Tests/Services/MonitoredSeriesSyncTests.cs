@@ -20,31 +20,9 @@ public class MonitoredSeriesSyncTests
     [Fact]
     public void SyncChapters_MarksEveryChapterInRangeAvailable()
     {
-        var unitOfWork = Substitute.For<IUnitOfWork>();
-        var service = new MonitoredSeriesService(
-            Substitute.For<ILogger<MonitoredSeriesService>>(),
-            Substitute.For<IScannerService>(),
-            new ParserService(),
-            Substitute.For<IDownloadService>(),
-            Substitute.For<IMetadataResolver>(),
-            new ApplicationConfiguration { BaseDir = "/base" },
-            unitOfWork,
-            Substitute.For<IServiceProvider>(),
-            Substitute.For<IMessageService>(),
-            Substitute.For<IConnectionService>(),
-            Substitute.For<IMetadataService>(),
-            Substitute.For<INamingService>(),
-            Substitute.For<IChapterCombineService>(),
-            new FileSystem());
+        var service = CreateService();
 
-        var series = new MonitoredSeries
-        {
-            Id = Guid.NewGuid(),
-            Title = "Series",
-            BaseDir = "Series",
-            Chapters = [],
-            UnMatchedChapters = [],
-        };
+        var series = CreateSeries();
 
         var upstream = Enumerable.Range(1, 10)
             .Select(i => new Chapter
@@ -76,5 +54,73 @@ public class MonitoredSeriesSyncTests
             Assert.Equal("/Series/Series Vol. 1.cbz", chapter.FilePath);
         });
         Assert.Empty(series.UnMatchedChapters);
+    }
+
+    [Fact]
+    public void SyncChapters_MatchesFileWithVolumeMarker_ToLooseLeafChapter()
+    {
+        var service = CreateService();
+
+        var series = CreateSeries();
+
+        var upstream = new List<Chapter>
+        {
+            new()
+            {
+                Id = "1",
+                Title = "Chapter 16.5",
+                VolumeMarker = string.Empty,
+                ChapterMarker = "16.5",
+            },
+        };
+
+        var onDisk = new List<OnDiskContent>
+        {
+            new()
+            {
+                Path = "/base/Series/Series Vol. 4 Ch. 16.5.cbz",
+                FileName = "Series Vol. 4 Ch. 16.5.cbz",
+                Volume = "4",
+                Chapter = "16.5",
+            },
+        };
+
+        service.SyncChapters(series, upstream, onDisk);
+
+        var chapter = Assert.Single(series.Chapters);
+        Assert.Equal(MonitoredChapterStatus.Available, chapter.Status);
+        Assert.Equal("/Series/Series Vol. 4 Ch. 16.5.cbz", chapter.FilePath);
+        Assert.Empty(series.UnMatchedChapters);
+    }
+
+    private static MonitoredSeriesService CreateService()
+    {
+        return new MonitoredSeriesService(
+            Substitute.For<ILogger<MonitoredSeriesService>>(),
+            Substitute.For<IScannerService>(),
+            new ParserService(),
+            Substitute.For<IDownloadService>(),
+            Substitute.For<IMetadataResolver>(),
+            new ApplicationConfiguration { BaseDir = "/base" },
+            Substitute.For<IUnitOfWork>(),
+            Substitute.For<IServiceProvider>(),
+            Substitute.For<IMessageService>(),
+            Substitute.For<IConnectionService>(),
+            Substitute.For<IMetadataService>(),
+            Substitute.For<INamingService>(),
+            Substitute.For<IChapterCombineService>(),
+            new FileSystem());
+    }
+
+    private static MonitoredSeries CreateSeries()
+    {
+        return new MonitoredSeries
+        {
+            Id = Guid.NewGuid(),
+            Title = "Series",
+            BaseDir = "Series",
+            Chapters = [],
+            UnMatchedChapters = [],
+        };
     }
 }
