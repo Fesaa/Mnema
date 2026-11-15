@@ -24,6 +24,7 @@ public enum Provider
     /// </summary>
     GenericFile = 10,
     TopManhuaFan = 11,
+    Manhwaus = 12,
 }
 
 public static class ProviderExtensions

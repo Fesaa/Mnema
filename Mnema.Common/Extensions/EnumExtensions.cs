@@ -14,13 +14,26 @@ public static class EnumExtensions
                ?? value.ToString();
     }
 
-    public static T ParseEnumMemberValue<T>(this string value) where T : struct, Enum
+    extension(string value)
     {
-        foreach (var field in typeof(T).GetFields())
+        public T ParseEnumMemberValue<T>() where T : struct, Enum
         {
-            if (field.GetCustomAttribute<EnumMemberAttribute>()?.Value == value)
-                return (T)field.GetValue(null)!;
+            foreach (var field in typeof(T).GetFields())
+            {
+                if (field.GetCustomAttribute<EnumMemberAttribute>()?.Value == value)
+                    return (T)field.GetValue(null)!;
+            }
+            return Enum.Parse<T>(value, ignoreCase: true);
         }
-        return Enum.Parse<T>(value, ignoreCase: true);
+
+        public T ParseEnumMemberValueOrDefault<T>(T def = default) where T : struct, Enum
+        {
+            foreach (var field in typeof(T).GetFields())
+            {
+                if (field.GetCustomAttribute<EnumMemberAttribute>()?.Value == value)
+                    return (T)field.GetValue(null)!;
+            }
+            return Enum.TryParse<T>(value, true, out var result) ? result : def;
+        }
     }
 }
