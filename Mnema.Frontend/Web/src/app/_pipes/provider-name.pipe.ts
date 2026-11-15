@@ -31,6 +31,8 @@ export class ProviderNamePipe implements PipeTransform {
         return "Athrea Scans"
       case Provider.TopManhuaFan:
         return "TopManhuaFan"
+      case Provider.Manwhaus:
+        return "Manwha us"
       default:
         return "Unknown";
     }

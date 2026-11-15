@@ -16,6 +16,7 @@ using Mnema.Providers.Mangadex;
 using Mnema.Providers.Repositories;
 using Mnema.Providers.Repositories.AthreaScans;
 using Mnema.Providers.Repositories.Madokami;
+using Mnema.Providers.Repositories.Manhwaus;
 using Mnema.Providers.Repositories.Nyaa;
 using Mnema.Providers.Services;
 using Mnema.Providers.Webtoon;
@@ -160,6 +161,15 @@ public static class ServiceProviderExtensions
             services.AddHttpClient(nameof(Provider.TopManhuaFan), ConfigureDefaultClient("https://www.topmanhua.fan/",
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:157.0) Gecko/20100101 Firefox/157.0",
                 "https://www.topmanhua.fan/"));
+
+            #endregion
+
+            #region Manhwaus
+
+            services.AddKeyedSingleton<IContentManager, PublicationManager>(Provider.Manhwaus);
+            services.AddRepository<ManhwausRepository>(Provider.Manhwaus);
+            services.AddKeyedScoped<IIoHandler, ImageIoWorker>(Provider.Manhwaus);
+            services.AddHttpClient(nameof(Provider.Manhwaus), ConfigureDefaultClient("https://manhwaus.net"));
 
             #endregion
 
