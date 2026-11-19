@@ -18,6 +18,7 @@ import {FormControlDefinition, FormControlOption, FormType} from "@mnema/generic
 export class SearchFormComponent {
 
   page = input.required<Page>();
+  initialQuery = input('');
   onlyModifiers = input(false);
 
   title = computed(() => this.page().title);
@@ -39,9 +40,14 @@ export class SearchFormComponent {
     this.searchForm = this.fb.group({query: ['']});
 
     effect(() => {
-      this.searchForm.get('query')?.setValue('');
+      const initialQuery = this.initialQuery();
+      this.searchForm.get('query')?.setValue(initialQuery);
       this.setDefaultValues();
       this.loadTypeaheadSettings();
+
+      if (initialQuery) {
+        untracked(() => this.onSubmit());
+      }
     });
   }
 

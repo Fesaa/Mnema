@@ -1,0 +1,28 @@
+.command-palette-modal {
+  .modal-dialog {
+    max-width: 40rem;
+    margin: 10vh auto auto;
+  }
+
+  .modal-content {
+    background-color: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 0.75rem;
+    box-shadow: 0 1rem 3rem var(--shadow-dark);
+    overflow: hidden;
+  }
+}
+
+.command-palette-backdrop {
+  background-color: color-mix(in srgb, var(--text-primary) 40%, transparent);
+
+  &.show {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 36rem) {
+  .command-palette-modal .modal-dialog {
+    margin: 5vh 1rem auto;
+  }
+}

@@ -1,0 +1,89 @@
+:host {
+  display: block;
+}
+
+.search-row {
+  &:focus-within {
+    border-bottom-color: var(--primary-color);
+    box-shadow: inset 0 -0.125rem 0 var(--primary-color);
+  }
+}
+
+.search-icon {
+  color: var(--text-secondary);
+}
+
+.start-hint-icon {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.search-input {
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 1.125rem;
+  outline: none;
+
+  &::placeholder {
+    color: var(--text-secondary);
+  }
+}
+
+.close-button {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--surface-hover);
+    color: var(--text-primary);
+  }
+}
+
+.results {
+  max-height: min(24rem, 60vh);
+}
+
+.group-title {
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+
+.item {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover,
+  &.active {
+    background-color: var(--surface-hover);
+  }
+}
+
+.item-icon {
+  width: 1.5rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.cover {
+  width: 2.5rem;
+  height: 3.5rem;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
+
+.item-title {
+  color: var(--text-primary);
+}
+
+.item-subtitle {
+  color: var(--text-secondary);
+}
+
+.palette-footer {
+  background-color: var(--background-color);
+  color: var(--text-secondary);
+}

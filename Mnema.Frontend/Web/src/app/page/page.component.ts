@@ -1,4 +1,7 @@
 import {Component, computed, inject, OnInit, signal} from '@angular/core';
+import {toSignal} from "@angular/core/rxjs-interop";
+import {ActivatedRoute} from "@angular/router";
+import {map} from "rxjs";
 import {NavService} from "../_services/nav.service";
 import {PageService} from "../_services/page.service";
 import {Page} from "../_models/page";
@@ -33,6 +36,12 @@ export class PageComponent implements OnInit {
   private readonly navService = inject(NavService);
   private readonly pageService = inject(PageService);
   private readonly contentService = inject(ContentService);
+  private readonly route = inject(ActivatedRoute);
+
+  protected readonly initialQuery = toSignal(
+    this.route.queryParams.pipe(map(params => (params['query'] as string) ?? '')),
+    {requireSync: true},
+  );
 
   page = signal<Page | undefined>(undefined);
 
