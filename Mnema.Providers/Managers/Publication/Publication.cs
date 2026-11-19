@@ -174,7 +174,8 @@ internal partial class Publication(
         SpeedType = SpeedType.Images,
         Speed = Math.Floor(_speedTracker?.IntermediateSpeed() ?? 0),
         DownloadDir = DownloadDir,
-        MonitoredSeriesId = Request.GetKey(RequestConstants.MonitoredSeriesId)
+        MonitoredSeriesId = Request.GetKey(RequestConstants.MonitoredSeriesId),
+        AllowedActions = ContentActions.ForPublication(State)
     };
 
     public string Id => Series != null ? Series.Id : Request.Id;

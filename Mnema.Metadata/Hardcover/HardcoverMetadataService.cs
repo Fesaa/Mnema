@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
@@ -144,7 +145,7 @@ public class HardcoverMetadataService(
                 CoverUrl = book.Image?.Url,
                 RefUrl = $"{HardcoverBaseUrl}/id/book/{book.Id}",
                 Isbn = edition?.Isbn,
-                VolumeMarker = b.Position?.ToString() ?? string.Empty,
+                VolumeMarker = FormatVolumeMarker(b.Position),
                 ChapterMarker = string.Empty,
                 SortOrder = b.Position,
                 ReleaseDate = edition?.ReleaseDate?.ToUniversalTime() ?? b.Book?.ReleaseDate?.ToUniversalTime(),
@@ -194,6 +195,9 @@ public class HardcoverMetadataService(
             .Trim();
     }
 
+    internal static string FormatVolumeMarker(float? position) =>
+        position?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+
     public static string ParseChapterTitle(MetadataProviderSettings settings, string title, float? position)
     {
         if (position == null) return string.Empty;
@@ -201,7 +205,7 @@ public class HardcoverMetadataService(
         var chapterTitle = CleanTitle(title);
         var subtitle = string.Empty;
 
-        var volumePositionMarker = $"Vol. {position}";
+        var volumePositionMarker = $"Vol. {FormatVolumeMarker(position)}";
         var volumePositionMarkerIndex =
             chapterTitle.IndexOf(volumePositionMarker, StringComparison.InvariantCultureIgnoreCase);
 

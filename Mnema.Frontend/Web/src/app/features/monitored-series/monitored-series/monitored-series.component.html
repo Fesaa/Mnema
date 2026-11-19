@@ -112,38 +112,54 @@
 
     <div class="chapters-section">
       <div class="container-fluid">
-        <ul class="nav nav-tabs mb-3">
-          <li class="nav-item">
-            <button
-              class="nav-link d-flex align-items-center gap-2"
-              type="button"
-              [class.active]="activeChapterTab() === 'chapters'"
-              (click)="activeChapterTab.set('chapters')">
-              <i class="fa fa-list"></i> {{t('chapters')}}
-              <app-badge padding="p-1 px-2">{{ s.chapters.length }}</app-badge>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button
-              class="nav-link d-flex align-items-center gap-2"
-              type="button"
-              [class.active]="activeChapterTab() === 'volumes'"
-              (click)="activeChapterTab.set('volumes')">
-              <i class="fa fa-layer-group"></i> {{t('volumes')}}
-              <app-badge padding="p-1 px-2" colour="secondary">{{ volumeGroups().length }}</app-badge>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button
-              class="nav-link d-flex align-items-center gap-2"
-              type="button"
-              [class.active]="activeChapterTab() === 'unmatched'"
-              (click)="activeChapterTab.set('unmatched')">
-              <i class="fa fa-question-circle"></i> {{t('unmatched-chapters')}}
-              <app-badge padding="p-1 px-2" colour="secondary">{{ s.unMatchedChapters.length }}</app-badge>
-            </button>
-          </li>
-        </ul>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <ul class="nav nav-tabs mb-0">
+            <li class="nav-item">
+              <button
+                class="nav-link d-flex align-items-center gap-2"
+                type="button"
+                [class.active]="activeChapterTab() === 'chapters'"
+                (click)="activeChapterTab.set('chapters')">
+                <i class="fa fa-list"></i> {{t('chapters')}}
+                <app-badge padding="p-1 px-2">{{ visibleChapters().length }}</app-badge>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link d-flex align-items-center gap-2"
+                type="button"
+                [class.active]="activeChapterTab() === 'volumes'"
+                (click)="activeChapterTab.set('volumes')">
+                <i class="fa fa-layer-group"></i> {{t('volumes')}}
+                <app-badge padding="p-1 px-2" colour="secondary">{{ volumeGroups().length }}</app-badge>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link d-flex align-items-center gap-2"
+                type="button"
+                [class.active]="activeChapterTab() === 'unmatched'"
+                (click)="activeChapterTab.set('unmatched')">
+                <i class="fa fa-question-circle"></i> {{t('unmatched-chapters')}}
+                <app-badge padding="p-1 px-2" colour="secondary">{{ s.unMatchedChapters.length }}</app-badge>
+              </button>
+            </li>
+          </ul>
+
+          @if (activeChapterTab() !== 'unmatched') {
+            <div class="form-check form-switch mb-0">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                role="switch"
+                id="show-not-monitored"
+                [checked]="showNotMonitored()"
+                (change)="toggleNotMonitored($event)"
+              />
+              <label class="form-check-label" for="show-not-monitored">{{t('show-not-monitored')}}</label>
+            </div>
+          }
+        </div>
 
         @if (activeChapterTab() === 'chapters') {
           @if (selectedChapters.ids().length > 0) {
@@ -161,9 +177,9 @@
             </div>
           }
 
-          @if (s.chapters && s.chapters.length > 0) {
+          @if (visibleChapters().length > 0) {
             <div class="chapters-list">
-              @for (chapter of s.chapters; track chapter.id) {
+              @for (chapter of visibleChapters(); track chapter.id) {
                 <app-chapter-row
                   [series]="s"
                   [chapter]="chapter"

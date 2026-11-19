@@ -52,6 +52,7 @@ public class DroppedContentAdaptor(DroppedContent content): IContent
         Speed = 0,
         DownloadDir = content.MonitoredSeries.BaseDir,
         MonitoredSeriesId = content.MonitoredSeries.Id,
+        AllowedActions = [],
     };
 
     private static string ToFileSuffix(int count) => count == 1 ? $"({count} File)" : $"({count} Files)";

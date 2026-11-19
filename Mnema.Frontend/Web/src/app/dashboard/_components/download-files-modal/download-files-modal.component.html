@@ -1,0 +1,88 @@
+<ng-container *transloco="let t; prefix: 'dashboard.marker-editor'">
+  <div class="modal-container">
+
+    <div class="modal-header">
+      <h5 class="modal-title">{{ isMonitored() ? t('title-monitored') : t('title') }}</h5>
+      <button type="button" class="btn-close" [attr.aria-label]="t('close')" (click)="close()"></button>
+    </div>
+
+    <div class="modal-body scrollable-modal">
+      @let chapters = monitoredChapters() ?? [];
+
+      @if (loading()) {
+        <app-loading-spinner [centered]="true" size="large" />
+      } @else if (files().length === 0) {
+        <p class="text-muted">{{ t('no-data') }}</p>
+      } @else {
+        <p class="text-muted small">{{ isMonitored() ? t('hint-monitored') : t('hint') }}</p>
+
+        @if (isMonitored() && chapters.length === 0) {
+          <p class="text-muted">{{ t('no-chapters') }}</p>
+        }
+
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('file') }}</th>
+                @if (isMonitored()) {
+                  <th scope="col">{{ t('chapter') }}</th>
+                } @else {
+                  <th scope="col" class="marker-column">{{ t('volume') }}</th>
+                  <th scope="col" class="marker-column">{{ t('chapter') }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (file of files(); track file.path) {
+                <tr>
+                  <td class="text-break">{{ file.path }}</td>
+                  @if (isMonitored()) {
+                    <td>
+                      <select
+                        class="form-select form-select-sm chapter-select"
+                        [(ngModel)]="file.selectedChapterId"
+                        [attr.aria-label]="t('chapter-for', {file: file.path})"
+                      >
+                        <option value="">{{ t('keep-current') }}</option>
+                        @for (chapter of chapters; track chapter.id) {
+                          <option [value]="chapter.id">{{ chapterLabel(chapter) }}</option>
+                        }
+                      </select>
+                    </td>
+                  } @else {
+                    <td>
+                      <input
+                        class="form-control form-control-sm marker-input"
+                        type="text"
+                        [(ngModel)]="file.volumeMarker"
+                        [attr.aria-label]="t('volume-for', {file: file.path})"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        class="form-control form-control-sm marker-input"
+                        type="text"
+                        [(ngModel)]="file.chapterMarker"
+                        [attr.aria-label]="t('chapter-for', {file: file.path})"
+                      />
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="close()">
+        {{ t('cancel') }}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="submit()" [disabled]="loading() || submitting()">
+        {{ t('save') }}
+      </button>
+    </div>
+  </div>
+</ng-container>

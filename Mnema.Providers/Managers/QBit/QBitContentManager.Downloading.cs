@@ -59,7 +59,7 @@ internal partial class QBitContentManager
         var toDownload = FilterFilesToDownload(request, title, seriesFiles, mSeries, services, ct);
 
         var hasNoDownloadsBecauseMissingMetadata = false;
-        if (toDownload.Count == 0)
+        if (toDownload.Count == 0 && request.StartImmediately)
         {
             var hasVolumes = seriesFiles.Any(f => !string.IsNullOrEmpty(f.ParseResult.VolumeMarker) && !services.ParserService.IsLooseLeafVolume(f.ParseResult.VolumeMarker));
             if (hasVolumes && mSeries is { Chapters.Count: > 0 })
@@ -332,6 +332,7 @@ internal partial class QBitContentManager
             Speed = 0,
             DownloadDir = Path.Join(externalDownload.BaseDir, externalDownload.Title),
             MonitoredSeriesId = request.GetKey(RequestConstants.MonitoredSeriesId),
+            AllowedActions = ContentActions.ForTorrent(externalDownload.State, externalDownload.Files.Count > 0),
         };
     }
 

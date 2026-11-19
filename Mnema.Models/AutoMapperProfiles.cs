@@ -34,6 +34,7 @@ public class AutoMapperProfiles : Profile
         CreateMap<MonitoredChapter, MonitoredChapterDto>()
             .ForMember(dest => dest.SeriesTitle, opt
                 => opt.MapFrom(src => src.Series.Title));
+        CreateMap<MonitoredChapter, MonitoredChapterOptionDto>();
         CreateMap<Cover, CoverDto>();
         CreateMap<AuthKey, AuthKeyDto>();
         CreateMap<MetadataProviderSettings, MetadataProviderSettingsV2Dto>();

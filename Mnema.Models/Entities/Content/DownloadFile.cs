@@ -1,3 +1,5 @@
+using System;
+
 namespace Mnema.Models.Entities.Content;
 
 public class DownloadFile
@@ -8,6 +10,7 @@ public class DownloadFile
     public required string? VolumeMarker { get; set; }
     public required string? ChapterMarker { get; set; }
     public required bool Selected { get; set; } = true;
+    public Guid? MonitoredChapterId { get; set; }
     /// <summary>
     /// True if this file has been processed in cleanup
     /// </summary>

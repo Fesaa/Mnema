@@ -21,13 +21,3 @@ public class ExternalDownloadDto: IDatabaseEntity
 
     public List<ExternalDownloadFileDto> Files { get; set; }
 }
-
-public class ExternalDownloadFileDto
-{
-    public Guid Id { get; set; }
-    public string ExternalId { get; set; }
-    public string FileName { get; set; }
-    public string? VolumeMarker { get; set; }
-    public string? ChapterMarker { get; set; }
-    public bool Selected { get; set; } = true;
-}
