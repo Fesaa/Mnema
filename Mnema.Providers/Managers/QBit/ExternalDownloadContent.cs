@@ -73,7 +73,8 @@ internal sealed class ExternalDownloadContent(ExternalDownload externalDownload,
                 SpeedType = SpeedType.Bytes,
                 Speed = torrentInfo.DownloadSpeed,
                 DownloadDir = Series != null ? Path.Join(Request.BaseDir, Title) : Request.BaseDir,
-                MonitoredSeriesId = externalDownload.GetKey(RequestConstants.MonitoredSeriesId)
+                MonitoredSeriesId = externalDownload.GetKey(RequestConstants.MonitoredSeriesId),
+                AllowedActions = ContentActions.ForTorrent(State, externalDownload.Files.Count > 0)
             };
 
             string ToFileSuffix(int count) => count == 1 ? $"({count} File)" : $"({count} Files)";

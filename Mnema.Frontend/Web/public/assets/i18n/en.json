@@ -439,6 +439,7 @@
         "browse": "Browse directory",
         "set-content": "Set content",
         "mark-ready": "Mark ready",
+        "edit-markers": "Edit volume and chapter markers",
         "stop": "Stop download"
       }
     },

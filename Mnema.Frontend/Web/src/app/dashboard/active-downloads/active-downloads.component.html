@@ -4,6 +4,23 @@
   @if (dashboardItems().length > 0) {
     <div class="pt-1 pt-md-3 m-3" *transloco="let t;prefix:'dashboard'">
 
+      <ng-template #downloadActions let-info>
+        @for (action of info.allowedActions; track action) {
+          @let config = getConfig(action);
+          @if (config) {
+            <button
+              type="button"
+              [class]="config.buttonClass"
+              [ngbTooltip]="config.tooltip | transloco"
+              [attr.aria-label]="config.tooltip | transloco"
+              (click)="runAction(action, info)"
+            >
+              <span [class]="config.icon"></span>
+            </button>
+          }
+        }
+      </ng-template>
+
       <div class="d-flex flex-grow-1 justify-content-end mb-2">
         <button class="btn btn-secondary" (click)="manualAdd()">
           {{t('manual-add.title')}}
@@ -53,7 +70,7 @@
                   ></div>
                 </div>
                 <div class="card-progress-info d-flex justify-content-between">
-                  @if (info.contentState === ContentState.Downloading) {
+                  @if (info.downloading) {
                     <span class="card-progress-text">{{ info.speed | speed:info.speedType }} {{ info.speedType | speedType }}</span>
                   }
                   @if (info.estimated) {
@@ -66,27 +83,10 @@
 
             <div class="card-footer">
               <div class="card-actions">
-                @if (info.contentState == ContentState.Downloading) {
-                  <button (click)="browse(info)" class="btn btn-primary" [ngbTooltip]="t('actions.browse')">
-                    <span class="fa fa-folder"></span>
-                  </button>
-                }
-
-                @if (info.contentState == ContentState.Waiting) {
-                  <button (click)="pickContent(info)" class="btn btn-primary" [ngbTooltip]="t('actions.set-content')" >
-                    <span class="fa fa-cart-plus"></span>
-                  </button>
-
-                  <button (click)="markReady(info)" class="btn btn-secondary" [ngbTooltip]="t('actions.mark-ready')" >
-                    <span class="fa fa-check"></span>
-                  </button>
-                }
-
-                @if (info.contentState !== ContentState.Cleanup) {
-                  <button (click)="stop(info)" class="btn btn-error" [ngbTooltip]="t('actions.stop')" >
-                    <span class="fa fa-trash"></span>
-                  </button>
-                }
+                <ng-container
+                  [ngTemplateOutlet]="downloadActions"
+                  [ngTemplateOutletContext]="{$implicit: info}"
+                ></ng-container>
               </div>
             </div>
           </div>
@@ -141,29 +141,10 @@
           </th>
           <th class="table-cell">
             <div class="d-flex flex-column flex-md-row gap-2 my-2">
-
-              @if (info.contentState == ContentState.Downloading) {
-                <button (click)="browse(info)" class="btn btn-primary" [ngbTooltip]="t('actions.browse')">
-                  <span class="fa fa-folder"></span>
-                </button>
-              }
-
-              @if (info.contentState == ContentState.Waiting) {
-                <button (click)="pickContent(info)" class="btn btn-primary" [ngbTooltip]="t('actions.set-content')" >
-                  <span class="fa fa-cart-plus"></span>
-                </button>
-
-                <button (click)="markReady(info)" class="btn btn-secondary" [ngbTooltip]="t('actions.mark-ready')" >
-                  <span class="fa fa-check"></span>
-                </button>
-              }
-
-              @if (info.contentState !== ContentState.Cleanup) {
-                <button (click)="stop(info)" class="btn btn-error" [ngbTooltip]="t('actions.stop')" >
-                  <span class="fa fa-trash"></span>
-                </button>
-              }
-
+              <ng-container
+                [ngTemplateOutlet]="downloadActions"
+                [ngTemplateOutletContext]="{$implicit: info}"
+              ></ng-container>
             </div>
           </th>
         </ng-template>

@@ -1,4 +1,5 @@
 import {Provider} from "./page";
+import {ContentAction} from "./content-action";
 
 export type InfoStat = {
   provider: Provider;
@@ -13,6 +14,7 @@ export type InfoStat = {
   speedType: SpeedType;
   speed: number;
   downloadDir: string;
+  allowedActions: ContentAction[];
 }
 
 export enum ContentState {

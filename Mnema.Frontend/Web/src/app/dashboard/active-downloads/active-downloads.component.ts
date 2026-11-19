@@ -1,4 +1,5 @@
 import {ChangeDetectionStrategy, Component, computed, inject,} from '@angular/core';
+import {NgTemplateOutlet} from "@angular/common";
 import {BadgeComponent} from "../../shared/_component/badge/badge.component";
 import {ContentStatePipe} from "../../_pipes/content-state.pipe";
 import {ContentTitlePipe} from "../../_pipes/content-title.pipe";
@@ -6,8 +7,9 @@ import {SpeedPipe} from "../../_pipes/speed.pipe";
 import {SpeedTypePipe} from "../../_pipes/speed-type.pipe";
 import {TableComponent} from "../../shared/_component/table/table.component";
 import {TimePipe} from "../../_pipes/time.pipe";
-import {TranslocoDirective} from "@jsverse/transloco";
-import {ContentState, InfoStat} from "../../_models/stats";
+import {TranslocoDirective, TranslocoPipe} from "@jsverse/transloco";
+import {InfoStat} from "../../_models/stats";
+import {ContentAction} from "../../_models/content-action";
 import {LoadingSpinnerComponent} from "../../shared/_component/loading-spinner/loading-spinner.component";
 import {ModalService} from "../../_services/modal.service";
 import {ContentService} from "../../_services/content.service";
@@ -37,9 +39,11 @@ import {switchMap, tap} from "rxjs";
     TableComponent,
     TimePipe,
     TranslocoDirective,
+    TranslocoPipe,
     LoadingSpinnerComponent,
     NgbTooltip,
-    SuggestionDashboardComponent
+    SuggestionDashboardComponent,
+    NgTemplateOutlet
   ],
   templateUrl: './active-downloads.component.html',
   styleUrl: './active-downloads.component.scss',
@@ -52,6 +56,13 @@ export class ActiveDownloadsComponent {
   private readonly toastService = inject(ToastService);
   private readonly contentTitle = inject(ContentTitlePipe);
   private readonly service = inject(ActiveDownloadsService);
+
+  private readonly actionConfig: Partial<Record<ContentAction, {icon: string; tooltip: string; buttonClass: string}>> = {
+    [ContentAction.Browse]: {icon: 'fa fa-folder', tooltip: 'dashboard.table.actions.browse', buttonClass: 'btn-primary'},
+    [ContentAction.SetContent]: {icon: 'fa fa-cart-plus', tooltip: 'dashboard.table.actions.set-content', buttonClass: 'btn-primary'},
+    [ContentAction.MarkReady]: {icon: 'fa fa-check', tooltip: 'dashboard.table.actions.mark-ready', buttonClass: 'btn-secondary'},
+    [ContentAction.Stop]: {icon: 'fa fa-trash', tooltip: 'dashboard.table.actions.stop', buttonClass: 'btn-error'},
+  };
 
   loading = this.service.loading;
   dashboardItems = computed(() => this.service.items().sort((a, b) => {
@@ -106,9 +117,28 @@ export class ActiveDownloadsComponent {
     return `${item.id}`
   }
 
+  getConfig(action: ContentAction) {
+    return this.actionConfig[action];
+  }
+
+  runAction(action: ContentAction, info: InfoStat): void {
+    switch (action) {
+      case ContentAction.Browse:
+        void this.browse(info);
+        break;
+      case ContentAction.SetContent:
+        this.pickContent(info);
+        break;
+      case ContentAction.MarkReady:
+        this.markReady(info);
+        break;
+      case ContentAction.Stop:
+        void this.stop(info);
+        break;
+    }
+  }
+
   manualAdd() {
     this.modalService.open(ManualContentAddModalComponent, DefaultModalOptions);
   }
-
-  protected readonly ContentState = ContentState;
 }

@@ -332,6 +332,7 @@ internal partial class QBitContentManager
             Speed = 0,
             DownloadDir = Path.Join(externalDownload.BaseDir, externalDownload.Title),
             MonitoredSeriesId = request.GetKey(RequestConstants.MonitoredSeriesId),
+            AllowedActions = ContentActions.ForTorrent(externalDownload.State, externalDownload.Files.Count > 0),
         };
     }
 
