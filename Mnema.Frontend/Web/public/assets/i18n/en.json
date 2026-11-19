@@ -1485,6 +1485,7 @@
   "monitored-series-detail": {
     "last-updated": "Last updated {{time}}",
     "chapters": "Chapters",
+    "show-not-monitored": "Show not monitored",
     "unmatched-chapters": "UnMatched Chapters",
     "no-chapters": "No chapters found",
     "no-unmatched-chapters": "No unmatched chapters found",

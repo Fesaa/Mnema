@@ -145,12 +145,22 @@ export class MonitoredSeriesComponent implements OnInit {
   protected activeChapterTab = signal<'chapters' | 'volumes' | 'unmatched'>('chapters');
   private chapterTabInitialized = false;
 
+  protected showNotMonitored = signal(false);
+
+  protected readonly visibleChapters = computed(() => {
+    const chapters = this.series().chapters;
+
+    return this.showNotMonitored()
+      ? chapters
+      : chapters.filter(chapter => chapter.status !== MonitoredChapterStatus.NotMonitored);
+  });
+
   protected readonly volumeGroups = computed<VolumeGroup[]>(() => {
     const series = this.series();
     const failedCoverIds = this.failedCovers();
     const groups = new Map<string, MonitoredChapter[]>();
 
-    for (const chapter of series.chapters) {
+    for (const chapter of this.visibleChapters()) {
       const key = this.normalizeVolume(chapter.volume);
       const group = groups.get(key);
 
@@ -222,6 +232,16 @@ export class MonitoredSeriesComponent implements OnInit {
 
   protected chapterCoverUrl(chapter: MonitoredChapter): string | null {
     return resolveChapterCoverUrl(this.monitoredSeriesService, this.series(), chapter, this.failedCovers());
+  }
+
+  protected toggleNotMonitored(event: Event): void {
+    const show = (event.target as HTMLInputElement).checked;
+    this.showNotMonitored.set(show);
+
+    if (!show) {
+      this.selectedChapters.removeAll(
+        this.series().chapters.filter(chapter => chapter.status === MonitoredChapterStatus.NotMonitored));
+    }
   }
 
   protected onCoverError(chapterId: string) {
