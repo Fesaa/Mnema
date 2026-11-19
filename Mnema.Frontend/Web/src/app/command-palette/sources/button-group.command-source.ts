@@ -67,7 +67,7 @@ export class ButtonGroupCommandSource implements CommandSource {
     const scored = buttons.map((button, index) => ({
       button,
       index,
-      score: tokens.length === 0 ? 1 : scoreCommandText(tokens, button.title, title),
+      score: tokens.length === 0 ? 1 : scoreCommandText(tokens, button.title, title, ...(button.tags ?? [])),
     })).filter(entry => entry.score > 0);
 
     if (tokens.length > 0) {
