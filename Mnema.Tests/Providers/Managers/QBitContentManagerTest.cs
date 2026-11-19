@@ -1,9 +1,11 @@
 using System;
+using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
+using Mnema.Models;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
@@ -71,6 +73,10 @@ public partial class QBitContentManagerTest(ITestOutputHelper testOutputHelper):
 
         var metadataResolver = Substitute.For<IMetadataResolver>();
         serviceProvider.GetService(typeof(IMetadataResolver)).Returns(metadataResolver);
+
+        var mapper = new MapperConfiguration(cfg => cfg.AddMaps(typeof(AutoMapperProfiles).Assembly),
+            Substitute.For<ILoggerFactory>()).CreateMapper();
+        serviceProvider.GetService(typeof(IMapper)).Returns(mapper);
 
         var scope = Substitute.For<IServiceScope>();
         scope.ServiceProvider.Returns(serviceProvider);

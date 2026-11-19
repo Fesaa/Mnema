@@ -1,3 +1,4 @@
+using System.Globalization;
 using Mnema.Common;
 using Mnema.Metadata.Hardcover;
 using Mnema.Models.Entities;
@@ -16,6 +17,43 @@ public class HardcoverParsingTests
         {
             MetadataProviderSpecific = new MetadataBag()
         }, chapterTitle, position));
+    }
+
+    [Fact]
+    public void FormatVolumeMarker_UsesInvariantCulture()
+    {
+        var originalCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+
+            Assert.Equal("8.1", HardcoverMetadataService.FormatVolumeMarker(8.1f));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
+    }
+
+    [Fact]
+    public void ParseChapterTitle_UsesInvariantVolumeMarker()
+    {
+        var originalCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+
+            var title = HardcoverMetadataService.ParseChapterTitle(new MetadataProviderSettings
+            {
+                MetadataProviderSpecific = new MetadataBag()
+            }, "Spice and Wolf, Vol. 8.1: More Stories", 8.1f);
+
+            Assert.Equal("More Stories", title);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
     }
 
 }

@@ -130,7 +130,7 @@ internal class RawFileCleanupService(
             async (f, _) => await ProcessSingleFileAsync(context, f));
     }
 
-    private async Task<List<string>> GetFilesToProcessAsync(CleanupContext context)
+    private async Task<List<FileToProcess>> GetFilesToProcessAsync(CleanupContext context)
     {
         var externalDownloadId = context.Request.GetKey(RequestConstants.ExternalDownloadId);
         if (externalDownloadId is not null)
@@ -162,12 +162,14 @@ internal class RawFileCleanupService(
         var files = fileSystem.Directory.GetFiles(context.DownloadDirectory, "*", SearchOption.AllDirectories);
         var allowedExtensions = parserService.FileExtensionsForFormat(context.Format);
 
-        var validFiles = files.Where(f => Filter(allowedExtensions, f)).ToList();
-        return validFiles;
+        return files
+            .Where(f => Filter(allowedExtensions, f))
+            .Select(f => new FileToProcess(f, null))
+            .ToList();
 
-        List<string> CreatePaths(List<DownloadFile> downloadFiles) => downloadFiles
+        List<FileToProcess> CreatePaths(List<DownloadFile> downloadFiles) => downloadFiles
             .Where(f => f is { Selected: true, Processed: false })
-            .Select(f => Path.Join(context.DownloadDirectory, f.FullPath))
+            .Select(f => new FileToProcess(Path.Join(context.DownloadDirectory, f.FullPath), f))
             .ToList();
 
         bool Filter(Regex ext, string f)
@@ -183,8 +185,10 @@ internal class RawFileCleanupService(
         }
     }
 
-    private async Task ProcessSingleFileAsync(CleanupContext context, string sourceFile)
+    private async Task ProcessSingleFileAsync(CleanupContext context, FileToProcess file)
     {
+        var sourceFile = file.SourceFile;
+
         if (!fileSystem.File.Exists(sourceFile))
         {
             logger.LogWarning("Cannot process missing file: {FileName}", sourceFile);
@@ -198,8 +202,11 @@ internal class RawFileCleanupService(
 
         var fileName = fileSystem.Path.GetFileName(sourceFile);
 
-        var parseResult = parserService.FullParse(fileName, context.ContentFormat);
-        var chapter = parserService.FindMatch(context.Series?.Chapters ?? [], parseResult);
+        IHasPositionMarkers markers = file.DownloadFile is { } downloadFile
+            ? ResolveMarkers(downloadFile)
+            : parserService.FullParse(fileName, context.ContentFormat);
+
+        var chapter = parserService.FindMatch(context.Series?.Chapters ?? [], markers);
 
         if (chapter == null && ignoreNonMatched && context.Series?.Chapters.Count > 0)
         {
@@ -212,8 +219,8 @@ internal class RawFileCleanupService(
         {
             Id = string.Empty,
             Title = string.Empty,
-            VolumeMarker = parseResult.VolumeMarker,
-            ChapterMarker = parseResult.ChapterMarker,
+            VolumeMarker = markers.VolumeMarker,
+            ChapterMarker = markers.ChapterMarker,
         };
 
         var chapterFileName = namingService.GetChapterFileName(context.Preferences, context.Title, chapter);
@@ -234,25 +241,17 @@ internal class RawFileCleanupService(
         logger.LogDebug("Finished processing file {FileName} -> {DestPath} for cleanup in {Elapsed}",
             sourceFile, destPath, sw.Elapsed.ToReadableString());
 
-        await MarkFileProcessedAsync(context, sourceFile);
+        await MarkFileProcessedAsync(context, file);
     }
 
-    private async Task MarkFileProcessedAsync(CleanupContext context, string sourceFile)
+    private async Task MarkFileProcessedAsync(CleanupContext context, FileToProcess file)
     {
-        var downloadFiles = context.ExternalDownload?.Files ?? context.DroppedContent?.Files;
-        if (downloadFiles is null) return;
-
-        var file = downloadFiles.FirstOrDefault(f => Path.Join(context.DownloadDirectory, f.FullPath) == sourceFile);
-        if (file is null)
-        {
-            logger.LogWarning("Failed to find download file record for {FileName}, cannot update cleanup progress", sourceFile);
-            return;
-        }
+        if (file.DownloadFile is null) return;
 
         await _progressLock.WaitAsync();
         try
         {
-            file.Processed = true;
+            file.DownloadFile.Processed = true;
 
             if (context.ExternalDownload is not null)
                 unitOfWork.ExternalDownloadRepository.Update(context.ExternalDownload);
@@ -297,6 +296,13 @@ internal class RawFileCleanupService(
 
         await handler.HandleAsync(handlerContext);
     }
+
+    internal static IHasPositionMarkers ResolveMarkers(DownloadFile file) =>
+        new MarkerPair(file.VolumeMarker ?? string.Empty, file.ChapterMarker ?? string.Empty);
+
+    private sealed record FileToProcess(string SourceFile, DownloadFile? DownloadFile);
+
+    private readonly record struct MarkerPair(string VolumeMarker, string ChapterMarker) : IHasPositionMarkers;
 }
 
 

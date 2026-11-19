@@ -106,9 +106,12 @@ public class EpubMetadataService(IFileSystem fileSystem): IEpubMetadataService
         var metadata = doc.Root?.Element(Opf + "metadata") ?? doc.Root?.Element("metadata");
         if (metadata == null) return;
 
-        metadata.SetElementValue(Dc + "title", info.Title);
-        metadata.SetElementValue(Dc + "description", info.Summary);
-        metadata.SetElementValue(Dc + "publisher", info.Publisher);
+        if (!string.IsNullOrWhiteSpace(info.Title))
+            metadata.SetElementValue(Dc + "title", info.Title);
+        if (!string.IsNullOrWhiteSpace(info.Summary))
+            metadata.SetElementValue(Dc + "description", info.Summary);
+        if (!string.IsNullOrWhiteSpace(info.Publisher))
+            metadata.SetElementValue(Dc + "publisher", info.Publisher);
 
         var titleId = metadata.Element(Dc + "title")?.Attribute("id")?.Value;
         if (!string.IsNullOrEmpty(titleId))
@@ -177,9 +180,9 @@ public class EpubMetadataService(IFileSystem fileSystem): IEpubMetadataService
 
     private static void UpdateTags(XElement metadata, ComicInfo info)
     {
-        metadata.Elements(Dc + "subject").Remove();
-
         if (string.IsNullOrWhiteSpace(info.Genre)) return;
+
+        metadata.Elements(Dc + "subject").Remove();
 
         var genres = info.Genre.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 

@@ -23,7 +23,7 @@ internal partial class QBitContentManager(
     ApplicationConfiguration configuration,
     IServiceScopeFactory scopeFactory,
     IQBitClient qBitClient)
-    : IContentManager, IConfigurationProvider
+    : IContentManager, IConfigurationProvider, IContentFileManager
 {
     private const string MnemaCategory = "Mnema";
     private const string UrlKey = "url";

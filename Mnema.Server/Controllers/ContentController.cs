@@ -204,4 +204,27 @@ public class ContentController(
 
         return Ok(await contentManager.RelayMessage(message, HttpContext.RequestAborted));
     }
+
+    [HttpGet("files")]
+    public async Task<ActionResult<DownloadFilesDto>> GetFiles(
+        [FromQuery] Provider provider, [FromQuery] string contentId)
+    {
+        if (serviceProvider.GetKeyedService<IContentManager>(provider) is not IContentFileManager fileManager)
+            return NotFound();
+
+        return Ok(await fileManager.GetFiles(contentId, HttpContext.RequestAborted));
+    }
+
+    [HttpPut("files")]
+    public async Task<IActionResult> UpdateFiles(
+        [FromQuery] Provider provider, [FromQuery] string contentId,
+        [FromBody] List<UpdateDownloadFileMarkersDto> files)
+    {
+        if (serviceProvider.GetKeyedService<IContentManager>(provider) is not IContentFileManager fileManager)
+            return NotFound();
+
+        await fileManager.UpdateFileMarkers(contentId, files, HttpContext.RequestAborted);
+
+        return Ok();
+    }
 }

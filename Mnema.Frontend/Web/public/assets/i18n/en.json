@@ -427,6 +427,31 @@
         }
       }
     },
+    "marker-editor": {
+      "title": "Edit volume and chapter markers",
+      "title-monitored": "Assign chapters to files",
+      "file": "File",
+      "volume": "Volume",
+      "chapter": "Chapter",
+      "volume-short": "Vol",
+      "chapter-short": "Ch",
+      "hint": "Markers are free text, for example 1, 1.5, or 3-6.",
+      "hint-monitored": "Pick the chapter this file belongs to. Only chapters that are missing or upcoming are listed.",
+      "keep-current": "Keep current",
+      "no-chapters": "No missing or upcoming chapters are known for this series.",
+      "no-data": "No files found for this download",
+      "volume-for": "Volume marker for {{file}}",
+      "chapter-for": "Chapter marker for {{file}}",
+      "cancel": "{{common.cancel}}",
+      "close": "{{common.close}}",
+      "save": "{{common.save}}",
+      "toasts": {
+        "success": {
+          "title": "Success",
+          "summary": "Markers saved"
+        }
+      }
+    },
     "load-default": "Load default pages",
     "loading": "{{shared.loading}}",
     "table": {

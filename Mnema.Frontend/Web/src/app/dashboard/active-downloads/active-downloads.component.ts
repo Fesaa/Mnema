@@ -15,6 +15,9 @@ import {ModalService} from "../../_services/modal.service";
 import {ContentService} from "../../_services/content.service";
 import {ToastService} from "../../_services/toast.service";
 import {ContentPickerDialogComponent} from "../_components/content-picker-dialog/content-picker-dialog.component";
+import {
+  DownloadFilesModalComponent
+} from "../_components/download-files-modal/download-files-modal.component";
 import {DefaultModalOptions} from "../../_models/default-modal-options";
 import {
   ManualContentAddModalComponent
@@ -58,10 +61,11 @@ export class ActiveDownloadsComponent {
   private readonly service = inject(ActiveDownloadsService);
 
   private readonly actionConfig: Partial<Record<ContentAction, {icon: string; tooltip: string; buttonClass: string}>> = {
-    [ContentAction.Browse]: {icon: 'fa fa-folder', tooltip: 'dashboard.table.actions.browse', buttonClass: 'btn-primary'},
-    [ContentAction.SetContent]: {icon: 'fa fa-cart-plus', tooltip: 'dashboard.table.actions.set-content', buttonClass: 'btn-primary'},
-    [ContentAction.MarkReady]: {icon: 'fa fa-check', tooltip: 'dashboard.table.actions.mark-ready', buttonClass: 'btn-secondary'},
-    [ContentAction.Stop]: {icon: 'fa fa-trash', tooltip: 'dashboard.table.actions.stop', buttonClass: 'btn-error'},
+    [ContentAction.Browse]: {icon: 'fa fa-folder', tooltip: 'dashboard.table.actions.browse', buttonClass: 'btn btn-primary'},
+    [ContentAction.SetContent]: {icon: 'fa fa-cart-plus', tooltip: 'dashboard.table.actions.set-content', buttonClass: 'btn btn-primary'},
+    [ContentAction.MarkReady]: {icon: 'fa fa-check', tooltip: 'dashboard.table.actions.mark-ready', buttonClass: 'btn btn-secondary'},
+    [ContentAction.EditMarkers]: {icon: 'fa fa-pencil', tooltip: 'dashboard.table.actions.edit-markers', buttonClass: 'btn btn-secondary'},
+    [ContentAction.Stop]: {icon: 'fa fa-trash', tooltip: 'dashboard.table.actions.stop', buttonClass: 'btn btn-error'},
   };
 
   loading = this.service.loading;
@@ -113,6 +117,11 @@ export class ActiveDownloadsComponent {
     component.info.set(info);
   }
 
+  editMarkers(info: InfoStat) {
+    const [_, component] = this.modalService.open(DownloadFilesModalComponent, DefaultModalOptions);
+    component.info.set(info);
+  }
+
   itemTrackBy(idx: number, item: InfoStat): string {
     return `${item.id}`
   }
@@ -131,6 +140,9 @@ export class ActiveDownloadsComponent {
         break;
       case ContentAction.MarkReady:
         this.markReady(info);
+        break;
+      case ContentAction.EditMarkers:
+        this.editMarkers(info);
         break;
       case ContentAction.Stop:
         void this.stop(info);

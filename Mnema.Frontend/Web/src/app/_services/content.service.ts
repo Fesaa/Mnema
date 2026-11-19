@@ -10,6 +10,8 @@ import {Provider} from "../_models/page";
 import {PagedList} from "../_models/paged-list";
 import {FormDefinition} from "../generic-form/form";
 import {ParsedSeriesUrl} from "@mnema/_models/parsed-series-url";
+import {DownloadFiles} from "../_models/download-files";
+import {UpdateDownloadFileMarkers} from "../_models/update-download-file-markers";
 
 @Injectable({
   providedIn: 'root'
@@ -79,6 +81,22 @@ export class ContentService {
 
   infoStats() {
     return this.httpClient.get<InfoStat[]>(this.baseUrl + 'stats')
+  }
+
+  getDownloadFiles(provider: Provider, contentId: string) {
+    const params = new HttpParams()
+      .set('provider', provider)
+      .set('contentId', contentId);
+
+    return this.httpClient.get<DownloadFiles>(this.baseUrl + 'files', {params});
+  }
+
+  updateDownloadFileMarkers(provider: Provider, contentId: string, files: UpdateDownloadFileMarkers[]) {
+    const params = new HttpParams()
+      .set('provider', provider)
+      .set('contentId', contentId);
+
+    return this.httpClient.put<void>(this.baseUrl + 'files', files, {params});
   }
 
   private sendMessage<T, R>(msg: Message<T>): Observable<R | undefined> {
