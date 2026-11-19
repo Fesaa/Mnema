@@ -64,6 +64,14 @@ public class MonitoredSeriesController(
         return Ok(await unitOfWork.MonitoredSeriesRepository.GetMonitoredSeriesDtosForUser(query, provider, paginationParams, HttpContext.RequestAborted));
     }
 
+    [HttpGet("lookup")]
+    public async Task<ActionResult<List<MonitoredSeriesLookupDto>>> Lookup([FromQuery] string query = "",
+        [FromQuery] int limit = 5)
+    {
+        return Ok(await unitOfWork.MonitoredSeriesRepository.LookupMonitoredSeries(query, limit,
+            HttpContext.RequestAborted));
+    }
+
     [HttpGet("providers")]
     public async Task<ActionResult<List<Provider>>> InUseProviders()
     {

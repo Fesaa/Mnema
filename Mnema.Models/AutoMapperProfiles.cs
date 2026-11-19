@@ -31,6 +31,7 @@ public class AutoMapperProfiles : Profile
             ))
             .ForMember(dest => dest.ValidTitles, opt
                 => opt.MapFrom(src => src.SearchTitles.Select(t => t.Title)));
+        CreateMap<MonitoredSeries, MonitoredSeriesLookupDto>();
         CreateMap<MonitoredChapter, MonitoredChapterDto>()
             .ForMember(dest => dest.SeriesTitle, opt
                 => opt.MapFrom(src => src.Series.Title));
