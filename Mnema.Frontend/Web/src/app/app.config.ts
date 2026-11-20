@@ -25,6 +25,9 @@ import {RolePipe} from "./_pipes/role.pipe";
 import {errorHandlerInterceptor} from "./_interceptors/error-handler.interceptor";
 import {SettingsService} from "@mnema/_services/settings.service";
 import {provideRetoast} from "ngx-retoast";
+import {COMMAND_SOURCES} from './command-palette/command-source';
+import {ButtonGroupCommandSource} from './command-palette/sources/button-group.command-source';
+import {MonitoredSeriesCommandSource} from './command-palette/sources/monitored-series.command-source';
 
 function getBaseHref(platformLocation: PlatformLocation): string {
   return platformLocation.getBaseHrefFromDOM();
@@ -52,6 +55,9 @@ export const appConfig: ApplicationConfig = {
     ProviderNamePipe,
     RolePipe,
     SubscriptionExternalUrlPipe,
+
+    {provide: COMMAND_SOURCES, useClass: ButtonGroupCommandSource, multi: true},
+    {provide: COMMAND_SOURCES, useClass: MonitoredSeriesCommandSource, multi: true},
 
     importProvidersFrom(BrowserAnimationsModule), provideAnimationsAsync(),
     provideZonelessChangeDetection(),

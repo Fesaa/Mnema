@@ -1724,6 +1724,23 @@
     "download": "{{shared.download}}",
     "monitor": "Add as monitored series",
     "download-unavailable": "Download is only available for MangaDex, Dynasty and Webtoons"
+  },
+
+  "command-palette": {
+    "title-alt": "Command palette",
+    "placeholder-label": "Search actions, pages, settings and series...",
+    "search-alt": "Search the application",
+    "close-alt": "Close search",
+    "results-list-alt": "Search results",
+    "results-count-alt": "{{count}} results",
+    "start-typing-label": "Start typing to search",
+    "loading-label": "Searching...",
+    "search-with-label": "Search with a page",
+    "page-search-count-alt": "{{count}} page searches available",
+    "no-data": "No results",
+    "no-data-description": "Try a different word or check the spelling.",
+    "hint-label": "Enter to open, Esc to close",
+    "shortcut-label": "Double Shift"
   }
 
 }

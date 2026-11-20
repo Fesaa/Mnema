@@ -31,6 +31,7 @@ export interface Button {
   standAlone?: boolean;
   requiredRoles?: Role[];
   badge?: string;
+  tags?: string[];
 }
 
 export enum ButtonGroupKey {
@@ -174,6 +175,7 @@ export class ButtonGroupService {
           title: translate('button-groups.settings.preferences'),
           icon: 'fa fa-heart',
           navUrl: '/settings/preferences',
+          tags: ['metadata', 'format'],
         },
         {
           title: translate('button-groups.settings.pages'),
@@ -184,16 +186,19 @@ export class ButtonGroupService {
           title: translate('button-groups.settings.providers'),
           icon: 'fa fa-database',
           navUrl: '/settings/providers',
+          tags: ['metadata', 'upstream', 'mangabaka', 'hardcover'],
         },
         {
           title: translate('button-groups.settings.integrations'),
           icon: 'fa fa-plug',
           navUrl: '/settings/integrations',
+          tags: ['discord', 'kavita', 'qbit', 'download clients']
         },
         {
           title: translate('button-groups.settings.server'),
           icon: 'fa fa-server',
           navUrl: '/settings/server',
+          tags: ['auth', 'keys', 'auth keys']
         },
         {
           title: translate('button-groups.settings.releases'),

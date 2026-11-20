@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.Database;
+using Mnema.Database.Interceptors;
 using Mnema.Models;
 using NSubstitute;
 using Xunit.Abstractions;
@@ -34,7 +35,9 @@ public abstract class DatabaseTests(ITestOutputHelper testOutputHelper): IAsyncD
         await _connection.OpenAsync();
 
         var contextOptions = ((DbContextOptionsBuilder)new DbContextOptionsBuilder<SqliteMnemaDataContext>()
-                .UseSqlite(_connection)).EnableSensitiveDataLogging()
+                .UseSqlite(_connection)
+                .AddInterceptors(new NormalizationInterceptor()))
+            .EnableSensitiveDataLogging()
             .Options;
 
         _context = new SqliteMnemaDataContext(contextOptions);

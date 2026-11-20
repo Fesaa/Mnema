@@ -1,0 +1,113 @@
+<ng-container *transloco="let t; prefix: 'command-palette'">
+  <h2 id="command-palette-title" class="visually-hidden">{{ t('title-alt') }}</h2>
+
+  <div class="search-row d-flex align-items-center gap-2 px-4 py-2 border-bottom">
+    <i class="search-icon fa fa-magnifying-glass" aria-hidden="true"></i>
+    <input
+      #queryInput
+      type="text"
+      class="search-input flex-fill border-0 bg-transparent px-0 py-2"
+      [value]="query()"
+      (input)="onQueryInput($event)"
+      (keydown)="onKeydown($event)"
+      [placeholder]="t('placeholder-label')"
+      [attr.aria-label]="t('search-alt')"
+      role="combobox"
+      aria-autocomplete="list"
+      aria-haspopup="listbox"
+      aria-controls="command-palette-results"
+      aria-expanded="true"
+      [attr.aria-activedescendant]="activeDescendantId()"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <button
+      type="button"
+      class="close-button d-flex align-items-center justify-content-center rounded-circle"
+      (click)="close()"
+      [attr.aria-label]="t('close-alt')"
+    >
+      <i class="fa fa-xmark" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div id="command-palette-results" class="results overflow-auto py-2">
+    @if (!hasQuery()) {
+      <div class="px-4 py-5 text-center">
+        <i class="start-hint-icon fa fa-keyboard d-block mb-2" aria-hidden="true"></i>
+        <div class="small text-muted">{{ t('start-typing-label') }}</div>
+      </div>
+    } @else if (isLoading() && groups().length === 0) {
+      <div class="px-4 py-2">
+        <app-loading-spinner size="small" [centered]="true" [message]="t('loading-label')" />
+      </div>
+    } @else if (displayItems().length > 0) {
+      @if (!hasRealResults()) {
+        <div class="px-4 pt-4 pb-2 text-center">
+          <div class="fw-semibold">{{ t('no-data') }}</div>
+          <div class="small text-muted">{{ t('no-data-description') }}</div>
+        </div>
+      }
+      <div role="listbox" [attr.aria-label]="t('results-list-alt')">
+        @for (group of displayGroups(); track group.key) {
+          <div role="group" [attr.aria-labelledby]="'command-palette-group-' + group.key">
+            <div
+              class="group-title small text-uppercase fw-semibold px-4 pt-3 pb-1"
+              [id]="'command-palette-group-' + group.key"
+            >
+              {{ group.title }}
+            </div>
+            @for (item of group.items; track item.id) {
+              <div
+                #itemElement
+                class="item d-flex align-items-center gap-3 mx-2 px-3 py-2 rounded"
+                [class.active]="isActive(item)"
+                role="option"
+                [id]="'command-palette-item-' + item.id"
+                [attr.aria-selected]="isActive(item)"
+                (mouseenter)="selectItem(item)"
+                (click)="run(item)"
+              >
+                @if (item.coverUrl) {
+                  <img class="cover flex-shrink-0" [src]="item.coverUrl" alt="" />
+                } @else {
+                  <span class="item-icon flex-shrink-0">
+                    <i [class]="item.icon" aria-hidden="true"></i>
+                  </span>
+                }
+                <div class="flex-fill overflow-hidden">
+                  <div class="item-title text-truncate fw-medium">{{ item.title }}</div>
+                  @if (item.provider !== undefined) {
+                    <div class="item-subtitle small text-truncate">{{ item.provider | providerName }}</div>
+                  } @else if (item.subtitle) {
+                    <div class="item-subtitle small text-truncate">{{ item.subtitle }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="px-4 py-5 text-center">
+        <div class="fw-semibold">{{ t('no-data') }}</div>
+        <div class="small text-muted">{{ t('no-data-description') }}</div>
+      </div>
+    }
+  </div>
+
+  @if (hasQuery() && !(isLoading() && !hasRealResults())) {
+    <div class="visually-hidden" role="status" aria-live="polite">
+      @if (!hasRealResults() && displayItems().length > 0) {
+        {{ t('page-search-count-alt', {count: displayItems().length}) }}
+      } @else {
+        {{ t('results-count-alt', {count: displayItems().length}) }}
+      }
+    </div>
+  }
+
+  <div class="palette-footer d-flex justify-content-between border-top small px-4 py-2">
+    <span>{{ t('hint-label') }}</span>
+    <span>{{ t('shortcut-label') }}</span>
+  </div>
+</ng-container>

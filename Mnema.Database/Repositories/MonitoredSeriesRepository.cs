@@ -23,15 +23,48 @@ public class MonitoredSeriesRepository(MnemaDataContext ctx, IMapper mapper)
         Provider? provider, PaginationParams pagination,
         CancellationToken cancellationToken)
     {
-        query = query.ToNormalized();
+        var terms = NormalizedQueryTerms(query);
 
-        return ctx.MonitoredSeries
+        return WhereTitleMatches(ctx.MonitoredSeries, terms)
             .Includes(MonitoredSeriesIncludes.Chapters)
-            .Where(m => m.NormalizedTitle.Contains(query))
             .WhereIf(provider.HasValue, m => m.Provider == provider)
             .ProjectTo<MonitoredSeriesDto>(mapper.ConfigurationProvider)
             .OrderBy(m => m.NormalizedTitle)
             .AsPagedList(pagination, cancellationToken);
+    }
+
+    public Task<List<MonitoredSeriesLookupDto>> LookupMonitoredSeries(string query, int limit,
+        CancellationToken cancellationToken)
+    {
+        var terms = NormalizedQueryTerms(query);
+        if (terms.Count == 0) return Task.FromResult(new List<MonitoredSeriesLookupDto>());
+
+        return WhereTitleMatches(ctx.MonitoredSeries, terms)
+            .OrderBy(m => m.NormalizedTitle)
+            .Take(Math.Clamp(limit, 1, 20))
+            .ProjectTo<MonitoredSeriesLookupDto>(mapper.ConfigurationProvider)
+            .ToListAsync(cancellationToken);
+    }
+
+    private static List<string> NormalizedQueryTerms(string query)
+    {
+        return (query ?? string.Empty)
+            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(term => term.ToNormalized())
+            .Where(term => !string.IsNullOrEmpty(term))
+            .Distinct()
+            .ToList();
+    }
+
+    private static IQueryable<MonitoredSeries> WhereTitleMatches(IQueryable<MonitoredSeries> series,
+        List<string> terms)
+    {
+        foreach (var term in terms)
+        {
+            series = series.Where(m => m.NormalizedTitle.Contains(term));
+        }
+
+        return series;
     }
 
     public Task<List<Provider>> GetProviders(CancellationToken cancellationToken = default)

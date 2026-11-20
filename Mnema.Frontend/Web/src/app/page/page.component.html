@@ -4,6 +4,7 @@
     <div [class.hidden]="!showForm()" class="mx-2">
       <app-search-form
         [page]="page"
+        [initialQuery]="initialQuery()"
         (searchSubmitted)="search($event)"
       />
     </div>

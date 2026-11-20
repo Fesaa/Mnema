@@ -32,6 +32,13 @@ export type MonitoredSeries = {
   metadata: MetadataBag;
 }
 
+export type MonitoredSeriesLookup = {
+  id: string;
+  title: string;
+  coverUrl?: string;
+  provider: Provider;
+}
+
 export type RawFile = {
   path: string;
   chapter: string;
@@ -146,6 +153,14 @@ export class MonitoredSeriesService {
     }
 
     return this.httpClient.get<PagedList<MonitoredSeries>>(`${this.baseUrl}/all`, { params });
+  }
+
+  lookup(query: string, limit: number = 5) {
+    const params = new HttpParams()
+      .set('query', query)
+      .set('limit', limit);
+
+    return this.httpClient.get<MonitoredSeriesLookup[]>(`${this.baseUrl}/lookup`, { params });
   }
 
   getInUseProviders() {

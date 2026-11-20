@@ -12,6 +12,9 @@ import {ActiveDownloadsService} from "./dashboard/active-downloads/active-downlo
 import {NotificationService} from "./_services/notification.service";
 import {NavService} from "@mnema/_services/nav.service";
 import {RetoastService} from "ngx-retoast";
+import {CommandPaletteService} from './command-palette/command-palette.service';
+
+const DOUBLE_SHIFT_WINDOW_MS = 300;
 
 @Component({
   selector: 'app-root',
@@ -31,6 +34,8 @@ export class AppComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
   private readonly navService = inject(NavService);
   private readonly router = inject(Router);
+  private readonly commandPaletteService = inject(CommandPaletteService);
+  private lastShiftAt = 0;
 
   readonly hideLayout = toSignal(
     this.router.events.pipe(
@@ -95,6 +100,27 @@ export class AppComponent implements OnInit {
     }
   }
 
+
+  @HostListener('window:keydown', ['$event'])
+  onWindowKeydown(event: KeyboardEvent) {
+    if (this.hideLayout() || event.isComposing) return;
+
+    if (event.repeat) return;
+
+    if (event.key !== 'Shift' || event.ctrlKey || event.altKey || event.metaKey) {
+      this.lastShiftAt = 0;
+      return;
+    }
+
+    const now = Date.now();
+    if (now - this.lastShiftAt < DOUBLE_SHIFT_WINDOW_MS) {
+      this.lastShiftAt = 0;
+      this.commandPaletteService.open();
+      return;
+    }
+
+    this.lastShiftAt = now;
+  }
 
   @HostListener('window:resize')
   @HostListener('window:orientationchange')
