@@ -10,6 +10,7 @@ using Mnema.Common.Extensions;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Entities.Content;
 using Mnema.Models.Enums;
+using Mnema.Models.Publication;
 using Mnema.Providers.Managers.QBit;
 using Mnema.Services;
 using NSubstitute;
@@ -20,6 +21,13 @@ public partial class QBitContentManagerTest
 {
 
     private const string SpiceAndWolfHash = "ac7a2015420a6a2b22677e101adf3be7741d7c44";
+
+    private DownloadRequestDto CreateStartImmediatelyRequest()
+    {
+        var request = CreateDownloadRequestDto();
+        request.StartImmediately = true;
+        return request;
+    }
 
     #region Duplicate requests
 
@@ -139,14 +147,16 @@ public partial class QBitContentManagerTest
         services.QBitClient.GetTorrentsAsync(Arg.Any<TorrentListQuery?>(), Arg.Any<CancellationToken>())
             .Returns([new TorrentInfo {Hash = SpiceAndWolfHash}]);
 
-        await services.QBitContentManager.EnsureTorrentAddedAsync(CreateDownloadRequestDto(), string.Empty,
+        await services.QBitContentManager.EnsureTorrentAddedAsync(CreateDownloadRequestDto(), paused: false,
             CancellationToken.None);
 
         await services.QBitClient.DidNotReceiveWithAnyArgs().AddTorrentsAsync(null!, CancellationToken.None);
     }
 
-    [Fact]
-    public async Task EnsureTorrentAddedAsync_CalledWhenMissing()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task EnsureTorrentAddedAsync_AddsWithPauseState(bool paused)
     {
         var (unitOfWork, _, _) = await CreateDatabase();
         var services = CreateServices(unitOfWork, new ParserService());
@@ -154,10 +164,10 @@ public partial class QBitContentManagerTest
         services.QBitClient.GetTorrentsAsync(Arg.Any<TorrentListQuery?>(), Arg.Any<CancellationToken>())
             .Returns([]);
 
-        await services.QBitContentManager.EnsureTorrentAddedAsync(CreateDownloadRequestDto(), string.Empty, CancellationToken.None);
+        await services.QBitContentManager.EnsureTorrentAddedAsync(CreateDownloadRequestDto(), paused, CancellationToken.None);
 
         await services.QBitClient.Received()
-            .AddTorrentsAsync(Arg.Any<AddTorrentUrlsRequest>(), CancellationToken.None);
+            .AddTorrentsAsync(Arg.Is<AddTorrentUrlsRequest>(r => r.Paused == paused), CancellationToken.None);
     }
 
     [Fact]
@@ -407,6 +417,140 @@ public partial class QBitContentManagerTest
             [allFiles[0]],
             newDownload: true,
             CancellationToken.None));
+    }
+
+    #endregion
+
+    #region DownloadTorrent start
+
+    [Fact]
+    public async Task DownloadTorrent_StartImmediately_AllFiles_AddsUnpausedAndDoesNotResume()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+        var services = CreateServices(unitOfWork, new ParserService());
+
+        services.ScannerService.ParseTorrentFile(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new ParsedTorrentInfo("2 GB", [
+                new TorrentFile("Spice And Wolf Vol. 1.cbz", "Spice And Wolf Vol. 1.cbz", 1024),
+                new TorrentFile("Spice And Wolf Vol. 2.cbz", "Spice And Wolf Vol. 2.cbz", 1024),
+            ]));
+        services.ScannerService
+            .ScanDirectory(Arg.Any<string>(), Arg.Any<ContentFormat>(), Arg.Any<Format>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        services.QBitClient.GetTorrentsAsync(Arg.Any<TorrentListQuery?>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        await services.QBitContentManager.DownloadTorrent(CreateStartImmediatelyRequest(), CancellationToken.None);
+
+        await services.QBitClient.Received()
+            .AddTorrentsAsync(Arg.Is<AddTorrentUrlsRequest>(r => !r.Paused), Arg.Any<CancellationToken>());
+        await services.QBitClient.DidNotReceiveWithAnyArgs().ResumeTorrentsAsync(null!, default);
+        await services.QBitClient.DidNotReceiveWithAnyArgs().GetTorrentContentsAsync(null!, default);
+
+        var externalDownload = await ctx.ExternalDownloads.SingleAsync();
+        Assert.Equal(ContentState.Downloading, externalDownload.State);
+    }
+
+    [Fact]
+    public async Task DownloadTorrent_StartImmediately_Subset_AddsPausedAndResumes()
+    {
+        var (unitOfWork, _, _) = await CreateDatabase();
+        var services = CreateServices(unitOfWork, new ParserService());
+
+        services.ScannerService.ParseTorrentFile(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new ParsedTorrentInfo("2 GB", [
+                new TorrentFile("Spice And Wolf Vol. 1.cbz", "Spice And Wolf Vol. 1.cbz", 1024),
+                new TorrentFile("Spice And Wolf Vol. 2.cbz", "Spice And Wolf Vol. 2.cbz", 1024),
+            ]));
+        services.ScannerService
+            .ScanDirectory(Arg.Any<string>(), Arg.Any<ContentFormat>(), Arg.Any<Format>(), Arg.Any<CancellationToken>())
+            .Returns([new OnDiskContent { Volume = "1", Chapter = string.Empty }]);
+        services.QBitClient.GetTorrentsAsync(Arg.Any<TorrentListQuery?>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        services.QBitClient.GetTorrentContentsAsync(SpiceAndWolfHash, Arg.Any<CancellationToken>())
+            .Returns([
+                new TorrentContent
+                {
+                    Index = 0,
+                    Name = "Spice And Wolf Vol. 1.cbz",
+                    Priority = TorrentContentPriority.Minimal
+                },
+                new TorrentContent
+                {
+                    Index = 1,
+                    Name = "Spice And Wolf Vol. 2.cbz",
+                    Priority = TorrentContentPriority.Minimal
+                }
+            ]);
+
+        await services.QBitContentManager.DownloadTorrent(CreateStartImmediatelyRequest(), CancellationToken.None);
+
+        await services.QBitClient.Received()
+            .AddTorrentsAsync(Arg.Is<AddTorrentUrlsRequest>(r => r.Paused), Arg.Any<CancellationToken>());
+        await services.QBitClient.Received()
+            .SetFilePriorityAsync(
+                SpiceAndWolfHash,
+                Arg.Is<IEnumerable<int>>(x => x.SequenceEqual(new[] { 0 })),
+                TorrentContentPriority.Skip,
+                Arg.Any<CancellationToken>());
+        await services.QBitClient.Received()
+            .ResumeTorrentsAsync(
+                Arg.Is<IEnumerable<string>>(x => x.Contains(SpiceAndWolfHash)),
+                Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task DownloadTorrent_StartImmediately_ExistingTorrent_Resumes()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+        var services = CreateServices(unitOfWork, new ParserService());
+
+        services.ScannerService.ParseTorrentFile(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new ParsedTorrentInfo("1 GB", [
+                new TorrentFile("Spice And Wolf Vol. 1.cbz", "Spice And Wolf Vol. 1.cbz", 1024),
+            ]));
+        services.ScannerService
+            .ScanDirectory(Arg.Any<string>(), Arg.Any<ContentFormat>(), Arg.Any<Format>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        services.QBitClient.GetTorrentsAsync(Arg.Any<TorrentListQuery?>(), Arg.Any<CancellationToken>())
+            .Returns([new TorrentInfo { Hash = SpiceAndWolfHash }]);
+
+        await services.QBitContentManager.DownloadTorrent(CreateStartImmediatelyRequest(), CancellationToken.None);
+
+        await services.QBitClient.DidNotReceiveWithAnyArgs().AddTorrentsAsync(null!, default);
+        await services.QBitClient.Received()
+            .ResumeTorrentsAsync(
+                Arg.Is<IEnumerable<string>>(x => x.Contains(SpiceAndWolfHash)),
+                Arg.Any<CancellationToken>());
+
+        var externalDownload = await ctx.ExternalDownloads.SingleAsync();
+        Assert.Equal(ContentState.Downloading, externalDownload.State);
+    }
+
+    [Fact]
+    public async Task DownloadTorrent_Waiting_AllFiles_AddsPaused()
+    {
+        var (unitOfWork, ctx, _) = await CreateDatabase();
+        var services = CreateServices(unitOfWork, new ParserService());
+
+        services.ScannerService.ParseTorrentFile(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new ParsedTorrentInfo("1 GB", [
+                new TorrentFile("Spice And Wolf Vol. 1.cbz", "Spice And Wolf Vol. 1.cbz", 1024),
+            ]));
+        services.ScannerService
+            .ScanDirectory(Arg.Any<string>(), Arg.Any<ContentFormat>(), Arg.Any<Format>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        services.QBitClient.GetTorrentsAsync(Arg.Any<TorrentListQuery?>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        await services.QBitContentManager.DownloadTorrent(CreateDownloadRequestDto(), CancellationToken.None);
+
+        await services.QBitClient.Received()
+            .AddTorrentsAsync(Arg.Is<AddTorrentUrlsRequest>(r => r.Paused), Arg.Any<CancellationToken>());
+        await services.QBitClient.DidNotReceiveWithAnyArgs().ResumeTorrentsAsync(null!, default);
+
+        var externalDownload = await ctx.ExternalDownloads.SingleAsync();
+        Assert.Equal(ContentState.Waiting, externalDownload.State);
     }
 
     #endregion
