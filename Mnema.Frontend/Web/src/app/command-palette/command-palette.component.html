@@ -37,7 +37,7 @@
         <i class="start-hint-icon fa fa-keyboard d-block mb-2" aria-hidden="true"></i>
         <div class="small text-muted">{{ t('start-typing-label') }}</div>
       </div>
-    } @else if (isLoading() && groups().length === 0) {
+    } @else if (isLoading() && displayGroups().length === 0) {
       <div class="px-4 py-2">
         <app-loading-spinner size="small" [centered]="true" [message]="t('loading-label')" />
       </div>
@@ -98,11 +98,7 @@
 
   @if (hasQuery() && !(isLoading() && !hasRealResults())) {
     <div class="visually-hidden" role="status" aria-live="polite">
-      @if (!hasRealResults() && displayItems().length > 0) {
-        {{ t('page-search-count-alt', {count: displayItems().length}) }}
-      } @else {
-        {{ t('results-count-alt', {count: displayItems().length}) }}
-      }
+      {{ t('results-count-alt', {count: displayItems().length}) }}
     </div>
   }
 

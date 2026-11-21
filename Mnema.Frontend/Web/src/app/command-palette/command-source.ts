@@ -6,6 +6,7 @@ export interface CommandSource {
   key: string;
   minQueryLength: number;
   debounceMs: number;
+  onlyWhenEmpty: boolean;
   search(query: string): Observable<CommandGroup[]>;
 }
 

@@ -27,6 +27,7 @@ export class ButtonGroupCommandSource implements CommandSource {
   readonly key = 'button-groups';
   readonly minQueryLength = 1;
   readonly debounceMs = 0;
+  readonly onlyWhenEmpty = false;
 
   private readonly buttonGroupService = inject(ButtonGroupService);
 
