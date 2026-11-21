@@ -49,7 +49,7 @@ export class SeriesSearchComponent implements OnInit {
 
   searchForm = new FormGroup({
     query: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
-    provider: new FormControl(MetadataProvider.Hardcover, {nonNullable: true, validators: [Validators.required]}),
+    provider: new FormControl(MetadataProvider.Mangabaka, {nonNullable: true, validators: [Validators.required]}),
   });
 
   searchOptions = toSignal(this.searchForm.valueChanges.pipe(
@@ -57,9 +57,9 @@ export class SeriesSearchComponent implements OnInit {
     debounceTime(200),
     map(v => ({
       query: v.query ?? '',
-      provider: v.provider ?? MetadataProvider.Hardcover,
+      provider: v.provider ?? MetadataProvider.Mangabaka,
     })),
-  ), { initialValue: { query: '', provider: MetadataProvider.Hardcover } });
+  ), { initialValue: { query: '', provider: MetadataProvider.Mangabaka } });
 
   pageLoader = computed<PageLoader<MetadataSearchResult>>(() => {
     const searchOptions = this.searchOptions();
