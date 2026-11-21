@@ -71,12 +71,8 @@ internal class QBitClient(
                 parameters["tags"] = string.Join(",", request.Tags);
             }
 
-            if (request.Paused)
-            {
-                // qBittorrent 5.0 renamed this parameter to "stopped"; older versions ignore the unknown field
-                parameters["paused"] = "true";
-                parameters["stopped"] = "true";
-            }
+            parameters["paused"] = request.Paused ? "true" : "false";
+            parameters["stopped"] = request.Paused ? "true" : "false";
 
             string body;
             try

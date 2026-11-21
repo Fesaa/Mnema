@@ -1736,7 +1736,10 @@
     "start-typing-label": "Start typing to search",
     "loading-label": "Searching...",
     "search-with-label": "Search with a page",
-    "page-search-count-alt": "{{count}} page searches available",
+    "search-metadata": {
+      "hardcover": "Search Hardcover",
+      "mangabaka": "Search MangaBaka"
+    },
     "no-data": "No results",
     "no-data-description": "Try a different word or check the spelling.",
     "hint-label": "Enter to open, Esc to close",

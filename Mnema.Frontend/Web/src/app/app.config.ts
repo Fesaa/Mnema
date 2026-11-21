@@ -28,6 +28,8 @@ import {provideRetoast} from "ngx-retoast";
 import {COMMAND_SOURCES} from './command-palette/command-source';
 import {ButtonGroupCommandSource} from './command-palette/sources/button-group.command-source';
 import {MonitoredSeriesCommandSource} from './command-palette/sources/monitored-series.command-source';
+import {PageSearchCommandSource} from './command-palette/sources/page-search.command-source';
+import {MetadataSearchCommandSource} from './command-palette/sources/metadata-search.command-source';
 
 function getBaseHref(platformLocation: PlatformLocation): string {
   return platformLocation.getBaseHrefFromDOM();
@@ -58,6 +60,8 @@ export const appConfig: ApplicationConfig = {
 
     {provide: COMMAND_SOURCES, useClass: ButtonGroupCommandSource, multi: true},
     {provide: COMMAND_SOURCES, useClass: MonitoredSeriesCommandSource, multi: true},
+    {provide: COMMAND_SOURCES, useClass: PageSearchCommandSource, multi: true},
+    {provide: COMMAND_SOURCES, useClass: MetadataSearchCommandSource, multi: true},
 
     importProvidersFrom(BrowserAnimationsModule), provideAnimationsAsync(),
     provideZonelessChangeDetection(),

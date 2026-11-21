@@ -1,7 +1,8 @@
-import {ChangeDetectionStrategy, Component, computed, EventEmitter, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, DestroyRef, EventEmitter, inject, OnInit, signal} from '@angular/core';
 import {PageLoader, PaginatorComponent} from "@mnema/shared/_component/paginator/paginator.component";
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
-import {toSignal} from "@angular/core/rxjs-interop";
+import {takeUntilDestroyed, toSignal} from "@angular/core/rxjs-interop";
+import {ActivatedRoute} from "@angular/router";
 import {debounceTime, distinctUntilChanged, map, of, tap} from "rxjs";
 import {EMPTY_PAGE} from "@mnema/_models/paged-list";
 import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
@@ -41,12 +42,14 @@ export class SeriesSearchComponent implements OnInit {
   private readonly metadataService = inject(MetadataService);
   private readonly modalService = inject(ModalService);
   private readonly pageService = inject(PageService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
   metadata = signal<Map<Provider, FormControlDefinition[]>>(new Map());
 
   searchForm = new FormGroup({
     query: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
-    provider: new FormControl(MetadataProvider.Hardcover, {nonNullable: true, validators: [Validators.required]}),
+    provider: new FormControl(MetadataProvider.Mangabaka, {nonNullable: true, validators: [Validators.required]}),
   });
 
   searchOptions = toSignal(this.searchForm.valueChanges.pipe(
@@ -54,9 +57,9 @@ export class SeriesSearchComponent implements OnInit {
     debounceTime(200),
     map(v => ({
       query: v.query ?? '',
-      provider: v.provider ?? MetadataProvider.Hardcover,
+      provider: v.provider ?? MetadataProvider.Mangabaka,
     })),
-  ), { initialValue: { query: '', provider: MetadataProvider.Hardcover } });
+  ), { initialValue: { query: '', provider: MetadataProvider.Mangabaka } });
 
   pageLoader = computed<PageLoader<MetadataSearchResult>>(() => {
     const searchOptions = this.searchOptions();
@@ -74,6 +77,22 @@ export class SeriesSearchComponent implements OnInit {
   });
 
   pageReloader = new EventEmitter<void>();
+
+  constructor() {
+    this.route.queryParamMap.pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(params => {
+      const query = params.get('query');
+      if (query === null) return;
+
+      this.searchForm.patchValue({
+        query,
+        provider: Number(params.get('provider')) === MetadataProvider.Mangabaka
+          ? MetadataProvider.Mangabaka
+          : MetadataProvider.Hardcover,
+      });
+    });
+  }
 
   ngOnInit(){
     this.pageService.monitoredSeriesMetadata().pipe(

@@ -6,20 +6,19 @@ import {
   computed,
   ElementRef,
   inject,
+  Signal,
   signal,
   viewChild,
   viewChildren,
 } from '@angular/core';
 import {toObservable, toSignal} from '@angular/core/rxjs-interop';
-import {Router} from '@angular/router';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
-import {translate, TranslocoDirective} from '@jsverse/transloco';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {map, of, startWith, switchMap, timer} from 'rxjs';
 import {ProviderNamePipe} from '@mnema/_pipes/provider-name.pipe';
-import {PageService} from '@mnema/_services/page.service';
 import {LoadingSpinnerComponent} from '@mnema/shared/_component/loading-spinner/loading-spinner.component';
 import {CommandGroup, CommandItem} from './command.model';
-import {COMMAND_SOURCES} from './command-source';
+import {COMMAND_SOURCES, CommandSource} from './command-source';
 
 interface SourceState {
   loading: boolean;
@@ -42,72 +41,34 @@ export class CommandPaletteComponent {
 
   private readonly sources = inject(COMMAND_SOURCES);
   private readonly activeModal = inject(NgbActiveModal);
-  private readonly router = inject(Router);
-  private readonly pageService = inject(PageService);
 
   protected query = signal('');
   protected activeIndex = signal(0);
 
   private readonly query$ = toObservable(this.query);
-  private readonly sourceStates = this.sources.map(source => {
-    const state = toSignal<SourceState>(
-      this.query$.pipe(
-        switchMap(query => {
-          const term = query.trim();
-          if (term.length < source.minQueryLength) return of(EMPTY_SOURCE_STATE);
 
-          const search$ = source.debounceMs > 0
-            ? timer(source.debounceMs).pipe(switchMap(() => source.search(term)))
-            : source.search(term);
-
-          return search$.pipe(
-            map(groups => ({loading: false, groups})),
-            startWith({loading: true, groups: [] as CommandGroup[]}),
-          );
-        }),
-      ),
-    );
-
-    return computed<SourceState>(() => state() ?? EMPTY_SOURCE_STATE);
-  });
+  private readonly primaryStates = this.statesFor(false);
+  private readonly fallbackStates = this.statesFor(true);
 
   protected readonly hasQuery = computed(() => this.query().trim().length > 0);
 
-  protected readonly groups = computed<CommandGroup[]>(() => this.sourceStates
+  private readonly primaryGroups = computed<CommandGroup[]>(() => this.primaryStates
     .flatMap(state => state().groups)
     .sort((a, b) => a.order - b.order));
 
-  protected readonly isLoading = computed(() => this.sourceStates.some(state => state().loading));
+  private readonly fallbackGroups = computed<CommandGroup[]>(() => this.fallbackStates
+    .flatMap(state => state().groups)
+    .sort((a, b) => a.order - b.order));
 
-  private readonly pageSearchItems = computed<CommandItem[]>(() => {
-    const term = this.query().trim();
-    if (!term) return [];
+  protected readonly isLoading = computed(() =>
+    this.primaryStates.some(state => state().loading)
+    || (this.primaryGroups().length === 0 && this.fallbackStates.some(state => state().loading)));
 
-    return this.pageService.pages().map(page => ({
-      id: `page-search:${page.id}`,
-      title: page.title,
-      icon: `fa ${page.icon}`,
-      run: () => {
-        this.router.navigate(['/page'], {queryParams: {id: page.id, query: term}})
-          .catch(err => console.error(err));
-      },
-    }));
-  });
-
-  protected readonly hasRealResults = computed(() => this.groups().length > 0);
+  protected readonly hasRealResults = computed(() => this.primaryGroups().length > 0);
 
   protected readonly displayGroups = computed<CommandGroup[]>(() => {
-    if (this.hasRealResults()) return this.groups();
-
-    const items = this.pageSearchItems();
-    if (items.length === 0) return [];
-
-    return [{
-      key: 'page-search',
-      title: translate('command-palette.search-with-label'),
-      order: 1000,
-      items,
-    }];
+    if (this.hasRealResults() || this.isLoading()) return this.primaryGroups();
+    return this.fallbackGroups();
   });
 
   protected readonly displayItems = computed<CommandItem[]>(() => this.displayGroups()
@@ -179,6 +140,34 @@ export class CommandPaletteComponent {
 
   protected close(): void {
     this.activeModal.dismiss();
+  }
+
+  private statesFor(onlyWhenEmpty: boolean): Signal<SourceState>[] {
+    return this.sources
+      .filter(source => source.onlyWhenEmpty === onlyWhenEmpty)
+      .map(source => this.createSourceState(source));
+  }
+
+  private createSourceState(source: CommandSource): Signal<SourceState> {
+    const state = toSignal<SourceState>(
+      this.query$.pipe(
+        switchMap(query => {
+          const term = query.trim();
+          if (term.length < source.minQueryLength) return of(EMPTY_SOURCE_STATE);
+
+          const search$ = source.debounceMs > 0
+            ? timer(source.debounceMs).pipe(switchMap(() => source.search(term)))
+            : source.search(term);
+
+          return search$.pipe(
+            map(groups => ({loading: false, groups})),
+            startWith({loading: true, groups: [] as CommandGroup[]}),
+          );
+        }),
+      ),
+    );
+
+    return computed<SourceState>(() => state() ?? EMPTY_SOURCE_STATE);
   }
 
   private move(delta: number): void {

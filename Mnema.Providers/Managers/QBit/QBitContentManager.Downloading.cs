@@ -78,11 +78,15 @@ internal partial class QBitContentManager
         logger.LogDebug("[{Title}/{Id}] Found {Count}/{TotalCount} files to download",
             title, request.Id, toDownload.Count, seriesFiles.Count);
 
+        var needsFileFiltering = toDownload.Count != torrentInfo.Files.Count;
+        var addUnpaused = request.StartImmediately && !needsFileFiltering;
+
         ExternalDownload? externalDownload = null;
 
         try
         {
-            var newDownload = await EnsureTorrentAddedAsync(request, title, ct);
+            var newDownload = await EnsureTorrentAddedAsync(request, paused: !addUnpaused, ct);
+            var startedByAdd = newDownload && addUnpaused;
 
             externalDownload = await SaveExternalDownloadRecord(services.UnitOfWork, request, title, seriesFiles, toDownload, ct);
 
@@ -96,7 +100,7 @@ internal partial class QBitContentManager
                     " Metadata will be reloading on cleanup.");
             }
 
-            if (toDownload.Count != torrentInfo.Files.Count)
+            if (needsFileFiltering)
             {
                 await ApplyTorrentFileFiltersAsync(request.Id, seriesFiles, toDownload, newDownload, ct,
                     required: !hasNoDownloadsBecauseMissingMetadata);
@@ -104,7 +108,10 @@ internal partial class QBitContentManager
 
             if (request.StartImmediately)
             {
-                await qBitClient.ResumeTorrentsAsync([request.Id], ct);
+                if (!startedByAdd)
+                {
+                    await qBitClient.ResumeTorrentsAsync([request.Id], ct);
+                }
 
                 externalDownload.State = ContentState.Downloading;
                 services.UnitOfWork.ExternalDownloadRepository.Update(externalDownload);
@@ -218,7 +225,7 @@ internal partial class QBitContentManager
         return false;
     }
 
-    internal async Task<bool> EnsureTorrentAddedAsync(DownloadRequestDto request, string title, CancellationToken ct)
+    internal async Task<bool> EnsureTorrentAddedAsync(DownloadRequestDto request, bool paused, CancellationToken ct)
     {
         var listRequest = new TorrentListQuery
         {
@@ -244,7 +251,7 @@ internal partial class QBitContentManager
                 Category = MnemaCategory,
                 Tags = [request.Provider.ToString()],
                 DownloadFolder = Path.Join(configuration.DownloadDir, downloadDirSuffix),
-                Paused = true,
+                Paused = paused,
             };
 
             await qBitClient.AddTorrentsAsync(addRequest, ct);

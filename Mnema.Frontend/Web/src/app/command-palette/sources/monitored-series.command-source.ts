@@ -19,6 +19,7 @@ export class MonitoredSeriesCommandSource implements CommandSource {
   readonly key = GROUP_KEY;
   readonly minQueryLength = 2;
   readonly debounceMs = 200;
+  readonly onlyWhenEmpty = false;
 
   private readonly monitoredSeriesService = inject(MonitoredSeriesService);
   private readonly router = inject(Router);
