@@ -42,6 +42,11 @@ export const routes: Routes = [
     loadChildren: () => import('./_routes/dev-tools.routes').then(m => m.routes)
   },
   {
+    path: 'debug',
+    canActivate: [setupGuard, authGuard],
+    loadChildren: () => import('./_routes/debug.routes').then(m => m.routes)
+  },
+  {
     path: 'initial-setup',
     canActivate: [setupCompleteGuard],
     component: InitialSetupComponent,

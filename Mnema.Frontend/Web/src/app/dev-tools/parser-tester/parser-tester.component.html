@@ -1,0 +1,46 @@
+<div class="container py-4">
+
+  <h2 class="mb-4">Parser Tester</h2>
+
+  <div class="d-flex gap-2 mb-3 align-items-start">
+    <textarea
+      class="form-control font-monospace"
+      rows="3"
+      [(ngModel)]="query"
+      (keydown.enter)="parse()"
+      placeholder="e.g. ROLL OVER AND DIE - I Will Fight for an Ordinary Life with My Love and Cursed Sword! v01-07 [Seven Seas] [Stick]"></textarea>
+    <select
+      class="form-select w-auto"
+      [(ngModel)]="selectedFormat">
+      @for (format of contentFormats; track format.name) {
+        <option [ngValue]="format.value">{{ format.name }}</option>
+      }
+    </select>
+    <button
+      class="btn btn-primary text-nowrap"
+      [disabled]="loading() || !query.trim()"
+      (click)="parse()">
+      {{ loading() ? 'Parsing…' : 'Parse' }}
+    </button>
+  </div>
+
+  @if (error(); as error) {
+    <div class="alert alert-danger">{{ error }}</div>
+  }
+
+  @if (result(); as result) {
+    <dl class="row">
+      <dt class="col-sm-2">Series</dt>
+      <dd class="col-sm-10">{{ result.series.length ? result.series.join(' ') : 'No series' }}</dd>
+
+      <dt class="col-sm-2">Volume</dt>
+      <dd class="col-sm-10">'{{ result.volume.value }}' ({{ result.volume.minNumber }} – {{ result.volume.maxNumber }})</dd>
+
+      <dt class="col-sm-2">Chapter</dt>
+      <dd class="col-sm-10">'{{ result.chapter.value }}' ({{ result.chapter.minNumber }} – {{ result.chapter.maxNumber }})</dd>
+    </dl>
+
+    <pre class="bg-body-secondary p-3 rounded">{{ result | json }}</pre>
+  }
+
+</div>
