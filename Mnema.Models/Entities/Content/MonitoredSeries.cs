@@ -50,6 +50,12 @@ public class MonitoredSeries: IEntityDate, IDatabaseEntity
 
     public string HardcoverId { get; set; }
     public string MangaBakaId { get; set; }
+
+    /// <summary>
+    ///     Optional link to a specific Mangabaka collection. When set, this collection is used instead of the
+    ///     automatically selected one.
+    /// </summary>
+    public string? MangaBakaCollectionId { get; set; }
     /// <summary>
     /// This is the ID from a <see cref="Enums.Provider"/>. This only makes sense for Mangadex, etc. Not for torrent sites
     /// </summary>

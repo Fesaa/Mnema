@@ -16,6 +16,19 @@ export interface MetadataSearchResult extends Series {
   monitoredSeriesId: string[];
 }
 
+export interface MangabakaCollection {
+  id: string;
+  seriesId: number;
+  title?: string;
+  type?: string;
+  medium?: string;
+  countMain: number;
+  countExtra: number;
+  countOther: number;
+  languageIso?: string;
+  publisherName?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -39,6 +52,14 @@ export class MetadataService {
 
   getSeriesById(provider: MetadataProvider, id: string) {
     return this.httpClient.get<Series>(this.baseUrl + `/get-series&provider=${provider}&externalId=${id}`);
+  }
+
+  getCollections(externalId: string) {
+    const httpParams = new HttpParams().set('externalId', externalId);
+
+    return this.httpClient.get<MangabakaCollection[]>(this.baseUrl + `/mangabaka-collections`, {
+      params: httpParams,
+    });
   }
 
 }

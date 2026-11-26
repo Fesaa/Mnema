@@ -144,6 +144,70 @@ public class MangabakaCollectionTests
     }
 
     [Fact]
+    public void SelectCollection_LinkedCollectionId_WinsOverAutoSelection()
+    {
+        var collections = new List<MangabakaCollection>
+        {
+            Collection("paperback", "volume", "paperback", "en"),
+            Collection("digital", "volume", "digital", "en"),
+        };
+
+        var result = MangabakaMetadataService.SelectCollection(collections,
+            MangabakaCollectionMedium.PreferPhysical, "ja", "digital");
+
+        Assert.NotNull(result);
+        Assert.Equal("digital", result.Id);
+    }
+
+    [Fact]
+    public void SelectCollection_LinkedCollectionId_FallsBackToAutoSelectionWhenNotFound()
+    {
+        var collections = new List<MangabakaCollection>
+        {
+            Collection("paperback", "volume", "paperback", "en"),
+            Collection("digital", "volume", "digital", "en"),
+        };
+
+        var result = MangabakaMetadataService.SelectCollection(collections,
+            MangabakaCollectionMedium.PreferPhysical, "ja", "does-not-exist");
+
+        Assert.NotNull(result);
+        Assert.Equal("paperback", result.Id);
+    }
+
+    [Fact]
+    public void SelectCollection_LinkedCollectionId_SkipsEmptyLinkedCollection()
+    {
+        var collections = new List<MangabakaCollection>
+        {
+            Collection("empty", "volume", "paperback", "en", 0),
+            Collection("digital", "volume", "digital", "en"),
+        };
+
+        var result = MangabakaMetadataService.SelectCollection(collections,
+            MangabakaCollectionMedium.PreferPhysical, "ja", "empty");
+
+        Assert.NotNull(result);
+        Assert.Equal("digital", result.Id);
+    }
+
+    [Fact]
+    public void SelectCollection_NoLinkedCollectionId_UsesAutoSelection()
+    {
+        var collections = new List<MangabakaCollection>
+        {
+            Collection("paperback", "volume", "paperback", "en"),
+            Collection("digital", "volume", "digital", "en"),
+        };
+
+        var result = MangabakaMetadataService.SelectCollection(collections,
+            MangabakaCollectionMedium.PreferDigital, "ja", null);
+
+        Assert.NotNull(result);
+        Assert.Equal("digital", result.Id);
+    }
+
+    [Fact]
     public void ToChapter_MapsVolumeCollection()
     {
         var collection = Collection("paperback", "volume", "paperback", "en");
@@ -278,7 +342,8 @@ public class MangabakaCollectionTests
               "count_main": 16,
               "count_extra": 0,
               "count_other": 0,
-              "language": { "iso": "en", "language": "English (English)" }
+              "language": { "iso": "en", "language": "English (English)" },
+              "publisher": { "id": 18, "type": "publisher", "name": "Yen Press" }
             }
           ],
           "pagination": { "count": 2, "limit": 50, "next": null }
@@ -291,6 +356,7 @@ public class MangabakaCollectionTests
         Assert.NotNull(response);
         Assert.Equal(2, response.Data!.Count);
         Assert.Equal("en", response.Data[1].Language!.Iso);
+        Assert.Equal("Yen Press", response.Data[1].Publisher!.Name);
 
         var selected = MangabakaMetadataService.SelectCollection(response.Data,
             MangabakaCollectionMedium.PreferPhysical, "ja");

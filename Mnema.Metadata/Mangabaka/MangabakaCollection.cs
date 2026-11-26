@@ -31,9 +31,21 @@ internal sealed record MangabakaCollection
     [JsonPropertyName("language")]
     public LanguageInfo? Language { get; init; }
 
+    [JsonPropertyName("publisher")]
+    public PublisherInfo? Publisher { get; init; }
+
     internal sealed record LanguageInfo
     {
         [JsonPropertyName("iso")]
         public string? Iso { get; init; }
+    }
+
+    internal sealed record PublisherInfo
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; init; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; init; }
     }
 }

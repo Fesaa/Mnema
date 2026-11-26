@@ -23,6 +23,7 @@ export type MonitoredSeries = {
   contentFormat: ContentFormat;
   hardcoverId: string,
   mangaBakaId: string;
+  mangaBakaCollectionId?: string;
   externalId: string;
   titleOverride: string;
   validTitles: string[];

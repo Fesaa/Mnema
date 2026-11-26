@@ -174,26 +174,32 @@ internal class MangabakaMetadataService(
         var series = await ctx.Series.FirstOrDefaultAsync(s => s.Id == seriesId, ct);
         if (series == null) return null;
 
-        var monitoredSeriesById = (await unitOfWork.MonitoredSeriesRepository
-                .GetByMangaBakaIds([series.Id.ToString()], ct))
+        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository
+            .GetByMangaBakaIds([series.Id.ToString()], ct);
+
+        var monitoredSeriesById = monitoredSeries
             .GroupBy(s => s.MangaBakaId)
             .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList());
+
+        var linkedCollectionId = monitoredSeries
+            .Select(m => m.MangaBakaCollectionId)
+            .FirstOrDefault(id => !string.IsNullOrEmpty(id));
 
         List<Chapter> chapters = [];
         if (metadataPreferences.Chapters)
         {
-            chapters = await GetChapters(series, metadataPreferences, ct);
+            chapters = await GetChapters(series, metadataPreferences, linkedCollectionId, ct);
         }
 
         return ConvertToSeries(series, monitoredSeriesById, metadataPreferences, preferences, chapters);
     }
 
     private async Task<List<Chapter>> GetChapters(MangabakaSeries series, MetadataProviderSettings settings,
-        CancellationToken cancellationToken)
+        string? linkedCollectionId, CancellationToken cancellationToken)
     {
         var collections = await GetCollections(series.Id, cancellationToken);
         var collection = SelectCollection(collections,
-            settings.GetKey(MangaBakaMetadataConfiguration.CollectionMedium), series.NativeLanguage);
+            settings.GetKey(MangaBakaMetadataConfiguration.CollectionMedium), series.NativeLanguage, linkedCollectionId);
 
         if (collection == null)
             return [];
@@ -216,7 +222,7 @@ internal class MangabakaMetadataService(
         while (!string.IsNullOrEmpty(pagination?.Next))
         {
             var response = await HttpClient.GetCachedAsync<PaginatedResponse<MangabakaCollection>>(pagination.Next,
-                cache, CollectionCacheOptions, cancellationToken);
+                cache, CollectionCacheOptions, cancellationToken, cacheKeyVersion: "v2");
 
             if (response.IsErr)
             {
@@ -245,6 +251,30 @@ internal class MangabakaMetadataService(
         return collections;
     }
 
+    public async Task<List<MangabakaCollectionDto>> GetCollections(string externalId, CancellationToken cancellationToken)
+    {
+        if (!int.TryParse(externalId, out var seriesId))
+            return [];
+
+        var collections = await GetCollections(seriesId, cancellationToken);
+
+        return collections
+            .Select(c => new MangabakaCollectionDto
+            {
+                Id = c.Id,
+                SeriesId = c.SeriesId,
+                Title = c.Title,
+                Type = c.Type,
+                Medium = c.Medium,
+                CountMain = c.CountMain,
+                CountExtra = c.CountExtra,
+                CountOther = c.CountOther,
+                LanguageIso = c.Language?.Iso,
+                PublisherName = c.Publisher?.Name,
+            })
+            .ToList();
+    }
+
     private async Task<List<MangabakaWork>> GetWorks(string collectionId, CancellationToken cancellationToken)
     {
         var response = await HttpClient.GetCachedAsync<MangabakaCollectionFullResponse>(
@@ -269,9 +299,20 @@ internal class MangabakaMetadataService(
     }
 
     internal static MangabakaCollection? SelectCollection(IEnumerable<MangabakaCollection> collections,
-        MangabakaCollectionMedium medium, string? nativeLanguage)
+        MangabakaCollectionMedium medium, string? nativeLanguage, string? linkedCollectionId = null)
     {
-        return collections
+        var collectionList = collections.ToList();
+
+        if (!string.IsNullOrEmpty(linkedCollectionId))
+        {
+            var linked = collectionList
+                .FirstOrDefault(c => c.Id == linkedCollectionId && c.CountMain + c.CountExtra + c.CountOther > 0);
+
+            if (linked != null)
+                return linked;
+        }
+
+        return collectionList
             .Where(c => c.CountMain + c.CountExtra + c.CountOther > 0)
             .OrderBy(c => MediumRank(c.Medium, medium))
             .ThenBy(c => TypeRank(c.Type))

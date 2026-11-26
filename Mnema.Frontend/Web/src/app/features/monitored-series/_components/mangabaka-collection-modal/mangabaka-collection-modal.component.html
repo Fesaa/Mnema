@@ -1,0 +1,43 @@
+<ng-container *transloco="let t; prefix: 'mangabaka-collection-modal'">
+
+  <div class="modal-container">
+
+    <div class="modal-header">
+      <h5 class="modal-title fw-semibold">{{t('title', {name: series().title})}}</h5>
+      <button type="button" class="btn-close" [attr.aria-label]="t('close')" (click)="close()">
+      </button>
+    </div>
+
+    <div class="modal-body scrollable-modal">
+      <p class="text-body-secondary">{{t('explanation')}}</p>
+
+      @if (loading()) {
+        <p class="text-body-secondary">{{t('loading')}}</p>
+      } @else if (collections().length === 0) {
+        <p class="text-body-secondary">{{t('empty')}}</p>
+      } @else {
+        <label class="form-label fw-semibold" for="mangabaka-collection">{{t('collection-label')}}</label>
+        <select id="mangabaka-collection" class="form-select"
+                [ngModel]="selectedCollectionId()"
+                (ngModelChange)="selectedCollectionId.set($event)">
+          <option value="">{{t('auto')}}</option>
+          @for (collection of collections(); track collection.id) {
+            <option [value]="collection.id">{{collectionLabel(collection)}}</option>
+          }
+        </select>
+        <div class="form-text">{{t('hint')}}</div>
+      }
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="close()">
+        {{t('cancel')}}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || loading()">
+        {{t('save')}}
+      </button>
+    </div>
+
+  </div>
+
+</ng-container>

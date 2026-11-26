@@ -34,6 +34,9 @@ import {DefaultModalOptions} from "@mnema/_models/default-modal-options";
 import {
   EditMonitoredSeriesModalComponent
 } from "@mnema/features/monitored-series/_components/edit-monitored-series-modal/edit-monitored-series-modal.component";
+import {
+  MangabakaCollectionModalComponent
+} from "@mnema/features/monitored-series/_components/mangabaka-collection-modal/mangabaka-collection-modal.component";
 import {ListSelectModalComponent} from "@mnema/shared/_component/list-select-modal/list-select-modal.component";
 import {EventType, SignalRService} from "@mnema/_services/signal-r.service";
 import {SearchInfo} from "@mnema/_models/Info";
@@ -590,6 +593,17 @@ export class MonitoredSeriesComponent implements OnInit {
           switchMap(() => this.monitoredSeriesService.get(series.id)),
         );
       }),
+      tap(mSeries => this.series.set(mSeries)),
+    ).subscribe();
+  }
+
+  protected pickCollection() {
+    const [modal, component] = this.modalService.open(MangabakaCollectionModalComponent, DefaultModalOptions);
+
+    component.series.set(this.series());
+
+    this.modalService.onClose$(modal).pipe(
+      switchMap(s => this.monitoredSeriesService.get((s as MonitoredSeries).id)),
       tap(mSeries => this.series.set(mSeries)),
     ).subscribe();
   }

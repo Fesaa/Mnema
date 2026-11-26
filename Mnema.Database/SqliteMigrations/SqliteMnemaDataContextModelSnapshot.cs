@@ -16,7 +16,7 @@ namespace Mnema.Database.SqliteMigrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.14");
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
                 {
@@ -354,6 +354,9 @@ namespace Mnema.Database.SqliteMigrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("LastModifiedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MangaBakaCollectionId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("MangaBakaId")
