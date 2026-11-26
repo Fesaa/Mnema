@@ -34,9 +34,9 @@ public class MetadataResolverTests(ITestOutputHelper testOutputHelper) : Databas
         )
     {
         var metadataProviderService = Substitute.For<IMetadataProviderService>();
-        metadataProviderService.GetSeries("1", CancellationToken.None)
+        metadataProviderService.GetSeries("1", MetadataBag.Empty, CancellationToken.None)
             .Returns(hardCoverSeries);
-        metadataProviderService.GetSeries("2", CancellationToken.None)
+        metadataProviderService.GetSeries("2", MetadataBag.Empty, CancellationToken.None)
             .Returns(mangabakaSeries);
         metadataProviderService.GetCovers("1", CancellationToken.None)
             .Returns(hardCoverCovers ?? []);

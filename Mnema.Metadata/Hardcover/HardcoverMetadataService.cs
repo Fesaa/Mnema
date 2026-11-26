@@ -75,7 +75,7 @@ public class HardcoverMetadataService(
             perPage);
     }
 
-    public async Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken)
+    public async Task<Series?> GetSeries(string externalId, MetadataBag metadata, CancellationToken cancellationToken)
     {
         ISeriesDetails? series;
 

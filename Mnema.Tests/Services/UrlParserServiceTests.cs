@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.Content;
+using Mnema.Common;
 using Mnema.Models.DTOs.Content;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
@@ -186,7 +187,7 @@ public class UrlParserServiceTests
             });
 
         var metadataProvider = Substitute.For<IMetadataProviderService>();
-        metadataProvider.GetSeries(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        metadataProvider.GetSeries(Arg.Any<string>(), MetadataBag.Empty, Arg.Any<CancellationToken>())
             .Returns(call =>
             {
                 var id = call.Arg<string>();

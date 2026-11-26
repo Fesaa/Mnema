@@ -15,6 +15,7 @@ using Mnema.Common.Exceptions;
 using Mnema.Common.Extensions;
 using Mnema.Common.StringFormatter;
 using Mnema.Models.DTOs;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.External;
 using Mnema.Models.Entities;
 using Mnema.Models.Enums;
@@ -163,7 +164,7 @@ internal class MangabakaMetadataService(
         return query;
     }
 
-    public async Task<Series?> GetSeries(string externalId, CancellationToken ct)
+    public async Task<Series?> GetSeries(string externalId, MetadataBag metadata, CancellationToken ct)
     {
         if (!int.TryParse(externalId, out var seriesId))
             return null;
@@ -174,21 +175,17 @@ internal class MangabakaMetadataService(
         var series = await ctx.Series.FirstOrDefaultAsync(s => s.Id == seriesId, ct);
         if (series == null) return null;
 
-        var monitoredSeries = await unitOfWork.MonitoredSeriesRepository
-            .GetByMangaBakaIds([series.Id.ToString()], ct);
-
-        var monitoredSeriesById = monitoredSeries
+        var monitoredSeriesById = (await unitOfWork.MonitoredSeriesRepository
+                .GetByMangaBakaIds([series.Id.ToString()], ct))
             .GroupBy(s => s.MangaBakaId)
             .ToDictionary(s => s.Key, s => s.Select(m => m.Id).ToList());
 
-        var linkedCollectionId = monitoredSeries
-            .Select(m => m.MangaBakaCollectionId)
-            .FirstOrDefault(id => !string.IsNullOrEmpty(id));
+        var collectionId = metadata.GetKey(RequestConstants.MangaBakaCollectionIdKey);
 
         List<Chapter> chapters = [];
         if (metadataPreferences.Chapters)
         {
-            chapters = await GetChapters(series, metadataPreferences, linkedCollectionId, ct);
+            chapters = await GetChapters(series, metadataPreferences, collectionId, ct);
         }
 
         return ConvertToSeries(series, monitoredSeriesById, metadataPreferences, preferences, chapters);

@@ -51,10 +51,11 @@ public interface IMetadataProviderService
     /// Return all known metadata for a given entity from the external provider
     /// </summary>
     /// <param name="externalId"></param>
+    /// <param name="metadata"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <remarks>It is assumed this is cached</remarks>
-    Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken);
+    Task<Series?> GetSeries(string externalId, MetadataBag metadata, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retruns all covers for a given entity from the external provider

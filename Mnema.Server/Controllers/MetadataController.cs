@@ -17,14 +17,13 @@ public class MetadataController(IServiceProvider serviceProvider): BaseApiContro
 {
 
     [HttpGet("get-series")]
-    public async Task<ActionResult<Series>> GetSeriesMetadataById([FromQuery] MetadataProvider provider,
-        [FromQuery] string externalId)
+    public async Task<ActionResult<Series>> GetSeriesMetadataById([FromQuery] MetadataProvider provider, [FromQuery] string externalId)
     {
         var metadataService = serviceProvider.GetKeyedService<IMetadataProviderService>(provider);
         if (metadataService == null)
             return NotFound();
 
-        return Ok(await metadataService.GetSeries(externalId, HttpContext.RequestAborted));
+        return Ok(await metadataService.GetSeries(externalId, MetadataBag.Empty, HttpContext.RequestAborted));
     }
 
     [HttpGet("get-covers")]

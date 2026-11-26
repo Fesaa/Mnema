@@ -13,7 +13,7 @@ public class NoOpMetadataService: IMetadataProviderService
         return Task.FromResult(PagedList<MetadataSearchResult>.Empty());
     }
 
-    public Task<Series?> GetSeries(string externalId, CancellationToken cancellationToken)
+    public Task<Series?> GetSeries(string externalId, MetadataBag metadata, CancellationToken cancellationToken)
     {
         return Task.FromResult<Series?>(null);
     }
