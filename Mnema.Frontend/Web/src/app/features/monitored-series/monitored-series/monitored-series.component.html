@@ -54,6 +54,9 @@
                       <a [href]="'https://mangabaka.org/' + s.mangaBakaId" rel="noreferrer nofollow noopener" target="_blank" class="btn btn-sm btn-secondary text-white">
                         <img src="/assets/icons/mangabaka.ico" alt="MangaBaka" class="logo">
                       </a>
+                      <button type="button" class="btn btn-sm btn-secondary text-white" (click)="pickCollection()" [ngbTooltip]="t('collection-tooltip')">
+                        <i class="fa fa-layer-group"></i>
+                      </button>
                     }
                     @if (s.externalId) {
                       <a [href]="s.externalId | subscriptionExternalUrl:s.provider" rel="noreferrer nofollow noopener" target="_blank" class="btn btn-sm btn-secondary text-white">

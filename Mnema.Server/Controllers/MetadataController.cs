@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mnema.API.Content;
+using Mnema.API.Metadata;
 using Mnema.Common;
 using Mnema.Models.DTOs;
 using Mnema.Models.DTOs.External;
@@ -35,6 +36,16 @@ public class MetadataController(IServiceProvider serviceProvider): BaseApiContro
             return NotFound();
 
         return Ok(await metadataService.GetCovers(externalId, HttpContext.RequestAborted));
+    }
+
+    [HttpGet("mangabaka-collections")]
+    public async Task<ActionResult<List<MangabakaCollectionDto>>> GetMangabakaCollections([FromQuery] string externalId)
+    {
+        var mangabakaService = serviceProvider.GetService<IMangabakaMetadataService>();
+        if (mangabakaService == null)
+            return NotFound();
+
+        return Ok(await mangabakaService.GetCollections(externalId, HttpContext.RequestAborted));
     }
 
     [HttpPost("resolve-series")]

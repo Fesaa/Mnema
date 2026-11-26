@@ -33,6 +33,8 @@ public sealed record MonitoredSeriesDto: IDatabaseEntity
 
     public string HardcoverId { get; init; }
     public string MangaBakaId { get; init; }
+    /// <inheritdoc cref="MonitoredSeries.MangaBakaCollectionId" />
+    public string? MangaBakaCollectionId { get; init; }
     /// <inheritdoc cref="MonitoredSeries.ExternalId" />
     public string ExternalId { get; set; }
     public string TitleOverride { get; init; }

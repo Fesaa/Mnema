@@ -23,6 +23,7 @@ public class CreateOrUpdateMonitoredSeriesDto
 
     public string HardcoverId { get; set; }
     public string MangaBakaId { get; set; }
+    public string? MangaBakaCollectionId { get; set; }
     /// <inheritdoc cref="MonitoredSeries.ExternalId" />
     public string ExternalId { get; set; }
     public string TitleOverride { get; set; }

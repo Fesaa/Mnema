@@ -1410,6 +1410,29 @@
     "disable_shedulded_downloading-tooltip": "Won't be matched against in the automatic download loop. Can be used for import only series."
   },
 
+  "mangabaka-collection-modal": {
+    "title": "Mangabaka collection: {{name}}",
+    "close": "{{common.close}}",
+    "cancel": "{{common.cancel}}",
+    "save": "{{common.save}}",
+    "explanation": "Mnema automatically picks the best matching Mangabaka collection for this series based on your metadata provider settings (collection medium, language, ...). Pin a specific collection here to override that choice.",
+    "loading": "Loading collections...",
+    "empty": "No collections found for this series.",
+    "collection-label": "Collection",
+    "auto": "Auto (pick best match)",
+    "hint": "The pinned collection is used when refreshing this series' chapter metadata.",
+    "toasts": {
+      "success": {
+        "title": "Updated {{name}}",
+        "summary": ""
+      },
+      "error": {
+        "title": "Failed to update {{name}}",
+        "summary": "{{msg}}"
+      }
+    }
+  },
+
   "input": {
     "errors": {
       "required": "This field is required.",
@@ -1492,6 +1515,7 @@
     "confirm-delete": "Are you sure you want to stop monitoring {{name}}",
     "select-status": "Set chapter status",
     "confirm-refresh-metadata": "Refresh metadata for {{name}}?",
+    "collection-tooltip": "Pick which Mangabaka collection is linked to this series",
     "select-search-result": "Search results",
     "confirm-download": "Are you sure you want to start a download for {{name}}?",
     "download-started": {

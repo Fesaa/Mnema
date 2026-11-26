@@ -74,9 +74,10 @@ public static class HttpClientExtensions
             string url,
             IDistributedCache cache,
             DistributedCacheEntryOptions? cacheEntryOptions = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            string? cacheKeyVersion = null)
         {
-            var cacheKey = httpClient.BaseAddress + url;
+            var cacheKey = (cacheKeyVersion ?? string.Empty) + httpClient.BaseAddress + url;
 
             var cachedResponse = await cache.GetAsJsonAsync<TResult>(cacheKey, cancellationToken);
             if (cachedResponse != null) return Result<TResult, HttpRequestException>.Ok(cachedResponse);

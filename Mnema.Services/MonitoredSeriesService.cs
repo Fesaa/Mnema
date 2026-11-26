@@ -58,6 +58,7 @@ public class MonitoredSeriesService(
         series.TitleOverride = dto.TitleOverride;
         series.HardcoverId = dto.HardcoverId;
         series.MangaBakaId = dto.MangaBakaId;
+        series.MangaBakaCollectionId = dto.MangaBakaCollectionId;
         series.ExternalId = dto.ExternalId;
         series.Metadata = dto.Metadata;
 
@@ -84,6 +85,7 @@ public class MonitoredSeriesService(
             Format = dto.Format,
             HardcoverId = dto.HardcoverId,
             MangaBakaId = dto.MangaBakaId,
+            MangaBakaCollectionId = dto.MangaBakaCollectionId,
             ExternalId = dto.ExternalId,
             Metadata = dto.Metadata,
             TitleOverride = dto.TitleOverride,
