@@ -72,14 +72,6 @@ public class ManhwausRepository(IHttpClientFactory httpClientFactory, IDistribut
                 Key = RequestConstants.TitleOverride.Key,
                 Advanced = true
             },
-            new TextFieldDefinition
-            {
-                Key = RequestConstants.HardcoverSeriesIdKey.Key,
-            },
-            new TextFieldDefinition
-            {
-                Key = RequestConstants.MangaBakaKey.Key,
-            }
         ]);
     }
 

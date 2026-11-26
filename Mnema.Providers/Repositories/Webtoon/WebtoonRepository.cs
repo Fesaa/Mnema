@@ -282,14 +282,6 @@ internal partial class WebtoonRepository(
                 Key = RequestConstants.TitleOverride.Key,
                 Advanced = true
             },
-            new TextFieldDefinition
-            {
-                Key = RequestConstants.HardcoverSeriesIdKey.Key,
-            },
-            new TextFieldDefinition
-            {
-                Key = RequestConstants.MangaBakaKey.Key,
-            },
             new SwitchFieldDefinition
             {
                 Key = ForceIndexChapterNumbers.Key,
