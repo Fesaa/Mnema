@@ -377,7 +377,7 @@ internal class DiscordConnectionService(
         var username = connection.Metadata.GetKey(UsernameKey);
         var avatar = connection.Metadata.GetKey(AvatarKey);
 
-        using var client = new DiscordWebhookClient(url);
+        using var client = await GetClientWithRetry(url);
 
         try
         {
@@ -389,6 +389,20 @@ internal class DiscordConnectionService(
             await Task.Delay(1000);
 
             await client.SendMessageAsync(username: username, avatarUrl: avatar, embeds: embeds, components: components);
+        }
+    }
+
+    private async Task<DiscordWebhookClient> GetClientWithRetry(string url)
+    {
+        try
+        {
+            return new DiscordWebhookClient(url);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Failed to create the Discord webhook trying again in 1s: {Message}", ex.Message);
+            await Task.Delay(1000);
+            return new DiscordWebhookClient(url);
         }
     }
 }
