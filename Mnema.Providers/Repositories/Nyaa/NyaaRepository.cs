@@ -138,14 +138,6 @@ public class NyaaRepository(
             FormFieldDefinitions.EnumMetadataDropDown(RequestConstants.ContentFormatKey, "content-format-pipe", false),
             new TextFieldDefinition
             {
-                Key = RequestConstants.HardcoverSeriesIdKey.Key,
-            },
-            new TextFieldDefinition
-            {
-                Key = RequestConstants.MangaBakaKey.Key,
-            },
-            new TextFieldDefinition
-            {
                 Key = RequestConstants.TitleOverride.Key,
             },
             new SwitchFieldDefinition

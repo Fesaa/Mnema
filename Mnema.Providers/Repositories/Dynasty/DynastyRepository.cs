@@ -202,14 +202,6 @@ internal class DynastyRepository(
                 Key = RequestConstants.SkipVolumeWithoutChapter.Key,
                 Advanced = true
             },
-            new TextFieldDefinition
-            {
-                Key = RequestConstants.HardcoverSeriesIdKey.Key,
-            },
-            new TextFieldDefinition
-            {
-                Key = RequestConstants.MangaBakaKey.Key,
-            }
         ]);
     }
 

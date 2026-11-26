@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Mnema.API;
 using Mnema.API.Content;
 using Mnema.Common;
+using Mnema.Models.DTOs.Content;
 using Mnema.Models.DTOs.UI;
 using Mnema.Models.Enums;
 using Mnema.Models.Internal;
@@ -41,7 +42,7 @@ public class PagesController(
                 continue;
             }
 
-            page.Metadata = await repository.DownloadMetadata(HttpContext.RequestAborted);
+            page.Metadata = BuildPageFormMetadata(await repository.DownloadMetadata(HttpContext.RequestAborted));
             page.Modifiers = await repository.Modifiers(HttpContext.RequestAborted);
         }
 
@@ -56,7 +57,33 @@ public class PagesController(
         if (repository == null)
             return NotFound();
 
-        return Ok(await repository.DownloadMetadata(HttpContext.RequestAborted));
+        return Ok(BuildPageFormMetadata(await repository.DownloadMetadata(HttpContext.RequestAborted)));
+    }
+
+    private static List<FormFieldDefinition> BuildPageFormMetadata(List<FormFieldDefinition> formMetadata)
+    {
+        return
+        [
+            ..formMetadata,
+            new FormFieldRow
+            {
+                ForceSingle = true,
+                Controls = [
+                    new TextFieldDefinition
+                    {
+                        Key = RequestConstants.MangaBakaKey.Key,
+                    },
+                    new TextFieldDefinition
+                    {
+                        Key = RequestConstants.MangaBakaCollectionIdKey.Key,
+                    },
+                ]
+            },
+            new TextFieldDefinition
+            {
+                Key = RequestConstants.HardcoverSeriesIdKey.Key,
+            },
+        ];
     }
 
     [HttpPost("new")]

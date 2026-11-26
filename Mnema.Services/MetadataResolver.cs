@@ -34,12 +34,12 @@ public class MetadataResolver(
 
         if (!string.IsNullOrEmpty(hardCoverId))
         {
-            series[MetadataProvider.Hardcover] = await hardcoverMetadataProvider.GetSeries(hardCoverId, cancellationToken);
+            series[MetadataProvider.Hardcover] = await hardcoverMetadataProvider.GetSeries(hardCoverId, metadata, cancellationToken);
         }
 
         if (!string.IsNullOrEmpty(mangaBakaId))
         {
-            series[MetadataProvider.Mangabaka] = await mangabakaMetadataProvider.GetSeries(mangaBakaId, cancellationToken);
+            series[MetadataProvider.Mangabaka] = await mangabakaMetadataProvider.GetSeries(mangaBakaId, metadata, cancellationToken);
         }
 
         if (!string.IsNullOrEmpty(externalId))

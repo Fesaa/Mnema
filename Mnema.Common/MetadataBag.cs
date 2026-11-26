@@ -10,6 +10,9 @@ namespace Mnema.Common;
 
 public class MetadataBag : GenericBag<string>
 {
+
+    public static MetadataBag Empty { get; } = new();
+
     public IEnumerable<string> GetStrings(string key, IEnumerable<string>? fallback = null)
     {
         return TryGetValue(key, out var list) ? list : fallback ?? [];

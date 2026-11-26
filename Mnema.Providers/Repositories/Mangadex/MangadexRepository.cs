@@ -298,14 +298,6 @@ internal class MangadexRepository : IRepository, ICoverRepository
                 Advanced = true,
                 DefaultValue = true,
             },
-            new TextFieldDefinition
-            {
-                Key = RequestConstants.HardcoverSeriesIdKey.Key,
-            },
-            new TextFieldDefinition
-            {
-                Key = RequestConstants.MangaBakaKey.Key,
-            }
         ]);
     }
 

@@ -186,14 +186,6 @@ public class KaganeRepository(
                 },
                 new TextFieldDefinition
                 {
-                    Key = RequestConstants.HardcoverSeriesIdKey.Key,
-                },
-                new TextFieldDefinition
-                {
-                    Key = RequestConstants.MangaBakaKey.Key,
-                },
-                new TextFieldDefinition
-                {
                     Key = IntegrityToken.Key,
                     Advanced = true,
                 }

@@ -109,14 +109,6 @@ internal class MadokamiRepository(IUnitOfWork unitOfWork, IParserService parserS
             },
             FormFieldDefinitions.EnumMetadataDropDown<Format>(RequestConstants.FormatKey, "format-pipe", false),
             FormFieldDefinitions.EnumMetadataDropDown<ContentFormat>(RequestConstants.ContentFormatKey, "content-format-pipe", false),
-            new TextFieldDefinition
-            {
-                Key = RequestConstants.HardcoverSeriesIdKey.Key,
-            },
-            new TextFieldDefinition
-            {
-                Key = RequestConstants.MangaBakaKey.Key,
-            }
         ]);
     }
 

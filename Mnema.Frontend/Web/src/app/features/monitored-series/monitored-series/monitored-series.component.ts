@@ -122,6 +122,9 @@ export class MonitoredSeriesComponent implements OnInit {
     if (this.series().mangaBakaId) {
       m["manga_baka_id"] = [this.series().mangaBakaId]
     }
+    if (this.series().mangaBakaCollectionId) {
+      m["manga_baka_collection_id"] = [this.series().mangaBakaCollectionId!];
+    }
 
     if (this.series().externalId) {
       m["external_id"] = [this.series().externalId];

@@ -31,7 +31,7 @@ internal sealed partial class UrlParserService(IServiceProvider serviceProvider)
         var metadataService = serviceProvider.GetKeyedService<IMetadataProviderService>(metadataProvider);
         if (metadataService is null) return null;
 
-        var series = await metadataService.GetSeries(externalId, cancellationToken);
+        var series = await metadataService.GetSeries(externalId, MetadataBag.Empty, cancellationToken);
         if (series is null) return null;
 
         return new ParsedSeriesUrlDto

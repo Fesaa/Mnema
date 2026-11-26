@@ -87,6 +87,7 @@ public static class MonitoredSeriesExtensions
         bag.SetKey(RequestConstants.ContentFormatKey, monitoredSeries.ContentFormat);
         bag.SetKey(RequestConstants.TitleOverride, monitoredSeries.TitleOverride);
         bag.SetKey(RequestConstants.MonitoredSeriesId, monitoredSeries.Id);
+        bag.SetKey(RequestConstants.MangaBakaCollectionIdKey, monitoredSeries.MangaBakaCollectionId);
         bag.SetIfNotPresent(RequestConstants.IgnoreNonMatchedVolumes, true);
 
         return bag;
